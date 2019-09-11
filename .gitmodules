@@ -1,0 +1,3 @@
+[submodule "libecole/extern/Catch2"]
+	path = libecole/extern/Catch2
+	url = https://github.com/catchorg/Catch2
