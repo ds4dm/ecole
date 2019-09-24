@@ -10,7 +10,7 @@ find_package(SCIP REQUIRED)
 
 add_library(ecole src/scip/model.cpp src/scip/utils.cpp)
 
-add_library(Ecole::ecole ALIAS racoe)
+add_library(Ecole::ecole ALIAS ecole)
 
 target_include_directories(
   ecole

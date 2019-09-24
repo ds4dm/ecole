@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 add_executable(run
                main.cpp
-               src/scip/test-model.cpp)
+               src/scip/test-model.cpp
+               src/scip/test-view.cpp)
 target_compile_definitions(run PRIVATE
                            TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 target_compile_options(ecole PRIVATE -Werror -Wall -Wextra)

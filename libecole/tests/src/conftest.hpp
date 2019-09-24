@@ -1,3 +1,7 @@
+#pragma once
+
+#include <string>
+
 #ifndef TEST_DATA_DIR
 #error "Need to define TEST_DATA_DIR."
 #endif
