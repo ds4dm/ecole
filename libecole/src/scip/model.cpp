@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
@@ -30,6 +32,14 @@ Model Model::from_file(const std::string& filename) {
 }
 
 void Model::solve() { call(SCIPsolve, scip.get()); }
+
+std::size_t Model::n_vars() const noexcept {
+	return static_cast<std::size_t>(SCIPgetNVars(scip.get()));
+}
+
+VarView Model::variables() const noexcept {
+	return VarView(SCIPgetVars(scip.get()), n_vars());
+}
 
 } // namespace scip
 } // namespace ecole

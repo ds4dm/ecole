@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include "ecole/scip/variable.hpp"
+
 // Avoid including SCIP header
 typedef struct Scip Scip;
 
@@ -24,6 +26,9 @@ public:
 	static Model from_file(const std::string& filename);
 
 	void solve();
+
+	std::size_t n_vars() const noexcept;
+	VarView variables() const noexcept;
 };
 
 } // namespace scip
