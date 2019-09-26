@@ -18,7 +18,7 @@ AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: MultiLine
-BinPackArguments: true
+BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
   AfterClass: false
@@ -49,8 +49,8 @@ ColumnLimit: 90
 CommentPragmas: '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 DisableFormat: false

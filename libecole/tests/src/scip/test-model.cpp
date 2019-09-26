@@ -26,7 +26,16 @@ TEST_CASE("Dealocation of ressources") {
 	REQUIRE(BMSgetMemoryUsed() == 0);
 }
 
-TEST_CASE("Creation of model") { auto model = scip::Model{}; }
+TEST_CASE("Creation of model") {
+	auto model = scip::Model{};
+	SECTION("Copy construct") { auto model_copy = model; }
+	SECTION("Move construct") { auto model_moved = std::move(model); }
+}
+
+TEST_CASE("Creation of model from scip pointer") {
+	REQUIRE_THROWS_AS(scip::Model(nullptr), scip::ScipException);
+	scip::Model{scip::create()};
+}
 
 TEST_CASE("Create model from file") { auto model = scip::Model::from_file(problem_file); }
 

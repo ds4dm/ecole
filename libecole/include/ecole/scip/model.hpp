@@ -15,15 +15,23 @@ struct ScipDeleter {
 	void operator()(Scip* scip);
 };
 
-std::unique_ptr<Scip, ScipDeleter> create();
+using ScipPtr = std::unique_ptr<Scip, ScipDeleter>;
+ScipPtr create();
 
 class Model {
 private:
-	std::unique_ptr<Scip, ScipDeleter> scip;
+	ScipPtr scip;
 
 public:
 	Model();
-	static Model from_file(const std::string& filename);
+	Model(ScipPtr&& scip);
+	Model(Model const& model);
+	Model& operator=(Model const&);
+	Model(Model&&) noexcept = default;
+	Model& operator=(Model&&) noexcept = default;
+	virtual ~Model() = default;
+
+	static Model from_file(std::string const& filename);
 
 	void solve();
 

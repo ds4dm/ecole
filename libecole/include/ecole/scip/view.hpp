@@ -51,8 +51,8 @@ private:
 public:
 	View() = delete;
 	explicit View(T const* const* data, std::size_t size) noexcept :
-			data(data),
-			size(size) {}
+		data(data),
+		size(size) {}
 
 	auto cbegin() const { return ViewIterator(data); }
 	auto begin() const { return cbegin(); }

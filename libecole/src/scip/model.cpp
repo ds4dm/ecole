@@ -3,6 +3,7 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
+#include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
@@ -12,17 +13,54 @@ namespace scip {
 
 void ScipDeleter::operator()(Scip* scip) { call(SCIPfree, &scip); }
 
-std::unique_ptr<Scip, ScipDeleter> create() {
+using ScipPtr = std::unique_ptr<Scip, ScipDeleter>;
+
+ScipPtr create() {
 	Scip* scip_raw;
 	call(SCIPcreate, &scip_raw);
-	auto scip_ptr = std::unique_ptr<Scip, ScipDeleter>{};
+	auto scip_ptr = ScipPtr{};
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
+}
+
+ScipPtr copy(ScipPtr const& source) {
+	if (!source)
+		return nullptr;
+	if (SCIPgetStage(source.get()) == SCIP_STAGE_INIT)
+		return create();
+	auto dest = create();
+	call(
+		SCIPcopy,
+		source.get(),
+		dest.get(),
+		nullptr,
+		nullptr,
+		nullptr,
+		true,
+		false,
+		false,
+		nullptr);
+	return dest;
 }
 
 Model::Model() : scip(create()) {
 	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip.get()), TRUE);
 	call(SCIPincludeDefaultPlugins, scip.get());
+}
+
+Model::Model(ScipPtr&& scip) {
+	if (scip)
+		this->scip = std::move(scip);
+	else
+		throw ScipException("Cannot create empty model");
+}
+
+Model::Model(Model const& other) : scip(copy(other.scip)) {}
+
+Model& Model::operator=(Model const& other) {
+	if (&other != this)
+		scip = copy(other.scip);
+	return *this;
 }
 
 Model Model::from_file(const std::string& filename) {
