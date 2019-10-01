@@ -8,7 +8,11 @@ project(
 # Dependencies
 find_package(SCIP REQUIRED)
 
-add_library(ecole src/scip/model.cpp src/scip/utils.cpp src/scip/variable.cpp)
+add_library(ecole
+            src/scip/model.cpp
+            src/scip/utils.cpp
+            src/scip/variable.cpp
+            src/learn2branch.cpp)
 
 add_library(Ecole::ecole ALIAS ecole)
 

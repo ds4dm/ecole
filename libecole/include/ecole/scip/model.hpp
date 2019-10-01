@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -18,6 +20,8 @@ struct ScipDeleter {
 using ScipPtr = std::unique_ptr<Scip, ScipDeleter>;
 ScipPtr create();
 
+using BranchFunc = std::function<std::size_t()>;
+
 class Model {
 private:
 	ScipPtr scip;
@@ -35,8 +39,13 @@ public:
 
 	void solve();
 
+	void disable_presolve();
+	void disable_cuts();
+
 	std::size_t n_vars() const noexcept;
 	VarView variables() const noexcept;
+
+	void set_branch_rule(BranchFunc const& func);
 };
 
 } // namespace scip
