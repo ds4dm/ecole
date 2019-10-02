@@ -13,22 +13,20 @@ typedef struct Scip Scip;
 namespace ecole {
 namespace scip {
 
-struct ScipDeleter {
-	void operator()(Scip* scip);
-};
+template <typename T> struct Deleter { void operator()(T* ptr); };
+template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 
-using ScipPtr = std::unique_ptr<Scip, ScipDeleter>;
-ScipPtr create();
+unique_ptr<Scip> create();
 
 using BranchFunc = std::function<std::size_t()>;
 
 class Model {
 private:
-	ScipPtr scip;
+	unique_ptr<Scip> scip;
 
 public:
 	Model();
-	Model(ScipPtr&& scip);
+	Model(unique_ptr<Scip>&& scip);
 	Model(Model const& model);
 	Model& operator=(Model const&);
 	Model(Model&&) noexcept = default;

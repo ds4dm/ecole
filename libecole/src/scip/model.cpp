@@ -15,27 +15,25 @@ struct SCIP_BranchruleData {
 namespace ecole {
 namespace scip {
 
-void ScipDeleter::operator()(Scip* scip) { call(SCIPfree, &scip); }
+template <> void Deleter<Scip>::operator()(Scip* scip) { call(SCIPfree, &scip); }
 
-using ScipPtr = std::unique_ptr<Scip, ScipDeleter>;
-
-ScipPtr create() {
+unique_ptr<Scip> create() {
 	Scip* scip_raw;
 	call(SCIPcreate, &scip_raw);
-	auto scip_ptr = ScipPtr{};
+	auto scip_ptr = unique_ptr<Scip>{};
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
 }
 
-ScipPtr copy(ScipPtr const& source) {
+unique_ptr<Scip> copy(Scip const* source) {
 	if (!source)
 		return nullptr;
-	if (SCIPgetStage(source.get()) == SCIP_STAGE_INIT)
+	if (SCIPgetStage(const_cast<Scip*>(source)) == SCIP_STAGE_INIT)
 		return create();
 	auto dest = create();
 	call(
 		SCIPcopy,
-		source.get(),
+		const_cast<Scip*>(source),
 		dest.get(),
 		nullptr,
 		nullptr,
@@ -52,18 +50,18 @@ Model::Model() : scip(create()) {
 	call(SCIPincludeDefaultPlugins, scip.get());
 }
 
-Model::Model(ScipPtr&& scip) {
+Model::Model(unique_ptr<Scip>&& scip) {
 	if (scip)
 		this->scip = std::move(scip);
 	else
 		throw ScipException("Cannot create empty model");
 }
 
-Model::Model(Model const& other) : scip(copy(other.scip)) {}
+Model::Model(Model const& other) : scip(copy(other.scip.get())) {}
 
 Model& Model::operator=(Model const& other) {
 	if (&other != this)
-		scip = copy(other.scip);
+		scip = copy(other.scip.get());
 	return *this;
 }
 
@@ -141,7 +139,7 @@ private:
 public:
 	LambdaBranchRule() = delete;
 
-	static void set_branch_func(ScipPtr const& scip, BranchFunc const& func) {
+	static void set_branch_func(unique_ptr<Scip> const& scip, BranchFunc const& func) {
 		auto branch_rule = get_branch_rule(scip.get());
 		if (!branch_rule)
 			branch_rule = include_void_branch_rule(scip.get());
