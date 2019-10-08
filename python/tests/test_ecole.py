@@ -1,5 +1,22 @@
 import ecole
 
 
-def test_BranchEnv(problem_file):
-    ecole.create_BranchEnv(str(problem_file))
+
+@pytest.fixture
+def branchEnv(problem_file):
+    env = ecole.BranchEnv.from_file(str(problem_file))
+    env.disable_presolve()
+    env.disable_cuts()
+    return env
+
+
+def test_BranchEnv(branchEnv):
+    count = 0
+
+    def f():
+        nonlocal count
+        count += 1
+        return 0
+
+    branchEnv.run(f)
+    assert count > 0

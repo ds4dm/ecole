@@ -1,3 +1,4 @@
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 
 #include "ecole/learn2branch.hpp"
@@ -9,8 +10,10 @@ using namespace ecole;
 PYBIND11_MODULE(ecole, m) {
 	m.doc() = "Ecole library";
 
-	m.def(
-		"create_BranchEnv",
-		[](std::string const& filename) { auto env = BranchEnv::from_file(filename); },
-		"Temporary docstring.");
+	py::class_<BranchEnv>(m, "BranchEnv") //
+		.def_static("from_file", &BranchEnv::from_file)
+		.def("disable_presolve", [](BranchEnv& env) { env.model.disable_presolve(); })
+		.def("disable_cuts", [](BranchEnv& env) { env.model.disable_cuts(); })
+		.def("run", &BranchEnv::run);
+	;
 }
