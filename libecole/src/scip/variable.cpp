@@ -7,8 +7,7 @@
 namespace ecole {
 namespace scip {
 
-double VarProxy::ub() const noexcept {
-	return SCIPvarGetUbOriginal(const_cast<SCIP_Var*>(value));
-}
+double VarProxy::ub() const noexcept { return SCIPvarGetUbOriginal(value); }
+
 } // namespace scip
 } // namespace ecole

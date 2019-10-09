@@ -10,7 +10,7 @@
 using namespace ecole;
 
 template <typename T> auto arange(std::size_t size) {
-	auto deleter = [size](T const* const* data) {
+	auto deleter = [size](T* const* data) {
 		for (std::size_t i = 0; i < size; ++i)
 			delete data[i];
 		delete[] data;
@@ -21,12 +21,12 @@ template <typename T> auto arange(std::size_t size) {
 			data[i] = new T{static_cast<T>(i)};
 		return data;
 	};
-	return std::unique_ptr<T const* const, decltype(deleter)>(make_data(), deleter);
+	return std::unique_ptr<T* const, decltype(deleter)>(make_data(), deleter);
 }
 
 TEMPLATE_TEST_CASE("Create a view", "", int, double) {
 	struct Proxy : public scip::Proxy<TestType> {
-		Proxy(TestType const* value) noexcept : scip::Proxy<TestType>(value) {}
+		Proxy(TestType* value) noexcept : scip::Proxy<TestType>(value) {}
 		TestType times(TestType n) const noexcept { return *(this->value) * n; }
 	};
 

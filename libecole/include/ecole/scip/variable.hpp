@@ -10,7 +10,7 @@ namespace scip {
 
 class VarProxy : public Proxy<SCIP_Var> {
 public:
-	VarProxy(SCIP_Var const* value) noexcept : Proxy(value) {}
+	VarProxy(SCIP_Var* value) noexcept : Proxy(value) {}
 
 	double ub() const noexcept;
 };

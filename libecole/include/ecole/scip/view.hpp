@@ -8,22 +8,22 @@ namespace scip {
 
 template <typename T> class Proxy {
 protected:
-	T const* const value;
+	T* const value;
 
 public:
 	Proxy() = delete;
-	explicit Proxy(T const* value) noexcept : value(value) {}
+	explicit Proxy(T* value) noexcept : value(value) {}
 	virtual ~Proxy() {}
 };
 
 template <typename T, typename Proxy> class View {
 private:
-	T const* const* const data;
+	T* const* const data;
 	std::size_t const size;
 
 	class ViewIterator {
 	private:
-		T const* const* ptr;
+		T* const* ptr;
 
 	public:
 		using iterator_category = std::input_iterator_tag;
@@ -33,7 +33,7 @@ private:
 		using reference = void;
 
 		ViewIterator() = delete;
-		explicit ViewIterator(T const* const* ptr) noexcept : ptr(ptr) {}
+		explicit ViewIterator(T* const* ptr) noexcept : ptr(ptr) {}
 		ViewIterator& operator++() {
 			ptr++;
 			return *this;
@@ -50,9 +50,7 @@ private:
 
 public:
 	View() = delete;
-	explicit View(T const* const* data, std::size_t size) noexcept :
-		data(data),
-		size(size) {}
+	explicit View(T* const* data, std::size_t size) noexcept : data(data), size(size) {}
 
 	auto cbegin() const { return ViewIterator(data); }
 	auto begin() const { return cbegin(); }
