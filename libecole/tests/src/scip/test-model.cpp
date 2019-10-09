@@ -33,7 +33,7 @@ TEST_CASE("Creation of model") {
 }
 
 TEST_CASE("Creation of model from scip pointer") {
-	REQUIRE_THROWS_AS(scip::Model(nullptr), scip::ScipException);
+	REQUIRE_THROWS_AS(scip::Model(nullptr), scip::Exception);
 	scip::Model{scip::create()};
 }
 
@@ -41,7 +41,7 @@ TEST_CASE("Create model from file") { auto model = scip::Model::from_file(proble
 
 TEST_CASE("Raise if file does not exist") {
 	auto guard = ScipNoErrorGuard{};
-	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::ScipException);
+	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
 }
 
 TEST_CASE("Solve a model") {

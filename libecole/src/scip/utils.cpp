@@ -5,11 +5,11 @@
 namespace ecole {
 namespace scip {
 
-ScipException make_exception(SCIP_RETCODE retcode) {
+Exception make_exception(SCIP_RETCODE retcode) {
 	auto&& message = [retcode] {
 		switch (retcode) {
 		case SCIP_OKAY:
-			throw ScipException("Normal terminaition must not raise exception.");
+			throw Exception("Normal terminaition must not raise exception.");
 		case SCIP_ERROR:
 			return "Unspecified error.";
 		case SCIP_NOMEMORY:
@@ -50,7 +50,7 @@ ScipException make_exception(SCIP_RETCODE retcode) {
 			return "Invalid return code.";
 		}
 	}();
-	return ScipException("SCIP_RETCODE " + std::to_string(retcode) + ": " + message);
+	return Exception("SCIP_RETCODE " + std::to_string(retcode) + ": " + message);
 }
 
 } // namespace scip

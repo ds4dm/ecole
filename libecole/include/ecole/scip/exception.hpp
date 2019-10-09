@@ -6,11 +6,11 @@
 namespace ecole {
 namespace scip {
 
-class ScipException : public std::exception {
+class Exception : public std::exception {
 public:
 	const std::string message;
 
-	ScipException(const std::string& message) : message(message) {}
+	Exception(const std::string& message) : message(message) {}
 	const char* what() const noexcept override { return message.c_str(); }
 };
 

@@ -7,7 +7,7 @@
 namespace ecole {
 namespace scip {
 
-ScipException make_exception(SCIP_RETCODE retcode);
+Exception make_exception(SCIP_RETCODE retcode);
 
 template <typename Func, typename... Arguments>
 inline void call(Func func, Arguments&&... args) {

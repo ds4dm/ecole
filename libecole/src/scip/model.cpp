@@ -54,7 +54,7 @@ Model::Model(unique_ptr<Scip>&& scip) {
 	if (scip)
 		this->scip = std::move(scip);
 	else
-		throw ScipException("Cannot create empty model");
+		throw Exception("Cannot create empty model");
 }
 
 Model::Model(Model const& other) : scip(copy(other.scip.get())) {}
