@@ -19,7 +19,7 @@ public:
 	friend class Model;
 };
 
-using VarView = View<SCIP_Var, VarProxy>;
+using VarView = View<VarProxy>;
 
 } // namespace scip
 } // namespace ecole

@@ -32,7 +32,7 @@ TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 
 	auto size = std::size_t(10);
 	auto data = arange<TestType>(size);
-	auto view = scip::View<TestType, Proxy>(data.get(), size);
+	auto view = scip::View<Proxy>(data.get(), size);
 
 	SECTION("Can be iterated using range based for loop") {
 		auto sumx2 = TestType{0};

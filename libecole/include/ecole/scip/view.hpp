@@ -9,6 +9,9 @@ namespace ecole {
 namespace scip {
 
 template <typename T> class Proxy {
+public:
+	using type = T;
+
 protected:
 	T* const value;
 
@@ -18,11 +21,13 @@ public:
 	virtual ~Proxy() {}
 };
 
-template <typename T, typename Proxy> class View {
+template <typename Proxy, typename = typename Proxy::type> class View {
 public:
 	std::size_t const size;
 
 private:
+	using T = typename Proxy::type;
+
 	T* const* const data;
 
 	class ViewIterator {
