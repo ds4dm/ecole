@@ -24,7 +24,7 @@ template <typename T> auto arange(std::size_t size) {
 	return std::unique_ptr<T* const, decltype(deleter)>(make_data(), deleter);
 }
 
-TEMPLATE_TEST_CASE("Create a view", "", int, double) {
+TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 	struct Proxy : public scip::Proxy<TestType> {
 		Proxy(TestType* value) noexcept : scip::Proxy<TestType>(value) {}
 		TestType times(TestType n) const noexcept { return *(this->value) * n; }
@@ -34,14 +34,24 @@ TEMPLATE_TEST_CASE("Create a view", "", int, double) {
 	auto data = arange<TestType>(size);
 	auto view = scip::View<TestType, Proxy>(data.get(), size);
 
-	SECTION("Views can be iterated using range based for loop") {
+	SECTION("Can be iterated using range based for loop") {
 		auto sumx2 = TestType{0};
 		for (auto v : view)
 			sumx2 += v.times(2);
 		REQUIRE(sumx2 == static_cast<decltype(sumx2)>(size * (size - 1)));
 	}
 
-	SECTION("Views work with the standard library") {
+	SECTION("Random access iterator") {
+		auto iter = view.begin();
+		REQUIRE(iter[size - 1].times(1) == size - 1);
+	}
+
+	SECTION("View accessor") {
+		REQUIRE(view[size - 1].times(1) == size - 1);
+		REQUIRE_THROWS_AS(view.at(size), std::out_of_range);
+	}
+
+	SECTION("Work with the standard library") {
 		auto times2 = std::list<TestType>{};
 		std::transform(view.begin(), view.end(), std::back_inserter(times2), [](auto proxy) {
 			return proxy.times(2);
