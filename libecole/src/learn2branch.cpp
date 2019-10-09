@@ -10,7 +10,7 @@ namespace ecole {
 BranchEnv::BranchEnv(scip::Model&& other_model) noexcept :
 	model(std::move(other_model)) {}
 
-void BranchEnv::run(scip::BranchFunc const& func) {
+void BranchEnv::run(scip::Model::BranchFunc const& func) {
 	model.set_branch_rule(func);
 	model.solve();
 }

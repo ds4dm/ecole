@@ -15,6 +15,6 @@ public:
 		return BranchEnv{scip::Model::from_file(filename)};
 	}
 
-	void run(scip::BranchFunc const& func);
+	void run(scip::Model::BranchFunc const& func);
 };
 } // namespace ecole

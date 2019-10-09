@@ -18,13 +18,14 @@ template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 
 unique_ptr<Scip> create();
 
-using BranchFunc = std::function<std::size_t()>;
-
 class Model {
 private:
+	class LambdaBranchRule;
 	unique_ptr<Scip> scip;
 
 public:
+	using BranchFunc = std::function<VarProxy(Model const&)>;
+
 	Model();
 	Model(unique_ptr<Scip>&& scip);
 	Model(Model const& model);
@@ -40,8 +41,8 @@ public:
 	void disable_presolve();
 	void disable_cuts();
 
-	std::size_t n_vars() const noexcept;
 	VarView variables() const noexcept;
+	VarView lp_branch_vars() const noexcept;
 
 	void set_branch_rule(BranchFunc const& func);
 };

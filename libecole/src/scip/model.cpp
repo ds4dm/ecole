@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <exception>
 
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
@@ -9,7 +10,8 @@
 #include "scip/utils.hpp"
 
 struct SCIP_BranchruleData {
-	ecole::scip::BranchFunc func;
+	ecole::scip::Model::BranchFunc func;
+	ecole::scip::Model const& model;
 };
 
 namespace ecole {
@@ -20,6 +22,7 @@ template <> void Deleter<Scip>::operator()(Scip* scip) { call(SCIPfree, &scip); 
 unique_ptr<Scip> create() {
 	Scip* scip_raw;
 	call(SCIPcreate, &scip_raw);
+	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), true);
 	auto scip_ptr = unique_ptr<Scip>{};
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
@@ -45,10 +48,7 @@ unique_ptr<Scip> copy(Scip const* source) {
 	return dest;
 }
 
-Model::Model() : scip(create()) {
-	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip.get()), TRUE);
-	call(SCIPincludeDefaultPlugins, scip.get());
-}
+Model::Model() : scip(create()) { call(SCIPincludeDefaultPlugins, scip.get()); }
 
 Model::Model(unique_ptr<Scip>&& scip) {
 	if (scip)
@@ -80,15 +80,20 @@ void Model::disable_cuts() {
 	call(SCIPsetSeparating, scip.get(), SCIP_PARAMSETTING_OFF, true);
 }
 
-std::size_t Model::n_vars() const noexcept {
-	return static_cast<std::size_t>(SCIPgetNVars(scip.get()));
-}
-
 VarView Model::variables() const noexcept {
-	return VarView(SCIPgetVars(scip.get()), n_vars());
+	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(scip.get()));
+	return VarView(SCIPgetVars(scip.get()), n_vars);
 }
 
-class LambdaBranchRule {
+VarView Model::lp_branch_vars() const noexcept {
+	int n_vars{};
+	SCIP_VAR** vars{};
+	call(
+		SCIPgetLPBranchCands, scip.get(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
+	return VarView(vars, static_cast<std::size_t>(n_vars));
+}
+
+class Model::LambdaBranchRule {
 private:
 	static constexpr auto name = "ecole::scip::LambdaBranchRule";
 	static constexpr auto description = "";
@@ -101,16 +106,29 @@ private:
 		SCIP_BRANCHRULE* branch_rule,
 		SCIP_Bool allow_addcons,
 		SCIP_RESULT* result) {
-		(void)scip;
 		(void)allow_addcons;
-		(void)result;
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
-		// FIXME add try catch
-		branch_data->func();
+		assert(branch_data->model.scip.get() == scip);
+		*result = SCIP_DIDNOTRUN;
+		if (!branch_data->func)
+			return SCIP_OKAY;
+
+		// C code must be exception safe.
+		try {
+			auto var = branch_data->func(branch_data->model);
+			call(SCIPbranchVar, scip, var.value, nullptr, nullptr, nullptr);
+			*result = SCIP_BRANCHED;
+		} catch (std::exception& e) {
+			SCIPerrorMessage(e.what());
+			return SCIP_BRANCHERROR;
+		} catch (...) {
+			return SCIP_BRANCHERROR;
+		}
 		return SCIP_OKAY;
 	}
 
-	static auto include_void_branch_rule(SCIP* const scip) {
+	static auto include_void_branch_rule(Model& model) {
+		auto const scip = model.scip.get();
 		SCIP_BRANCHRULE* branch_rule;
 		call(
 			SCIPincludeBranchruleBasic,
@@ -121,17 +139,17 @@ private:
 			priority,
 			maxdepth,
 			maxbounddist,
-			new SCIP_BranchruleData{BranchFunc{nullptr}});
+			new SCIP_BranchruleData{Model::BranchFunc{nullptr}, model});
 		call(SCIPsetBranchruleExecLp, scip, branch_rule, exec_lp);
 		return branch_rule;
 	}
 
-	static inline auto get_branch_rule(SCIP const* const scip) {
-		return SCIPfindBranchrule(const_cast<SCIP*>(scip), name);
+	static inline auto get_branch_rule(Model const& model) {
+		return SCIPfindBranchrule(model.scip.get(), name);
 	}
 
 	static void
-	set_branch_func(SCIP_BRANCHRULE* const branch_rule, BranchFunc const& func) {
+	set_branch_func(SCIP_BRANCHRULE* const branch_rule, Model::BranchFunc const& func) {
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
 		branch_data->func = func;
 	}
@@ -139,22 +157,22 @@ private:
 public:
 	LambdaBranchRule() = delete;
 
-	static void set_branch_func(unique_ptr<Scip> const& scip, BranchFunc const& func) {
-		auto branch_rule = get_branch_rule(scip.get());
+	static void set_branch_func(Model& model, Model::BranchFunc const& func) {
+		auto branch_rule = get_branch_rule(model);
 		if (!branch_rule)
-			branch_rule = include_void_branch_rule(scip.get());
+			branch_rule = include_void_branch_rule(model);
 		set_branch_func(branch_rule, func);
 	}
 };
 
-char const* const LambdaBranchRule::name;
-char const* const LambdaBranchRule::description;
-int const LambdaBranchRule::priority;
-int const LambdaBranchRule::maxdepth;
-double const LambdaBranchRule::maxbounddist;
+char const* const Model::LambdaBranchRule::name;
+char const* const Model::LambdaBranchRule::description;
+int const Model::LambdaBranchRule::priority;
+int const Model::LambdaBranchRule::maxdepth;
+double const Model::LambdaBranchRule::maxbounddist;
 
 void Model::set_branch_rule(BranchFunc const& func) {
-	LambdaBranchRule::set_branch_func(scip, func);
+	LambdaBranchRule::set_branch_func(*this, func);
 }
 
 } // namespace scip
