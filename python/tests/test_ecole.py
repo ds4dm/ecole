@@ -1,5 +1,6 @@
-import ecole
+import pytest
 
+import ecole
 
 
 @pytest.fixture

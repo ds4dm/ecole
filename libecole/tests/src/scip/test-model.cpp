@@ -8,12 +8,6 @@
 
 using namespace ecole;
 
-class ScipNoErrorGuard {
-public:
-	ScipNoErrorGuard() { SCIPmessageSetErrorPrinting(nullptr, nullptr); }
-	~ScipNoErrorGuard() { SCIPmessageSetErrorPrintingDefault(); }
-};
-
 TEST_CASE("Allocation of ressources") {
 	auto&& scip = scip::create();
 	REQUIRE(SCIPgetStage(scip.get()) == SCIP_STAGE_INIT);

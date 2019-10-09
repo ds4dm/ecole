@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 add_executable(run
                main.cpp
+               src/conftest.cpp
                src/scip/test-model.cpp
                src/scip/test-variable.cpp
                src/scip/test-view.cpp
