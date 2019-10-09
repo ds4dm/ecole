@@ -15,5 +15,4 @@ PYBIND11_MODULE(ecole, m) {
 		.def("disable_presolve", [](BranchEnv& env) { env.model.disable_presolve(); })
 		.def("disable_cuts", [](BranchEnv& env) { env.model.disable_cuts(); })
 		.def("run", &BranchEnv::run);
-	;
 }

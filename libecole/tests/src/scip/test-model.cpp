@@ -48,3 +48,16 @@ TEST_CASE("Solve a model") {
 	auto model = scip::Model::from_file(problem_file);
 	model.solve();
 }
+
+TEST_CASE("Add a branching rule") {
+	auto model = scip::Model::from_file(problem_file);
+	model.disable_presolve();
+	model.disable_cuts();
+	auto count = 0;
+	model.set_branch_rule([&count](scip::Model const& m) mutable {
+		count++;
+		return *m.lp_branch_vars().cbegin();
+	});
+	model.solve();
+	REQUIRE(count > 0);
+}
