@@ -21,7 +21,7 @@ TEST_CASE("BranchEnv can run a branching function") {
 	SECTION("run a branching function") {
 		auto count_branch = [](BranchEnv& env) {
 			auto count = 0L;
-			env.run([&count]() mutable {
+			env.run([&count](auto obs) mutable {
 				count++;
 				return 0L;
 			});
@@ -34,7 +34,7 @@ TEST_CASE("BranchEnv can run a branching function") {
 
 	SECTION("manage errors") {
 		auto guard = ScipNoErrorGuard{};
-		auto bad_func = [] {
+		auto bad_func = [](auto obs) {
 			throw std::runtime_error("BadError");
 			return 0L;
 		};

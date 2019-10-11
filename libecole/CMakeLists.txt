@@ -8,6 +8,7 @@ add_library(
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp
+	src/observation.cpp
 	src/learn2branch.cpp
 )
 

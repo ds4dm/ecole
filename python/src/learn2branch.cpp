@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/learn2branch.hpp"
+#include "ecole/observation.hpp"
 
 namespace py = pybind11;
 
@@ -9,6 +10,8 @@ using namespace ecole;
 
 PYBIND11_MODULE(ecole, m) {
 	m.doc() = "Ecole library";
+
+	py::class_<Observation>(m, "Observation");
 
 	py::class_<BranchEnv>(m, "BranchEnv") //
 		.def_static("from_file", &BranchEnv::from_file)

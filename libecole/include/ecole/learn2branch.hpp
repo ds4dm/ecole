@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
+
 #include <string>
 
+#include "ecole/observation.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
@@ -15,6 +18,6 @@ public:
 		return BranchEnv{scip::Model::from_file(filename)};
 	}
 
-	void run(std::function<size_t()> const& func);
+	void run(std::function<std::size_t(std::unique_ptr<Observation>)> const& func);
 };
 } // namespace ecole

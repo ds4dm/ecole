@@ -14,7 +14,7 @@ def branchEnv(problem_file):
 def test_BranchEnv(branchEnv):
     count = 0
 
-    def f():
+    def f(obs):
         nonlocal count
         count += 1
         return 0
