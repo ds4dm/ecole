@@ -10,14 +10,16 @@
 namespace ecole {
 
 class BranchEnv {
-public:
+protected:
 	scip::Model model;
+	std::unique_ptr<Observation::Factory> factory;
 
-	BranchEnv(scip::Model&& model) noexcept;
-	static BranchEnv from_file(std::string const& filename) {
-		return BranchEnv{scip::Model::from_file(filename)};
-	}
+public:
+	using BranchFunc = std::function<std::size_t(std::unique_ptr<Observation>)>;
+	using ObsFactory = Observation::Factory;
 
-	void run(std::function<std::size_t(std::unique_ptr<Observation>)> const& func);
+	BranchEnv(scip::Model&& model, std::unique_ptr<ObsFactory> factory) noexcept;
+
+	void run(BranchFunc const& func);
 };
 } // namespace ecole

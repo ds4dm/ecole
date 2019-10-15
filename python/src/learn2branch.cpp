@@ -14,8 +14,13 @@ PYBIND11_MODULE(ecole, m) {
 	py::class_<Observation>(m, "Observation");
 
 	py::class_<BranchEnv>(m, "BranchEnv") //
-		.def_static("from_file", &BranchEnv::from_file)
-		.def("disable_presolve", [](BranchEnv& env) { env.model.disable_presolve(); })
-		.def("disable_cuts", [](BranchEnv& env) { env.model.disable_cuts(); })
+		.def_static(
+			"make_default",
+			[](std::string const& filename) {
+				auto model = scip::Model::from_file(filename);
+				model.disable_cuts();
+				model.disable_presolve();
+				return BranchEnv{std::move(model), std::make_unique<BasicObs::Factory>()};
+			})
 		.def("run", &BranchEnv::run);
 }

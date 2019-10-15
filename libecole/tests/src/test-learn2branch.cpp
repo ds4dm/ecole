@@ -1,3 +1,4 @@
+#include <memory>
 #include <stdexcept>
 
 #include <catch2/catch.hpp>
@@ -9,14 +10,15 @@
 
 using namespace ecole;
 
-TEST_CASE("BranchEnv can be created from a file") {
-	auto env = BranchEnv::from_file(problem_file);
+scip::Model get_model() {
+	auto model = scip::Model::from_file(problem_file);
+	model.disable_cuts();
+	model.disable_presolve();
+	return model;
 }
 
 TEST_CASE("BranchEnv can run a branching function") {
-	auto env = BranchEnv::from_file(problem_file);
-	env.model.disable_cuts();
-	env.model.disable_presolve();
+	auto env = BranchEnv{get_model(), std::make_unique<BasicObs::Factory>()};
 
 	SECTION("run a branching function") {
 		auto count_branch = [](BranchEnv& env) {

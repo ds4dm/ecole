@@ -5,10 +5,7 @@ import ecole
 
 @pytest.fixture
 def branchEnv(problem_file):
-    env = ecole.BranchEnv.from_file(str(problem_file))
-    env.disable_presolve()
-    env.disable_cuts()
-    return env
+    return ecole.BranchEnv.make_default(str(problem_file))
 
 
 def test_BranchEnv(branchEnv):
