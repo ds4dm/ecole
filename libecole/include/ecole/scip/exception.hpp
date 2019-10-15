@@ -8,10 +8,11 @@ namespace scip {
 
 class Exception : public std::exception {
 public:
-	const std::string message;
+	Exception(const std::string& message);
+	const char* what() const noexcept override;
 
-	Exception(const std::string& message) : message(message) {}
-	const char* what() const noexcept override { return message.c_str(); }
+private:
+	const std::string message;
 };
 
 } // namespace scip

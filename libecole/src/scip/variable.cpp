@@ -7,6 +7,8 @@
 namespace ecole {
 namespace scip {
 
+VarProxy::VarProxy(SCIP_Var* value) noexcept : Proxy(value) {}
+
 double VarProxy::ub() const noexcept { return SCIPvarGetUbOriginal(value); }
 
 } // namespace scip

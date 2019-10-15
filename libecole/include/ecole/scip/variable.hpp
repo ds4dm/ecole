@@ -8,11 +8,9 @@ typedef struct SCIP_Var SCIP_Var;
 namespace ecole {
 namespace scip {
 
-class Model;
-
 class VarProxy : public Proxy<SCIP_Var> {
 public:
-	VarProxy(SCIP_Var* value) noexcept : Proxy(value) {}
+	VarProxy(SCIP_Var* value) noexcept;
 
 	double ub() const noexcept;
 

@@ -5,6 +5,7 @@ find_package(SCIP REQUIRED)
 
 add_library(
 	ecole
+	src/scip/exception.cpp
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp

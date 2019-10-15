@@ -19,10 +19,6 @@ template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 unique_ptr<Scip> create();
 
 class Model {
-private:
-	class LambdaBranchRule;
-	unique_ptr<Scip> scip;
-
 public:
 	using BranchFunc = std::function<VarProxy(Model const&)>;
 
@@ -45,6 +41,10 @@ public:
 	VarView lp_branch_vars() const noexcept;
 
 	void set_branch_rule(BranchFunc const& func);
+
+private:
+	class LambdaBranchRule;
+	unique_ptr<Scip> scip;
 };
 
 } // namespace scip
