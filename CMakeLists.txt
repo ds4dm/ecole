@@ -4,7 +4,7 @@ project(
 	libEcole
 	VERSION 0.0.1
 	LANGUAGES CXX
-	DESCRIPTION "ECOLE are Adaptive Combinatorial Optimization Environments"
+	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
 add_subdirectory(libecole)
