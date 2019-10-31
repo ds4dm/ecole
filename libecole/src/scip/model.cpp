@@ -40,7 +40,7 @@ unique_ptr<Scip> copy(Scip const* source) {
 		dest.get(),
 		nullptr,
 		nullptr,
-		nullptr,
+		"",
 		true,
 		false,
 		false,

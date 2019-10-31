@@ -43,6 +43,13 @@ TEST_CASE("Solve a model") {
 	model.solve();
 }
 
+TEST_CASE("Copy preserve the model internals") {
+	auto model = scip::Model::from_file(problem_file);
+	auto model_copy = model;
+	model.solve();
+	model_copy.solve();
+}
+
 TEST_CASE("Add a branching rule") {
 	auto model = scip::Model::from_file(problem_file);
 	model.disable_presolve();
