@@ -4,10 +4,11 @@
 
 #include <string>
 
-#include "ecole/observation.hpp"
+#include "ecole/env/observation.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
+namespace env {
 
 class BranchEnv {
 protected:
@@ -22,4 +23,6 @@ public:
 
 	void run(BranchFunc const& func);
 };
+
+} // namespace env
 } // namespace ecole

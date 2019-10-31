@@ -9,8 +9,8 @@ add_library(
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp
-	src/observation.cpp
-	src/learn2branch.cpp
+	src/env/observation.cpp
+	src/env/learn2branch.cpp
 )
 
 add_library(Ecole::ecole ALIAS ecole)

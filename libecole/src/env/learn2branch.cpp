@@ -1,8 +1,9 @@
 #include <scip/scip.h>
 
-#include "ecole/learn2branch.hpp"
+#include "ecole/env/learn2branch.hpp"
 
 namespace ecole {
+namespace env {
 
 static void run_trajectory(
 	scip::Model model,
@@ -25,4 +26,5 @@ void BranchEnv::run(BranchFunc const& func) {
 	run_trajectory(model, factory.get(), func);
 }
 
+} // namespace env
 } // namespace ecole

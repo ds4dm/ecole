@@ -5,6 +5,7 @@
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
+namespace env {
 
 class Observation {
 public:
@@ -28,4 +29,5 @@ public:
 	~BasicObs() = default;
 };
 
+} // namespace env
 } // namespace ecole

@@ -3,7 +3,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/learn2branch.hpp"
+#include "ecole/env/learn2branch.hpp"
 #include "ecole/scip/exception.hpp"
 
 #include "conftest.hpp"
@@ -18,10 +18,10 @@ scip::Model get_model() {
 }
 
 TEST_CASE("BranchEnv can run a branching function") {
-	auto env = BranchEnv{get_model(), std::make_unique<BasicObs::Factory>()};
+	auto env = env::BranchEnv{get_model(), std::make_unique<env::BasicObs::Factory>()};
 
 	SECTION("run a branching function") {
-		auto count_branch = [](BranchEnv& env) {
+		auto count_branch = [](env::BranchEnv& env) {
 			auto count = 0L;
 			env.run([&count](auto obs) mutable {
 				count++;

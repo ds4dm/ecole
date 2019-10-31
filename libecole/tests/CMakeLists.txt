@@ -6,7 +6,7 @@ add_executable(run
                src/scip/test-model.cpp
                src/scip/test-variable.cpp
                src/scip/test-view.cpp
-               src/test-learn2branch.cpp)
+               src/env/test-learn2branch.cpp)
 target_compile_definitions(run PRIVATE
                            TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 target_compile_options(ecole PRIVATE -Werror -Wall -Wextra)
