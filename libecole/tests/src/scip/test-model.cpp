@@ -1,3 +1,4 @@
+#include <future>
 #include <string>
 
 #include <catch2/catch.hpp>
@@ -42,24 +43,17 @@ TEST_CASE("Raise if file does not exist") {
 
 TEST_CASE("Model modifiers") {
 	auto model = scip::Model::from_file(problem_file);
-	SECTION("Solve") {
-		REQUIRE(!model.is_solved());
-		model.solve();
-		REQUIRE(model.is_solved());
-	}
-	SECTION("Change parameters") {
-		SECTION("char") {
-			model.set_param("branching/scorefunc", 's');
-			REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
-		}
-		SECTION("bool") {
-			model.set_param("branching/preferbinary", true);
-			REQUIRE(model.get_param<bool>("branching/preferbinary") == true);
-		}
-		SECTION("string") {
-			model.set_param("heuristics/undercover/fixingalts", "nil");
-			REQUIRE(model.get_param<std::string>("heuristics/undercover/fixingalts") == "nil");
-		}
+
+	SECTION("Synchronously") { model.solve(); }
+
+	SECTION("Asynchronously") {
+		auto load_solve = [] {
+			scip::Model::from_file(problem_file).solve();
+			return true;
+		};
+		auto fut1 = std::async(std::launch::async, load_solve);
+		auto fut2 = std::async(std::launch::async, load_solve);
+		REQUIRE((fut1.get() && fut2.get()));
 	}
 }
 
