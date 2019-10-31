@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <exception>
+#include <mutex>
 #include <string>
 
 #include <scip/scip.h>
@@ -35,6 +36,9 @@ unique_ptr<Scip> copy(Scip const* source) {
 	if (SCIPgetStage(const_cast<Scip*>(source)) == SCIP_STAGE_INIT)
 		return create();
 	auto dest = create();
+	// Copy operation is not thread safe
+	static std::mutex m{};
+	std::lock_guard<std::mutex> g{m};
 	call(
 		SCIPcopy,
 		const_cast<Scip*>(source),
