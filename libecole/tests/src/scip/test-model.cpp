@@ -1,3 +1,5 @@
+#include <string>
+
 #include <catch2/catch.hpp>
 #include <scip/scip.h>
 
@@ -36,6 +38,22 @@ TEST_CASE("Create model from file") { auto model = scip::Model::from_file(proble
 TEST_CASE("Raise if file does not exist") {
 	auto guard = ScipNoErrorGuard{};
 	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
+}
+
+TEST_CASE("Change Parameters") {
+	auto model = scip::Model();
+	SECTION("char") {
+		model.set_param("branching/scorefunc", 's');
+		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+	}
+	SECTION("bool") {
+		model.set_param("branching/preferbinary", true);
+		REQUIRE(model.get_param<bool>("branching/preferbinary") == true);
+	}
+	SECTION("string") {
+		model.set_param("heuristics/undercover/fixingalts", "nil");
+		REQUIRE(model.get_param<std::string>("heuristics/undercover/fixingalts") == "nil");
+	}
 }
 
 TEST_CASE("Solve a model") {

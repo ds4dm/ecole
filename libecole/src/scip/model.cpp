@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <exception>
+#include <string>
 
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
@@ -69,6 +70,64 @@ Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
 	call(SCIPreadProb, model.scip.get(), filename.c_str(), nullptr);
 	return model;
+}
+
+template <> void Model::set_param(const char* name, bool value) {
+	call(SCIPsetBoolParam, scip.get(), name, value);
+}
+template <> void Model::set_param(const char* name, char value) {
+	call(SCIPsetCharParam, scip.get(), name, value);
+}
+template <> void Model::set_param(const char* name, int value) {
+	call(SCIPsetIntParam, scip.get(), name, value);
+}
+template <> void Model::set_param(const char* name, SCIP_Longint value) {
+	call(SCIPsetLongintParam, scip.get(), name, value);
+}
+template <> void Model::set_param(const char* name, SCIP_Real value) {
+	call(SCIPsetRealParam, scip.get(), name, value);
+}
+template <> void Model::set_param(const char* name, const char* value) {
+	call(SCIPsetStringParam, scip.get(), name, value);
+}
+
+namespace {
+template <typename T> SCIP_RETCODE _get_param(SCIP* scip, const char* name, T* value);
+
+template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, char* value) {
+	return SCIPgetCharParam(scip, name, value);
+}
+template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, int* value) {
+	return SCIPgetIntParam(scip, name, value);
+}
+template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, SCIP_Longint* value) {
+	return SCIPgetLongintParam(scip, name, value);
+}
+template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, SCIP_Real* value) {
+	return SCIPgetRealParam(scip, name, value);
+}
+} // namespace
+
+template <typename T> T Model::get_param(const char* name) {
+	T value{};
+	call(_get_param<T>, scip.get(), name, &value);
+	return value;
+}
+template char Model::get_param(const char* name);
+template int Model::get_param(const char* name);
+template SCIP_Longint Model::get_param(const char* name);
+template SCIP_Real Model::get_param(const char* name);
+
+template <> bool Model::get_param(const char* name) {
+	SCIP_Bool value{};
+	call(SCIPgetBoolParam, scip.get(), name, &value);
+	return value;
+}
+
+template <> std::string Model::get_param(const char* name) {
+	char* ptr = nullptr;
+	call(SCIPgetStringParam, scip.get(), name, &ptr);
+	return ptr;
 }
 
 void Model::solve() { call(SCIPsolve, scip.get()); }

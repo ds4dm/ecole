@@ -32,6 +32,9 @@ public:
 
 	static Model from_file(std::string const& filename);
 
+	template <typename T> void set_param(const char* name, T value);
+	template <typename T> T get_param(const char* name);
+
 	void solve();
 
 	void disable_presolve();
