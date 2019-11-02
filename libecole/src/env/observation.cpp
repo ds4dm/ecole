@@ -3,9 +3,13 @@
 namespace ecole {
 namespace env {
 
-std::unique_ptr<Observation> BasicObs::Factory::make(scip::Model const& model) {
-	(void)model;
-	return std::make_unique<BasicObs>();
+BasicObs BasicObsSpace::get(scip::Model const& model) {
+	auto const var_view = model.variables();
+	auto obs = BasicObs{};
+	obs.ubs.resize(var_view.size);
+	std::transform(
+		var_view.begin(), var_view.end(), obs.ubs.begin(), [](auto var) { return var.ub(); });
+	return obs;
 }
 
 } // namespace env
