@@ -8,6 +8,7 @@ add_executable(
 	src/scip/test-variable.cpp
 	src/scip/test-view.cpp
 	src/test-branching.cpp
+	src/test-configuring.cpp
 )
 target_compile_definitions(
 	run PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
