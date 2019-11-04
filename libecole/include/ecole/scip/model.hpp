@@ -53,5 +53,5 @@ private:
 	unique_ptr<Scip> scip;
 };
 
-} // namespace scip
-} // namespace ecole
+}  // namespace scip
+}  // namespace ecole

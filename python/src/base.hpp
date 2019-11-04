@@ -78,7 +78,7 @@ struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::set)>> :
 	using typename Py_ActionSpace<AS, ASB>::py_action_t;
 	using typename Py_ActionSpace<AS, ASB>::action_t;
 
-	using Py_ActionSpace<AS, ASB>::Py_ActionSpace; // Inherit constructors
+	using Py_ActionSpace<AS, ASB>::Py_ActionSpace;  // Inherit constructors
 
 	// Core method to override
 	void set(scip::Model& model, action_t const& action) override {
@@ -99,7 +99,7 @@ struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::get)>> :
 	using typename Py_ActionSpace<AS, ASB>::py_action_t;
 	using typename Py_ActionSpace<AS, ASB>::action_t;
 
-	using Py_ActionSpace<AS, ASB>::Py_ActionSpace; // Inherit constructors
+	using Py_ActionSpace<AS, ASB>::Py_ActionSpace;  // Inherit constructors
 
 	// Core method to override
 	auto get(scip::Model& model, action_t const& action) -> decltype(
@@ -119,7 +119,7 @@ using Py_EnvBase = base::Env<std::unique_ptr<Py_ObsBase>, Py_ActionBase const&>;
 template <template <typename Obs, typename Action> class Env>
 using Py_Env = Env<Py_EnvBase::obs_t, Py_EnvBase::action_t>;
 
-} // namespace hidden
+}  // namespace hidden
 
 // Aliases for external use
 using ObsBase = hidden::Py_ObsBase;
@@ -137,5 +137,5 @@ using ActionSpace = hidden::Py_ActionSpace_SFINAE<AS, ASB>;
 using EnvBase = hidden::Py_EnvBase;
 template <template <typename, typename> class E> using Env = hidden::Py_Env<E>;
 
-} // namespace py
-} // namespace ecole
+}  // namespace py
+}  // namespace ecole

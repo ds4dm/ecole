@@ -20,5 +20,5 @@ struct BasicObsSpace : public base::ObservationSpace<BasicObs> {
 	std::unique_ptr<ObservationSpace> clone() const override;
 };
 
-} // namespace obs
-} // namespace ecole
+}  // namespace obs
+}  // namespace ecole

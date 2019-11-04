@@ -24,5 +24,5 @@ public:
 
 using VarView = View<VarProxy>;
 
-} // namespace scip
-} // namespace ecole
+}  // namespace scip
+}  // namespace ecole
