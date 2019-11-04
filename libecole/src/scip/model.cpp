@@ -5,7 +5,7 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
-#include "ecole/scip/exception.hpp"
+#include "ecole/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
