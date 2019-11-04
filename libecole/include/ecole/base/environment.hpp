@@ -80,8 +80,7 @@ auto Env<O, A>::reset(std::string filename) -> std::tuple<obs_t, bool> {
 
 template <typename O, typename A>
 auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
-	if (!can_transition)
-		throw Exception("Environment need to be reset.");
+	if (!can_transition) throw Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));
 		can_transition = !std::get<2>(result);
@@ -92,7 +91,9 @@ auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_
 	}
 }
 
-template <typename O, typename A> void Env<O, A>::mutate_seed() noexcept { ++_seed; }
+template <typename O, typename A> void Env<O, A>::mutate_seed() noexcept {
+	++_seed;
+}
 
-} // namespace base
-} // namespace ecole
+}  // namespace base
+}  // namespace ecole

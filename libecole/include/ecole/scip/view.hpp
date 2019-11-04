@@ -109,5 +109,5 @@ public:
 	}
 };
 
-} // namespace scip
-} // namespace ecole
+}  // namespace scip
+}  // namespace ecole

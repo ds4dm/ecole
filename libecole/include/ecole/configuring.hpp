@@ -74,5 +74,5 @@ template <typename O, typename A> bool Env<O, A>::is_done() const noexcept {
 	return _model.is_solved();
 }
 
-} // namespace configuring
-} // namespace ecole
+}  // namespace configuring
+}  // namespace ecole

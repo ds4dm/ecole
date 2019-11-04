@@ -15,7 +15,7 @@ private:
 	const std::string message;
 };
 
-} // namespace scip
+}  // namespace scip
 
 namespace base {
 
@@ -28,5 +28,5 @@ private:
 	const std::string message;
 };
 
-} // namespace base
-} // namespace ecole
+}  // namespace base
+}  // namespace ecole

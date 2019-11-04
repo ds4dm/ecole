@@ -37,7 +37,7 @@ private:
 	std::unique_ptr<lock_t> lk_ptr;
 };
 
-} // namespace internal
+}  // namespace internal
 
 template <typename Action> class ActionSpace {
 public:
@@ -105,5 +105,5 @@ auto Env<O, A>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info
 	return {obs_space->get(model()), 0., solve_controller.is_done(), info_t{}};
 }
 
-} // namespace branching
-} // namespace ecole
+}  // namespace branching
+}  // namespace ecole
