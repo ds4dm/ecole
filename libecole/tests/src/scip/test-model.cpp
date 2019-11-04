@@ -40,25 +40,27 @@ TEST_CASE("Raise if file does not exist") {
 	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
 }
 
-TEST_CASE("Change Parameters") {
-	auto model = scip::Model();
-	SECTION("char") {
-		model.set_param("branching/scorefunc", 's');
-		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
-	}
-	SECTION("bool") {
-		model.set_param("branching/preferbinary", true);
-		REQUIRE(model.get_param<bool>("branching/preferbinary") == true);
-	}
-	SECTION("string") {
-		model.set_param("heuristics/undercover/fixingalts", "nil");
-		REQUIRE(model.get_param<std::string>("heuristics/undercover/fixingalts") == "nil");
-	}
-}
-
-TEST_CASE("Solve a model") {
+TEST_CASE("Model modifiers") {
 	auto model = scip::Model::from_file(problem_file);
-	model.solve();
+	SECTION("Solve") {
+		REQUIRE(!model.is_solved());
+		model.solve();
+		REQUIRE(model.is_solved());
+	}
+	SECTION("Change parameters") {
+		SECTION("char") {
+			model.set_param("branching/scorefunc", 's');
+			REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+		}
+		SECTION("bool") {
+			model.set_param("branching/preferbinary", true);
+			REQUIRE(model.get_param<bool>("branching/preferbinary") == true);
+		}
+		SECTION("string") {
+			model.set_param("heuristics/undercover/fixingalts", "nil");
+			REQUIRE(model.get_param<std::string>("heuristics/undercover/fixingalts") == "nil");
+		}
+	}
 }
 
 TEST_CASE("Copy preserve the model internals") {

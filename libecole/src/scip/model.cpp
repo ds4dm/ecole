@@ -139,6 +139,10 @@ void Model::disable_cuts() {
 	call(SCIPsetSeparating, scip.get(), SCIP_PARAMSETTING_OFF, true);
 }
 
+bool Model::is_solved() const noexcept {
+	return SCIPgetStage(scip.get()) == SCIP_STAGE_SOLVED;
+}
+
 VarView Model::variables() const noexcept {
 	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(scip.get()));
 	return VarView(SCIPgetVars(scip.get()), n_vars);

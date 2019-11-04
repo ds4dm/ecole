@@ -40,6 +40,8 @@ public:
 	void disable_presolve();
 	void disable_cuts();
 
+	bool is_solved() const noexcept;
+
 	VarView variables() const noexcept;
 	VarView lp_branch_vars() const noexcept;
 
