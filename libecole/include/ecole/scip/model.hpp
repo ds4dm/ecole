@@ -20,7 +20,7 @@ unique_ptr<Scip> create();
 
 class Model {
 public:
-	using BranchFunc = std::function<VarProxy(Model const&)>;
+	using BranchFunc = std::function<VarProxy(Model&)>;
 
 	Model();
 	Model(unique_ptr<Scip>&& scip);
@@ -36,6 +36,7 @@ public:
 	template <typename T> T get_param(const char* name);
 
 	void solve();
+	void interrupt_solve();
 
 	void disable_presolve();
 	void disable_cuts();

@@ -12,7 +12,7 @@
 
 struct SCIP_BranchruleData {
 	ecole::scip::Model::BranchFunc func;
-	ecole::scip::Model const& model;
+	ecole::scip::Model& model;
 };
 
 namespace ecole {
@@ -132,6 +132,8 @@ template <> std::string Model::get_param(const char* name) {
 
 void Model::solve() { call(SCIPsolve, scip.get()); }
 
+void Model::interrupt_solve() { call(SCIPinterruptSolve, scip.get()); };
+
 void Model::disable_presolve() {
 	call(SCIPsetPresolving, scip.get(), SCIP_PARAMSETTING_OFF, true);
 }
@@ -174,13 +176,17 @@ private:
 		assert(branch_data->model.scip.get() == scip);
 		*result = SCIP_DIDNOTRUN;
 		if (!branch_data->func)
-			return SCIP_OKAY;
+			return SCIP_BRANCHERROR;
 
 		// C code must be exception safe.
 		try {
 			auto var = branch_data->func(branch_data->model);
-			call(SCIPbranchVar, scip, var.value, nullptr, nullptr, nullptr);
-			*result = SCIP_BRANCHED;
+			if (var == VarProxy::None)
+				*result = SCIP_DIDNOTRUN;
+			else {
+				call(SCIPbranchVar, scip, var.value, nullptr, nullptr, nullptr);
+				*result = SCIP_BRANCHED;
+			}
 		} catch (std::exception& e) {
 			SCIPerrorMessage(e.what());
 			return SCIP_BRANCHERROR;

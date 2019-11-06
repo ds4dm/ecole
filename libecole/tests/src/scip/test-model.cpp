@@ -82,3 +82,28 @@ TEST_CASE("Add a branching rule") {
 	model.solve();
 	REQUIRE(count > 0);
 }
+
+TEST_CASE("Run a branching rule") {
+	auto model = scip::Model::from_file(problem_file);
+	model.disable_cuts();
+	model.disable_presolve();
+
+	SECTION("Arbitrary branching rule") {
+		model.set_branch_rule([](auto const& model) { return model.lp_branch_vars()[0]; });
+		model.solve();
+		REQUIRE(model.is_solved());
+	}
+
+	SECTION("Void branching rule") {
+		model.set_branch_rule([](auto const& model) { return scip::VarProxy::None; });
+		model.solve();
+		REQUIRE(model.is_solved());
+	}
+
+	SECTION("Exception in branching rule") {
+		auto guard = ScipNoErrorGuard{};
+		model.set_branch_rule([](auto const& model) -> scip::VarProxy { throw ":("; });
+		REQUIRE_THROWS_AS(model.solve(), scip::Exception);
+		REQUIRE(!model.is_solved());
+	}
+}
