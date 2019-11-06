@@ -35,6 +35,8 @@ TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 	auto data = arange<TestType>(size);
 	auto view = scip::View<Proxy>(data.get(), size);
 
+	SECTION("Proxies can be compared") { REQUIRE(view[0] == view[0]); }
+
 	SECTION("Can be iterated using range based for loop") {
 		auto sumx2 = TestType{0};
 		for (auto v : view)

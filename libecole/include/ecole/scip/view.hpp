@@ -13,13 +13,14 @@ template <typename T> class Proxy {
 public:
 	using type = T;
 
-protected:
-	T* const value;
-
-public:
 	Proxy() = delete;
 	explicit Proxy(T* value) noexcept : value(value) {}
-	virtual ~Proxy() {}
+	inline bool operator==(Proxy const& other) const noexcept {
+		return value == other.value;
+	}
+
+protected:
+	T* const value;
 };
 
 template <typename Proxy, typename = typename Proxy::type> class View {
