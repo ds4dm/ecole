@@ -17,7 +17,7 @@ private:
 
 } // namespace scip
 
-namespace env {
+namespace base {
 
 class Exception : public std::exception {
 public:
@@ -28,5 +28,5 @@ private:
 	const std::string message;
 };
 
-} // namespace env
+} // namespace base
 } // namespace ecole

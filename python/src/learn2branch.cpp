@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/env/learn2branch.hpp"
+#include "ecole/env/learn2conf.hpp"
 #include "ecole/env/observation.hpp"
 
 namespace py = pybind11;
@@ -11,17 +12,17 @@ using namespace ecole;
 PYBIND11_MODULE(ecole, m) {
 	m.doc() = "Ecole library";
 
-	py::class_<env::Observation>(m, "Observation");
+	py::class_<env::BasicObs>(m, "BasicObs");
 
-	py::class_<env::BranchEnv>(m, "BranchEnv") //
-		.def_static(
+	using Env = env::ConfEnv<env::BasicObs, bool>;
+	py::class_<Env>(m, "ConfEnv") //
+		.def(
 			"make_default",
-			[](std::string const& filename) {
-				auto model = scip::Model::from_file(filename);
-				model.disable_cuts();
-				model.disable_presolve();
-				return env::BranchEnv{std::move(model),
-															std::make_unique<env::BasicObs::Factory>()};
+			[](std::string param) {
+				return Env(
+					std::make_unique<env::BasicObsSpace>(),
+					std::make_unique<Env::Configure>(std::move(param)));
 			})
-		.def("run", &env::BranchEnv::run);
+		.def("reset", (std::tuple<Env::obs_t, bool>(Env::*)(std::string)) & Env::reset)
+		.def("step", &Env::step);
 }

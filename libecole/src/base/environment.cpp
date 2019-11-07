@@ -1,7 +1,7 @@
-#include "ecole/env/environment.hpp"
+#include "ecole/base/environment.hpp"
 
 namespace ecole {
-namespace env {
+namespace base {
 
 void RewardSpace::reset(scip::Model const& model) { (void)model; }
 auto RewardSpace::step(scip::Model const& model) -> reward_t {
@@ -9,5 +9,5 @@ auto RewardSpace::step(scip::Model const& model) -> reward_t {
 	return 0;
 }
 
-} // namespace env
+} // namespace base
 } // namespace ecole

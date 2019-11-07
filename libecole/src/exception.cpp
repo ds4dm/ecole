@@ -9,12 +9,12 @@ const char* Exception::what() const noexcept { return message.c_str(); }
 
 } // namespace scip
 
-namespace env {
+namespace base {
 
 Exception::Exception(const std::string& message) : message(message) {}
 
 const char* Exception::what() const noexcept { return message.c_str(); }
 
-} // namespace env
+} // namespace base
 
 } // namespace ecole

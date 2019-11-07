@@ -8,16 +8,14 @@
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
-namespace env {
+namespace base {
 
 template <typename Observation> struct ObservationSpace {
-	virtual ~ObservationSpace() = default;
-	virtual Observation get(scip::Model const& model) = 0;
-};
+	using obs_t = Observation;
 
-template <typename Action> struct ActionSpace {
-	virtual ~ActionSpace() = default;
-	virtual void set(scip::Model& model, Action const& action) = 0;
+	virtual ~ObservationSpace() = default;
+	virtual obs_t get(scip::Model const& model) const = 0;
+	virtual std::unique_ptr<ObservationSpace> clone() const = 0;
 };
 
 struct RewardSpace {
@@ -65,7 +63,7 @@ template <typename O, typename A>
 auto Env<O, A>::reset(scip::Model model) -> std::tuple<obs_t, bool> {
 	mutate_seed();
 	try {
-		auto const& result = _reset(std::move(model));
+		auto result = _reset(std::move(model));
 		can_transition = !std::get<1>(result);
 		return result;
 	} catch (std::exception const&) {
@@ -82,9 +80,9 @@ auto Env<O, A>::reset(std::string filename) -> std::tuple<obs_t, bool> {
 template <typename O, typename A>
 auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	if (!can_transition)
-		throw env::Exception("Environment need to be reset.");
+		throw Exception("Environment need to be reset.");
 	try {
-		auto const& result = _step(std::move(action));
+		auto result = _step(std::move(action));
 		can_transition = !std::get<2>(result);
 		return result;
 	} catch (std::exception const&) {
@@ -95,5 +93,5 @@ auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_
 
 template <typename O, typename A> void Env<O, A>::mutate_seed() noexcept { ++_seed; }
 
-} // namespace env
+} // namespace base
 } // namespace ecole

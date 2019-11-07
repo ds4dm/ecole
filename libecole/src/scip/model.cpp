@@ -132,7 +132,7 @@ template <> std::string Model::get_param(const char* name) {
 
 void Model::solve() { call(SCIPsolve, scip.get()); }
 
-void Model::interrupt_solve() { call(SCIPinterruptSolve, scip.get()); };
+void Model::interrupt_solve() { call(SCIPinterruptSolve, scip.get()); }
 
 void Model::disable_presolve() {
 	call(SCIPsetPresolving, scip.get(), SCIP_PARAMSETTING_OFF, true);

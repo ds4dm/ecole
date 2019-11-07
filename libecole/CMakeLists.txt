@@ -5,12 +5,13 @@ find_package(SCIP REQUIRED)
 
 add_library(
 	ecole
-	src/exception.cpp
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp
-	src/env/observation.cpp
-	src/env/learn2branch.cpp
+	src/exception.cpp
+	src/observation.cpp
+	src/branching.cpp
+	src/base/environment.cpp
 )
 
 add_library(Ecole::ecole ALIAS ecole)
