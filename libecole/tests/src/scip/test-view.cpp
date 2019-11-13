@@ -5,6 +5,7 @@
 
 #include <catch2/catch.hpp>
 
+#include "ecole/exception.hpp"
 #include "ecole/scip/view.hpp"
 
 using namespace ecole;
@@ -48,7 +49,7 @@ TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 
 	SECTION("View accessor") {
 		REQUIRE(view[size - 1].times(1) == size - 1);
-		REQUIRE_THROWS_AS(view.at(size), std::out_of_range);
+		REQUIRE_THROWS_AS(view.at(size), scip::Exception);
 	}
 
 	SECTION("Work with the standard library") {

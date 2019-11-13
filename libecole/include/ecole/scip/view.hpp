@@ -2,8 +2,9 @@
 
 #include <cstddef>
 #include <iterator>
-#include <stdexcept>
 #include <string>
+
+#include <ecole/exception.hpp>
 
 namespace ecole {
 namespace scip {
@@ -99,7 +100,7 @@ public:
 	}
 	auto at(std::size_t n) const {
 		if (n < 0 || n >= size)
-			throw std::out_of_range("Out of range: " + std::to_string(n));
+			throw Exception("Out of range: " + std::to_string(n));
 		else
 			return (*this)[n];
 	}
