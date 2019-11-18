@@ -1,27 +1,31 @@
-#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "ecole/branching.hpp"
-#include "ecole/observation.hpp"
 
-namespace py = pybind11;
+#include "observation.hpp"
 
+namespace py11 = pybind11;
 using namespace ecole;
 
 PYBIND11_MODULE(branching, m) {
-	m.doc() = "Ecole library";
+	m.doc() = "Learning to branch task.";
 
-	py::class_<obs::BasicObs>(m, "BasicObs");
-
-	using Env = branching::Env<obs::BasicObs, branching::Fractional::action_t>;
-	py::class_<Env>(m, "Env") //
-		.def(
-			"make_default",
-			[](std::string param) {
-				return Env(
-					std::make_unique<obs::BasicObsSpace>(),
-					std::make_unique<branching::Fractional>());
+	using obs_t = std::unique_ptr<py::ObsBase>;
+	using action_t = branching::Fractional::action_t;
+	using Env = branching::Env<obs_t, action_t>;
+	py11::class_<Env>(m, "Env") //
+		.def_static(
+			"make_dummy",
+			[] {
+				return Env{std::make_unique<py::BasicObsSpace>(),
+									 std::make_unique<branching::Fractional>()};
 			})
-		.def("reset", (std::tuple<Env::obs_t, bool>(Env::*)(std::string)) & Env::reset)
+		.def(py11::init([](py::ObsSpaceBase const& obs_space) {
+			return std::make_unique<Env>(
+				obs_space.clone(), std::make_unique<branching::Fractional>());
+		}))
+		.def("reset", py11::overload_cast<scip::Model>(&Env::reset))
+		.def("reset", py11::overload_cast<std::string>(&Env::reset))
 		.def("step", &Env::step);
 }

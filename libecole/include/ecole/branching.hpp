@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "ecole/base/environment.hpp"
+#include "ecole/observation.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
