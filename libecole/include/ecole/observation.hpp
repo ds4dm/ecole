@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "ecole/base/environment.hpp"
@@ -15,7 +16,8 @@ struct BasicObs {
 struct BasicObsSpace : public base::ObservationSpace<BasicObs> {
 	using obs_t = BasicObs;
 
-	BasicObs get(scip::Model const& model);
+	BasicObs get(scip::Model const& model) const override;
+	std::unique_ptr<ObservationSpace> clone() const override;
 };
 
 } // namespace obs
