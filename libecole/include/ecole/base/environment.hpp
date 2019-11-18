@@ -24,6 +24,7 @@ struct RewardSpace {
 	virtual ~RewardSpace() = default;
 	virtual void reset(scip::Model const& model);
 	virtual reward_t step(scip::Model const& model);
+	virtual std::unique_ptr<RewardSpace> clone() const = 0;
 };
 
 template <typename Observation, typename Action> class Env {
