@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 # Dependencies
 find_package(SCIP REQUIRED)
+find_package(Threads REQUIRED)
 
 add_library(
 	ecole
@@ -24,7 +25,7 @@ target_include_directories(
   PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_link_libraries(ecole PRIVATE libscip)
+target_link_libraries(ecole PRIVATE libscip Threads::Threads)
 target_compile_features(ecole PUBLIC cxx_std_14)
 target_compile_options(
 	ecole

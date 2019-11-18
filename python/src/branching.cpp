@@ -11,17 +11,15 @@ using namespace ecole;
 PYBIND11_MODULE(branching, m) {
 	m.doc() = "Ecole library";
 
-	py::class_<obs::BasicObs>(m, "BasicObs");
-
-	using Env = branching::Env<obs::BasicObs, branching::Fractional::action_t>;
-	py::class_<Env>(m, "Env") //
-		.def(
-			"make_default",
-			[](std::string param) {
-				return Env(
-					std::make_unique<obs::BasicObsSpace>(),
-					std::make_unique<branching::Fractional>());
-			})
-		.def("reset", (std::tuple<Env::obs_t, bool>(Env::*)(std::string)) & Env::reset)
-		.def("step", &Env::step);
+	using obs_t = std::unique_ptr<py::ObsBase>;
+	using action_t = branching::Fractional::action_t;
+	using Env = branching::Env<obs_t, action_t>;
+	py11::class_<Env>(
+		m, "Env") //
+							// .def("reset", (std::tuple<Env::obs_t, bool>(Env::*)(std::string)) &
+							// Env::reset) .def("step", &Env::step);
+		.def("test", [](Env& env) { env.reset("helo"); });
+	// .def(py11::init<
+	//      std::unique_ptr<py::ObsSpaceBase>,
+	//      std::unique_ptr<branching::ActionSpace<action_t>>>())
 }
