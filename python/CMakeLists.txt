@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 find_package(pybind11 REQUIRED)
 
-foreach(submodule_name "branching" "observation" "scip")
+foreach(submodule_name "observation" "scip" "base" "branching")
 	set(submodule_target "py_${submodule_name}")
 	pybind11_add_module(${submodule_target} "src/${submodule_name}.cpp")
 	target_include_directories(

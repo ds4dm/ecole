@@ -43,15 +43,17 @@ template <typename Action> class ActionSpace {
 public:
 	using action_t = Action;
 
-	virtual scip::VarProxy get(scip::Model& model, Action const& action) = 0;
 	virtual ~ActionSpace() = default;
+	virtual scip::VarProxy get(scip::Model& model, Action const& action) = 0;
+	virtual std::unique_ptr<ActionSpace> clone() const = 0;
 };
 
 class Fractional : public ActionSpace<std::size_t> {
 public:
 	using action_t = ActionSpace::action_t;
 
-	scip::VarProxy get(scip::Model& model, action_t const& action);
+	scip::VarProxy get(scip::Model& model, action_t const& action) override;
+	std::unique_ptr<ActionSpace> clone() const override;
 };
 
 template <typename Observation, typename Action>
