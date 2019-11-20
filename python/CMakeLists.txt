@@ -6,8 +6,7 @@ set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 find_package(pybind11 REQUIRED)
 
-# Create all extension modules
-foreach(submodule_name "observation" "scip" "base" "branching")
+foreach(submodule_name "observation" "scip" "base" "branching" "configuring")
 	set(submodule_target "py_${submodule_name}")
 	pybind11_add_module(${submodule_target} "src/ecole/${submodule_name}.cpp")
 	target_include_directories(
