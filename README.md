@@ -1,7 +1,8 @@
-# Ecole - Extensible Combinatorial Optimization Learning Environments
+# Ecole
 
-This project aims to expose a number of combinatorial optimization tasks as Markov Decision Processes
-(_i.e._, Reinforcement Learning environments).
+Ecole (pronounced [ekɔl]) stands for _Extensible Combinatorial Optimization Learning Environments_ and aims to expose a number
+of combinatorial optimization tasks as Markov Decision Processes (_i.e._, Reinforcement Learning
+environments).
 Rather than trying to solve such tasks directly, the philosophy behind Ecole is to work in cooperation
 with state-of-the-art Mixed Integer Linear Programming solver.
 
