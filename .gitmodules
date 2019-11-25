@@ -1,6 +1,0 @@
-[submodule "libecole/extern/Catch2"]
-	path = libecole/extern/Catch2
-	url = https://github.com/catchorg/Catch2
-[submodule "python/extern/pybind11"]
-	path = python/extern/pybind11
-	url = https://github.com/pybind/pybind11
