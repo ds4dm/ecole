@@ -1,0 +1,15 @@
+name: ecole
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - git
+  - make
+  - cmake
+  - clangdev  # Necessary for tools such as clang-format
+  - catch2
+  - python
+  - pybind11
+  - ipython
+  - pytest
+  - black

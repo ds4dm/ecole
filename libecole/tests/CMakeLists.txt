@@ -16,10 +16,6 @@ target_compile_options(ecole PRIVATE -Werror -Wall -Wextra)
 
 target_include_directories(run PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../extern/Catch2"
-                 "${CMAKE_CURRENT_BINARY_DIR}/../Catch2" EXCLUDE_FROM_ALL)
-target_link_libraries(run PRIVATE Catch2::Catch2 Ecole::ecole)
-
+find_package(Catch2 REQUIRED)
 find_package(SCIP REQUIRED)
-target_link_libraries(run PRIVATE libscip)
-# set_test_properties( tests PROPERTIES ENVIRONMENT
+target_link_libraries(run PRIVATE Catch2::Catch2 Ecole::ecole libscip)
