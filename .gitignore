@@ -34,5 +34,8 @@
 # Build folder
 build
 
+# Clang language server
+.clangd
+
 # Compiler databases
 compile_commands.json
