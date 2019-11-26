@@ -123,6 +123,7 @@ void ReverseControl::ThreadControl::hold_env() {
 }
 
 void ReverseControl::ThreadControl::validate_lock(lock_t const& lk) const {
+	(void)lk;
 	assert(lk && (lk.mutex() == &mut));
 }
 
