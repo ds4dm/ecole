@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Use FindPython to override wrong pybind resolution
+find_package(Python REQUIRED)
+set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+
 find_package(pybind11 REQUIRED)
 
 foreach(submodule_name "observation" "scip" "base" "branching")
