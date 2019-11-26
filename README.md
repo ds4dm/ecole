@@ -48,6 +48,12 @@ instructions.
   information, _etc_.
   This is the time to pass optional build options, such as the build type and compiler
   choice. For instance `-D CMAKE_BUILD_TYPE=debug` can be added to compile with debug
-	information.
+  information.
   Using `cmake`, we recommend building out of source using `cmake -B build/` to
   configure, and `cmake --build build/` to compile.
+  For instance, a complete install could look like
+  ```bash
+  cmake -B build -S .
+  cmake --build build
+  pip install build/python/
+  ```

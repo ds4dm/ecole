@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(
-	libEcole
-	VERSION 0.0.1
+	Ecole
+	VERSION 0.0.2
 	LANGUAGES CXX
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
