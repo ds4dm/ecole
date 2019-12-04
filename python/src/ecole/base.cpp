@@ -11,7 +11,7 @@ using namespace ecole;
 PYBIND11_MODULE(base, m) {
 	m.doc() = "Abstract base classes for ecole environments.";
 
-	py11::class_<py::EnvBase>(m, "Env") //
+	py11::class_<py::EnvBase>(m, "Env")  //
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
 		.def("seed", py11::overload_cast<py::EnvBase::seed_t>(&py::EnvBase::seed))
 		.def("reset", py11::overload_cast<scip::Model>(&py::EnvBase::reset))

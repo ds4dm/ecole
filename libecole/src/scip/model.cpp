@@ -19,7 +19,9 @@ struct SCIP_BranchruleData {
 namespace ecole {
 namespace scip {
 
-template <> void Deleter<Scip>::operator()(Scip* scip) { call(SCIPfree, &scip); }
+template <> void Deleter<Scip>::operator()(Scip* scip) {
+	call(SCIPfree, &scip);
+}
 
 unique_ptr<Scip> create() {
 	Scip* scip_raw;
@@ -31,10 +33,8 @@ unique_ptr<Scip> create() {
 }
 
 unique_ptr<Scip> copy(Scip const* source) {
-	if (!source)
-		return nullptr;
-	if (SCIPgetStage(const_cast<Scip*>(source)) == SCIP_STAGE_INIT)
-		return create();
+	if (!source) return nullptr;
+	if (SCIPgetStage(const_cast<Scip*>(source)) == SCIP_STAGE_INIT) return create();
 	auto dest = create();
 	// Copy operation is not thread safe
 	static std::mutex m{};
@@ -53,7 +53,9 @@ unique_ptr<Scip> copy(Scip const* source) {
 	return dest;
 }
 
-Model::Model() : scip(create()) { call(SCIPincludeDefaultPlugins, scip.get()); }
+Model::Model() : scip(create()) {
+	call(SCIPincludeDefaultPlugins, scip.get());
+}
 
 Model::Model(unique_ptr<Scip>&& scip) {
 	if (scip)
@@ -65,8 +67,7 @@ Model::Model(unique_ptr<Scip>&& scip) {
 Model::Model(Model const& other) : scip(copy(other.scip.get())) {}
 
 Model& Model::operator=(Model const& other) {
-	if (&other != this)
-		scip = copy(other.scip.get());
+	if (&other != this) scip = copy(other.scip.get());
 	return *this;
 }
 
@@ -110,7 +111,7 @@ template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, SCIP_Longint* 
 template <> SCIP_RETCODE _get_param(SCIP* scip, const char* name, SCIP_Real* value) {
 	return SCIPgetRealParam(scip, name, value);
 }
-} // namespace
+}  // namespace
 
 template <typename T> T Model::get_param(const char* name) {
 	T value{};
@@ -134,9 +135,13 @@ template <> std::string Model::get_param(const char* name) {
 	return ptr;
 }
 
-void Model::solve() { call(SCIPsolve, scip.get()); }
+void Model::solve() {
+	call(SCIPsolve, scip.get());
+}
 
-void Model::interrupt_solve() { call(SCIPinterruptSolve, scip.get()); }
+void Model::interrupt_solve() {
+	call(SCIPinterruptSolve, scip.get());
+}
 
 void Model::disable_presolve() {
 	call(SCIPsetPresolving, scip.get(), SCIP_PARAMSETTING_OFF, true);
@@ -166,9 +171,9 @@ class Model::LambdaBranchRule {
 private:
 	static constexpr auto name = "ecole::scip::LambdaBranchRule";
 	static constexpr auto description = "";
-	static constexpr auto priority = 536870911; // Maximum branching rule priority
-	static constexpr auto maxdepth = -1;        // No maximum depth
-	static constexpr auto maxbounddist = 1.0;   // No distance to dual bound
+	static constexpr auto priority = 536870911;  // Maximum branching rule priority
+	static constexpr auto maxdepth = -1;         // No maximum depth
+	static constexpr auto maxbounddist = 1.0;    // No distance to dual bound
 
 	static auto exec_lp(
 		SCIP* scip,
@@ -179,8 +184,7 @@ private:
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
 		assert(branch_data->model.scip.get() == scip);
 		*result = SCIP_DIDNOTRUN;
-		if (!branch_data->func)
-			return SCIP_BRANCHERROR;
+		if (!branch_data->func) return SCIP_BRANCHERROR;
 
 		// C code must be exception safe.
 		try {
@@ -232,8 +236,7 @@ public:
 
 	static void set_branch_func(Model& model, Model::BranchFunc const& func) {
 		auto branch_rule = get_branch_rule(model);
-		if (!branch_rule)
-			branch_rule = include_void_branch_rule(model);
+		if (!branch_rule) branch_rule = include_void_branch_rule(model);
 		set_branch_func(branch_rule, func);
 	}
 };
@@ -248,5 +251,5 @@ void Model::set_branch_rule(BranchFunc const& func) {
 	LambdaBranchRule::set_branch_func(*this, func);
 }
 
-} // namespace scip
-} // namespace ecole
+}  // namespace scip
+}  // namespace ecole
