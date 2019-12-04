@@ -1,9 +1,231 @@
 version: 2
 
 jobs:
-  build:
+
+  install_miniconda:
     docker:
-      - image: circleci/ruby:2.4.1
+      - image: &gcc_image gcc:9.2.0
+    environment:
+      MINICONDA_URL: >
+        https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh
+      WORKSPACE_MINICONDA: &workspace_miniconda miniconda
+      WORKSPACE_DIR: &IM_workspace_dir "/"
+      # Need to be compatible with above with workspace location and names
+      MINICONDA_DIR: &IM_miniconda_dir /miniconda
+    steps:
+      - restore_cache:
+          key: &miniconda_key conda-cache-v1.3-miniconda3-4.7.12-{{ arch }}
+      - run:
+          name: "Install Miniconda"
+          command: |
+            MINICONDA_DIR="${WORKSPACE_DIR:?empty}${WORKSPACE_MINICONDA:?empty}"
+            if [ ! -d  "$MINICONDA_DIR" ]; then
+              wget -q -O miniconda-installer.sh ${MINICONDA_URL:?empty}
+              bash miniconda-installer.sh -b -p "$MINICONDA_DIR"
+            else
+              echo "Found miniconda in cache"
+            fi
+      - save_cache:
+          key: *miniconda_key
+          paths:
+            - *IM_miniconda_dir
+      - persist_to_workspace:
+          root: *IM_workspace_dir
+          paths:
+            - *workspace_miniconda
+
+  build_scip:
+    docker:
+      - image: *gcc_image
+    environment:
+      CONDA_PKGS_DIRS: &BS_conda_pkgs_dirs /tmp/conda/pkgs
+      WORKSPACE_DIR: &BS_workspace_dir "/"
+      WORKSPACE_MINICONDA: *workspace_miniconda
+      WORKSPACE_SCIP: &workspace_scip scip
+      SCIP_ARCHIVE: scipoptsuite-6.0.2.tgz
+      # Need to be compatible with above with workspace location and names
+      SCIP_ARCHIVE_FILE: &BS_archive_file /scip/scipoptsuite-6.0.2.tgz
+      SCIP_INSTALL_DIR: &BS_install_dir /scip/local
+    steps:
+      - attach_workspace:
+          at: *BS_workspace_dir
+      - restore_cache:
+          key: &conda_scip_env_key conda-cache-v1.3-scip-{{ arch }}
+      - run:
+          name: "Create conda environment"
+          command: |
+            PATH="${WORKSPACE_DIR:?empty}${WORKSPACE_MINICONDA:?empty}/condabin:${PATH}"
+            echo "export PATH=$PATH" >> $BASH_ENV
+            source $BASH_ENV
+            conda create --use-local -c conda-forge -n scip cmake>=3.15 wget
+      - save_cache:
+          key: *conda_scip_env_key
+          paths:
+            - *BS_conda_pkgs_dirs
+      - restore_cache:
+          key: &scip_archive_key scip-cache-v1.3-scipoptsuite-6.0.2.tgz
+      - run:
+          name: "Get SCIP"
+          command: |
+            if [ ! -f ${SCIP_ARCHIVE_FILE:?empty} ]; then
+              mkdir -p "$(dirname ${SCIP_ARCHIVE_FILE:?empty})"
+              conda run -n scip wget -q -O ${SCIP_ARCHIVE_FILE:?empty} \
+                ${SCIP_URL:?empty}/${SCIP_ARCHIVE:?empty}
+            else
+              echo "Found ${SCIP_ARCHIVE:?empty} in cache"
+            fi
+      - save_cache:
+          key: *scip_archive_key
+          paths:
+            - *BS_archive_file
+      - restore_cache:
+          key: &scip_build_key scip-cache-v1.3-scipoptsuite-6.0.2-{{ arch }}
+      - run:
+          name: "CMake configure, build, and install"
+          command: |
+            if [ ! -d ${SCIP_INSTALL_DIR:?empty} ]; then
+              tar -xzf ${SCIP_ARCHIVE_FILE:?empty}
+              conda run -n scip cmake \
+                -B build -S "$(basename -s .tgz ${SCIP_ARCHIVE:?empty})" \
+                -D CMAKE_BUILD_TYPE=release -D PARASCIP=1 -D GMP=0 -D ZIMPL=0 -D GCG=0 \
+                -D READLINE=0
+              conda run -n scip cmake --build build
+              conda run -n scip cmake --install build --prefix ${SCIP_INSTALL_DIR:?empty}
+            else
+              echo "Found SCIP binaries in cache"
+            fi
+      - save_cache:
+          key: *scip_build_key
+          paths:
+            - *BS_install_dir
+      - persist_to_workspace:
+          root: *BS_workspace_dir
+          paths:
+            - *workspace_scip
+
+  create_env:
+    docker:
+      - image: *gcc_image
+    environment:
+      WORKSPACE_DIR: &CE_workspace_dir "/"
+      WORKSPACE_MINICONDA: *workspace_miniconda
+      WORKSPACE_SCIP: *workspace_scip
+      WORKSPACE_CONDA: &workspace_conda conda
+      CONDA_PKGS_DIRS: &CE_conda_pkgs_dirs /tmp/conda/pkgs
+      # Need to be compatible with above with workspace location and names
+      CONDA_ENVS_PATH: /conda/envs
+      SCIP_INSTALL_DIR: &CE_install_dir /scip/local
     steps:
       - checkout
-      - run: echo "A first hello"
+      - attach_workspace:
+          at: *CE_workspace_dir
+      - restore_cache:
+          keys:
+            - &ecole_cache_key
+              ecole-cache-v1.3-{{ arch }}-{{ checksum ".circleci/ecole-py38.txt" }}
+            - ecole-cache-v1.3-{{ arch }}-
+      - run:
+          name: "Create conda environments"
+          command: |
+            PATH="${WORKSPACE_DIR:?empty}${WORKSPACE_MINICONDA:?empty}/condabin:${PATH}"
+            echo "export PATH=$PATH" >> $BASH_ENV
+            source $BASH_ENV
+            conda create --use-local --copy -q -n ecole-py38 \
+              --file ~/project/.circleci/ecole-py38.txt
+      - run:
+          name: "Install SCIP"
+          command: >
+            cp -a "${SCIP_INSTALL_DIR:?empty}"/* "${CONDA_ENVS_PATH:?empty}"/ecole-py38
+      - save_cache:
+          key: *ecole_cache_key
+          paths:
+            - *CE_conda_pkgs_dirs
+      - persist_to_workspace:
+          root: *CE_workspace_dir
+          paths:
+            - *workspace_conda
+
+  build_test:
+    docker:
+      - image: *gcc_image
+    environment:
+      WORKSPACE_DIR: &BT_workspace_dir "/"
+      WORKSPACE_MINICONDA: *workspace_miniconda
+      WORKSPACE_CONDA: &workspace_conda conda
+      # Need to be compatible with above with workspace location and names
+      CONDA_ENVS_PATH: /conda/envs
+    steps:
+      - checkout
+      - attach_workspace:
+          at: *BT_workspace_dir
+      - run:
+          name: "Setup environment"
+          command: |
+            PATH="${WORKSPACE_DIR:?empty}${WORKSPACE_MINICONDA:?empty}/condabin:${PATH}"
+            echo "export PATH=$PATH" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "CMake configure"
+          command: >
+            conda run -n ecole-py38 cmake -B build -D CMAKE_BUILD_TYPE=Release
+            -D PYTHON_EXECUTABLE="$(conda run -n ecole-py38 which python)"
+      - run:
+          name: "Build"
+          command: conda run -n ecole-py38 cmake --build build
+      - run:
+          name: "Test libecole"
+          command: ./build/libecole/tests/run
+      - run:
+          name: "Install python ecole"
+          command: conda run -n ecole-py38 pip install -I build/python
+      - run:
+          name: "Test python ecole"
+          command: conda run -n ecole-py38 python -m pytest python/tests
+
+  check_format:
+    docker:
+      - image: *gcc_image
+    environment:
+      WORKSPACE_DIR: &CF_workspace_dir "/"
+      WORKSPACE_MINICONDA: *workspace_miniconda
+      WORKSPACE_CONDA: &workspace_conda conda
+      # Need to be compatible with above with workspace location and names
+      CONDA_ENVS_PATH: /conda/envs
+    steps:
+      - checkout
+      - attach_workspace:
+          at: *CF_workspace_dir
+      - run:
+          name: "Setup environment"
+          command: |
+            PATH="${WORKSPACE_DIR:?empty}${WORKSPACE_MINICONDA:?empty}/condabin:${PATH}"
+            echo "export PATH=$PATH" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "Check C++ formatting"
+          command: |
+            for file in $(find libecole python -name '*.cpp' -o -name '*.hpp'); do
+              [ $? -eq 0 ] && conda run -n ecole-py38 \
+              clang-format --style=file $file | diff - $file
+            done
+      - run:
+          name: "Check Python formatting"
+          command: conda run -n ecole-py38 black --check python/
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - install_miniconda
+      - build_scip:
+          requires:
+            - install_miniconda
+      - create_env:
+          requires:
+            - build_scip
+      - build_test:
+          requires:
+            - create_env
+      - check_format:
+          requires:
+            - create_env
