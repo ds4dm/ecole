@@ -53,5 +53,5 @@ Exception make_exception(SCIP_RETCODE retcode) {
 	return Exception("SCIP_RETCODE " + std::to_string(retcode) + ": " + message);
 }
 
-} // namespace scip
-} // namespace ecole
+}  // namespace scip
+}  // namespace ecole

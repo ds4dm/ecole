@@ -34,7 +34,9 @@ TEST_CASE("Creation of model from scip pointer") {
 	scip::Model{scip::create()};
 }
 
-TEST_CASE("Create model from file") { auto model = scip::Model::from_file(problem_file); }
+TEST_CASE("Create model from file") {
+	auto model = scip::Model::from_file(problem_file);
+}
 
 TEST_CASE("Raise if file does not exist") {
 	auto guard = ScipNoErrorGuard{};

@@ -20,5 +20,5 @@ template class Configure<SCIP_Longint>;
 template class Configure<SCIP_Real>;
 template class Configure<char const*>;
 
-} // namespace configuring
-} // namespace ecole
+}  // namespace configuring
+}  // namespace ecole

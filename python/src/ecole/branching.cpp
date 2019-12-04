@@ -20,10 +20,10 @@ PYBIND11_MODULE(branching, m) {
 	using Env = py::Env<branching::Env>;
 
 	py11::class_<ActionSpace>(m, "ActionSpace");
-	py11::class_<Fractional, ActionSpace>(m, "Fractional") //
+	py11::class_<Fractional, ActionSpace>(m, "Fractional")  //
 		.def(py11::init<>());
 
-	py11::class_<Env, py::EnvBase>(m, "Env") //
+	py11::class_<Env, py::EnvBase>(m, "Env")  //
 		.def_static(
 			"make_dummy",
 			[] {
