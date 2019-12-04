@@ -1,5 +1,7 @@
 # Ecole
 
+[![CircleCI](https://circleci.com/gh/ds4dm/ecole.svg?style=svg)](https://circleci.com/gh/ds4dm/ecole)
+
 Ecole (pronounced [ekɔl]) stands for _Extensible Combinatorial Optimization Learning
 Environments_ and aims to expose a number of combinatorial optimization tasks as Markov
 Decision Processes (_i.e._, Reinforcement Learning environments).
