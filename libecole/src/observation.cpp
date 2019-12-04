@@ -18,5 +18,5 @@ auto BasicObsSpace::clone() const -> std::unique_ptr<ObservationSpace> {
 	return std::make_unique<BasicObsSpace>(*this);
 }
 
-} // namespace obs
-} // namespace ecole
+}  // namespace obs
+}  // namespace ecole

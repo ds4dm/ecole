@@ -32,7 +32,7 @@ instructions.
   `clang-format` is available in the conda environment, and all files can be formatted
   using
   ```bash
-  find libecole/ python/ -name '*.cpp' -o -name '*.hpp' -exec clang-format --style=file -i {} \;
+  find libecole python \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format --style=file -i {} \;
   ```
 
   Python code is formatted using [Black](https://black.readthedocs.io).

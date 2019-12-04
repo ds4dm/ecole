@@ -49,8 +49,7 @@ ReverseControl::ThreadControl::ThreadControl(scip::Model&& other_model) :
 	auto run = [this] {
 		auto branch_rule = [this](scip::Model& model) {
 			hold_env();
-			if (terminate_flag)
-				model.interrupt_solve();
+			if (terminate_flag) model.interrupt_solve();
 			return branching_var;
 		};
 
@@ -75,8 +74,7 @@ auto ReverseControl::ThreadControl::wait() -> lock_t {
 
 	lock_t lk{mut};
 	cv.wait(lk, [this] { return !solve_thread_running; });
-	if (eptr)
-		std::rethrow_exception(eptr);
+	if (eptr) std::rethrow_exception(eptr);
 	return lk;
 }
 
@@ -90,13 +88,12 @@ void ReverseControl::ThreadControl::resume(scip::VarProxy var, lock_t&& lk) {
 
 void ReverseControl::ThreadControl::join(lock_t&& lk) {
 	if (solve_thread.joinable()) {
-		if (!lk.owns_lock())
-			lk = wait();
+		if (!lk.owns_lock()) lk = wait();
 		validate_lock(lk);
 		if (!terminate_flag) {
 			terminate_flag = true;
 			resume(scip::VarProxy::None, std::move(lk));
-			lk = wait(); // Get eventual exception
+			lk = wait();  // Get eventual exception
 		}
 		solve_thread.join();
 	}
@@ -135,16 +132,14 @@ ReverseControl::ReverseControl(scip::Model&& model) :
 	lk_ptr(std::make_unique<lock_t>()) {}
 
 ReverseControl& ReverseControl::operator=(ReverseControl&& other) {
-	if (thread_control)
-		thread_control->join(std::move(*lk_ptr));
+	if (thread_control) thread_control->join(std::move(*lk_ptr));
 	thread_control = std::move(other.thread_control);
 	lk_ptr = std::move(other.lk_ptr);
 	return *this;
 }
 
 ReverseControl::~ReverseControl() {
-	if (thread_control)
-		thread_control->join(std::move(*lk_ptr));
+	if (thread_control) thread_control->join(std::move(*lk_ptr));
 }
 
 void ReverseControl::wait() {
@@ -158,13 +153,15 @@ void ReverseControl::resume(scip::VarProxy var) {
 	thread_control->resume(var, std::move(*lk_ptr));
 }
 
-bool ReverseControl::is_done() const noexcept { return thread_control->is_done(*lk_ptr); }
+bool ReverseControl::is_done() const noexcept {
+	return thread_control->is_done(*lk_ptr);
+}
 
 scip::Model& ReverseControl::model() noexcept {
 	return thread_control->get_model(*lk_ptr);
 }
 
-} // namespace internal
+}  // namespace internal
 
 scip::VarProxy Fractional::get(scip::Model& model, std::size_t const& action) {
 	return model.lp_branch_vars().at(action);
@@ -174,5 +171,5 @@ auto Fractional::clone() const -> std::unique_ptr<ActionSpace> {
 	return std::make_unique<Fractional>(*this);
 }
 
-} // namespace branching
-} // namespace ecole
+}  // namespace branching
+}  // namespace ecole
