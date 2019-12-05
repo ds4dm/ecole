@@ -32,8 +32,10 @@ public:
 
 	static Model from_file(std::string const& filename);
 
-	template <typename T> void set_param(const char* name, T value);
-	template <typename T> T get_param(const char* name);
+	template <typename T> void set_param_explicit(const char* name, T value);
+	template <typename T> void set_param_explicit(std::string const& name, T value);
+	template <typename T> T get_param_explicit(const char* name) const;
+	template <typename T> T get_param_explicit(std::string const& name) const;
 
 	void solve();
 	void interrupt_solve();
@@ -52,6 +54,14 @@ private:
 	class LambdaBranchRule;
 	unique_ptr<Scip> scip;
 };
+
+template <typename T> void Model::set_param_explicit(std::string const& name, T value) {
+	return set_param_explicit(name.c_str(), value);
+}
+
+template <typename T> T Model::get_param_explicit(std::string const& name) const {
+	return get_param_explicit<T>(name.c_str());
+}
 
 }  // namespace scip
 }  // namespace ecole
