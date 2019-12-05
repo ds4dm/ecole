@@ -10,10 +10,11 @@ Configure<ParamType>::Configure(std::string param) noexcept : param(std::move(pa
 
 template <typename ParamType>
 void Configure<ParamType>::set(scip::Model& model, action_t const& action) {
-	model.set_param(param.c_str(), action);
+	model.set_param_explicit(param.c_str(), action);
 }
 
-template class Configure<bool>;
+// FIXME
+template class Configure<SCIP_Bool>;
 template class Configure<char>;
 template class Configure<int>;
 template class Configure<SCIP_Longint>;

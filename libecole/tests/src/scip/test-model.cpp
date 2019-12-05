@@ -103,3 +103,18 @@ TEST_CASE("Run a branching rule") {
 		REQUIRE(!model.is_solved());
 	}
 }
+
+TEST_CASE("Get and set parameters") {
+	auto model = scip::Model{};
+	auto constexpr param = "conflict/conflictgraphweight";
+
+	SECTION("Get parameters explicitly") { model.get_param_explicit<double>(param); }
+
+	SECTION("Set parameters explicitly") { model.set_param_explicit<double>(param, false); }
+
+	SECTION("Throw on wrong parameters type") {
+		auto guard = ScipNoErrorGuard{};
+		REQUIRE_THROWS_AS(model.get_param_explicit<int>(param), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param_explicit<int>(param, 3), scip::Exception);
+	}
+}
