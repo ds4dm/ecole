@@ -117,4 +117,8 @@ TEST_CASE("Get and set parameters") {
 		REQUIRE_THROWS_AS(model.get_param_explicit<int>(param), scip::Exception);
 		REQUIRE_THROWS_AS(model.set_param_explicit<int>(param, 3), scip::Exception);
 	}
+
+	SECTION("Get parameters with automatic casting") { model.get_param<int>(param); }
+
+	SECTION("Set parameters with automatic casting") { model.set_param(param, 1); }
 }

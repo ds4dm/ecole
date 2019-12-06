@@ -77,6 +77,40 @@ Model Model::from_file(const std::string& filename) {
 	return model;
 }
 
+// Assumptions made while defining ParamType
+static_assert(
+	std::is_same<SCIP_Bool, param_t<ParamType::Bool>>::value,
+	"Scip bool type is not the same as the one redefined by Ecole");
+static_assert(
+	std::is_same<SCIP_Longint, param_t<ParamType::LongInt>>::value,
+	"Scip long int type is not the same as the one redefined by Ecole");
+static_assert(
+	std::is_same<SCIP_Real, param_t<ParamType::Real>>::value,
+	"Scip real type is not the same as the one redefined by Ecole");
+
+ParamType Model::get_param_type(const char* name) const {
+	auto* scip_param = SCIPgetParam(scip.get(), name);
+	if (!scip_param)
+		throw make_exception(SCIP_PARAMETERUNKNOWN);
+	else
+		switch (SCIPparamGetType(scip_param)) {
+		case SCIP_PARAMTYPE_BOOL:
+			return ParamType::Bool;
+		case SCIP_PARAMTYPE_INT:
+			return ParamType::Int;
+		case SCIP_PARAMTYPE_LONGINT:
+			return ParamType::LongInt;
+		case SCIP_PARAMTYPE_REAL:
+			return ParamType::Real;
+		case SCIP_PARAMTYPE_CHAR:
+			return ParamType::Char;
+		case SCIP_PARAMTYPE_STRING:
+			return ParamType::String;
+		default:
+			assert(false);
+		}
+}
+
 template <> void Model::set_param_explicit(const char* name, SCIP_Bool value) {
 	call(SCIPsetBoolParam, scip.get(), name, value);
 }
@@ -94,6 +128,10 @@ template <> void Model::set_param_explicit(const char* name, SCIP_Real value) {
 }
 template <> void Model::set_param_explicit(const char* name, const char* value) {
 	call(SCIPsetStringParam, scip.get(), name, value);
+}
+
+template <> void Model::set_param(const char* name, std::string const& value) {
+	set_param(name, value.c_str());
 }
 
 template <> SCIP_Bool Model::get_param_explicit(const char* name) const {
