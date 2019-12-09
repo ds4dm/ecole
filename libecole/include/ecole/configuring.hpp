@@ -40,8 +40,8 @@ public:
 	using typename env_t::seed_t;
 
 	Env(
-		std::unique_ptr<base::ObservationSpace<obs_t>> obs_space,
-		std::unique_ptr<ActionSpace<action_t>> action_space);
+		std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
+		std::unique_ptr<ActionSpace<action_t>>&& action_space);
 
 private:
 	scip::Model _model;
@@ -67,8 +67,8 @@ auto Configure<A>::clone() const -> std::unique_ptr<ActionSpace<A>> {
 
 template <typename O, typename A>
 Env<O, A>::Env(
-	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space,
-	std::unique_ptr<ActionSpace<action_t>> action_space) :
+	std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
+	std::unique_ptr<ActionSpace<action_t>>&& action_space) :
 	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
 
 template <typename O, typename A>
@@ -81,7 +81,7 @@ template <typename O, typename A>
 auto Env<O, A>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	action_space->set(_model, action);
 	_model.solve();
-	return {obs_space->get(_model), 0., true, {}};
+	return {obs_space->get(_model), 0., true, info_t{}};
 }
 
 template <typename O, typename A> bool Env<O, A>::is_done() const noexcept {
