@@ -281,5 +281,16 @@ void Model::set_branch_rule(BranchFunc const& func) {
 	LambdaBranchRule::set_branch_func(*this, func);
 }
 
+namespace internal {
+
+template <> Cast_SFINAE<char, const char*>::operator char() const {
+	if (std::strlen(val) == 1)
+		return *val;
+	else
+		throw Exception("Can only convert a string with a single character to a char");
+}
+
+}  // namespace internal
+
 }  // namespace scip
 }  // namespace ecole
