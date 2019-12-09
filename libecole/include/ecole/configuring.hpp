@@ -13,18 +13,20 @@ template <typename Action> class ActionSpace {
 public:
 	using action_t = Action;
 
-	virtual void set(scip::Model& model, Action const& action) = 0;
 	virtual ~ActionSpace() = default;
+	virtual void set(scip::Model& model, Action const& action) = 0;
+	virtual std::unique_ptr<ActionSpace> clone() const = 0;
 };
 
-template <typename ParamType> class Configure : public ActionSpace<ParamType> {
+template <typename Action> class Configure : public ActionSpace<Action> {
 public:
-	using typename ActionSpace<ParamType>::action_t;
+	using typename ActionSpace<Action>::action_t;
 
 	std::string const param;
 
 	Configure(std::string param) noexcept;
 	void set(scip::Model& model, action_t const& action) override;
+	virtual std::unique_ptr<ActionSpace<Action>> clone() const override;
 };
 
 template <typename Observation, typename Action>
@@ -50,6 +52,18 @@ private:
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 	bool is_done() const noexcept;
 };
+
+template <typename A>
+Configure<A>::Configure(std::string param) noexcept : param(std::move(param)) {}
+
+template <typename A> void Configure<A>::set(scip::Model& model, action_t const& action) {
+	model.set_param(param, action);
+}
+
+template <typename A>
+auto Configure<A>::clone() const -> std::unique_ptr<ActionSpace<A>> {
+	return std::make_unique<Configure<A>>(*this);
+}
 
 template <typename O, typename A>
 Env<O, A>::Env(

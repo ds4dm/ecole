@@ -13,7 +13,6 @@ add_library(
 	src/base/environment.cpp
 	src/observation.cpp
 	src/branching.cpp
-	src/configuring.cpp
 )
 
 add_library(Ecole::ecole ALIAS ecole)
