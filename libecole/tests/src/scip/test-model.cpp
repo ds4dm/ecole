@@ -121,4 +121,9 @@ TEST_CASE("Get and set parameters") {
 	SECTION("Get parameters with automatic casting") { model.get_param<int>(param); }
 
 	SECTION("Set parameters with automatic casting") { model.set_param(param, 1); }
+
+	SECTION("String parameters can be convert to chars") {
+		model.set_param("branching/scorefunc", "s");
+		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+	}
 }

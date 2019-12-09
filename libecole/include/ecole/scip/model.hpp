@@ -1,6 +1,8 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <cstring>
 #include <functional>
 #include <memory>
 #include <string>
@@ -84,20 +86,23 @@ using can_cast_t = exists_t<decltype(static_cast<To>(std::declval<From>()))>;
 // SFINAE default class for no available cast
 template <typename To, typename From, typename = void> struct Cast_SFINAE {
 	From val;
-	operator To() { throw Exception("Cannot convert to the desired type"); }
+	operator To() const { throw Exception("Cannot convert to the desired type"); }
 };
 
 // SFINAE for available cast
 template <typename To, typename From> struct Cast_SFINAE<To, From, can_cast_t<To, From>> {
 	From val;
-	operator To() { return static_cast<To>(val); }
+	operator To() const { return static_cast<To>(val); }
 };
 
 // Pointers must not convert to bools
 template <typename From> struct Cast_SFINAE<bool, From*> {
 	From val;
-	operator bool() { assert(false); }
+	operator bool() const { assert(false); }
 };
+
+// C-string can be converted to char if single character
+template <> Cast_SFINAE<char, const char*>::operator char() const;
 
 // Helper func to deduce From type automatically
 template <typename To, typename From> To cast(From x) {
@@ -127,6 +132,8 @@ template <typename T> void Model::set_param(const char* name, T value) {
 		return set_param_explicit(name, cast<param_t<ParamType::String>>(value));
 	}
 }
+
+template <> void Model::set_param(const char* name, std::string const& value);
 
 template <typename T> void Model::set_param(std::string const& name, T value) {
 	return set_param(name.c_str(), value);
