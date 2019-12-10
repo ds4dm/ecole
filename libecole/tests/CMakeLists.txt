@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 add_executable(
-	run
+	test-libecole
 	main.cpp
 	src/conftest.cpp
 	src/scip/test-model.cpp
@@ -11,12 +11,12 @@ add_executable(
 	src/test-configuring.cpp
 )
 target_compile_definitions(
-	run PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+	test-libecole PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
 )
-target_compile_options(ecole PRIVATE -Werror -Wall -Wextra)
+target_compile_options(test-libecole PRIVATE -Werror -Wall -Wextra)
 
-target_include_directories(run PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(test-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 find_package(Catch2 REQUIRED)
 find_package(SCIP REQUIRED)
-target_link_libraries(run PRIVATE Catch2::Catch2 Ecole::ecole libscip)
+target_link_libraries(test-libecole PRIVATE Catch2::Catch2 Ecole::libecole libscip)

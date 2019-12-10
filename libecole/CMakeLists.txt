@@ -5,7 +5,7 @@ find_package(SCIP REQUIRED)
 find_package(Threads REQUIRED)
 
 add_library(
-	ecole
+	libecole
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp
@@ -15,20 +15,20 @@ add_library(
 	src/branching.cpp
 )
 
-add_library(Ecole::ecole ALIAS ecole)
+add_library(Ecole::libecole ALIAS libecole)
 
 target_include_directories(
-	ecole
+	libecole
 	PUBLIC
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_link_libraries(ecole PRIVATE libscip Threads::Threads)
-target_compile_features(ecole PUBLIC cxx_std_14)
+target_link_libraries(libecole PRIVATE libscip Threads::Threads)
+target_compile_features(libecole PUBLIC cxx_std_14)
 target_compile_options(
-	ecole
+	libecole
 	PRIVATE
 		-Werror
 		-Wall
@@ -39,7 +39,7 @@ target_compile_options(
 		-pedantic-errors
 		-Wold-style-cast
 )
-set_target_properties(ecole PROPERTIES
+set_target_properties(libecole PROPERTIES
 	# All code ending in a shared library should be made PIC
 	POSITION_INDEPENDENT_CODE ON
 	# Compiling wiht hidden visibility
