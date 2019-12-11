@@ -7,5 +7,6 @@ project(
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
+include(CTest)  # Enable testing and set BUILD_TESTING
 add_subdirectory(libecole)
 add_subdirectory(python)

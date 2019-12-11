@@ -34,6 +34,9 @@
 # Build folder
 build
 
+# CTest folder
+Testing
+
 # Clang language server
 .clangd
 
