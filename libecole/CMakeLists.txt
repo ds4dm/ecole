@@ -48,4 +48,7 @@ set_target_properties(libecole PROPERTIES
 	CMAKE_VISIBILITY_INLINES_HIDDEN ON
 )
 
-add_subdirectory(tests)
+# Add test if this is the main project and testing is enabled
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

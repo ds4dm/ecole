@@ -20,3 +20,7 @@ target_include_directories(test-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 find_package(Catch2 REQUIRED)
 find_package(SCIP REQUIRED)
 target_link_libraries(test-libecole PRIVATE Catch2::Catch2 Ecole::libecole libscip)
+
+# Register tests in CTest
+include(Catch)
+catch_discover_tests(test-libecole)
