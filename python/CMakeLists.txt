@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Moving files to binary dir to create python package
+foreach(py_file "setup.py" "src/ecole/__init__.py")
+	configure_file(
+		"${CMAKE_CURRENT_SOURCE_DIR}/${py_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/${py_file}"
+		@ONLY
+	)
+endforeach(py_file)
+
+# Abstract target to build all python submodules
+add_custom_target(pyecole ALL)
+set_target_properties(pyecole PROPERTIES SETUP_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 # Use FindPython to override wrong pybind resolution
 find_package(Python REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
@@ -7,8 +19,9 @@ set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 find_package(pybind11 REQUIRED)
 
 foreach(submodule_name "observation" "scip" "base" "branching" "configuring")
-	set(submodule_target "py_${submodule_name}")
+	set(submodule_target "py-${submodule_name}")
 	pybind11_add_module(${submodule_target} "src/ecole/${submodule_name}.cpp")
+	add_dependencies(pyecole ${submodule_target})
 	target_include_directories(
 		${submodule_target}
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole
@@ -30,10 +43,7 @@ foreach(submodule_name "observation" "scip" "base" "branching" "configuring")
 	endif()
 endforeach(submodule_name)
 
-# Moving files to binary dir to create python package
-foreach(py_file "setup.py" "src/ecole/__init__.py")
-	configure_file(
-		"${CMAKE_CURRENT_SOURCE_DIR}/${py_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/${py_file}"
-		@ONLY
-	)
-endforeach(py_file)
+# Add test if this is the main project and testing is enabled
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+		add_subdirectory(tests)
+endif()

@@ -14,7 +14,7 @@ CURRENT_SRC_DIR = Path(__file__).parent.resolve()
 
 
 class ExternExtension(Extension):
-    """Setuptools extension claass for exsisting extensions."""
+    """Setuptools extension class for exsisting extensions."""
 
     def __init__(self, name: str, where: Path = "") -> None:
         """Initialize parent extension class.
@@ -67,8 +67,8 @@ setup(
     url="https://ecole.ai",
     description="Extensible Combinatorial Optimization Learning Environments",
     license="BSD-3-Clause",
-    packages=find_packages("src"),
-    package_dir={"": "src"},
+    packages=find_packages(CURRENT_SRC_DIR / "src"),
+    package_dir={"": str(CURRENT_SRC_DIR / "src")},
     ext_modules=extensions,
     cmdclass=dict(build_ext=CopyBuild),
     zip_safe=False,
