@@ -43,11 +43,12 @@ public:
 	Model& operator=(Model const&);
 	Model(Model&&) noexcept = default;
 	Model& operator=(Model&&) noexcept = default;
-	virtual ~Model() = default;
+	~Model() = default;
 
 	static Model from_file(std::string const& filename);
 
 	ParamType get_param_type(const char* name) const;
+	ParamType get_param_type(std::string const& name) const;
 	template <typename T> void set_param_explicit(const char* name, T value);
 	template <typename T> void set_param_explicit(std::string const& name, T value);
 	template <typename T> void set_param(const char* name, T value);

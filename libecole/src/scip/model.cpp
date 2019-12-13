@@ -112,6 +112,10 @@ ParamType Model::get_param_type(const char* name) const {
 		}
 }
 
+ParamType Model::get_param_type(std::string const& name) const {
+	return get_param_type(name.c_str());
+}
+
 template <> void Model::set_param_explicit(const char* name, SCIP_Bool value) {
 	call(SCIPsetBoolParam, scip.get(), name, value);
 }
