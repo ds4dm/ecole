@@ -13,11 +13,6 @@
 
 #include "scip/utils.hpp"
 
-struct SCIP_BranchruleData {
-	ecole::scip::Model::BranchFunc func;
-	ecole::scip::Model& model;
-};
-
 namespace ecole {
 namespace scip {
 
@@ -218,7 +213,22 @@ VarView Model::lp_branch_vars() const noexcept {
 	return VarView(vars, static_cast<std::size_t>(n_vars));
 }
 
+}  // namespace scip
+}  // namespace ecole
+
+struct SCIP_BranchruleData {
+	ecole::scip::Model::BranchFunc func;
+	ecole::scip::Model& model;
+};
+
+namespace ecole {
+namespace scip {
+
 class Model::LambdaBranchRule {
+	// A Scip branch rule class that runs a given function.
+	// The scip BranchRule is actually never substituted, but its internal data is changed
+	// to a new function.
+
 private:
 	static constexpr auto name = "ecole::scip::LambdaBranchRule";
 	static constexpr auto description = "";
@@ -231,11 +241,13 @@ private:
 		SCIP_BRANCHRULE* branch_rule,
 		SCIP_Bool allow_addcons,
 		SCIP_RESULT* result) {
+		// The function that is called to branch on lp fractional varaibles, as required
+		// by Scip.
 		(void)allow_addcons;
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
 		assert(branch_data->model.scip.get() == scip);
+		assert(branch_data->func);
 		*result = SCIP_DIDNOTRUN;
-		if (!branch_data->func) return SCIP_BRANCHERROR;
 
 		// C code must be exception safe.
 		try {
