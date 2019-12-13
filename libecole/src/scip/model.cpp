@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstddef>
 #include <exception>
 #include <mutex>

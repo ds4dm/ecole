@@ -30,7 +30,7 @@ public:
 	scip::Model& model() noexcept;
 
 private:
-	// Heap allocation of thread data and synchronizaation primitives to enable
+	// Heap allocation of thread data and synchronization primitives to enable
 	// easy move semantics of the controller.
 	class ThreadControl;
 	std::unique_ptr<ThreadControl> thread_control;

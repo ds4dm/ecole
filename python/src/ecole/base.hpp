@@ -69,7 +69,7 @@ struct Py_ActionSpace : public Py_ActionSpaceBase<ActionSpaceBase> {
 template <typename AS, template <typename> class ASB, typename = void>
 struct Py_ActionSpace_SFINAE;
 
-template <typename> struct has { typedef void type; };
+template <typename> struct has { using type = void; };
 template <typename T> using has_t = typename has<T>::type;
 
 template <typename AS, template <typename> class ASB>
