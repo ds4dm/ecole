@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <functional>
@@ -77,7 +78,7 @@ private:
 namespace internal {
 
 // SFINAE to check if type exists
-template <typename> struct exists { typedef void type; };
+template <typename> struct exists { using type = void; };
 template <typename T> using exists_t = typename exists<T>::type;
 // Helper to check static cast ability
 template <typename To, typename From>
