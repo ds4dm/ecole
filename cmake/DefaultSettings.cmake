@@ -44,6 +44,8 @@ macro(set_developper_defaults)
 		message(STATUS "Cannot find requirement ccache")
 	endif()
 
+	option(ENABLE_DOCUMENTATION "Build documentation with Doxygen and Sphinx" ON)
+
 endmacro()
 
 
