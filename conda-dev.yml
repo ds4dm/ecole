@@ -7,7 +7,7 @@ dependencies:
   - git
   - make
   - cmake>=3.15
-  - clangdev  # Necessary for tools such as clang-format
+  - clangdev>=3.4  # Necessary for tools such as clang-format
   - catch2
   - python>=3.6
   - pybind11
