@@ -108,7 +108,9 @@ ParamType Model::get_param_type(const char* name) const {
 		case SCIP_PARAMTYPE_STRING:
 			return ParamType::String;
 		default:
-			assert(false);
+			assert(false);  // All enum value should be handled
+			// Non void return for optimized build
+			throw Exception("Could not find type for given parameter");
 		}
 }
 

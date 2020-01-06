@@ -174,7 +174,7 @@ jobs:
           command: conda run -n ecole-py38 cmake --build build
       - run:
           name: "Test libecole"
-          command: ./build/libecole/tests/run
+          command: ./build/libecole/tests/test-libecole
       - run:
           name: "Install python ecole"
           command: conda run -n ecole-py38 pip install -I build/python
