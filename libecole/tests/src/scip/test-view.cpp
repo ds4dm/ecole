@@ -46,11 +46,11 @@ TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 
 	SECTION("Random access iterator") {
 		auto iter = view.begin();
-		REQUIRE(iter[size - 1].times(1) == size - 1);
+		REQUIRE(iter[size - 1].times(1) == static_cast<TestType>(size - 1));
 	}
 
 	SECTION("View accessor") {
-		REQUIRE(view[size - 1].times(1) == size - 1);
+		REQUIRE(view[size - 1].times(1) == static_cast<TestType>(size - 1));
 		REQUIRE_THROWS_AS(view.at(size), scip::Exception);
 	}
 

@@ -100,7 +100,7 @@ template <typename To, typename From> struct Cast_SFINAE<To, From, can_cast_t<To
 // Pointers must not convert to bools
 template <typename From> struct Cast_SFINAE<bool, From*> {
 	From val;
-	operator bool() const { assert(false); }
+	operator bool() const { throw Exception("Cannot convert to the desired type"); }
 };
 
 // C-string can be converted to char if single character
@@ -132,6 +132,10 @@ template <typename T> void Model::set_param(const char* name, T value) {
 		return set_param_explicit(name, cast<param_t<ParamType::Char>>(value));
 	case ParamType::String:
 		return set_param_explicit(name, cast<param_t<ParamType::String>>(value));
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception("Could not find type for given parameter");
 	}
 }
 
@@ -160,6 +164,10 @@ template <typename T> T Model::get_param(const char* name) const {
 		return cast<T>(get_param_explicit<param_t<ParamType::Char>>(name));
 	case ParamType::String:
 		return cast<T>(get_param_explicit<param_t<ParamType::String>>(name));
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception("Could not find type for given parameter");
 	}
 }
 
