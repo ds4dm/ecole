@@ -1,19 +1,12 @@
-Welcome to Ecole's documentation!
-=================================
+Introduction
+============
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting started
 
-Docs
-====
+   installation
 
-.. doxygenclass:: ecole::base::Env
-   :members:
+.. toctree::
+   :caption: API Reference
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   reference

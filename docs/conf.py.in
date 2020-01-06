@@ -5,6 +5,15 @@ version = "@Ecole_VERSION_MAJOR@.@Ecole_VERSION_MINOR@"
 release = "@Ecole_VERSION@"
 author = "@Ecole_AUTHORS@"
 
-extensions = ["breathe"]
+extensions = ["breathe", "sphinx_rtd_theme", "sphinx.ext.autodoc"]
+
+html_theme = "sphinx_rtd_theme"
+html_context = {
+    "display_github": True,
+    "github_user": "ds4dm",
+    "github_repo": "ecole",
+    "github_version": "master",  # For the edit on Github link
+    "conf_py_path": "/docs/",  # For the edit on Github link
+}
 
 breathe_default_project = "libecole"
