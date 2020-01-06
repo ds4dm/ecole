@@ -31,7 +31,7 @@ template <typename ObsSpace> struct Py_ObsSpace : public Py_ObsSpaceBase {
 	template <typename... Args>
 	Py_ObsSpace(Args... args) : obs_space(std::forward<Args>(args)...) {}
 
-	obs_t get(scip::Model const& model) const override {
+	obs_t get(scip::Model const& model) override {
 		return std::make_unique<py_obs_t>(obs_space.get(model));
 	}
 	std::unique_ptr<Py_ObsSpaceBase> clone() const override {
