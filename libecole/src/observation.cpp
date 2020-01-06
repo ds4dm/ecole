@@ -5,7 +5,7 @@
 namespace ecole {
 namespace obs {
 
-BasicObs BasicObsSpace::get(scip::Model const& model) const {
+auto BasicObsSpace::get(scip::Model const& model) -> obs_t {
 	auto const var_view = model.variables();
 	auto obs = BasicObs{};
 	obs.ubs.resize(var_view.size);

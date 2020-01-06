@@ -14,7 +14,7 @@ template <typename Observation> struct ObservationSpace {
 	using obs_t = Observation;
 
 	virtual ~ObservationSpace() = default;
-	virtual obs_t get(scip::Model const& model) const = 0;
+	virtual obs_t get(scip::Model const& model) = 0;
 	virtual std::unique_ptr<ObservationSpace> clone() const = 0;
 };
 

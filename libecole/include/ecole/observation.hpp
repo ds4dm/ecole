@@ -16,7 +16,7 @@ struct BasicObs {
 struct BasicObsSpace : public base::ObservationSpace<BasicObs> {
 	using obs_t = BasicObs;
 
-	BasicObs get(scip::Model const& model) const override;
+	obs_t get(scip::Model const& model) override;
 	std::unique_ptr<ObservationSpace> clone() const override;
 };
 
