@@ -23,7 +23,7 @@ struct RewardSpace {
 
 	virtual ~RewardSpace() = default;
 	virtual void reset(scip::Model const& model);
-	virtual reward_t step(scip::Model const& model);
+	virtual reward_t get(scip::Model const& model, bool done = false) = 0;
 	virtual std::unique_ptr<RewardSpace> clone() const = 0;
 };
 
