@@ -27,6 +27,12 @@ struct RewardSpace {
 	virtual std::unique_ptr<RewardSpace> clone() const = 0;
 };
 
+struct TerminationSpace {
+	virtual ~TerminationSpace() = default;
+	virtual std::unique_ptr<TerminationSpace> clone() const = 0;
+	virtual bool is_done(scip::Model const& model) = 0;
+};
+
 template <typename Observation, typename Action> class Env {
 public:
 	using action_t = Action;
