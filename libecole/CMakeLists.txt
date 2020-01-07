@@ -12,6 +12,7 @@ add_library(
 	src/exception.cpp
 	src/base/environment.cpp
 	src/observation.cpp
+	src/reward.cpp
 	src/termination.cpp
 	src/branching.cpp
 )
