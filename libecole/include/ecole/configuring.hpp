@@ -48,7 +48,7 @@ private:
 	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space;
 	std::unique_ptr<ActionSpace<action_t>> action_space;
 
-	std::tuple<obs_t, bool> _reset(scip::Model model) override;
+	std::tuple<obs_t, bool> _reset(scip::Model&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 	bool is_done() const noexcept;
 };
@@ -72,7 +72,7 @@ Env<O, A>::Env(
 	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
 
 template <typename O, typename A>
-auto Env<O, A>::_reset(scip::Model model) -> std::tuple<obs_t, bool> {
+auto Env<O, A>::_reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	_model = std::move(model);
 	return {obs_space->get(_model), is_done()};
 }

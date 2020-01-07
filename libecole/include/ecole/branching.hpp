@@ -76,7 +76,7 @@ private:
 	internal::ReverseControl solve_controller;
 
 	inline scip::Model& model() noexcept;
-	std::tuple<obs_t, bool> _reset(scip::Model model) override;
+	std::tuple<obs_t, bool> _reset(scip::Model&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 };
 
@@ -91,7 +91,7 @@ template <typename O, typename A> scip::Model& Env<O, A>::model() noexcept {
 }
 
 template <typename O, typename A>
-auto Env<O, A>::_reset(scip::Model new_model) -> std::tuple<obs_t, bool> {
+auto Env<O, A>::_reset(scip::Model&& new_model) -> std::tuple<obs_t, bool> {
 	solve_controller = internal::ReverseControl(std::move(new_model));
 	solve_controller.wait();
 	return {obs_space->get(model()), solve_controller.is_done()};

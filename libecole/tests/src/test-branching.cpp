@@ -22,21 +22,21 @@ TEST_CASE("BranchEnv") {
 	using BranchEnv = branching::Env<obs::BasicObs, std::size_t>;
 	auto env = BranchEnv(
 		std::make_unique<obs::BasicObsSpace>(), std::make_unique<branching::Fractional>());
-	auto const model = get_model();
+	auto model = get_model();
 
 	SECTION("reset, reset, and delete") {
-		env.reset(model);
-		env.reset(model);
+		env.reset(scip::Model{model});
+		env.reset(std::move(model));
 	}
 
 	SECTION("reset, step, and delete") {
-		env.reset(model);
+		env.reset(std::move(model));
 		env.step(0);
 	}
 
 	SECTION("run full trajectory") {
 		auto run_trajectory = [](auto& env, auto& model) {
-			auto obs_done = env.reset(model);
+			auto obs_done = env.reset(scip::Model{model});
 			auto done = std::get<bool>(obs_done);
 			auto count = 0;
 			while (!done) {
@@ -53,7 +53,7 @@ TEST_CASE("BranchEnv") {
 
 	SECTION("manage errors") {
 		auto guard = ScipNoErrorGuard{};
-		env.reset(model);
+		env.reset(std::move(model));
 		REQUIRE_THROWS_AS(env.step(-1), scip::Exception);
 	}
 }
