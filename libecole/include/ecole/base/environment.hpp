@@ -45,29 +45,29 @@ public:
 
 	seed_t seed(seed_t seed) noexcept;
 	seed_t seed() const noexcept;
-	std::tuple<obs_t, bool> reset(scip::Model model);
-	std::tuple<obs_t, bool> reset(std::string filename);
+	std::tuple<obs_t, bool> reset(scip::Model&& model);
+	std::tuple<obs_t, bool> reset(std::string const& filename);
 	std::tuple<obs_t, reward_t, bool, info_t> step(action_t action);
 
 private:
 	bool can_transition = false;
-	seed_t _seed = 0;
+	seed_t seed_v = 0;
 
 	void mutate_seed() noexcept;
-	virtual std::tuple<obs_t, bool> _reset(scip::Model model) = 0;
+	virtual std::tuple<obs_t, bool> _reset(scip::Model&& model) = 0;
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
 
 template <typename O, typename A> auto Env<O, A>::seed(seed_t seed) noexcept -> seed_t {
-	return _seed = seed;
+	return seed_v = seed;
 }
 
 template <typename O, typename A> auto Env<O, A>::seed() const noexcept -> seed_t {
-	return _seed;
+	return seed_v;
 }
 
 template <typename O, typename A>
-auto Env<O, A>::reset(scip::Model model) -> std::tuple<obs_t, bool> {
+auto Env<O, A>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	mutate_seed();
 	try {
 		auto result = _reset(std::move(model));
@@ -80,7 +80,7 @@ auto Env<O, A>::reset(scip::Model model) -> std::tuple<obs_t, bool> {
 }
 
 template <typename O, typename A>
-auto Env<O, A>::reset(std::string filename) -> std::tuple<obs_t, bool> {
+auto Env<O, A>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
 	return reset(scip::Model::from_file(filename));
 }
 
@@ -98,7 +98,7 @@ auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_
 }
 
 template <typename O, typename A> void Env<O, A>::mutate_seed() noexcept {
-	++_seed;
+	++seed_v;
 }
 
 }  // namespace base
