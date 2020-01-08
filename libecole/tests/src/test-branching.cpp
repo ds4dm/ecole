@@ -19,7 +19,7 @@ scip::Model get_model() {
 }
 
 TEST_CASE("BranchEnv") {
-	using BranchEnv = branching::Env<obs::BasicObs, std::size_t>;
+	using BranchEnv = branching::Env<std::size_t, obs::BasicObs>;
 	auto env = BranchEnv(
 		std::make_unique<obs::BasicObsSpace>(), std::make_unique<branching::Fractional>());
 	auto model = get_model();

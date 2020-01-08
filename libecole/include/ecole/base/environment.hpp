@@ -33,7 +33,7 @@ struct TerminationSpace {
 	virtual bool is_done(scip::Model const& model) = 0;
 };
 
-template <typename Observation, typename Action> class Env {
+template <typename Action, typename Observation> class Env {
 public:
 	using action_t = Action;
 	using obs_t = Observation;
@@ -58,16 +58,16 @@ private:
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
 
-template <typename O, typename A> auto Env<O, A>::seed(seed_t seed) noexcept -> seed_t {
+template <typename A, typename O> auto Env<A, O>::seed(seed_t seed) noexcept -> seed_t {
 	return seed_v = seed;
 }
 
-template <typename O, typename A> auto Env<O, A>::seed() const noexcept -> seed_t {
+template <typename A, typename O> auto Env<A, O>::seed() const noexcept -> seed_t {
 	return seed_v;
 }
 
-template <typename O, typename A>
-auto Env<O, A>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+template <typename A, typename O>
+auto Env<A, O>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	mutate_seed();
 	try {
 		auto result = _reset(std::move(model));
@@ -79,13 +79,13 @@ auto Env<O, A>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	}
 }
 
-template <typename O, typename A>
-auto Env<O, A>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
+template <typename A, typename O>
+auto Env<A, O>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
 	return reset(scip::Model::from_file(filename));
 }
 
-template <typename O, typename A>
-auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
+template <typename A, typename O>
+auto Env<A, O>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	if (!can_transition) throw Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));
@@ -97,7 +97,7 @@ auto Env<O, A>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_
 	}
 }
 
-template <typename O, typename A> void Env<O, A>::mutate_seed() noexcept {
+template <typename A, typename O> void Env<A, O>::mutate_seed() noexcept {
 	++seed_v;
 }
 
