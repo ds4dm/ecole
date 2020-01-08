@@ -9,7 +9,7 @@ Exception make_exception(SCIP_RETCODE retcode) {
 	auto&& message = [retcode] {
 		switch (retcode) {
 		case SCIP_OKAY:
-			throw Exception("Normal terminaition must not raise exception.");
+			throw Exception("Normal termination must not raise exception.");
 		case SCIP_ERROR:
 			return "Unspecified error.";
 		case SCIP_NOMEMORY:
