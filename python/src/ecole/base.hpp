@@ -114,10 +114,10 @@ struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::get)>> :
 	}
 };
 
-using Py_EnvBase = base::Env<std::unique_ptr<Py_ObsBase>, Py_ActionBase const&>;
+using Py_EnvBase = base::Env<Py_ActionBase const&, std::unique_ptr<Py_ObsBase>>;
 
-template <template <typename Obs, typename Action> class Env>
-using Py_Env = Env<Py_EnvBase::obs_t, Py_EnvBase::action_t>;
+template <template <typename Action, typename Obs> class Env>
+using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t>;
 
 }  // namespace hidden
 

@@ -56,10 +56,10 @@ public:
 	std::unique_ptr<ActionSpace> clone() const override;
 };
 
-template <typename Observation, typename Action>
-class Env : public base::Env<Observation, Action> {
+template <typename Action, typename Observation>
+class Env : public base::Env<Action, Observation> {
 public:
-	using env_t = base::Env<Observation, Action>;
+	using env_t = base::Env<Action, Observation>;
 	using typename env_t::action_t;
 	using typename env_t::info_t;
 	using typename env_t::obs_t;
@@ -80,25 +80,25 @@ private:
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 };
 
-template <typename O, typename A>
-Env<O, A>::Env(
+template <typename A, typename O>
+Env<A, O>::Env(
 	std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
 	std::unique_ptr<ActionSpace<action_t>>&& action_space) :
 	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
 
-template <typename O, typename A> scip::Model& Env<O, A>::model() noexcept {
+template <typename A, typename O> scip::Model& Env<A, O>::model() noexcept {
 	return solve_controller.model();
 }
 
-template <typename O, typename A>
-auto Env<O, A>::_reset(scip::Model&& new_model) -> std::tuple<obs_t, bool> {
+template <typename A, typename O>
+auto Env<A, O>::_reset(scip::Model&& new_model) -> std::tuple<obs_t, bool> {
 	solve_controller = internal::ReverseControl(std::move(new_model));
 	solve_controller.wait();
 	return {obs_space->get(model()), solve_controller.is_done()};
 }
 
-template <typename O, typename A>
-auto Env<O, A>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
+template <typename A, typename O>
+auto Env<A, O>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	auto const var = action_space->get(model(), action);
 	solve_controller.resume(var);
 	solve_controller.wait();
