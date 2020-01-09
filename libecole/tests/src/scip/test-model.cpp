@@ -1,4 +1,5 @@
 #include <future>
+#include <limits>
 #include <string>
 
 #include <catch2/catch.hpp>
@@ -125,5 +126,20 @@ TEST_CASE("Get and set parameters") {
 	SECTION("String parameters can be convert to chars") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+	}
+}
+
+TEST_CASE("Seed the model") {
+	auto model = scip::Model{};
+
+	SECTION("Seed the model") {
+		model.seed(42);
+		REQUIRE(model.seed() == 42);
+	}
+
+	SECTION("Handle Scip limits") {
+		model.seed(-1);
+		REQUIRE(model.seed() > 0);
+		model.seed(std::numeric_limits<scip::param_t<scip::ParamType::Int>>::max());
 	}
 }
