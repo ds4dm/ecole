@@ -44,7 +44,7 @@ TEST_CASE("Raise if file does not exist") {
 	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
 }
 
-TEST_CASE("Model modifiers") {
+TEST_CASE("Model solving") {
 	auto model = scip::Model::from_file(problem_file);
 
 	SECTION("Synchronously") { model.solve(); }
