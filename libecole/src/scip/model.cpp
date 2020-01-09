@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include <cstdlib>
 #include <exception>
 #include <mutex>
 #include <string>
@@ -170,6 +171,19 @@ template <> const char* Model::get_param_explicit(const char* name) const {
 	char* ptr = nullptr;
 	call(SCIPgetStringParam, scip.get(), name, &ptr);
 	return ptr;
+}
+
+param_t<ParamType::Int> Model::seed() const {
+	return get_param_explicit<param_t<ParamType::Int>>("randomization/randomseedshift");
+}
+
+template <typename T> static auto mod(T num, T div) noexcept {
+	return (num % div + div) % div;
+}
+
+void Model::seed(param_t<ParamType::Int> seed_v) {
+	using seed_t = param_t<ParamType::Int>;
+	set_param_explicit<seed_t>("randomization/randomseedshift", std::abs(seed_v));
 }
 
 void Model::solve() {

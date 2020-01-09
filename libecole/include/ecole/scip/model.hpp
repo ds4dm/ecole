@@ -58,6 +58,9 @@ public:
 	template <typename T> T get_param(const char* name) const;
 	template <typename T> T get_param(std::string const& name) const;
 
+	param_t<ParamType::Int> seed() const;
+	void seed(param_t<ParamType::Int> seed_v);
+
 	void solve();
 	void interrupt_solve();
 
