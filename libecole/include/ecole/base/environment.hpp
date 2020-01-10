@@ -29,6 +29,12 @@ template <typename Observation> struct ObservationSpace {
 	virtual std::unique_ptr<ObservationSpace> clone() const = 0;
 
 	/**
+	 * The method called by the environment at the begining of every episode (on the
+	 * initial state).
+	 */
+	virtual void reset(scip::Model const& model);
+
+	/**
 	 * The method called by environments when needing to return an observation.
 	 */
 	virtual obs_t get(scip::Model const& model) = 0;
@@ -67,6 +73,12 @@ struct RewardSpace {
 struct TerminationSpace {
 	virtual ~TerminationSpace() = default;
 	virtual std::unique_ptr<TerminationSpace> clone() const = 0;
+
+	/**
+	 * The method called by the environment at the begining of every episode (on the
+	 * initial state).
+	 */
+	virtual void reset(scip::Model const& model);
 
 	/**
 	 * The method called by the environment on every new state (after transitioning).
@@ -147,6 +159,10 @@ private:
 	virtual std::tuple<obs_t, bool> _reset(scip::Model&& model) = 0;
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
+
+template <typename O> void ObservationSpace<O>::reset(scip::Model const& model) {
+	(void)model;
+}
 
 template <typename A, typename O> auto Env<A, O>::seed(seed_t seed) noexcept -> seed_t {
 	return seed_v = seed;
