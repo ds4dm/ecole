@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Names of all Python modules built for Ecole
+set(
+	Ecole_PYTHON_MODULE_NAMES
+	"observation" "scip" "base" "branching" "configuring" "reward"
+)
+
 # Moving files to binary dir to create python package
 foreach(py_file "setup.py" "src/ecole/__init__.py")
 	configure_file(
@@ -18,7 +24,7 @@ set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 find_package(pybind11 REQUIRED)
 
-foreach(submodule_name "observation" "scip" "base" "branching" "configuring" "reward")
+foreach(submodule_name ${Ecole_PYTHON_MODULE_NAMES})
 	set(submodule_target "py-${submodule_name}")
 	pybind11_add_module(${submodule_target} "src/ecole/${submodule_name}.cpp")
 	add_dependencies(pyecole ${submodule_target})
