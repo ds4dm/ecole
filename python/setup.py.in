@@ -54,7 +54,7 @@ class CopyBuild(build_ext):
         shutil.copyfile(source_ext, target_ext)
 
 
-extension_names = ("base", "scip", "observation", "branching", "configuring")
+extension_names = ("base", "scip", "observation", "branching", "configuring", "reward")
 extensions = [
     ExternExtension(f"ecole.{m}", where=CURRENT_SRC_DIR / "src/ecole")
     for m in extension_names

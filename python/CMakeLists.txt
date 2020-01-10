@@ -18,7 +18,7 @@ set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 find_package(pybind11 REQUIRED)
 
-foreach(submodule_name "observation" "scip" "base" "branching" "configuring")
+foreach(submodule_name "observation" "scip" "base" "branching" "configuring" "reward")
 	set(submodule_target "py-${submodule_name}")
 	pybind11_add_module(${submodule_target} "src/ecole/${submodule_name}.cpp")
 	add_dependencies(pyecole ${submodule_target})
