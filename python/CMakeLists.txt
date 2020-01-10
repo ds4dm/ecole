@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 # Names of all Python modules built for Ecole
 set(
 	Ecole_PYTHON_MODULE_NAMES
-	"observation" "scip" "base" "branching" "configuring" "reward"
+	"observation" "scip" "base" "branching" "configuring" "reward" "termination"
 )
 
 # Moving files to binary dir to create python package
