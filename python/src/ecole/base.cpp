@@ -22,6 +22,9 @@ PYBIND11_MODULE(base, m) {
 		.def("reset", &base::RewardSpace::reset, py11::arg("model"))
 		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
 
+	py11::class_<base::TerminationSpace>(m, "TerminationSpace")  //
+		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
+
 	py11::class_<py::EnvBase>(m, "Env")  //
 
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
