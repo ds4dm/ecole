@@ -16,18 +16,31 @@ PYBIND11_MODULE(base, m) {
 
 	py11::class_<py::ObsBase>(m, "Observation");
 	py11::class_<py::ObsSpaceBase>(m, "ObservationSpace")  //
-		.def("get", &py::ObsSpaceBase::get);
+		.def("get", &py::ObsSpaceBase::get, py11::arg("model"));
 
 	py11::class_<py::EnvBase>(m, "Env")  //
+
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
-		.def("seed", py11::overload_cast<py::EnvBase::seed_t>(&py::EnvBase::seed))
+		.def(
+			"seed",
+			py11::overload_cast<py::EnvBase::seed_t>(&py::EnvBase::seed),
+			py11::arg("value"))
+
 		.def(
 			"reset",
 			[](py::EnvBase& env, scip::Model const& model) {
 				return env.reset(scip::Model{model});
-			})
-		.def("reset", py11::overload_cast<std::string const&>(&py::EnvBase::reset))
-		.def("step", [](py::EnvBase& env, py11::object action) {
-			return env.step(py::Action<py11::object>(action));
-		});
+			},
+			py11::arg("model"))
+		.def(
+			"reset",
+			py11::overload_cast<std::string const&>(&py::EnvBase::reset),
+			py11::arg("filename"))
+
+		.def(
+			"step",
+			[](py::EnvBase& env, py11::object action) {
+				return env.step(py::Action<py11::object>(action));
+			},
+			py11::arg("action"));
 }
