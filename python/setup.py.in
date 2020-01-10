@@ -54,7 +54,9 @@ class CopyBuild(build_ext):
         shutil.copyfile(source_ext, target_ext)
 
 
-extension_names = ("base", "scip", "observation", "branching", "configuring", "reward")
+# CMake writes list as semi-colon separated values
+extension_names = "@Ecole_PYTHON_MODULE_NAMES@".split(";")
+
 extensions = [
     ExternExtension(f"ecole.{m}", where=CURRENT_SRC_DIR / "src/ecole")
     for m in extension_names
