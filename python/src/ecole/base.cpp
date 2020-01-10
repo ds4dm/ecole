@@ -16,6 +16,7 @@ PYBIND11_MODULE(base, m) {
 
 	py11::class_<py::ObsBase>(m, "Observation");
 	py11::class_<py::ObsSpaceBase>(m, "ObservationSpace")  //
+		.def("reset", &py::ObsSpaceBase::reset, py11::arg("model"))
 		.def("get", &py::ObsSpaceBase::get, py11::arg("model"));
 
 	py11::class_<base::RewardSpace>(m, "RewardSpace")  //
@@ -23,6 +24,7 @@ PYBIND11_MODULE(base, m) {
 		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
 
 	py11::class_<base::TerminationSpace>(m, "TerminationSpace")  //
+		.def("reset", &base::TerminationSpace::reset, py11::arg("model"))
 		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
 
 	py11::class_<py::EnvBase>(m, "Env")  //
