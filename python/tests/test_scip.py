@@ -1,12 +1,5 @@
 import pytest
 
-import ecole.scip
-
-
-@pytest.fixture
-def model(problem_file):
-    return ecole.scip.Model.from_file(str(problem_file))
-
 
 names_types = (
     ("branching/preferbinary", bool),  # Bool param

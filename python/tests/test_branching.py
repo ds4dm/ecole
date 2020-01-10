@@ -1,15 +1,4 @@
-import pytest
-
 import ecole.branching
-import ecole.scip
-
-
-@pytest.fixture
-def model(problem_file):
-    model = ecole.scip.Model.from_file(str(problem_file))
-    model.disable_cuts()
-    model.disable_presolve()
-    return model
 
 
 def test_branching_env(model):
