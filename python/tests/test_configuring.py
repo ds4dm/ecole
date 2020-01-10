@@ -1,12 +1,6 @@
 import pytest
 
 import ecole.configuring
-import ecole.scip
-
-
-@pytest.fixture
-def model(problem_file):
-    return ecole.scip.Model.from_file(str(problem_file))
 
 
 def test_Configure(model):
