@@ -16,6 +16,7 @@ add_library(
 	src/termination.cpp
 	src/branching.cpp
 )
+set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 
 add_library(Ecole::libecole ALIAS libecole)
 
