@@ -19,9 +19,7 @@ using BasicObsSpace = py::ObsSpace<obs::BasicObsSpace>;
 PYBIND11_MODULE(observation, m) {
 	m.doc() = "Observation classes for ecole.";
 
-	py11::class_<py::ObsBase>(m, "Observation");
-	py11::class_<py::ObsSpaceBase>(m, "ObservationSpace")  //
-		.def("get", &py::ObsSpaceBase::get);
+	auto base_module = py11::module::import("ecole.base");
 
 	py11::class_<py::BasicObs, py::ObsBase>(m, "BasicObs");
 	py11::class_<py::BasicObsSpace, py::ObsSpaceBase>(m, "BasicObsSpace")  //

@@ -12,6 +12,12 @@ using namespace ecole;
 PYBIND11_MODULE(base, m) {
 	m.doc() = "Abstract base classes for ecole environments.";
 
+	auto scip_module = py11::module::import("ecole.scip");
+
+	py11::class_<py::ObsBase>(m, "Observation");
+	py11::class_<py::ObsSpaceBase>(m, "ObservationSpace")  //
+		.def("get", &py::ObsSpaceBase::get);
+
 	py11::class_<py::EnvBase>(m, "Env")  //
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
 		.def("seed", py11::overload_cast<py::EnvBase::seed_t>(&py::EnvBase::seed))

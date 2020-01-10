@@ -39,7 +39,6 @@ PYBIND11_MODULE(configuring, m) {
 	m.doc() = "Learning to configure task.";
 	// Import of base required for resolving inheritance to base types
 	py11::module base_mod = py11::module::import("ecole.base");
-	py11::module obs_mod = py11::module::import("ecole.observation");
 
 	using ActionSpace = py::ActionSpaceBase<configuring::ActionSpace>;
 	using Configure =
