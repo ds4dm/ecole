@@ -1,8 +1,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "ecole/base/environment.hpp"
 #include "ecole/branching.hpp"
 #include "ecole/observation.hpp"
+#include "ecole/reward.hpp"
+#include "ecole/termination.hpp"
 
 #include "base.hpp"
 
@@ -27,12 +30,23 @@ PYBIND11_MODULE(branching, m) {
 			"make_dummy",
 			[] {
 				return std::make_unique<Env>(
+					std::make_unique<Fractional>(),
 					std::make_unique<py::ObsSpace<obs::BasicObsSpace>>(),
-					std::make_unique<Fractional>());
+					std::make_unique<reward::Done>(),
+					std::make_unique<termination::Solved>());
 			})
-		.def(
-			py11::init([](py::ObsSpaceBase const& obs_space, ActionSpace const& action_space) {
-				return std::make_unique<Env>(obs_space.clone(), action_space.clone());
+		.def(py11::init(  //
+			[](
+				ActionSpace const& action_space,
+				py::ObsSpaceBase const& obs_space,
+				base::RewardSpace const& reward_space,
+				base::TerminationSpace const& termination_space  //
+			) {
+				return std::make_unique<Env>(
+					action_space.clone(),
+					obs_space.clone(),
+					reward_space.clone(),
+					termination_space.clone());
 			}))
 		.def("step", [](py::EnvBase& env, branching::Fractional::action_t const& action) {
 			return env.step(py::Action<std::size_t>(action));
