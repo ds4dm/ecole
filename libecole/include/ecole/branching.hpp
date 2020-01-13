@@ -67,12 +67,16 @@ public:
 	using typename env_t::seed_t;
 
 	Env(
+		std::unique_ptr<ActionSpace<action_t>>&& action_space,
 		std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-		std::unique_ptr<ActionSpace<action_t>>&& action_space);
+		std::unique_ptr<base::RewardSpace>&& reward_space,
+		std::unique_ptr<base::TerminationSpace>&& termination_space);
 
 private:
-	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space;
 	std::unique_ptr<ActionSpace<action_t>> action_space;
+	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space;
+	std::unique_ptr<base::RewardSpace> reward_space;
+	std::unique_ptr<base::TerminationSpace> termination_space;
 	internal::ReverseControl solve_controller;
 
 	inline scip::Model& model() noexcept;
@@ -82,9 +86,14 @@ private:
 
 template <typename A, typename O>
 Env<A, O>::Env(
+	std::unique_ptr<ActionSpace<action_t>>&& action_space,
 	std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-	std::unique_ptr<ActionSpace<action_t>>&& action_space) :
-	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
+	std::unique_ptr<base::RewardSpace>&& reward_space,
+	std::unique_ptr<base::TerminationSpace>&& termination_space) :
+	action_space(std::move(action_space)),
+	obs_space(std::move(obs_space)),
+	reward_space(std::move(reward_space)),
+	termination_space(std::move(termination_space)) {}
 
 template <typename A, typename O> scip::Model& Env<A, O>::model() noexcept {
 	return solve_controller.model();
@@ -92,9 +101,15 @@ template <typename A, typename O> scip::Model& Env<A, O>::model() noexcept {
 
 template <typename A, typename O>
 auto Env<A, O>::_reset(scip::Model&& new_model) -> std::tuple<obs_t, bool> {
+	new_model.seed(this->seed());
 	solve_controller = internal::ReverseControl(std::move(new_model));
 	solve_controller.wait();
-	return {obs_space->get(model()), solve_controller.is_done()};
+	reward_space->reset(model());
+	termination_space->reset(model());
+	obs_space->reset(model());
+	bool const done = solve_controller.is_done() || termination_space->is_done(model());
+	auto&& obs = obs_space->get(model());
+	return std::make_tuple(std::move(obs), done);
 }
 
 template <typename A, typename O>
@@ -102,7 +117,10 @@ auto Env<A, O>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info
 	auto const var = action_space->get(model(), action);
 	solve_controller.resume(var);
 	solve_controller.wait();
-	return {obs_space->get(model()), 0., solve_controller.is_done(), info_t{}};
+	bool const done = solve_controller.is_done() || termination_space->is_done(model());
+	auto const reward = reward_space->get(model(), done);
+	auto&& obs = obs_space->get(model());
+	return std::make_tuple(std::move(obs), reward, done, info_t{});
 }
 
 }  // namespace branching
