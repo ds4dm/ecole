@@ -145,6 +145,8 @@ public:
 private:
 	class LambdaBranchRule;
 	unique_ptr<Scip> scip;
+
+	Scip* get_scip_ptr() const noexcept;
 };
 
 namespace internal {

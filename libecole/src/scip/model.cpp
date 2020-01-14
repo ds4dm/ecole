@@ -50,8 +50,12 @@ unique_ptr<Scip> copy(Scip const* source) {
 	return dest;
 }
 
+Scip* Model::get_scip_ptr() const noexcept {
+	return scip.get();
+}
+
 Model::Model() : scip(create()) {
-	call(SCIPincludeDefaultPlugins, scip.get());
+	call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
 Model::Model(unique_ptr<Scip>&& scip) {
@@ -61,16 +65,16 @@ Model::Model(unique_ptr<Scip>&& scip) {
 		throw Exception("Cannot create empty model");
 }
 
-Model::Model(Model const& other) : scip(copy(other.scip.get())) {}
+Model::Model(Model const& other) : scip(copy(other.get_scip_ptr())) {}
 
 Model& Model::operator=(Model const& other) {
-	if (&other != this) scip = copy(other.scip.get());
+	if (&other != this) scip = copy(other.get_scip_ptr());
 	return *this;
 }
 
 Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
-	call(SCIPreadProb, model.scip.get(), filename.c_str(), nullptr);
+	call(SCIPreadProb, model.get_scip_ptr(), filename.c_str(), nullptr);
 	return model;
 }
 
@@ -86,7 +90,7 @@ static_assert(
 	"Scip real type is not the same as the one redefined by Ecole");
 
 ParamType Model::get_param_type(const char* name) const {
-	auto* scip_param = SCIPgetParam(scip.get(), name);
+	auto* scip_param = SCIPgetParam(get_scip_ptr(), name);
 	if (!scip_param)
 		throw make_exception(SCIP_PARAMETERUNKNOWN);
 	else
@@ -115,22 +119,22 @@ ParamType Model::get_param_type(std::string const& name) const {
 }
 
 template <> void Model::set_param_explicit(const char* name, SCIP_Bool value) {
-	call(SCIPsetBoolParam, scip.get(), name, value);
+	call(SCIPsetBoolParam, get_scip_ptr(), name, value);
 }
 template <> void Model::set_param_explicit(const char* name, char value) {
-	call(SCIPsetCharParam, scip.get(), name, value);
+	call(SCIPsetCharParam, get_scip_ptr(), name, value);
 }
 template <> void Model::set_param_explicit(const char* name, int value) {
-	call(SCIPsetIntParam, scip.get(), name, value);
+	call(SCIPsetIntParam, get_scip_ptr(), name, value);
 }
 template <> void Model::set_param_explicit(const char* name, SCIP_Longint value) {
-	call(SCIPsetLongintParam, scip.get(), name, value);
+	call(SCIPsetLongintParam, get_scip_ptr(), name, value);
 }
 template <> void Model::set_param_explicit(const char* name, SCIP_Real value) {
-	call(SCIPsetRealParam, scip.get(), name, value);
+	call(SCIPsetRealParam, get_scip_ptr(), name, value);
 }
 template <> void Model::set_param_explicit(const char* name, const char* value) {
-	call(SCIPsetStringParam, scip.get(), name, value);
+	call(SCIPsetStringParam, get_scip_ptr(), name, value);
 }
 
 template <> void Model::set_param(const char* name, std::string const& value) {
@@ -139,32 +143,32 @@ template <> void Model::set_param(const char* name, std::string const& value) {
 
 template <> SCIP_Bool Model::get_param_explicit(const char* name) const {
 	SCIP_Bool value{};
-	call(SCIPgetBoolParam, scip.get(), name, &value);
+	call(SCIPgetBoolParam, get_scip_ptr(), name, &value);
 	return value;
 }
 template <> char Model::get_param_explicit(const char* name) const {
 	char value{};
-	call(SCIPgetCharParam, scip.get(), name, &value);
+	call(SCIPgetCharParam, get_scip_ptr(), name, &value);
 	return value;
 }
 template <> int Model::get_param_explicit(const char* name) const {
 	int value{};
-	call(SCIPgetIntParam, scip.get(), name, &value);
+	call(SCIPgetIntParam, get_scip_ptr(), name, &value);
 	return value;
 }
 template <> SCIP_Longint Model::get_param_explicit(const char* name) const {
 	SCIP_Longint value{};
-	call(SCIPgetLongintParam, scip.get(), name, &value);
+	call(SCIPgetLongintParam, get_scip_ptr(), name, &value);
 	return value;
 }
 template <> SCIP_Real Model::get_param_explicit(const char* name) const {
 	SCIP_Real value{};
-	call(SCIPgetRealParam, scip.get(), name, &value);
+	call(SCIPgetRealParam, get_scip_ptr(), name, &value);
 	return value;
 }
 template <> const char* Model::get_param_explicit(const char* name) const {
 	char* ptr = nullptr;
-	call(SCIPgetStringParam, scip.get(), name, &ptr);
+	call(SCIPgetStringParam, get_scip_ptr(), name, &ptr);
 	return ptr;
 }
 
@@ -182,34 +186,41 @@ void Model::seed(param_t<ParamType::Int> seed_v) {
 }
 
 void Model::solve() {
-	call(SCIPsolve, scip.get());
+	call(SCIPsolve, get_scip_ptr());
 }
 
 void Model::interrupt_solve() {
-	call(SCIPinterruptSolve, scip.get());
+	call(SCIPinterruptSolve, get_scip_ptr());
 }
 
 void Model::disable_presolve() {
-	call(SCIPsetPresolving, scip.get(), SCIP_PARAMSETTING_OFF, true);
+	call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 void Model::disable_cuts() {
-	call(SCIPsetSeparating, scip.get(), SCIP_PARAMSETTING_OFF, true);
+	call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
 bool Model::is_solved() const noexcept {
-	return SCIPgetStage(scip.get()) == SCIP_STAGE_SOLVED;
+	return SCIPgetStage(get_scip_ptr()) == SCIP_STAGE_SOLVED;
 }
 
 VarView Model::variables() const noexcept {
-	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(scip.get()));
-	return VarView(SCIPgetVars(scip.get()), n_vars);
+	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(get_scip_ptr()));
+	return VarView(SCIPgetVars(get_scip_ptr()), n_vars);
 }
 
 VarView Model::lp_branch_vars() const noexcept {
 	int n_vars{};
 	SCIP_VAR** vars{};
 	call(
-		SCIPgetLPBranchCands, scip.get(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
+		SCIPgetLPBranchCands,
+		get_scip_ptr(),
+		&vars,
+		nullptr,
+		nullptr,
+		&n_vars,
+		nullptr,
+		nullptr);
 	return VarView(vars, static_cast<std::size_t>(n_vars));
 }
 
@@ -245,7 +256,7 @@ private:
 		// by Scip.
 		(void)allow_addcons;
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
-		assert(branch_data->model.scip.get() == scip);
+		assert(branch_data->model.get_scip_ptr() == scip);
 		assert(branch_data->func);
 		*result = SCIP_DIDNOTRUN;
 
@@ -268,7 +279,7 @@ private:
 	}
 
 	static auto include_void_branch_rule(Model& model) {
-		auto const scip = model.scip.get();
+		auto const scip = model.get_scip_ptr();
 		SCIP_BRANCHRULE* branch_rule;
 		call(
 			SCIPincludeBranchruleBasic,
@@ -285,7 +296,7 @@ private:
 	}
 
 	static inline auto get_branch_rule(Model const& model) {
-		return SCIPfindBranchrule(model.scip.get(), name);
+		return SCIPfindBranchrule(model.get_scip_ptr(), name);
 	}
 
 	static void
