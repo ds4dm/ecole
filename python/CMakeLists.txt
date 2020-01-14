@@ -23,6 +23,8 @@ find_package(Python REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 find_package(pybind11 REQUIRED)
+find_package(xtensor REQUIRED)
+find_package(xtensor-python REQUIRED)
 
 foreach(submodule_name ${Ecole_PYTHON_MODULE_NAMES})
 	set(submodule_target "py-${submodule_name}")
@@ -32,7 +34,7 @@ foreach(submodule_name ${Ecole_PYTHON_MODULE_NAMES})
 		${submodule_target}
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole
 	)
-	target_link_libraries(${submodule_target} PRIVATE Ecole::libecole)
+	target_link_libraries(${submodule_target} PRIVATE Ecole::libecole xtensor xtensor-python)
 	target_compile_features(${submodule_target} PUBLIC cxx_std_14)
 	set_target_properties( ${submodule_target} PROPERTIES OUTPUT_NAME ${submodule_name})
 	# If no output directory specified, preserve the src/ecole layout
