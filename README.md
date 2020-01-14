@@ -6,7 +6,7 @@ Ecole (pronounced [ekɔl]) stands for _Extensible Combinatorial Optimization Lea
 Environments_ and aims to expose a number of control problems arising in combinatorial
 optimization solvers as Markov
 Decision Processes (_i.e._, Reinforcement Learning environments).
-Rather than trying to solve combinatorial optimization problems directly, the
+Rather than trying to predict solutions to combinatorial optimization problems directly, the
 philosophy behind Ecole is to work
 in cooperation with a state-of-the-art Mixed Integer Linear Programming solver
 that acts as a controllable algorithm.
