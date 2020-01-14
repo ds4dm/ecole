@@ -47,6 +47,9 @@ foreach(submodule_name ${Ecole_PYTHON_MODULE_NAMES})
 	target_link_libraries(
 		${submodule_target} PRIVATE Ecole::libecole xtensor xtensor-python Python::NumPy
 	)
+	if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+		target_link_libraries(${submodule_target} PRIVATE xtensor::optimize)
+	endif()
 	target_compile_features(${submodule_target} PUBLIC cxx_std_14)
 	set_target_properties( ${submodule_target} PROPERTIES OUTPUT_NAME ${submodule_name})
 	# If no output directory specified, preserve the src/ecole layout
