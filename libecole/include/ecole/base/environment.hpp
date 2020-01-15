@@ -98,6 +98,8 @@ struct TerminationSpace {
  * @tparam Action The type of the action accepted to transition from one state to another.
  * @tparam Observation The type of the observation returned on every state.
  */
+
+// FIXME template <typename...> class Holder = std::unique_ptr>
 template <typename Action, typename Observation> class Env {
 public:
 	using action_t = Action;
@@ -105,6 +107,8 @@ public:
 	using reward_t = RewardSpace::reward_t;
 	using seed_t = int;
 	using info_t = int;
+
+	template <typename T> using ptr = std::unique_ptr<T>;
 
 	virtual ~Env() = default;
 

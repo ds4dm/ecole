@@ -66,17 +66,19 @@ public:
 	using typename env_t::reward_t;
 	using typename env_t::seed_t;
 
+	template <typename T> using ptr = typename env_t::template ptr<T>;
+
 	Env(
-		std::unique_ptr<ActionSpace<action_t>>&& action_space,
-		std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-		std::unique_ptr<base::RewardSpace>&& reward_space,
-		std::unique_ptr<base::TerminationSpace>&& termination_space);
+		ptr<ActionSpace<action_t>>&& action_space,
+		ptr<base::ObservationSpace<obs_t>>&& obs_space,
+		ptr<base::RewardSpace>&& reward_space,
+		ptr<base::TerminationSpace>&& termination_space);
 
 private:
-	std::unique_ptr<ActionSpace<action_t>> action_space;
-	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space;
-	std::unique_ptr<base::RewardSpace> reward_space;
-	std::unique_ptr<base::TerminationSpace> termination_space;
+	ptr<ActionSpace<action_t>> action_space;
+	ptr<base::ObservationSpace<obs_t>> obs_space;
+	ptr<base::RewardSpace> reward_space;
+	ptr<base::TerminationSpace> termination_space;
 	internal::ReverseControl solve_controller;
 
 	inline scip::Model& model() noexcept;
@@ -86,10 +88,10 @@ private:
 
 template <typename A, typename O>
 Env<A, O>::Env(
-	std::unique_ptr<ActionSpace<action_t>>&& action_space,
-	std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-	std::unique_ptr<base::RewardSpace>&& reward_space,
-	std::unique_ptr<base::TerminationSpace>&& termination_space) :
+	ptr<ActionSpace<action_t>>&& action_space,
+	ptr<base::ObservationSpace<obs_t>>&& obs_space,
+	ptr<base::RewardSpace>&& reward_space,
+	ptr<base::TerminationSpace>&& termination_space) :
 	action_space(std::move(action_space)),
 	obs_space(std::move(obs_space)),
 	reward_space(std::move(reward_space)),
