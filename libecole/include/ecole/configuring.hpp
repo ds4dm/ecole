@@ -29,24 +29,29 @@ public:
 	virtual std::unique_ptr<ActionSpace<Action>> clone() const override;
 };
 
-template <typename Action, typename Observation>
-class Env : public base::Env<Action, Observation> {
+template <
+	typename Action,
+	typename Observation,
+	template <typename...> class Holder = std::unique_ptr>
+class Env : public base::Env<Action, Observation, Holder> {
 public:
-	using env_t = base::Env<Action, Observation>;
+	using env_t = base::Env<Action, Observation, Holder>;
 	using typename env_t::action_t;
 	using typename env_t::info_t;
 	using typename env_t::obs_t;
 	using typename env_t::reward_t;
 	using typename env_t::seed_t;
 
+	template <typename T> using ptr = typename env_t::template ptr<T>;
+
 	Env(
-		std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-		std::unique_ptr<ActionSpace<action_t>>&& action_space);
+		ptr<base::ObservationSpace<obs_t>>&& obs_space,
+		ptr<ActionSpace<action_t>>&& action_space);
 
 private:
 	scip::Model _model;
-	std::unique_ptr<base::ObservationSpace<obs_t>> obs_space;
-	std::unique_ptr<ActionSpace<action_t>> action_space;
+	ptr<base::ObservationSpace<obs_t>> obs_space;
+	ptr<ActionSpace<action_t>> action_space;
 
 	std::tuple<obs_t, bool> _reset(scip::Model&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
@@ -65,26 +70,27 @@ auto Configure<A>::clone() const -> std::unique_ptr<ActionSpace<A>> {
 	return std::make_unique<Configure<A>>(*this);
 }
 
-template <typename A, typename O>
-Env<A, O>::Env(
-	std::unique_ptr<base::ObservationSpace<obs_t>>&& obs_space,
-	std::unique_ptr<ActionSpace<action_t>>&& action_space) :
+template <typename A, typename O, template <typename...> class H>
+Env<A, O, H>::Env(
+	ptr<base::ObservationSpace<obs_t>>&& obs_space,
+	ptr<ActionSpace<action_t>>&& action_space) :
 	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
 
-template <typename A, typename O>
-auto Env<A, O>::_reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::_reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	_model = std::move(model);
 	return {obs_space->get(_model), is_done()};
 }
 
-template <typename A, typename O>
-auto Env<A, O>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	action_space->set(_model, action);
 	_model.solve();
 	return {obs_space->get(_model), 0., true, info_t{}};
 }
 
-template <typename A, typename O> bool Env<A, O>::is_done() const noexcept {
+template <typename A, typename O, template <typename...> class H>
+bool Env<A, O, H>::is_done() const noexcept {
 	return _model.is_solved();
 }
 
