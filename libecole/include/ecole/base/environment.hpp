@@ -97,10 +97,13 @@ struct TerminationSpace {
  *
  * @tparam Action The type of the action accepted to transition from one state to another.
  * @tparam Observation The type of the observation returned on every state.
+ * @tparam Holder type for spaces and @ref scip::Model. The default should be used.
  */
-
-// FIXME template <typename...> class Holder = std::unique_ptr>
-template <typename Action, typename Observation> class Env {
+template <
+	typename Action,
+	typename Observation,
+	template <typename...> class Holder = std::unique_ptr>
+class Env {
 public:
 	using action_t = Action;
 	using obs_t = Observation;
@@ -108,7 +111,8 @@ public:
 	using seed_t = int;
 	using info_t = int;
 
-	template <typename T> using ptr = std::unique_ptr<T>;
+	// Template a hodler type. Enable using std::shared_ptr for Python bindings
+	template <typename T> using ptr = Holder<T>;
 
 	virtual ~Env() = default;
 
@@ -168,16 +172,18 @@ template <typename O> void ObservationSpace<O>::reset(scip::Model const& model) 
 	(void)model;
 }
 
-template <typename A, typename O> auto Env<A, O>::seed(seed_t seed) noexcept -> seed_t {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::seed(seed_t seed) noexcept -> seed_t {
 	return seed_v = seed;
 }
 
-template <typename A, typename O> auto Env<A, O>::seed() const noexcept -> seed_t {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::seed() const noexcept -> seed_t {
 	return seed_v;
 }
 
-template <typename A, typename O>
-auto Env<A, O>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	mutate_seed();
 	try {
 		auto result = _reset(std::move(model));
@@ -189,13 +195,13 @@ auto Env<A, O>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	}
 }
 
-template <typename A, typename O>
-auto Env<A, O>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
 	return reset(scip::Model::from_file(filename));
 }
 
-template <typename A, typename O>
-auto Env<A, O>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
 	if (!can_transition) throw Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));
@@ -207,7 +213,8 @@ auto Env<A, O>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_
 	}
 }
 
-template <typename A, typename O> void Env<A, O>::mutate_seed() noexcept {
+template <typename A, typename O, template <typename...> class H>
+void Env<A, O, H>::mutate_seed() noexcept {
 	++seed_v;
 }
 
