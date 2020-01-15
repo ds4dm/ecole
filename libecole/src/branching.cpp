@@ -55,9 +55,9 @@ ReverseControl::ThreadControl::ThreadControl(scip::Model&& other_model) :
 		};
 
 		lock_t lk{mut};
-		model.set_branch_rule(branch_rule);
+		get_model(lk).set_branch_rule(branch_rule);
 		try {
-			model.solve();
+			get_model(lk).solve();
 		} catch (...) {
 			eptr = std::current_exception();
 		}
