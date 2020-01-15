@@ -37,19 +37,11 @@ PYBIND11_MODULE(branching, m) {
 					std::make_unique<reward::Done>(),
 					std::make_unique<termination::Solved>());
 			})
-		.def(py11::init(  //
-			[](
-				ActionSpace const& action_space,
-				py::ObsSpaceBase const& obs_space,
-				base::RewardSpace const& reward_space,
-				base::TerminationSpace const& termination_space  //
-			) {
-				return std::make_unique<Env>(
-					action_space.clone(),
-					obs_space.clone(),
-					reward_space.clone(),
-					termination_space.clone());
-			}))
+		.def(py11::init<
+				 Env::ptr<ActionSpace> const&,
+				 Env::ptr<py::ObsSpaceBase> const&,
+				 Env::ptr<base::RewardSpace> const&,
+				 Env::ptr<base::TerminationSpace> const&>())  //
 		.def("step", [](py::EnvBase& env, branching::Fractional::action_t const& action) {
 			return env.step(py::Action<std::size_t>(action));
 		});

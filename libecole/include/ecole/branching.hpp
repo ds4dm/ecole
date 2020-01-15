@@ -76,6 +76,11 @@ public:
 		ptr<base::ObservationSpace<obs_t>>&& obs_space,
 		ptr<base::RewardSpace>&& reward_space,
 		ptr<base::TerminationSpace>&& termination_space);
+	Env(
+		ptr<ActionSpace<action_t>> const& action_space,
+		ptr<base::ObservationSpace<obs_t>> const& obs_space,
+		ptr<base::RewardSpace> const& reward_space,
+		ptr<base::TerminationSpace> const& termination_space);
 
 private:
 	ptr<ActionSpace<action_t>> action_space;
@@ -99,6 +104,17 @@ Env<A, O, H>::Env(
 	obs_space(std::move(obs_space)),
 	reward_space(std::move(reward_space)),
 	termination_space(std::move(termination_space)) {}
+
+template <typename A, typename O, template <typename...> class H>
+Env<A, O, H>::Env(
+	ptr<ActionSpace<action_t>> const& action_space,
+	ptr<base::ObservationSpace<obs_t>> const& obs_space,
+	ptr<base::RewardSpace> const& reward_space,
+	ptr<base::TerminationSpace> const& termination_space) :
+	action_space(action_space),
+	obs_space(obs_space),
+	reward_space(reward_space),
+	termination_space(termination_space) {}
 
 template <typename A, typename O, template <typename...> class H>
 scip::Model& Env<A, O, H>::model() noexcept {
