@@ -114,10 +114,13 @@ struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::get)>> :
 	}
 };
 
-using Py_EnvBase = base::Env<Py_ActionBase const&, std::unique_ptr<Py_ObsBase>>;
+using Py_EnvBase =
+	base::Env<Py_ActionBase const&, std::unique_ptr<Py_ObsBase>, std::shared_ptr>;
 
-template <template <typename Action, typename Obs> class Env>
-using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t>;
+template <  //
+	template <typename, typename, template <typename...> class>
+	class Env>
+using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t, std::shared_ptr>;
 
 }  // namespace hidden
 
@@ -135,7 +138,8 @@ template <typename AS, template <typename> class ASB>
 using ActionSpace = hidden::Py_ActionSpace_SFINAE<AS, ASB>;
 
 using EnvBase = hidden::Py_EnvBase;
-template <template <typename, typename> class E> using Env = hidden::Py_Env<E>;
+template <template <typename, typename, template <typename...> class> class E>
+using Env = hidden::Py_Env<E>;
 
 }  // namespace py
 }  // namespace ecole

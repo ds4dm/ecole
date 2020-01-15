@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -21,8 +23,8 @@ PYBIND11_MODULE(branching, m) {
 	using Fractional = py::ActionSpace<branching::Fractional, branching::ActionSpace>;
 	using Env = py::Env<branching::Env>;
 
-	py11::class_<ActionSpace>(m, "ActionSpace");
-	py11::class_<Fractional, ActionSpace>(m, "Fractional")  //
+	py11::class_<ActionSpace, std::shared_ptr<ActionSpace>>(m, "ActionSpace");
+	py11::class_<Fractional, ActionSpace, std::shared_ptr<Fractional>>(m, "Fractional")  //
 		.def(py11::init<>());
 
 	py11::class_<Env, py::EnvBase>(m, "Env")  //

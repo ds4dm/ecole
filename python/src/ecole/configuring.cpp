@@ -1,3 +1,4 @@
+#include <memory>
 #include <string>
 
 #include <pybind11/pybind11.h>
@@ -45,8 +46,8 @@ PYBIND11_MODULE(configuring, m) {
 		py::ActionSpace<configuring::Configure<py11::object>, configuring::ActionSpace>;
 	using Env = py::Env<configuring::Env>;
 
-	py11::class_<ActionSpace>(m, "ActionSpace");
-	py11::class_<Configure, ActionSpace>(m, "Configure")  //
+	py11::class_<ActionSpace, std::shared_ptr<ActionSpace>>(m, "ActionSpace");
+	py11::class_<Configure, ActionSpace, std::shared_ptr<Configure>>(m, "Configure")  //
 		.def(py11::init<std::string const&>())
 		.def("set", [](Configure& c, scip::Model model, py11::object param) {
 			c.set(model, py::Action<py11::object>(param));

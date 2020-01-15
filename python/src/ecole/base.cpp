@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -15,15 +17,16 @@ PYBIND11_MODULE(base, m) {
 	auto scip_module = py11::module::import("ecole.scip");
 
 	py11::class_<py::ObsBase>(m, "Observation");
-	py11::class_<py::ObsSpaceBase>(m, "ObservationSpace")  //
+	py11::class_<py::ObsSpaceBase, std::shared_ptr<py::ObsSpaceBase>>(m, "ObservationSpace")
 		.def("reset", &py::ObsSpaceBase::reset, py11::arg("model"))
 		.def("get", &py::ObsSpaceBase::get, py11::arg("model"));
 
-	py11::class_<base::RewardSpace>(m, "RewardSpace")  //
+	py11::class_<base::RewardSpace, std::shared_ptr<base::RewardSpace>>(m, "RewardSpace")
 		.def("reset", &base::RewardSpace::reset, py11::arg("model"))
 		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
 
-	py11::class_<base::TerminationSpace>(m, "TerminationSpace")  //
+	py11::class_<base::TerminationSpace, std::shared_ptr<base::TerminationSpace>>(
+		m, "TerminationSpace")
 		.def("reset", &base::TerminationSpace::reset, py11::arg("model"))
 		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
 

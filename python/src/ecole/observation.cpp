@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <pybind11/pybind11.h>
 
 #include "ecole/observation.hpp"
@@ -13,6 +15,9 @@ namespace py {
 using BasicObs = py::Obs<obs::BasicObs>;
 using BasicObsSpace = py::ObsSpace<obs::BasicObsSpace>;
 
+template <typename C>
+using obs_space_class = py11::class_<C, py::ObsSpaceBase, std::shared_ptr<C>>;
+
 }  // namespace py
 }  // namespace ecole
 
@@ -22,6 +27,6 @@ PYBIND11_MODULE(observation, m) {
 	auto base_module = py11::module::import("ecole.base");
 
 	py11::class_<py::BasicObs, py::ObsBase>(m, "BasicObs");
-	py11::class_<py::BasicObsSpace, py::ObsSpaceBase>(m, "BasicObsSpace")  //
+	py::obs_space_class<py::BasicObsSpace>(m, "BasicObsSpace")  //
 		.def(py11::init<>());
 }
