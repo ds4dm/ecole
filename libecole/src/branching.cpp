@@ -37,7 +37,7 @@ private:
 	std::condition_variable cv;
 	bool terminate_flag = false;
 	bool solve_thread_running = true;
-	scip::Model model;
+	std::unique_ptr<scip::Model> model;
 	scip::VarProxy branching_var = scip::VarProxy::None;
 
 	void hold_env();
@@ -45,7 +45,7 @@ private:
 };
 
 ReverseControl::ThreadControl::ThreadControl(scip::Model&& other_model) :
-	model(std::move(other_model)) {
+	model(std::make_unique<scip::Model>(std::move(other_model))) {
 
 	auto run = [this] {
 		auto branch_rule = [this](scip::Model& model) {
@@ -107,7 +107,7 @@ bool ReverseControl::ThreadControl::is_done(lock_t const& lk) const noexcept {
 
 scip::Model& ReverseControl::ThreadControl::get_model(lock_t const& lk) noexcept {
 	validate_lock(lk);
-	return model;
+	return *model;
 }
 
 void ReverseControl::ThreadControl::hold_env() {
