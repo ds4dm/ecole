@@ -1,5 +1,6 @@
 #include <cassert>
 #include <condition_variable>
+#include <memory.h>
 #include <thread>
 
 #include <scip/scip.h>
@@ -12,9 +13,12 @@ namespace branching {
 
 namespace internal {
 
-class ReverseControl::ThreadControl {
+template <template <typename...> class Holder>
+class ReverseControl<Holder>::ThreadControl {
 public:
 	using lock_t = ReverseControl::lock_t;
+
+	template <typename T> using ptr = Holder<T>;
 
 	ThreadControl() = delete;
 	ThreadControl(scip::Model&& model);
@@ -37,14 +41,15 @@ private:
 	std::condition_variable cv;
 	bool terminate_flag = false;
 	bool solve_thread_running = true;
-	std::unique_ptr<scip::Model> model;
 	scip::VarProxy branching_var = scip::VarProxy::None;
+	ptr<scip::Model> model;
 
 	void hold_env();
 	void validate_lock(lock_t const& lk) const;
 };
 
-ReverseControl::ThreadControl::ThreadControl(scip::Model&& other_model) :
+template <template <typename...> class H>
+ReverseControl<H>::ThreadControl::ThreadControl(scip::Model&& other_model) :
 	model(std::make_unique<scip::Model>(std::move(other_model))) {
 
 	auto run = [this] {
@@ -70,7 +75,8 @@ ReverseControl::ThreadControl::ThreadControl(scip::Model&& other_model) :
 	solve_thread = std::thread(run);
 }
 
-auto ReverseControl::ThreadControl::wait() -> lock_t {
+template <template <typename...> class H>
+auto ReverseControl<H>::ThreadControl::wait() -> lock_t {
 	assert(solve_thread.joinable());
 
 	lock_t lk{mut};
@@ -79,7 +85,8 @@ auto ReverseControl::ThreadControl::wait() -> lock_t {
 	return lk;
 }
 
-void ReverseControl::ThreadControl::resume(scip::VarProxy var, lock_t&& lk) {
+template <template <typename...> class H>
+void ReverseControl<H>::ThreadControl::resume(scip::VarProxy var, lock_t&& lk) {
 	validate_lock(lk);
 	branching_var = var;
 	solve_thread_running = true;
@@ -87,7 +94,8 @@ void ReverseControl::ThreadControl::resume(scip::VarProxy var, lock_t&& lk) {
 	cv.notify_one();
 }
 
-void ReverseControl::ThreadControl::join(lock_t&& lk) {
+template <template <typename...> class H>
+void ReverseControl<H>::ThreadControl::join(lock_t&& lk) {
 	if (solve_thread.joinable()) {
 		if (!lk.owns_lock()) lk = wait();
 		validate_lock(lk);
@@ -100,17 +108,20 @@ void ReverseControl::ThreadControl::join(lock_t&& lk) {
 	}
 }
 
-bool ReverseControl::ThreadControl::is_done(lock_t const& lk) const noexcept {
+template <template <typename...> class H>
+bool ReverseControl<H>::ThreadControl::is_done(lock_t const& lk) const noexcept {
 	validate_lock(lk);
 	return terminate_flag;
 }
 
-scip::Model& ReverseControl::ThreadControl::get_model(lock_t const& lk) noexcept {
+template <template <typename...> class H>
+scip::Model& ReverseControl<H>::ThreadControl::get_model(lock_t const& lk) noexcept {
 	validate_lock(lk);
 	return *model;
 }
 
-void ReverseControl::ThreadControl::hold_env() {
+template <template <typename...> class H>
+void ReverseControl<H>::ThreadControl::hold_env() {
 	lock_t lk{mut, std::adopt_lock};
 	solve_thread_running = false;
 	lk.unlock();
@@ -120,47 +131,58 @@ void ReverseControl::ThreadControl::hold_env() {
 	lk.release();
 }
 
-void ReverseControl::ThreadControl::validate_lock(lock_t const& lk) const {
+template <template <typename...> class H>
+void ReverseControl<H>::ThreadControl::validate_lock(lock_t const& lk) const {
 	(void)lk;
 	assert(lk && (lk.mutex() == &mut));
 }
 
-ReverseControl::ReverseControl() noexcept = default;
-ReverseControl::ReverseControl(ReverseControl&&) = default;
+template <template <typename...> class H>
+ReverseControl<H>::ReverseControl() noexcept = default;
+template <template <typename...> class H>
+ReverseControl<H>::ReverseControl(ReverseControl&&) = default;
 
-ReverseControl::ReverseControl(scip::Model&& model) :
+template <template <typename...> class H>
+ReverseControl<H>::ReverseControl(scip::Model&& model) :
 	thread_control(std::make_unique<ThreadControl>(std::move(model))),
 	lk_ptr(std::make_unique<lock_t>()) {}
 
-ReverseControl& ReverseControl::operator=(ReverseControl&& other) {
+template <template <typename...> class H>
+auto ReverseControl<H>::operator=(ReverseControl&& other) -> ReverseControl& {
 	if (thread_control) thread_control->join(std::move(*lk_ptr));
 	thread_control = std::move(other.thread_control);
 	lk_ptr = std::move(other.lk_ptr);
 	return *this;
 }
 
-ReverseControl::~ReverseControl() {
+template <template <typename...> class H> ReverseControl<H>::~ReverseControl() {
 	if (thread_control) thread_control->join(std::move(*lk_ptr));
 }
 
-void ReverseControl::wait() {
+template <template <typename...> class H> void ReverseControl<H>::wait() {
 	assert(thread_control);
 	*lk_ptr = thread_control->wait();
 }
 
-void ReverseControl::resume(scip::VarProxy var) {
+template <template <typename...> class H>
+void ReverseControl<H>::resume(scip::VarProxy var) {
 	assert(thread_control);
 	assert(lk_ptr);
 	thread_control->resume(var, std::move(*lk_ptr));
 }
 
-bool ReverseControl::is_done() const noexcept {
+template <template <typename...> class H>
+bool ReverseControl<H>::is_done() const noexcept {
 	return thread_control->is_done(*lk_ptr);
 }
 
-scip::Model& ReverseControl::model() noexcept {
+template <template <typename...> class H>
+scip::Model& ReverseControl<H>::model() noexcept {
 	return thread_control->get_model(*lk_ptr);
 }
+
+template class ReverseControl<std::unique_ptr>;
+template class ReverseControl<std::shared_ptr>;
 
 }  // namespace internal
 
