@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 
@@ -34,7 +36,7 @@ template <> py11::object scip::Model::get_param(const char* name) const {
 PYBIND11_MODULE(scip, m) {
 	m.doc() = "Scip wrappers for ecole.";
 
-	py11::class_<scip::Model>(m, "Model")  //
+	py11::class_<scip::Model, std::shared_ptr<scip::Model>>(m, "Model")  //
 		.def_static("from_file", &scip::Model::from_file)
 
 		.def(py11::self == py11::self)
