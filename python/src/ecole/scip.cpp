@@ -1,3 +1,4 @@
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 
 #include "ecole/scip/model.hpp"
@@ -35,6 +36,9 @@ PYBIND11_MODULE(scip, m) {
 
 	py11::class_<scip::Model>(m, "Model")  //
 		.def_static("from_file", &scip::Model::from_file)
+
+		.def(py11::self == py11::self)
+		.def(py11::self != py11::self)
 
 		.def(
 			"get_param",

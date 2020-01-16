@@ -72,6 +72,14 @@ Model& Model::operator=(Model const& other) {
 	return *this;
 }
 
+bool Model::operator==(Model const& other) const noexcept {
+	return scip == other.scip;
+}
+
+bool Model::operator!=(Model const& other) const noexcept {
+	return !(*this == other);
+}
+
 Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
 	call(SCIPreadProb, model.get_scip_ptr(), filename.c_str(), nullptr);

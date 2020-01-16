@@ -35,6 +35,12 @@ TEST_CASE("Creation of model from scip pointer") {
 	scip::Model{scip::create()};
 }
 
+TEST_CASE("Equality comparison") {
+	auto model = scip::Model{};
+	REQUIRE(model == model);
+	REQUIRE(model != scip::Model{model});
+}
+
 TEST_CASE("Create model from file") {
 	auto model = scip::Model::from_file(problem_file);
 }

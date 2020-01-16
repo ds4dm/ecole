@@ -77,6 +77,12 @@ public:
 	~Model() = default;
 
 	/**
+	 * Compare if two model share the same Scip pointer, _i.e._ the same memory.
+	 */
+	bool operator==(Model const& other) const noexcept;
+	bool operator!=(Model const& other) const noexcept;
+
+	/**
 	 * Construct a model by reading a problem file supported by Scip (LP, MPS,...).
 	 */
 	static Model from_file(std::string const& filename);

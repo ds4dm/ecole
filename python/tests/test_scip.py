@@ -1,6 +1,11 @@
 import pytest
 
 
+def test_equality(model):
+    assert model == model
+    assert model != 33
+
+
 names_types = (
     ("branching/preferbinary", bool),  # Bool param
     ("conflict/maxlploops", int),  # Int param
