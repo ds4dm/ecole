@@ -126,60 +126,6 @@ ParamType Model::get_param_type(std::string const& name) const {
 	return get_param_type(name.c_str());
 }
 
-template <> void Model::set_param_explicit(const char* name, SCIP_Bool value) {
-	call(SCIPsetBoolParam, get_scip_ptr(), name, value);
-}
-template <> void Model::set_param_explicit(const char* name, char value) {
-	call(SCIPsetCharParam, get_scip_ptr(), name, value);
-}
-template <> void Model::set_param_explicit(const char* name, int value) {
-	call(SCIPsetIntParam, get_scip_ptr(), name, value);
-}
-template <> void Model::set_param_explicit(const char* name, SCIP_Longint value) {
-	call(SCIPsetLongintParam, get_scip_ptr(), name, value);
-}
-template <> void Model::set_param_explicit(const char* name, SCIP_Real value) {
-	call(SCIPsetRealParam, get_scip_ptr(), name, value);
-}
-template <> void Model::set_param_explicit(const char* name, const char* value) {
-	call(SCIPsetStringParam, get_scip_ptr(), name, value);
-}
-
-template <> void Model::set_param(const char* name, std::string const& value) {
-	set_param(name, value.c_str());
-}
-
-template <> SCIP_Bool Model::get_param_explicit(const char* name) const {
-	SCIP_Bool value{};
-	call(SCIPgetBoolParam, get_scip_ptr(), name, &value);
-	return value;
-}
-template <> char Model::get_param_explicit(const char* name) const {
-	char value{};
-	call(SCIPgetCharParam, get_scip_ptr(), name, &value);
-	return value;
-}
-template <> int Model::get_param_explicit(const char* name) const {
-	int value{};
-	call(SCIPgetIntParam, get_scip_ptr(), name, &value);
-	return value;
-}
-template <> SCIP_Longint Model::get_param_explicit(const char* name) const {
-	SCIP_Longint value{};
-	call(SCIPgetLongintParam, get_scip_ptr(), name, &value);
-	return value;
-}
-template <> SCIP_Real Model::get_param_explicit(const char* name) const {
-	SCIP_Real value{};
-	call(SCIPgetRealParam, get_scip_ptr(), name, &value);
-	return value;
-}
-template <> const char* Model::get_param_explicit(const char* name) const {
-	char* ptr = nullptr;
-	call(SCIPgetStringParam, get_scip_ptr(), name, &ptr);
-	return ptr;
-}
-
 param_t<ParamType::Int> Model::seed() const {
 	return get_param_explicit<param_t<ParamType::Int>>("randomization/randomseedshift");
 }
@@ -334,6 +280,59 @@ void Model::set_branch_rule(BranchFunc const& func) {
 }
 
 namespace internal {
+
+template <> void set_scip_param(Scip* scip, const char* name, SCIP_Bool value) {
+	call(SCIPsetBoolParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, char value) {
+	call(SCIPsetCharParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, int value) {
+	call(SCIPsetIntParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, SCIP_Longint value) {
+	call(SCIPsetLongintParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, SCIP_Real value) {
+	call(SCIPsetRealParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, const char* value) {
+	call(SCIPsetStringParam, scip, name, value);
+}
+template <> void set_scip_param(Scip* scip, const char* name, std::string const& value) {
+	return set_scip_param(scip, name, value.c_str());
+}
+
+template <> SCIP_Bool get_scip_param(Scip* scip, const char* name) {
+	SCIP_Bool value{};
+	call(SCIPgetBoolParam, scip, name, &value);
+	return value;
+}
+template <> char get_scip_param(Scip* scip, const char* name) {
+	char value{};
+	call(SCIPgetCharParam, scip, name, &value);
+	return value;
+}
+template <> int get_scip_param(Scip* scip, const char* name) {
+	int value{};
+	call(SCIPgetIntParam, scip, name, &value);
+	return value;
+}
+template <> SCIP_Longint get_scip_param(Scip* scip, const char* name) {
+	SCIP_Longint value{};
+	call(SCIPgetLongintParam, scip, name, &value);
+	return value;
+}
+template <> SCIP_Real get_scip_param(Scip* scip, const char* name) {
+	SCIP_Real value{};
+	call(SCIPgetRealParam, scip, name, &value);
+	return value;
+}
+template <> const char* get_scip_param(Scip* scip, const char* name) {
+	char* ptr = nullptr;
+	call(SCIPgetStringParam, scip, name, &ptr);
+	return ptr;
+}
 
 template <> Cast_SFINAE<char, const char*>::operator char() const {
 	if (std::strlen(val) == 1)

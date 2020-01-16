@@ -157,6 +157,12 @@ private:
 
 namespace internal {
 
+// Specializations are instantiated in cpp file.
+// Having this proxy avoid specializing memeber function of Model, which is not
+// compatible with template class.
+template <typename T> void set_scip_param(Scip* scip, const char* name, T value);
+template <typename T> T get_scip_param(Scip* scip, const char* name);
+
 // SFINAE to check if type exists
 template <typename> struct exists { using type = void; };
 template <typename T> using exists_t = typename exists<T>::type;
@@ -185,12 +191,24 @@ template <typename From> struct Cast_SFINAE<bool, From*> {
 // C-string can be converted to char if single character
 template <> Cast_SFINAE<char, const char*>::operator char() const;
 
+// Don't convert std::string to const char* (dangling pointer).
+// Leave the string as it is to pass to set_param_explicit.
+template <> struct Cast_SFINAE<const char*, std::string> : public std::string {};
+
 // Helper func to deduce From type automatically
 template <typename To, typename From> To cast(From x) {
 	return Cast_SFINAE<To, From>{x};
 }
 
 }  // namespace internal
+
+template <typename T> void Model::set_param_explicit(const char* name, T value) {
+	return internal::set_scip_param<T>(get_scip_ptr(), name, value);
+}
+
+template <typename T> T Model::get_param_explicit(const char* name) const {
+	return internal::get_scip_param<T>(get_scip_ptr(), name);
+}
 
 template <typename T> void Model::set_param_explicit(std::string const& name, T value) {
 	return set_param_explicit(name.c_str(), value);
@@ -217,8 +235,6 @@ template <typename T> void Model::set_param(const char* name, T value) {
 		throw Exception("Could not find type for given parameter");
 	}
 }
-
-template <> void Model::set_param(const char* name, std::string const& value);
 
 template <typename T> void Model::set_param(std::string const& name, T value) {
 	return set_param(name.c_str(), value);
