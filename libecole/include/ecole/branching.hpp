@@ -18,9 +18,11 @@ template <template <typename...> class Holder> class ReverseControl {
 public:
 	using lock_t = std::unique_lock<std::mutex>;
 
+	template <typename T> using ptr = Holder<T>;
+
 	ReverseControl() noexcept;
 	ReverseControl(ReverseControl&&);
-	ReverseControl(scip::Model&& model);
+	ReverseControl(ptr<scip::Model>&& model);
 	ReverseControl& operator=(ReverseControl&&);
 	~ReverseControl();
 
@@ -90,7 +92,7 @@ private:
 	internal::ReverseControl<Holder> solve_controller;
 
 	inline scip::Model& model() noexcept;
-	std::tuple<obs_t, bool> _reset(scip::Model&& model) override;
+	std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 };
 
@@ -122,8 +124,8 @@ scip::Model& Env<A, O, H>::model() noexcept {
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::_reset(scip::Model&& new_model) -> std::tuple<obs_t, bool> {
-	new_model.seed(this->seed());
+auto Env<A, O, H>::_reset(ptr<scip::Model>&& new_model) -> std::tuple<obs_t, bool> {
+	new_model->seed(this->seed());
 	solve_controller = internal::ReverseControl<H>(std::move(new_model));
 	solve_controller.wait();
 	reward_space->reset(model());

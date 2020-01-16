@@ -49,11 +49,11 @@ public:
 		ptr<ActionSpace<action_t>>&& action_space);
 
 private:
-	scip::Model _model;
+	ptr<scip::Model> _model;
 	ptr<base::ObservationSpace<obs_t>> obs_space;
 	ptr<ActionSpace<action_t>> action_space;
 
-	std::tuple<obs_t, bool> _reset(scip::Model&& model) override;
+	std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
 	bool is_done() const noexcept;
 };
@@ -77,21 +77,21 @@ Env<A, O, H>::Env(
 	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::_reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+auto Env<A, O, H>::_reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
 	_model = std::move(model);
-	return {obs_space->get(_model), is_done()};
+	return {obs_space->get(*_model), is_done()};
 }
 
 template <typename A, typename O, template <typename...> class H>
 auto Env<A, O, H>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
-	action_space->set(_model, action);
-	_model.solve();
-	return {obs_space->get(_model), 0., true, info_t{}};
+	action_space->set(*_model, action);
+	_model->solve();
+	return {obs_space->get(*_model), 0., true, info_t{}};
 }
 
 template <typename A, typename O, template <typename...> class H>
 bool Env<A, O, H>::is_done() const noexcept {
-	return _model.is_solved();
+	return _model->is_solved();
 }
 
 }  // namespace configuring

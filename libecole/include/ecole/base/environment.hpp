@@ -140,6 +140,7 @@ public:
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
+	std::tuple<obs_t, bool> reset(ptr<scip::Model>&& model);
 	std::tuple<obs_t, bool> reset(scip::Model&& model);
 	std::tuple<obs_t, bool> reset(std::string const& filename);
 
@@ -164,7 +165,7 @@ private:
 	seed_t seed_v = 0;
 
 	void mutate_seed() noexcept;
-	virtual std::tuple<obs_t, bool> _reset(scip::Model&& model) = 0;
+	virtual std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) = 0;
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
 
@@ -183,7 +184,8 @@ auto Env<A, O, H>::seed() const noexcept -> seed_t {
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+auto Env<A, O, H>::reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
+	if (model == nullptr) throw Exception("Invalid null pointer to Model");
 	mutate_seed();
 	try {
 		auto result = _reset(std::move(model));
@@ -193,6 +195,11 @@ auto Env<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 		can_transition = false;
 		throw;
 	}
+}
+
+template <typename A, typename O, template <typename...> class H>
+auto Env<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+	return reset(std::make_unique<scip::Model>(std::move(model)));
 }
 
 template <typename A, typename O, template <typename...> class H>

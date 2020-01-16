@@ -21,7 +21,7 @@ public:
 	template <typename T> using ptr = Holder<T>;
 
 	ThreadControl() = delete;
-	ThreadControl(scip::Model&& model);
+	ThreadControl(ptr<scip::Model>&& model);
 	// Running thread is capturing this pointer
 	ThreadControl(ThreadControl&&) = delete;
 	ThreadControl(ThreadControl const&) = delete;
@@ -49,8 +49,8 @@ private:
 };
 
 template <template <typename...> class H>
-ReverseControl<H>::ThreadControl::ThreadControl(scip::Model&& other_model) :
-	model(std::make_unique<scip::Model>(std::move(other_model))) {
+ReverseControl<H>::ThreadControl::ThreadControl(ptr<scip::Model>&& other_model) :
+	model(std::move(other_model)) {
 
 	auto run = [this] {
 		auto branch_rule = [this](scip::Model& model) {
@@ -143,7 +143,7 @@ template <template <typename...> class H>
 ReverseControl<H>::ReverseControl(ReverseControl&&) = default;
 
 template <template <typename...> class H>
-ReverseControl<H>::ReverseControl(scip::Model&& model) :
+ReverseControl<H>::ReverseControl(ptr<scip::Model>&& model) :
 	thread_control(std::make_unique<ThreadControl>(std::move(model))),
 	lk_ptr(std::make_unique<lock_t>()) {}
 
