@@ -40,6 +40,8 @@ PYBIND11_MODULE(scip, m) {
 		.def(py11::self == py11::self)
 		.def(py11::self != py11::self)
 
+		.def("clone", [](scip::Model const& model) { return model; })
+
 		.def(
 			"get_param",
 			[](scip::Model const& model, const char* name) {

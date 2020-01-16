@@ -6,6 +6,12 @@ def test_equality(model):
     assert model != 33
 
 
+def test_clone(model):
+    model_copy = model.clone()
+    assert model is not model_copy
+    assert model != model_copy
+
+
 names_types = (
     ("branching/preferbinary", bool),  # Bool param
     ("conflict/maxlploops", int),  # Int param
