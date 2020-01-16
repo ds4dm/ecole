@@ -40,8 +40,8 @@ PYBIND11_MODULE(base, m) {
 
 		.def(
 			"reset",
-			[](py::EnvBase& env, scip::Model const& model) {
-				return env.reset(scip::Model{model});
+			[](py::EnvBase& env, py::EnvBase::ptr<scip::Model> model) {
+				return env.reset(std::move(model));
 			},
 			py11::arg("model"))
 		.def(
