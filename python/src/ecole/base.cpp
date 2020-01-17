@@ -7,6 +7,7 @@
 #include "ecole/scip/model.hpp"
 
 #include "base.hpp"
+#include "base/reward.hpp"
 
 namespace py11 = pybind11;
 using namespace ecole;
@@ -21,7 +22,8 @@ PYBIND11_MODULE(base, m) {
 		.def("reset", &py::ObsSpaceBase::reset, py11::arg("model"))
 		.def("get", &py::ObsSpaceBase::get, py11::arg("model"));
 
-	py11::class_<base::RewardSpace, std::shared_ptr<base::RewardSpace>>(m, "RewardSpace")
+	py::reward::base_space_class_(m, "RewardSpace")
+		.def(py11::init<>())
 		.def("reset", &base::RewardSpace::reset, py11::arg("model"))
 		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
 
