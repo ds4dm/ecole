@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "ecole/base/environment.hpp"
+#include "ecole/base.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "base.hpp"

@@ -3,7 +3,7 @@
 #include <memory>
 #include <tuple>
 
-#include "ecole/base/environment.hpp"
+#include "ecole/base.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {

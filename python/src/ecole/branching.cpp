@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "ecole/base/environment.hpp"
+#include "ecole/base.hpp"
 #include "ecole/branching.hpp"
 #include "ecole/observation.hpp"
 #include "ecole/reward.hpp"

@@ -1,4 +1,4 @@
-#include "ecole/base/environment.hpp"
+#include "ecole/base.hpp"
 
 namespace ecole {
 namespace base {

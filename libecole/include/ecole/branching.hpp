@@ -5,7 +5,7 @@
 #include <mutex>
 #include <tuple>
 
-#include "ecole/base/environment.hpp"
+#include "ecole/base.hpp"
 #include "ecole/observation.hpp"
 #include "ecole/scip/model.hpp"
 
