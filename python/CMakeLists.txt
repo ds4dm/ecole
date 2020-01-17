@@ -18,8 +18,18 @@ endforeach(py_file)
 add_custom_target(pyecole ALL)
 set_target_properties(pyecole PROPERTIES SETUP_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
+# Prefer finding Python from path if possible
+if(NOT DEFINED Python_ROOT_DIR)
+	execute_process(
+		COMMAND which python
+		COMMAND xargs dirname  # Pipe
+		OUTPUT_VARIABLE Python_ROOT_DIR
+		RESULTS_VARIABLE Python_IN_PATH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+endif()
+find_package(Python COMPONENTS Interpreter NumPy REQUIRED)
 # Use FindPython to override wrong pybind resolution
-find_package(Python REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 find_package(pybind11 REQUIRED)
@@ -34,7 +44,9 @@ foreach(submodule_name ${Ecole_PYTHON_MODULE_NAMES})
 		${submodule_target}
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole
 	)
-	target_link_libraries(${submodule_target} PRIVATE Ecole::libecole xtensor xtensor-python)
+	target_link_libraries(
+		${submodule_target} PRIVATE Ecole::libecole xtensor xtensor-python Python::NumPy
+	)
 	target_compile_features(${submodule_target} PUBLIC cxx_std_14)
 	set_target_properties( ${submodule_target} PROPERTIES OUTPUT_NAME ${submodule_name})
 	# If no output directory specified, preserve the src/ecole layout
