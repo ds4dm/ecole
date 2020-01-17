@@ -2,6 +2,8 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#define FORCE_IMPORT_ARRAY
+#include <xtensor-python/pytensor.hpp>
 
 #include "ecole/base.hpp"
 #include "ecole/branching.hpp"
