@@ -8,6 +8,7 @@
 
 #include "base.hpp"
 #include "base/reward.hpp"
+#include "base/termination.hpp"
 
 namespace py11 = pybind11;
 using namespace ecole;
@@ -15,7 +16,7 @@ using namespace ecole;
 PYBIND11_MODULE(base, m) {
 	m.doc() = "Abstract base classes for ecole environments.";
 
-	auto scip_module = py11::module::import("ecole.scip");
+	auto const scip_module = py11::module::import("ecole.scip");
 
 	py11::class_<py::ObsBase>(m, "Observation");
 	py11::class_<py::ObsSpaceBase, std::shared_ptr<py::ObsSpaceBase>>(m, "ObservationSpace")
@@ -27,8 +28,8 @@ PYBIND11_MODULE(base, m) {
 		.def("reset", &base::RewardSpace::reset, py11::arg("model"))
 		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
 
-	py11::class_<base::TerminationSpace, std::shared_ptr<base::TerminationSpace>>(
-		m, "TerminationSpace")
+	py::termination::base_space_class_(m, "TerminationSpace")
+		.def(py11::init<>())
 		.def("reset", &base::TerminationSpace::reset, py11::arg("model"))
 		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
 
