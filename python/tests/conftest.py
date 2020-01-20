@@ -34,7 +34,7 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture
 def problem_file():
-    """Return a MILP prblem file."""
+    """Return a MILP problem file."""
     return DATA_DIR / "enlight8.mps"
 
 
