@@ -1,6 +1,28 @@
 import ecole.base as B
 
 
+def test_ObservationSpace_Inheritance(model):
+    class SpaceCalled(B.ObservationSpace):
+        def __init__(self):
+            super().__init__()
+            self.reset_called = False
+            self.get_called = False
+
+        def reset(self, *args, **kwargs):
+            self.reset_called = True
+            return super().reset(*args, **kwargs)
+
+        def get(self, *args, **kwargs):
+            self.get_called = True
+            return B.Observation()
+
+    space = SpaceCalled()
+    space.reset(model)
+    assert space.reset_called
+    space.get(model)
+    assert space.get_called
+
+
 def test_RewardSpace_Inheritance(model):
     class SpaceCalled(B.RewardSpace):
         def __init__(self):
