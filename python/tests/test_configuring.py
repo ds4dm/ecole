@@ -20,6 +20,7 @@ def test_Configure_error(model):
         conf.set(model, [1, 2])
 
 
+@pytest.mark.slow
 def test_configuring_env(model):
     env = ecole.configuring.Env.make_dummy("conflict/lpiterations")
     for _ in range(2):

@@ -1,6 +1,9 @@
+import pytest
+
 import ecole.branching
 
 
+@pytest.mark.slow
 def test_branching_env(model):
     env = ecole.branching.Env.make_dummy()
     for _ in range(2):
