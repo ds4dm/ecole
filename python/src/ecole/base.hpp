@@ -4,40 +4,12 @@
 
 #include "ecole/base.hpp"
 
+#include "base/observation.hpp"
+
 namespace ecole {
 namespace py {
 
 namespace hidden {
-
-struct Py_ObsBase {
-	virtual ~Py_ObsBase() = default;
-};
-
-using Py_ObsSpaceBase = base::ObservationSpace<std::unique_ptr<Py_ObsBase>>;
-
-template <typename Obs> struct Py_Obs : public Py_ObsBase {
-	Obs obs;
-	Py_Obs(Obs&& obs) : obs(std::move(obs)) {}
-};
-
-template <typename ObsSpace> struct Py_ObsSpace : public Py_ObsSpaceBase {
-	using py_obs_t = Py_Obs<typename ObsSpace::obs_t>;
-	using obs_t = typename Py_ObsSpaceBase::obs_t;
-
-	ObsSpace obs_space;
-
-	Py_ObsSpace(ObsSpace const& obs_space) : obs_space(obs_space) {}
-	Py_ObsSpace(ObsSpace&& obs_space) : obs_space(std::move(obs_space)) {}
-	template <typename... Args>
-	Py_ObsSpace(Args... args) : obs_space(std::forward<Args>(args)...) {}
-	std::unique_ptr<Py_ObsSpaceBase> clone() const override {
-		return std::make_unique<Py_ObsSpace>(obs_space);
-	}
-
-	obs_t get(scip::Model const& model) override {
-		return std::make_unique<py_obs_t>(obs_space.get(model));
-	}
-};
 
 struct Py_ActionBase {
 	virtual ~Py_ActionBase() = default;
@@ -115,7 +87,7 @@ struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::get)>> :
 };
 
 using Py_EnvBase =
-	base::Env<Py_ActionBase const&, std::unique_ptr<Py_ObsBase>, std::shared_ptr>;
+	base::Env<Py_ActionBase const&, py::obs::ObsSpaceBase::obs_t, std::shared_ptr>;
 
 template <  //
 	template <typename, typename, template <typename...> class>
@@ -123,12 +95,6 @@ template <  //
 using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t, std::shared_ptr>;
 
 }  // namespace hidden
-
-// Aliases for external use
-using ObsBase = hidden::Py_ObsBase;
-template <typename O> using Obs = hidden::Py_Obs<O>;
-using ObsSpaceBase = hidden::Py_ObsSpaceBase;
-template <typename OS> using ObsSpace = hidden::Py_ObsSpace<OS>;
 
 using ActionBase = hidden::Py_ActionBase;
 template <typename A> using Action = hidden::Py_Action<A>;

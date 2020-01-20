@@ -33,13 +33,13 @@ PYBIND11_MODULE(branching, m) {
 			[] {
 				return std::make_unique<Env>(
 					std::make_unique<Fractional>(),
-					std::make_unique<py::ObsSpace<obs::BasicObsSpace>>(),
+					std::make_unique<py::obs::ObsSpace<obs::BasicObsSpace>>(),
 					std::make_unique<reward::Done>(),
 					std::make_unique<termination::Solved>());
 			})
 		.def(py11::init<
 				 Env::ptr<ActionSpace> const&,
-				 Env::ptr<py::ObsSpaceBase> const&,
+				 Env::ptr<py::obs::ObsSpaceBase> const&,
 				 Env::ptr<base::RewardSpace> const&,
 				 Env::ptr<base::TerminationSpace> const&>())  //
 		.def("step", [](py::EnvBase& env, branching::Fractional::action_t const& action) {

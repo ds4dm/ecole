@@ -58,11 +58,11 @@ PYBIND11_MODULE(configuring, m) {
 			"make_dummy",
 			[](std::string const& param) {
 				return std::make_unique<Env>(
-					std::make_unique<py::ObsSpace<obs::BasicObsSpace>>(),
+					std::make_unique<py::obs::ObsSpace<obs::BasicObsSpace>>(),
 					std::make_unique<Configure>(param));
 			})
-		.def(
-			py11::init([](py::ObsSpaceBase const& obs_space, ActionSpace const& action_space) {
+		.def(py11::init(
+			[](py::obs::ObsSpaceBase const& obs_space, ActionSpace const& action_space) {
 				return std::make_unique<Env>(obs_space.clone(), action_space.clone());
 			}))
 		.def("step", [](py::EnvBase& env, py11::object const& action) {

@@ -7,6 +7,7 @@
 #include "ecole/scip/model.hpp"
 
 #include "base.hpp"
+#include "base/observation.hpp"
 #include "base/reward.hpp"
 #include "base/termination.hpp"
 
@@ -18,10 +19,13 @@ PYBIND11_MODULE(base, m) {
 
 	auto const scip_module = py11::module::import("ecole.scip");
 
-	py11::class_<py::ObsBase>(m, "Observation");
-	py11::class_<py::ObsSpaceBase, std::shared_ptr<py::ObsSpaceBase>>(m, "ObservationSpace")
-		.def("reset", &py::ObsSpaceBase::reset, py11::arg("model"))
-		.def("get", &py::ObsSpaceBase::get, py11::arg("model"));
+	py::obs::base_obs_class_(m, "Observation")  //
+		.def(py11::init<>());
+
+	py::obs::base_space_class_(m, "ObservationSpace")
+		.def(py11::init<>())
+		.def("reset", &py::obs::ObsSpaceBase::reset, py11::arg("model"))
+		.def("get", &py::obs::ObsSpaceBase::get, py11::arg("model"));
 
 	py::reward::base_space_class_(m, "RewardSpace")
 		.def(py11::init<>())
@@ -34,7 +38,6 @@ PYBIND11_MODULE(base, m) {
 		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
 
 	py11::class_<py::EnvBase>(m, "Env")  //
-
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
 		.def(
 			"seed",
