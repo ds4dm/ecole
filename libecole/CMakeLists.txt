@@ -7,7 +7,6 @@ add_library(
 	src/scip/variable.cpp
 	src/exception.cpp
 	src/base.cpp
-	src/observation.cpp
 	src/reward.cpp
 	src/termination.cpp
 	src/branching.cpp
