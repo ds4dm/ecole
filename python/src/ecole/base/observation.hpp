@@ -7,6 +7,8 @@
 #include "ecole/base.hpp"
 #include "ecole/observation.hpp"
 
+#include "container.hpp"
+
 namespace py11 = pybind11;
 
 namespace ecole {
@@ -149,13 +151,34 @@ struct Py_ObsSpace_Trampoline : public Py_ObsSpaceBase_Trampoline<PyObsSpace> {
 }  // namespace internal
 
 /**
- * Aliases for Python observation and observation spaces classes.
+ * Alias for Python observation base class.
  */
 using ObsBase = internal::Py_ObsBase;
-template <typename Observation> using Obs = internal::Py_Obs<Observation>;
+
+/**
+ * Alias for Python observation class.
+ *
+ * Set the container type to @ref container::pytensor.
+ *
+ * @tparam An observation template class
+ */
+template <template <typename> class Observation>
+using Obs = internal::Py_Obs<Observation<container::pytensor>>;
+
+/**
+ * Alias for Python observation space base class.
+ */
 using ObsSpaceBase = internal::Py_ObsSpaceBase;
-template <typename ObservationSpace>
-using ObsSpace = internal::Py_ObsSpace<ObservationSpace>;
+
+/**
+ * Alias for Python observation space class.
+ *
+ * Set the container type to @ref container::pytensor.
+ *
+ * @tparam An observation space template class
+ */
+template <template <typename> class ObservationSpace>
+using ObsSpace = internal::Py_ObsSpace<ObservationSpace<container::pytensor>>;
 
 /**
  * The @ref pybind11::class_ type for @ref ObsBase
@@ -164,8 +187,8 @@ using ObsSpace = internal::Py_ObsSpace<ObservationSpace>;
  * from having it as a @ref std::unique_ptr.
  */
 using base_obs_class_ = py11::class_<
-	internal::Py_ObsBase,                  // Class
-	std::shared_ptr<internal::Py_ObsBase>  // Holder
+	ObsBase,                  // Class
+	std::shared_ptr<ObsBase>  // Holder
 	>;
 
 /**
@@ -177,11 +200,11 @@ using base_obs_class_ = py11::class_<
  *
  * @tparam Observation The C++ observation to bind to Python
  */
-template <typename Observation>
+template <template <typename> class Observation>
 using obs_class_ = py11::class_<
-	internal::Py_Obs<Observation>,                  // Class
-	internal::Py_ObsBase,                           // Base
-	std::shared_ptr<internal::Py_Obs<Observation>>  // Holder
+	Obs<Observation>,                  // Class
+	ObsBase,                           // Base
+	std::shared_ptr<Obs<Observation>>  // Holder
 	>;
 
 /**
@@ -192,9 +215,9 @@ using obs_class_ = py11::class_<
  * to be stored in environments).
  */
 using base_space_class_ = py11::class_<
-	internal::Py_ObsSpaceBase,                                        // Class
-	internal::Py_ObsSpaceBase_Trampoline<internal::Py_ObsSpaceBase>,  // Trampoline
-	std::shared_ptr<internal::Py_ObsSpaceBase>                        // Holder
+	ObsSpaceBase,                                        // Class
+	internal::Py_ObsSpaceBase_Trampoline<ObsSpaceBase>,  // Trampoline
+	std::shared_ptr<ObsSpaceBase>                        // Holder
 	>;
 
 /**
@@ -207,12 +230,12 @@ using base_space_class_ = py11::class_<
  *
  * @tparam ObsSapce The C++ observation space to bind to Python
  */
-template <typename ObsSpace>
+template <template <typename> class ObservationSpace>
 using space_class_ = py11::class_<
-	internal::Py_ObsSpace<ObsSpace>,                                    // Class
-	internal::Py_ObsSpaceBase,                                          // Base
-	internal::Py_ObsSpace_Trampoline<internal::Py_ObsSpace<ObsSpace>>,  // Trampoline
-	std::shared_ptr<internal::Py_ObsSpace<ObsSpace>>                    // Holder
+	ObsSpace<ObservationSpace>,                                    // Class
+	ObsSpaceBase,                                                  // Base
+	internal::Py_ObsSpace_Trampoline<ObsSpace<ObservationSpace>>,  // Trampoline
+	std::shared_ptr<ObsSpace<ObservationSpace>>                    // Holder
 	>;
 
 }  // namespace obs
