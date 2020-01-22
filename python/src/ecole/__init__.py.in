@@ -1,1 +1,31 @@
+import importlib.machinery
+import importlib.util
+
+import ecole.core
+
+
+def __get_module(name: str):
+    """Import a module in ecole.core shared library.
+
+    A shared library can contain multiple extension modules (see PEP 489).
+    All ecole modules share a same shared library to avoid duplications.
+    """
+    module_name = f"ecole.{name}"
+    file = ecole.core.__file__
+    loader = importlib.machinery.ExtensionFileLoader(module_name, file)
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+scip = __get_module("scip")
+base = __get_module("base")
+observation = __get_module("observation")
+base = __get_module("base")
+branching = __get_module("branching")
+configuring = __get_module("configuring")
+reward = __get_module("reward")
+termination = __get_module("termination")
+
 __version__ = "@Ecole_VERSION@"  # Filled by CMake
