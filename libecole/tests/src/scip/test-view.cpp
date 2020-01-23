@@ -27,13 +27,13 @@ template <typename T> auto arange(std::size_t size) {
 
 TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 	struct Proxy : public scip::Proxy<TestType> {
-		Proxy(TestType* value) noexcept : scip::Proxy<TestType>(value) {}
+		Proxy(Scip*, TestType* value) noexcept : scip::Proxy<TestType>(nullptr, value) {}
 		TestType times(TestType n) const noexcept { return *(this->value) * n; }
 	};
 
 	auto size = std::size_t(10);
 	auto data = arange<TestType>(size);
-	auto view = scip::View<Proxy>(data.get(), size);
+	auto view = scip::View<Proxy>(nullptr, data.get(), size);
 
 	SECTION("Proxies can be compared") { REQUIRE(view[0] == view[0]); }
 

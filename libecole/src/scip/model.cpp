@@ -160,7 +160,7 @@ bool Model::is_solved() const noexcept {
 
 VarView Model::variables() const noexcept {
 	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(get_scip_ptr()));
-	return VarView(SCIPgetVars(get_scip_ptr()), n_vars);
+	return VarView(get_scip_ptr(), SCIPgetVars(get_scip_ptr()), n_vars);
 }
 
 VarView Model::lp_branch_vars() const noexcept {
@@ -175,7 +175,7 @@ VarView Model::lp_branch_vars() const noexcept {
 		&n_vars,
 		nullptr,
 		nullptr);
-	return VarView(vars, static_cast<std::size_t>(n_vars));
+	return VarView(get_scip_ptr(), vars, static_cast<std::size_t>(n_vars));
 }
 
 }  // namespace scip

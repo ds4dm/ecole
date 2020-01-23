@@ -6,6 +6,9 @@
 
 #include <ecole/exception.hpp>
 
+// Avoid including SCIP header
+typedef struct Scip Scip;
+
 namespace ecole {
 namespace scip {
 
@@ -13,15 +16,14 @@ template <typename T> class Proxy {
 public:
 	using type = T;
 
-	explicit Proxy(T* value) noexcept : value(value) {}
-	Proxy(Proxy const&) noexcept = default;
-	Proxy& operator=(Proxy const&) noexcept = default;
+	explicit Proxy(Scip* scip, T* value) noexcept : scip(scip), value(value) {}
 
 	inline bool operator==(Proxy const& other) const noexcept {
 		return value == other.value;
 	}
 
 protected:
+	Scip* scip;
 	T* value;
 };
 
@@ -32,10 +34,12 @@ public:
 private:
 	using T = typename Proxy::type;
 
+	Scip* const scip;
 	T* const* const data;
 
 	class ViewIterator {
 	private:
+		Scip* const scip;
 		T* const* ptr;
 
 	public:
@@ -46,7 +50,7 @@ private:
 		using reference = void;
 
 		ViewIterator() = delete;
-		explicit ViewIterator(T* const* ptr) noexcept : ptr(ptr) {}
+		explicit ViewIterator(Scip* scip, T* const* ptr) noexcept : scip(scip), ptr(ptr) {}
 
 		inline bool operator==(ViewIterator other) const { return ptr == other.ptr; }
 		inline bool operator!=(ViewIterator other) const { return !(*this == other); }
@@ -85,17 +89,18 @@ private:
 			return a.ptr - b.ptr;
 		}
 
-		inline value_type operator*() const { return value_type{*ptr}; }
+		inline value_type operator*() const { return value_type{scip, *ptr}; }
 		inline value_type operator[](difference_type n) const { return *(*this + n); }
 	};
 
 public:
 	View() = delete;
-	explicit View(T* const* data, std::size_t size) noexcept : size(size), data(data) {}
+	explicit View(Scip* scip, T* const* data, std::size_t size) noexcept :
+		size(size), scip(scip), data(data) {}
 
-	inline auto cbegin() const { return ViewIterator(data); }
+	inline auto cbegin() const { return ViewIterator(scip, data); }
 	inline auto begin() const { return cbegin(); }
-	inline auto cend() const { return ViewIterator(data + size); }
+	inline auto cend() const { return ViewIterator(scip, data + size); }
 	inline auto end() const { return cend(); }
 
 	inline auto operator[](std::size_t n) const {
