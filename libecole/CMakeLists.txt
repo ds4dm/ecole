@@ -5,6 +5,7 @@ add_library(
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp
+	src/scip/column.cpp
 	src/exception.cpp
 	src/base.cpp
 	src/reward.cpp
