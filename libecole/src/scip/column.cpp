@@ -13,5 +13,14 @@ auto ColProxy::lb() const noexcept -> decltype(SCIPcolGetLb(nullptr)) {
 	return SCIPcolGetLb(value);
 }
 
+auto ColProxy::reduced_cost() const noexcept
+	-> decltype(SCIPgetColRedcost(nullptr, nullptr)) {
+	return SCIPgetColRedcost(scip, value);
+}
+
+VarProxy ColProxy::var() const noexcept {
+	return VarProxy(scip, SCIPcolGetVar(value));
+}
+
 }  // namespace scip
 }  // namespace ecole

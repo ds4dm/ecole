@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecole/scip/variable.hpp"
 #include "ecole/scip/view.hpp"
 
 // Avoid including SCIP header
@@ -14,8 +15,9 @@ public:
 
 	double ub() const noexcept;
 	double lb() const noexcept;
+	double reduced_cost() const noexcept;
 
-	friend class Model;
+	VarProxy var() const noexcept;
 };
 
 using ColView = View<ColProxy>;
