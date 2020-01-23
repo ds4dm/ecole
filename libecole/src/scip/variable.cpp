@@ -1,13 +1,9 @@
-#include <cstddef>
-
 #include <scip/scip.h>
 
 #include "ecole/scip/variable.hpp"
 
 namespace ecole {
 namespace scip {
-
-VarProxy::VarProxy(SCIP_Var* value) noexcept : Proxy(value) {}
 
 auto VarProxy::ub() const noexcept -> decltype(SCIPvarGetUbLocal(nullptr)) {
 	return SCIPvarGetUbLocal(value);
