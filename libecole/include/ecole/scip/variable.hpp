@@ -18,6 +18,7 @@ public:
 	VarProxy(SCIP_Var* value) noexcept;
 
 	double ub() const noexcept;
+	double lb() const noexcept;
 
 	friend class Model;
 };
