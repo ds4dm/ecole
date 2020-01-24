@@ -16,14 +16,14 @@ add_custom_command(
 
 add_custom_target(
 	virtualenv ALL
-	COMMAND venv-python -m pip install -I $<TARGET_PROPERTY:pyecole,SETUP_DIR> > /dev/null
+	COMMAND venv-python -m pip install -I $<TARGET_PROPERTY:ecole-python,SETUP_DIR> > /dev/null
 	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/venv"
-	DEPENDS pyecole
+	DEPENDS ecole-python
 	COMMENT "Installing ecole in virtual environment"
 )
 
 add_test(
-	NAME test-pyecole
+	NAME test-ecole-python
 	COMMAND "${CMAKE_CURRENT_BINARY_DIR}/venv/bin/python" -m pytest
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
