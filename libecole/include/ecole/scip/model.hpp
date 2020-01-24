@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ecole/scip/column.hpp"
 #include "ecole/scip/variable.hpp"
 
 // Avoid including SCIP header
@@ -144,6 +145,7 @@ public:
 
 	VarView variables() const noexcept;
 	VarView lp_branch_vars() const noexcept;
+	ColView lp_columns() const;
 
 	using BranchFunc = std::function<VarProxy(Model&)>;
 	void set_branch_rule(BranchFunc const& func);

@@ -159,8 +159,9 @@ bool Model::is_solved() const noexcept {
 }
 
 VarView Model::variables() const noexcept {
-	auto n_vars = static_cast<std::size_t>(SCIPgetNVars(get_scip_ptr()));
-	return VarView(get_scip_ptr(), SCIPgetVars(get_scip_ptr()), n_vars);
+	auto const scip_ptr = get_scip_ptr();
+	auto const n_vars = static_cast<std::size_t>(SCIPgetNVars(scip_ptr));
+	return VarView(scip_ptr, SCIPgetVars(scip_ptr), n_vars);
 }
 
 VarView Model::lp_branch_vars() const noexcept {
@@ -176,6 +177,14 @@ VarView Model::lp_branch_vars() const noexcept {
 		nullptr,
 		nullptr);
 	return VarView(get_scip_ptr(), vars, static_cast<std::size_t>(n_vars));
+}
+
+ColView Model::lp_columns() const {
+	auto const scip_ptr = get_scip_ptr();
+	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING)
+		throw Exception("Columns are only available during solving");
+	auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr));
+	return ColView(scip_ptr, SCIPgetLPCols(scip_ptr), n_cols);
 }
 
 }  // namespace scip
