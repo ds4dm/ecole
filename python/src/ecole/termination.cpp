@@ -13,6 +13,6 @@ PYBIND11_MODULE(termination, m) {
 
 	auto const base_module = py11::module::import("ecole.base");
 
-	py::termination::space_class_<termination::Solved>(m, "Solved")  //
+	py::termination::function_class_<termination::Solved>(m, "Solved")  //
 		.def(py11::init<>());
 }

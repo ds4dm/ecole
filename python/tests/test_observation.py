@@ -4,16 +4,16 @@ import numpy as np
 import ecole.observation as O
 
 
-def test_BasicObsSpace(model):
-    obs_space = O.BasicObsSpace()
-    assert isinstance(obs_space, O.BasicObsSpace)
-    obs_space.reset(model)
-    obs = obs_space.get(model)
+def test_BasicObsFunction(model):
+    obs_func = O.BasicObsFunction()
+    assert isinstance(obs_func, O.BasicObsFunction)
+    obs_func.reset(model)
+    obs = obs_func.get(model)
     assert isinstance(obs, O.BasicObs)
 
 
 def test_BasicObs(model):
-    obs = O.BasicObsSpace().get(model)
+    obs = O.BasicObsFunction().get(model)
     assert isinstance(obs.var_feat, np.ndarray)
 
     assert obs.var_feat.size > 0
@@ -23,9 +23,9 @@ def test_BasicObs(model):
     assert np.all(obs.var_feat != old_var_feat)
 
 
-@pytest.mark.parametrize("Class", (O.BasicObsSpace,))
+@pytest.mark.parametrize("Class", (O.BasicObsFunction,))
 def test_Inheritance(model, Class):
-    class SpaceCalled(Class):
+    class FunctionCalled(Class):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -39,8 +39,8 @@ def test_Inheritance(model, Class):
             self.get_called = True
             return super().get(*args, **kwargs)
 
-    space = SpaceCalled()
-    space.reset(model)
-    assert space.reset_called
-    space.get(model)
-    assert space.get_called
+    function = FunctionCalled()
+    function.reset(model)
+    assert function.reset_called
+    function.get(model)
+    assert function.get_called

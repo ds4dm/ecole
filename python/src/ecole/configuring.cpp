@@ -42,13 +42,13 @@ PYBIND11_MODULE(configuring, m) {
 	// Import of base required for resolving inheritance to base types
 	py11::module base_mod = py11::module::import("ecole.base");
 
-	using ActionSpace = py::ActionSpaceBase<configuring::ActionSpace>;
+	using ActionFunction = py::ActionFunctionBase<configuring::ActionFunction>;
 	using Configure =
-		py::ActionSpace<configuring::Configure<py11::object>, configuring::ActionSpace>;
+		py::ActionFunction<configuring::Configure<py11::object>, configuring::ActionFunction>;
 	using Env = py::Env<configuring::Env>;
 
-	py11::class_<ActionSpace, std::shared_ptr<ActionSpace>>(m, "ActionSpace");
-	py11::class_<Configure, ActionSpace, std::shared_ptr<Configure>>(m, "Configure")  //
+	py11::class_<ActionFunction, std::shared_ptr<ActionFunction>>(m, "ActionFunction");
+	py11::class_<Configure, ActionFunction, std::shared_ptr<Configure>>(m, "Configure")  //
 		.def(py11::init<std::string const&>())
 		.def("set", [](Configure& c, scip::Model model, py11::object param) {
 			c.set(model, py::Action<py11::object>(param));
@@ -59,12 +59,12 @@ PYBIND11_MODULE(configuring, m) {
 			"make_dummy",
 			[](std::string const& param) {
 				return std::make_unique<Env>(
-					std::make_unique<py::obs::ObsSpace<obs::BasicObsSpace>>(),
+					std::make_unique<py::obs::ObsFunction<obs::BasicObsFunction>>(),
 					std::make_unique<Configure>(param));
 			})
 		.def(py11::init(
-			[](py::obs::ObsSpaceBase const& obs_space, ActionSpace const& action_space) {
-				return std::make_unique<Env>(obs_space.clone(), action_space.clone());
+			[](py::obs::ObsFunctionBase const& obs_func, ActionFunction const& action_func) {
+				return std::make_unique<Env>(obs_func.clone(), action_func.clone());
 			}))
 		.def("step", [](py::EnvBase& env, py11::object const& action) {
 			return env.step(py::Action<py11::object>(action));

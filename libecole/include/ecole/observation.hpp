@@ -21,20 +21,20 @@ template <typename ContainerSelector = container::xtensor> struct BasicObs {
 };
 
 template <typename ContainerSelector = container::xtensor>
-struct BasicObsSpace : public base::ObservationSpace<BasicObs<ContainerSelector>> {
+struct BasicObsFunction : public base::ObservationFunction<BasicObs<ContainerSelector>> {
 	using obs_t = BasicObs<ContainerSelector>;
-	using base_t = base::ObservationSpace<obs_t>;
+	using base_t = base::ObservationFunction<obs_t>;
 
 	std::unique_ptr<base_t> clone() const override;
 
 	obs_t get(scip::Model const& model) override;
 };
 
-template <typename CS> auto BasicObsSpace<CS>::clone() const -> std::unique_ptr<base_t> {
-	return std::make_unique<BasicObsSpace>(*this);
+template <typename CS> auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
+	return std::make_unique<BasicObsFunction>(*this);
 }
 
-template <typename CS> auto BasicObsSpace<CS>::get(scip::Model const& model) -> obs_t {
+template <typename CS> auto BasicObsFunction<CS>::get(scip::Model const& model) -> obs_t {
 	auto const extract_feat = [](auto const var, auto out_iter) { *out_iter = var.ub(); };
 
 	auto var_feat = decltype(obs_t::var_feat)::from_shape(

@@ -4,15 +4,15 @@ import ecole.reward as R
 
 
 def test_Done(model):
-    reward_space = R.Done()
-    reward_space.reset(model)
-    assert reward_space.get(model) == 0
-    assert reward_space.get(model, done=True) == 1
+    reward_func = R.Done()
+    reward_func.reset(model)
+    assert reward_func.get(model) == 0
+    assert reward_func.get(model, done=True) == 1
 
 
 @pytest.mark.parametrize("Class", (R.Done,))
 def test_Inheritance(model, Class):
-    class SpaceCalled(Class):
+    class FunctionCalled(Class):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -26,8 +26,8 @@ def test_Inheritance(model, Class):
             self.get_called = True
             return super().get(*args, **kwargs)
 
-    reward_space = SpaceCalled()
-    reward_space.reset(model)
-    assert reward_space.reset_called
-    reward_space.get(model)
-    assert reward_space.get_called
+    reward_func = FunctionCalled()
+    reward_func.reset(model)
+    assert reward_func.reset_called
+    reward_func.get(model)
+    assert reward_func.get_called

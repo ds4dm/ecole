@@ -13,6 +13,6 @@ PYBIND11_MODULE(reward, m) {
 
 	auto const base_module = py11::module::import("ecole.base");
 
-	py::reward::space_class_<reward::Done>(m, "Done")  //
+	py::reward::function_class_<reward::Done>(m, "Done")  //
 		.def(py11::init<>());
 }

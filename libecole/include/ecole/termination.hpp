@@ -8,8 +8,8 @@
 namespace ecole {
 namespace termination {
 
-struct Solved : public base::TerminationSpace {
-	std::unique_ptr<base::TerminationSpace> clone() const override;
+struct Solved : public base::TerminationFunction {
+	std::unique_ptr<base::TerminationFunction> clone() const override;
 	bool is_done(scip::Model const& model) override;
 };
 

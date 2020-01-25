@@ -22,72 +22,72 @@ template <typename Action> struct Py_Action : public Py_ActionBase {
 	Py_Action(Action const& action) : action(std::move(action)) {}
 };
 
-// Action space do not have a single base, but one per environment
-template <template <typename Action> class ActionSpaceBase>
-using Py_ActionSpaceBase = ActionSpaceBase<Py_ActionBase const&>;
+// Action function do not have a single base, but one per environment
+template <template <typename Action> class ActionFunctionBase>
+using Py_ActionFunctionBase = ActionFunctionBase<Py_ActionBase const&>;
 
-template <typename ActionSpace, template <typename Action> class ActionSpaceBase>
-struct Py_ActionSpace : public Py_ActionSpaceBase<ActionSpaceBase> {
-	using py_action_t = Py_Action<typename ActionSpace::action_t>;
-	using action_t = typename Py_ActionSpaceBase<ActionSpaceBase>::action_t;
+template <typename ActionFunction, template <typename Action> class ActionFunctionBase>
+struct Py_ActionFunction : public Py_ActionFunctionBase<ActionFunctionBase> {
+	using py_action_t = Py_Action<typename ActionFunction::action_t>;
+	using action_t = typename Py_ActionFunctionBase<ActionFunctionBase>::action_t;
 
-	ActionSpace action_space;
-	Py_ActionSpace(ActionSpace const& action_space) : action_space(action_space) {}
-	Py_ActionSpace(ActionSpace&& action_space) : action_space(std::move(action_space)) {}
+	ActionFunction action_func;
+	Py_ActionFunction(ActionFunction const& action_func) : action_func(action_func) {}
+	Py_ActionFunction(ActionFunction&& action_func) : action_func(std::move(action_func)) {}
 	template <typename... Args>
-	Py_ActionSpace(Args... args) : action_space(std::forward<Args>(args)...) {}
+	Py_ActionFunction(Args... args) : action_func(std::forward<Args>(args)...) {}
 };
 
-template <typename AS, template <typename> class ASB, typename = void>
-struct Py_ActionSpace_SFINAE;
+template <typename AF, template <typename> class AFB, typename = void>
+struct Py_ActionFunction_SFINAE;
 
 template <typename> struct has { using type = void; };
 template <typename T> using has_t = typename has<T>::type;
 
-template <typename AS, template <typename> class ASB>
-struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::set)>> :
-	public Py_ActionSpace<AS, ASB> {
-	using typename Py_ActionSpace<AS, ASB>::py_action_t;
-	using typename Py_ActionSpace<AS, ASB>::action_t;
+template <typename AF, template <typename> class AFB>
+struct Py_ActionFunction_SFINAE<AF, AFB, has_t<decltype(&AF::set)>> :
+	public Py_ActionFunction<AF, AFB> {
+	using typename Py_ActionFunction<AF, AFB>::py_action_t;
+	using typename Py_ActionFunction<AF, AFB>::action_t;
 
-	using Py_ActionSpace<AS, ASB>::Py_ActionSpace;  // Inherit constructors
+	using Py_ActionFunction<AF, AFB>::Py_ActionFunction;  // Inherit constructors
 
 	// Core method to override
 	void set(scip::Model& model, action_t const& action) override {
-		this->action_space.set(model, dynamic_cast<py_action_t const&>(action));
+		this->action_func.set(model, dynamic_cast<py_action_t const&>(action));
 	}
 
 	// Clone could not go in a parent class because they are pure abstract
-	std::unique_ptr<Py_ActionSpaceBase<ASB>> clone() const override {
+	std::unique_ptr<Py_ActionFunctionBase<AFB>> clone() const override {
 		using this_t = typename std::remove_const_t<std::remove_pointer_t<decltype(this)>>;
-		return std::make_unique<this_t>(this->action_space);
+		return std::make_unique<this_t>(this->action_func);
 	}
 };
 
-// Specialization for get type of ActionSpace
-template <typename AS, template <typename> class ASB>
-struct Py_ActionSpace_SFINAE<AS, ASB, has_t<decltype(&AS::get)>> :
-	public Py_ActionSpace<AS, ASB> {
-	using typename Py_ActionSpace<AS, ASB>::py_action_t;
-	using typename Py_ActionSpace<AS, ASB>::action_t;
+// Specialization for get type of ActionFunction
+template <typename AF, template <typename> class AFB>
+struct Py_ActionFunction_SFINAE<AF, AFB, has_t<decltype(&AF::get)>> :
+	public Py_ActionFunction<AF, AFB> {
+	using typename Py_ActionFunction<AF, AFB>::py_action_t;
+	using typename Py_ActionFunction<AF, AFB>::action_t;
 
-	using Py_ActionSpace<AS, ASB>::Py_ActionSpace;  // Inherit constructors
+	using Py_ActionFunction<AF, AFB>::Py_ActionFunction;  // Inherit constructors
 
 	// Core method to override
 	auto get(scip::Model& model, action_t const& action) -> decltype(
-		this->action_space.get(model, std::declval<typename AS::action_t>())) override {
-		return this->action_space.get(model, dynamic_cast<py_action_t const&>(action));
+		this->action_func.get(model, std::declval<typename AF::action_t>())) override {
+		return this->action_func.get(model, dynamic_cast<py_action_t const&>(action));
 	}
 
 	// Clone could not go in a parent class because they are pure abstract
-	std::unique_ptr<Py_ActionSpaceBase<ASB>> clone() const override {
+	std::unique_ptr<Py_ActionFunctionBase<AFB>> clone() const override {
 		using this_t = typename std::remove_const_t<std::remove_pointer_t<decltype(this)>>;
-		return std::make_unique<this_t>(this->action_space);
+		return std::make_unique<this_t>(this->action_func);
 	}
 };
 
 using Py_EnvBase =
-	base::Env<Py_ActionBase const&, py::obs::ObsSpaceBase::obs_t, std::shared_ptr>;
+	base::Env<Py_ActionBase const&, py::obs::ObsFunctionBase::obs_t, std::shared_ptr>;
 
 template <  //
 	template <typename, typename, template <typename...> class>
@@ -98,10 +98,10 @@ using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t, std::shared_ptr>;
 
 using ActionBase = hidden::Py_ActionBase;
 template <typename A> using Action = hidden::Py_Action<A>;
-template <template <typename> class ASB>
-using ActionSpaceBase = hidden::Py_ActionSpaceBase<ASB>;
-template <typename AS, template <typename> class ASB>
-using ActionSpace = hidden::Py_ActionSpace_SFINAE<AS, ASB>;
+template <template <typename> class AFB>
+using ActionFunctionBase = hidden::Py_ActionFunctionBase<AFB>;
+template <typename AF, template <typename> class AFB>
+using ActionFunction = hidden::Py_ActionFunction_SFINAE<AF, AFB>;
 
 using EnvBase = hidden::Py_EnvBase;
 template <template <typename, typename, template <typename...> class> class E>

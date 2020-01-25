@@ -11,22 +11,22 @@ namespace ecole {
 namespace base {
 
 /**
- * Abstract base class for all observation spaces.
+ * Abstract base class for all observation functions.
  *
- * Observation spaces can be given to environments to parametrize what observations
+ * Observation functions can be given to environments to parametrize what observations
  * (or partially observed states) are returned at every transition.
- * An observation space is intended to extract the observation out of the scip::Model
+ * An observation function is intended to extract the observation out of the scip::Model
  * in any way desired (including caching, scaling...).
  * An observation on the contrary hand is a purely self contained data class with no
  * function.
  *
  * @tparam Observation the type of the observation extracted by this class.
  */
-template <typename Observation> struct ObservationSpace {
+template <typename Observation> struct ObservationFunction {
 	using obs_t = Observation;
 
-	virtual ~ObservationSpace() = default;
-	virtual std::unique_ptr<ObservationSpace> clone() const = 0;
+	virtual ~ObservationFunction() = default;
+	virtual std::unique_ptr<ObservationFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment at the begining of every episode (on the
@@ -41,16 +41,16 @@ template <typename Observation> struct ObservationSpace {
 };
 
 /**
- * Abstract base class for all reward spaces.
+ * Abstract base class for all reward functions.
  *
- * Reward spaces can be given to environments to parametrize what rewards are returned
+ * Reward functions can be given to environments to parametrize what rewards are returned
  * at every transition.
  */
-struct RewardSpace {
+struct RewardFunction {
 	using reward_t = double;
 
-	virtual ~RewardSpace() = default;
-	virtual std::unique_ptr<RewardSpace> clone() const = 0;
+	virtual ~RewardFunction() = default;
+	virtual std::unique_ptr<RewardFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment at the begining of every episode (on the
@@ -65,14 +65,14 @@ struct RewardSpace {
 };
 
 /**
- * Abstract base class for all termination spaces.
+ * Abstract base class for all termination functions.
  *
- * Termination spaces can be given to environments to parametrize when the environment
+ * Termination functions can be given to environments to parametrize when the environment
  * terminates (that is, @ref Env::step returns `true` for the `done` flag).
  */
-struct TerminationSpace {
-	virtual ~TerminationSpace() = default;
-	virtual std::unique_ptr<TerminationSpace> clone() const = 0;
+struct TerminationFunction {
+	virtual ~TerminationFunction() = default;
+	virtual std::unique_ptr<TerminationFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment at the begining of every episode (on the
@@ -97,7 +97,7 @@ struct TerminationSpace {
  *
  * @tparam Action The type of the action accepted to transition from one state to another.
  * @tparam Observation The type of the observation returned on every state.
- * @tparam Holder type for spaces and @ref scip::Model. The default should be used.
+ * @tparam Holder type for functions and @ref scip::Model. The default should be used.
  */
 template <
 	typename Action,
@@ -107,7 +107,7 @@ class Env {
 public:
 	using action_t = Action;
 	using obs_t = Observation;
-	using reward_t = RewardSpace::reward_t;
+	using reward_t = RewardFunction::reward_t;
 	using seed_t = int;
 	using info_t = int;
 
@@ -169,7 +169,7 @@ private:
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
 
-template <typename O> void ObservationSpace<O>::reset(scip::Model const& model) {
+template <typename O> void ObservationFunction<O>::reset(scip::Model const& model) {
 	(void)model;
 }
 

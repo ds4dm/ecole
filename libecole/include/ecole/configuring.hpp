@@ -9,24 +9,24 @@
 namespace ecole {
 namespace configuring {
 
-template <typename Action> class ActionSpace {
+template <typename Action> class ActionFunction {
 public:
 	using action_t = Action;
 
-	virtual ~ActionSpace() = default;
+	virtual ~ActionFunction() = default;
 	virtual void set(scip::Model& model, Action const& action) = 0;
-	virtual std::unique_ptr<ActionSpace> clone() const = 0;
+	virtual std::unique_ptr<ActionFunction> clone() const = 0;
 };
 
-template <typename Action> class Configure : public ActionSpace<Action> {
+template <typename Action> class Configure : public ActionFunction<Action> {
 public:
-	using typename ActionSpace<Action>::action_t;
+	using typename ActionFunction<Action>::action_t;
 
 	std::string const param;
 
 	Configure(std::string param) noexcept;
 	void set(scip::Model& model, action_t const& action) override;
-	virtual std::unique_ptr<ActionSpace<Action>> clone() const override;
+	virtual std::unique_ptr<ActionFunction<Action>> clone() const override;
 };
 
 template <
@@ -45,13 +45,13 @@ public:
 	template <typename T> using ptr = typename env_t::template ptr<T>;
 
 	Env(
-		ptr<base::ObservationSpace<obs_t>>&& obs_space,
-		ptr<ActionSpace<action_t>>&& action_space);
+		ptr<base::ObservationFunction<obs_t>>&& obs_func,
+		ptr<ActionFunction<action_t>>&& action_func);
 
 private:
 	ptr<scip::Model> _model;
-	ptr<base::ObservationSpace<obs_t>> obs_space;
-	ptr<ActionSpace<action_t>> action_space;
+	ptr<base::ObservationFunction<obs_t>> obs_func;
+	ptr<ActionFunction<action_t>> action_func;
 
 	std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) override;
 	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
@@ -66,27 +66,27 @@ template <typename A> void Configure<A>::set(scip::Model& model, action_t const&
 }
 
 template <typename A>
-auto Configure<A>::clone() const -> std::unique_ptr<ActionSpace<A>> {
+auto Configure<A>::clone() const -> std::unique_ptr<ActionFunction<A>> {
 	return std::make_unique<Configure<A>>(*this);
 }
 
 template <typename A, typename O, template <typename...> class H>
 Env<A, O, H>::Env(
-	ptr<base::ObservationSpace<obs_t>>&& obs_space,
-	ptr<ActionSpace<action_t>>&& action_space) :
-	obs_space(std::move(obs_space)), action_space(std::move(action_space)) {}
+	ptr<base::ObservationFunction<obs_t>>&& obs_func,
+	ptr<ActionFunction<action_t>>&& action_func) :
+	obs_func(std::move(obs_func)), action_func(std::move(action_func)) {}
 
 template <typename A, typename O, template <typename...> class H>
 auto Env<A, O, H>::_reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
 	_model = std::move(model);
-	return {obs_space->get(*_model), is_done()};
+	return {obs_func->get(*_model), is_done()};
 }
 
 template <typename A, typename O, template <typename...> class H>
 auto Env<A, O, H>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
-	action_space->set(*_model, action);
+	action_func->set(*_model, action);
 	_model->solve();
-	return {obs_space->get(*_model), 0., true, info_t{}};
+	return {obs_func->get(*_model), 0., true, info_t{}};
 }
 
 template <typename A, typename O, template <typename...> class H>

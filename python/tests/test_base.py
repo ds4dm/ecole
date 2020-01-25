@@ -1,8 +1,8 @@
 import ecole.base as B
 
 
-def test_ObservationSpace_Inheritance(model):
-    class SpaceCalled(B.ObservationSpace):
+def test_ObservationFunction_Inheritance(model):
+    class FunctionCalled(B.ObservationFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -16,15 +16,15 @@ def test_ObservationSpace_Inheritance(model):
             self.get_called = True
             return B.Observation()
 
-    space = SpaceCalled()
-    space.reset(model)
-    assert space.reset_called
-    space.get(model)
-    assert space.get_called
+    function = FunctionCalled()
+    function.reset(model)
+    assert function.reset_called
+    function.get(model)
+    assert function.get_called
 
 
-def test_RewardSpace_Inheritance(model):
-    class SpaceCalled(B.RewardSpace):
+def test_RewardFunction_Inheritance(model):
+    class FunctionCalled(B.RewardFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -38,15 +38,15 @@ def test_RewardSpace_Inheritance(model):
             self.get_called = True
             return 0
 
-    space = SpaceCalled()
-    space.reset(model)
-    assert space.reset_called
-    space.get(model)
-    assert space.get_called
+    function = FunctionCalled()
+    function.reset(model)
+    assert function.reset_called
+    function.get(model)
+    assert function.get_called
 
 
 def test_Termination_Inheritance(model):
-    class SpaceCalled(B.TerminationSpace):
+    class FunctionCalled(B.TerminationFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -60,8 +60,8 @@ def test_Termination_Inheritance(model):
             self.is_done_called = True
             return True
 
-    space = SpaceCalled()
-    space.reset(model)
-    assert space.reset_called
-    space.is_done(model)
-    assert space.is_done_called
+    function = FunctionCalled()
+    function.reset(model)
+    assert function.reset_called
+    function.is_done(model)
+    assert function.is_done_called

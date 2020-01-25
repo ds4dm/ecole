@@ -3,7 +3,7 @@
 namespace ecole {
 namespace termination {
 
-std::unique_ptr<base::TerminationSpace> Solved::clone() const {
+std::unique_ptr<base::TerminationFunction> Solved::clone() const {
 	return std::make_unique<Solved>(*this);
 }
 

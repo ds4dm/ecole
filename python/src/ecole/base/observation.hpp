@@ -37,114 +37,114 @@ template <typename Obs> struct Py_Obs : public Py_ObsBase {
 };
 
 /**
- * Base class for all observation spaces.
+ * Base class for all observation functions.
  *
- * All observation spaces must inherit from this class before being bound to Python in
+ * All observation functions must inherit from this class before being bound to Python in
  * order to be properly passed to environments.
  * Observations need to be returned as pointers for dynamic polymorphism.
  * These pointers need to be @ref std::shared_ptr and not @ref std::unique_ptr because
- * they can be created from Python when creating an observation space.
+ * they can be created from Python when creating an observation function.
  */
-using Py_ObsSpaceBase = base::ObservationSpace<std::shared_ptr<Py_ObsBase>>;
+using Py_ObsFunctionBase = base::ObservationFunction<std::shared_ptr<Py_ObsBase>>;
 
 /**
- * Wrapper to make C++ observation spaces.
+ * Wrapper to make C++ observation functions.
  *
- * Make the wrapped class properly inherit @ref Py_ObsSpaceBase and returned observation
+ * Make the wrapped class properly inherit @ref Py_ObsFunctionBase and returned observation
  * in the proper way (using @ref std::shared_ptr).
  *
- * @tparam ObsSpace The C++ observation space to warp.
+ * @tparam ObsFunction The C++ observation function to warp.
  */
-template <typename ObsSpace> struct Py_ObsSpace : public Py_ObsSpaceBase {
-	using obs_t = typename Py_ObsSpaceBase::obs_t;
+template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBase {
+	using obs_t = typename Py_ObsFunctionBase::obs_t;
 
-	ObsSpace obs_space;
+	ObsFunction obs_func;
 
 	template <typename... Args>
-	Py_ObsSpace(Args... args) : obs_space(std::forward<Args>(args)...) {}
+	Py_ObsFunction(Args... args) : obs_func(std::forward<Args>(args)...) {}
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<Py_ObsSpaceBase> clone() const override {
-		return std::make_unique<Py_ObsSpace>(obs_space);
+	std::unique_ptr<Py_ObsFunctionBase> clone() const override {
+		return std::make_unique<Py_ObsFunction>(obs_func);
 	}
 
 	/**
-	 * Move the observation from the wrapped @ref obs_space into a @ref std::shared_ptr
+	 * Move the observation from the wrapped @ref obs_func into a @ref std::shared_ptr
 	 */
 	obs_t get(scip::Model const& model) override {
-		using py_obs_t = Py_Obs<typename ObsSpace::obs_t>;
-		return std::make_shared<py_obs_t>(obs_space.get(model));
+		using py_obs_t = Py_Obs<typename ObsFunction::obs_t>;
+		return std::make_shared<py_obs_t>(obs_func.get(model));
 	}
 };
 
 /**
- * PyBind trampoline class for Python inheritance of @ref Py_ObsSpaceBase.
+ * PyBind trampoline class for Python inheritance of @ref Py_ObsFunctionBase.
  *
  * Trampoline classes must inherit the type currently being bound and override all methods
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam PyObsSpace The type of @ref Py_ObsSpaceBase currently being bound (abstract or
+ * @tparam PyObsFunction The type of @ref Py_ObsFunctionBase currently being bound (abstract or
  * derived).
  */
-template <typename PyObsSpace> struct Py_ObsSpaceBase_Trampoline : public PyObsSpace {
-	using typename Py_ObsSpaceBase::obs_t;
+template <typename PyObsFunction> struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
+	using typename Py_ObsFunctionBase::obs_t;
 
-	using PyObsSpace::PyObsSpace;
+	using PyObsFunction::PyObsFunction;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<Py_ObsSpaceBase> clone() const override {
-		return std::make_unique<Py_ObsSpaceBase_Trampoline>();
+	std::unique_ptr<Py_ObsFunctionBase> clone() const override {
+		return std::make_unique<Py_ObsFunctionBase_Trampoline>();
 	}
 
 	/**
 	 * Override method to make it overridable from Python.
 	 */
 	void reset(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(void, PyObsSpace, reset, model);
+		PYBIND11_OVERLOAD(void, PyObsFunction, reset, model);
 	}
 
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
 	obs_t get(scip::Model const& model) override {
-		PYBIND11_OVERLOAD_PURE(obs_t, PyObsSpace, get, model);
+		PYBIND11_OVERLOAD_PURE(obs_t, PyObsFunction, get, model);
 	}
 };
 
 /**
- * PyBind trampoline class for Python inheritance of vanilla @ ref Py_ObsSpace classes.
+ * PyBind trampoline class for Python inheritance of vanilla @ ref Py_ObsFunction classes.
  *
- * Inherit override from @ref Py_ObsSpaceBase_Trampoline and override
- * @ref Py_ObsSpaceBase_Trampoline::get to non pure overload.
- * Similarily, if an observation space needs to make additional method overridable from
+ * Inherit override from @ref Py_ObsFunctionBase_Trampoline and override
+ * @ref Py_ObsFunctionBase_Trampoline::get to non pure overload.
+ * Similarily, if an observation function needs to make additional method overridable from
  * Python, it needs to define a new trampoline class (inheriting this one) with additional
  * overrides to call `PYBIND11_OVERLOAD_XXX`.
  *
- * @tparam PyObsSpace The type of @ref Py_ObsSpace currently being bound.
+ * @tparam PyObsFunction The type of @ref Py_ObsFunction currently being bound.
  */
-template <typename PyObsSpace>
-struct Py_ObsSpace_Trampoline : public Py_ObsSpaceBase_Trampoline<PyObsSpace> {
-	using typename Py_ObsSpaceBase::obs_t;
+template <typename PyObsFunction>
+struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFunction> {
+	using typename Py_ObsFunctionBase::obs_t;
 
-	using Py_ObsSpaceBase_Trampoline<PyObsSpace>::Py_ObsSpaceBase_Trampoline;
+	using Py_ObsFunctionBase_Trampoline<PyObsFunction>::Py_ObsFunctionBase_Trampoline;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<Py_ObsSpaceBase> clone() const override {
-		return std::make_unique<Py_ObsSpace_Trampoline>();
+	std::unique_ptr<Py_ObsFunctionBase> clone() const override {
+		return std::make_unique<Py_ObsFunction_Trampoline>();
 	}
 
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
 	obs_t get(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(obs_t, PyObsSpace, get, model);
+		PYBIND11_OVERLOAD(obs_t, PyObsFunction, get, model);
 	}
 };
 
@@ -166,24 +166,24 @@ template <template <typename> class Observation>
 using Obs = internal::Py_Obs<Observation<container::pytensor>>;
 
 /**
- * Alias for Python observation space base class.
+ * Alias for Python observation function base class.
  */
-using ObsSpaceBase = internal::Py_ObsSpaceBase;
+using ObsFunctionBase = internal::Py_ObsFunctionBase;
 
 /**
- * Alias for Python observation space class.
+ * Alias for Python observation function class.
  *
  * Set the container type to @ref container::pytensor.
  *
- * @tparam An observation space template class
+ * @tparam An observation function template class
  */
-template <template <typename> class ObservationSpace>
-using ObsSpace = internal::Py_ObsSpace<ObservationSpace<container::pytensor>>;
+template <template <typename> class ObservationFunction>
+using ObsFunction = internal::Py_ObsFunction<ObservationFunction<container::pytensor>>;
 
 /**
  * The @ref pybind11::class_ type for @ref ObsBase
  *
- * Set the holder type to @ref std::shared_ptr inheriting observation spaces prevent
+ * Set the holder type to @ref std::shared_ptr inheriting observation functions prevent
  * from having it as a @ref std::unique_ptr.
  */
 using base_obs_class_ = py11::class_<
@@ -195,7 +195,7 @@ using base_obs_class_ = py11::class_<
  * The @ref pybind11::class_ type for all observation.
  *
  * Set the parent base class.
- * Set the holder type to @ref std::shared_ptr inheriting observation spaces prevent
+ * Set the holder type to @ref std::shared_ptr inheriting observation functions prevent
  * from having it as a @ref std::unique_ptr.
  *
  * @tparam Observation The C++ observation to bind to Python
@@ -208,34 +208,34 @@ using obs_class_ = py11::class_<
 	>;
 
 /**
- * The @ref pybind11::class_ type for @ref base::ObservationSpace.
+ * The @ref pybind11::class_ type for @ref base::ObservationFunction.
  *
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to be stored in environments).
  */
-using base_space_class_ = py11::class_<
-	ObsSpaceBase,                                        // Class
-	internal::Py_ObsSpaceBase_Trampoline<ObsSpaceBase>,  // Trampoline
-	std::shared_ptr<ObsSpaceBase>                        // Holder
+using base_func_class_ = py11::class_<
+	ObsFunctionBase,                                        // Class
+	internal::Py_ObsFunctionBase_Trampoline<ObsFunctionBase>,  // Trampoline
+	std::shared_ptr<ObsFunctionBase>                        // Holder
 	>;
 
 /**
- * The @ref pybind11::class_ type for all observation spaces.
+ * The @ref pybind11::class_ type for all observation functions.
  *
  * Set the parent base class.
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to be stored in environments).
  *
- * @tparam ObsSapce The C++ observation space to bind to Python
+ * @tparam ObsSapce The C++ observation function to bind to Python
  */
-template <template <typename> class ObservationSpace>
-using space_class_ = py11::class_<
-	ObsSpace<ObservationSpace>,                                    // Class
-	ObsSpaceBase,                                                  // Base
-	internal::Py_ObsSpace_Trampoline<ObsSpace<ObservationSpace>>,  // Trampoline
-	std::shared_ptr<ObsSpace<ObservationSpace>>                    // Holder
+template <template <typename> class ObservationFunction>
+using function_class_ = py11::class_<
+	ObsFunction<ObservationFunction>,                                    // Class
+	ObsFunctionBase,                                                  // Base
+	internal::Py_ObsFunction_Trampoline<ObsFunction<ObservationFunction>>,  // Trampoline
+	std::shared_ptr<ObsFunction<ObservationFunction>>                    // Holder
 	>;
 
 }  // namespace obs

@@ -23,6 +23,6 @@ PYBIND11_MODULE(observation, m) {
 		.def_property_readonly(
 			"var_feat", [](py_basic_obs_t const& obs) -> auto& { return obs.obs.var_feat; });
 
-	py::obs::space_class_<obs::BasicObsSpace>(m, "BasicObsSpace")  //
+	py::obs::function_class_<obs::BasicObsFunction>(m, "BasicObsFunction")  //
 		.def(py11::init<>());
 }

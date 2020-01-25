@@ -13,103 +13,103 @@ namespace reward {
 namespace internal {
 
 /**
- * PyBind trampoline class for Python inheritance of base::RewardSpace.
+ * PyBind trampoline class for Python inheritance of base::RewardFunction.
  *
  * Trampoline classes must inherit the type currently being bound and override all methods
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam RewardSpace The type of @ref base::RewardSpace currently being bound (abstract
+ * @tparam RewardFunction The type of @ref base::RewardFunction currently being bound (abstract
  *     or derived).
  */
-template <typename RewardSpace>
-struct Py_RewardSpaceBase_Trampoline : public RewardSpace {
-	using typename base::RewardSpace::reward_t;
+template <typename RewardFunction>
+struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
+	using typename base::RewardFunction::reward_t;
 
-	using RewardSpace::RewardSpace;
+	using RewardFunction::RewardFunction;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<base::RewardSpace> clone() const override {
-		return std::make_unique<Py_RewardSpaceBase_Trampoline>();
+	std::unique_ptr<base::RewardFunction> clone() const override {
+		return std::make_unique<Py_RewardFunctionBase_Trampoline>();
 	}
 
 	/**
 	 * Override method to make it overridable from Python.
 	 */
 	void reset(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(void, RewardSpace, reset, model);
+		PYBIND11_OVERLOAD(void, RewardFunction, reset, model);
 	}
 
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
 	reward_t get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD_PURE(reward_t, RewardSpace, get, model, done);
+		PYBIND11_OVERLOAD_PURE(reward_t, RewardFunction, get, model, done);
 	}
 };
 
 /**
- * PyBind trampoline class for Python inheritance of vanilla `RewardSpaces` classes.
+ * PyBind trampoline class for Python inheritance of vanilla `RewardFunctions` classes.
  *
  * Inherit override from @ref PyRewardBase and override @ref PyRewardBase::get to non
  * pure overload.
- * Similarily, if a reward space needs to make additional method overridable from Python,
+ * Similarily, if a reward function needs to make additional method overridable from Python,
  * it needs to define a new trampoline class (inheriting this one) with additional
  * overrides to call `PYBIND11_OVERLOAD_XXX`.
  *
- * @tparam RewardSpace The type of @ref base::RewardSpace currently being bound.
+ * @tparam RewardFunction The type of @ref base::RewardFunction currently being bound.
  */
-template <typename RewardSpace>
-struct Py_RewardSpace_Trampoline : public Py_RewardSpaceBase_Trampoline<RewardSpace> {
-	using typename base::RewardSpace::reward_t;
+template <typename RewardFunction>
+struct Py_RewardFunction_Trampoline : public Py_RewardFunctionBase_Trampoline<RewardFunction> {
+	using typename base::RewardFunction::reward_t;
 
-	using Py_RewardSpaceBase_Trampoline<RewardSpace>::Py_RewardSpaceBase_Trampoline;
+	using Py_RewardFunctionBase_Trampoline<RewardFunction>::Py_RewardFunctionBase_Trampoline;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<base::RewardSpace> clone() const override {
-		return std::make_unique<Py_RewardSpace_Trampoline>();
+	std::unique_ptr<base::RewardFunction> clone() const override {
+		return std::make_unique<Py_RewardFunction_Trampoline>();
 	}
 
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
 	reward_t get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD(reward_t, RewardSpace, get, model, done);
+		PYBIND11_OVERLOAD(reward_t, RewardFunction, get, model, done);
 	}
 };
 
 }  // namespace internal
 
 /**
- * The @ref pybind11::class_ type for @ref base::RewardSpace.
+ * The @ref pybind11::class_ type for @ref base::RewardFunction.
  *
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to stored in environments).
  */
-using base_space_class_ = py11::class_<
-	base::RewardSpace,                                           // Class
-	internal::Py_RewardSpaceBase_Trampoline<base::RewardSpace>,  // Trampoline
-	std::shared_ptr<base::RewardSpace>                           // Holder
+using base_func_class_ = py11::class_<
+	base::RewardFunction,                                           // Class
+	internal::Py_RewardFunctionBase_Trampoline<base::RewardFunction>,  // Trampoline
+	std::shared_ptr<base::RewardFunction>                           // Holder
 	>;
 
 /**
- * The @ref pybind11::class_ type for reward spaces.
+ * The @ref pybind11::class_ type for reward functions.
  *
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to stored in environments).
  */
-template <typename RewardSpace>
-using space_class_ = py11::class_<
-	RewardSpace,                                       // Class
-	base::RewardSpace,                                 // Base
-	internal::Py_RewardSpace_Trampoline<RewardSpace>,  // Trampoline
-	std::shared_ptr<RewardSpace>                       // Holder
+template <typename RewardFunction>
+using function_class_ = py11::class_<
+	RewardFunction,                                       // Class
+	base::RewardFunction,                                 // Base
+	internal::Py_RewardFunction_Trampoline<RewardFunction>,  // Trampoline
+	std::shared_ptr<RewardFunction>                       // Holder
 	>;
 
 }  // namespace reward

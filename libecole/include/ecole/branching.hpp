@@ -41,21 +41,21 @@ private:
 
 }  // namespace internal
 
-template <typename Action> class ActionSpace {
+template <typename Action> class ActionFunction {
 public:
 	using action_t = Action;
 
-	virtual ~ActionSpace() = default;
+	virtual ~ActionFunction() = default;
 	virtual scip::VarProxy get(scip::Model& model, Action const& action) = 0;
-	virtual std::unique_ptr<ActionSpace> clone() const = 0;
+	virtual std::unique_ptr<ActionFunction> clone() const = 0;
 };
 
-class Fractional : public ActionSpace<std::size_t> {
+class Fractional : public ActionFunction<std::size_t> {
 public:
-	using action_t = ActionSpace::action_t;
+	using action_t = ActionFunction::action_t;
 
 	scip::VarProxy get(scip::Model& model, action_t const& action) override;
-	std::unique_ptr<ActionSpace> clone() const override;
+	std::unique_ptr<ActionFunction> clone() const override;
 };
 
 template <
@@ -74,21 +74,21 @@ public:
 	template <typename T> using ptr = typename env_t::template ptr<T>;
 
 	Env(
-		ptr<ActionSpace<action_t>>&& action_space,
-		ptr<base::ObservationSpace<obs_t>>&& obs_space,
-		ptr<base::RewardSpace>&& reward_space,
-		ptr<base::TerminationSpace>&& termination_space);
+		ptr<ActionFunction<action_t>>&& action_func,
+		ptr<base::ObservationFunction<obs_t>>&& obs_func,
+		ptr<base::RewardFunction>&& reward_func,
+		ptr<base::TerminationFunction>&& termination_func);
 	Env(
-		ptr<ActionSpace<action_t>> const& action_space,
-		ptr<base::ObservationSpace<obs_t>> const& obs_space,
-		ptr<base::RewardSpace> const& reward_space,
-		ptr<base::TerminationSpace> const& termination_space);
+		ptr<ActionFunction<action_t>> const& action_func,
+		ptr<base::ObservationFunction<obs_t>> const& obs_func,
+		ptr<base::RewardFunction> const& reward_func,
+		ptr<base::TerminationFunction> const& termination_func);
 
 private:
-	ptr<ActionSpace<action_t>> action_space;
-	ptr<base::ObservationSpace<obs_t>> obs_space;
-	ptr<base::RewardSpace> reward_space;
-	ptr<base::TerminationSpace> termination_space;
+	ptr<ActionFunction<action_t>> action_func;
+	ptr<base::ObservationFunction<obs_t>> obs_func;
+	ptr<base::RewardFunction> reward_func;
+	ptr<base::TerminationFunction> termination_func;
 	internal::ReverseControl<Holder> solve_controller;
 
 	inline scip::Model& model() noexcept;
@@ -98,25 +98,25 @@ private:
 
 template <typename A, typename O, template <typename...> class H>
 Env<A, O, H>::Env(
-	ptr<ActionSpace<action_t>>&& action_space,
-	ptr<base::ObservationSpace<obs_t>>&& obs_space,
-	ptr<base::RewardSpace>&& reward_space,
-	ptr<base::TerminationSpace>&& termination_space) :
-	action_space(std::move(action_space)),
-	obs_space(std::move(obs_space)),
-	reward_space(std::move(reward_space)),
-	termination_space(std::move(termination_space)) {}
+	ptr<ActionFunction<action_t>>&& action_func,
+	ptr<base::ObservationFunction<obs_t>>&& obs_func,
+	ptr<base::RewardFunction>&& reward_func,
+	ptr<base::TerminationFunction>&& termination_func) :
+	action_func(std::move(action_func)),
+	obs_func(std::move(obs_func)),
+	reward_func(std::move(reward_func)),
+	termination_func(std::move(termination_func)) {}
 
 template <typename A, typename O, template <typename...> class H>
 Env<A, O, H>::Env(
-	ptr<ActionSpace<action_t>> const& action_space,
-	ptr<base::ObservationSpace<obs_t>> const& obs_space,
-	ptr<base::RewardSpace> const& reward_space,
-	ptr<base::TerminationSpace> const& termination_space) :
-	action_space(action_space),
-	obs_space(obs_space),
-	reward_space(reward_space),
-	termination_space(termination_space) {}
+	ptr<ActionFunction<action_t>> const& action_func,
+	ptr<base::ObservationFunction<obs_t>> const& obs_func,
+	ptr<base::RewardFunction> const& reward_func,
+	ptr<base::TerminationFunction> const& termination_func) :
+	action_func(action_func),
+	obs_func(obs_func),
+	reward_func(reward_func),
+	termination_func(termination_func) {}
 
 template <typename A, typename O, template <typename...> class H>
 scip::Model& Env<A, O, H>::model() noexcept {
@@ -128,22 +128,22 @@ auto Env<A, O, H>::_reset(ptr<scip::Model>&& new_model) -> std::tuple<obs_t, boo
 	new_model->seed(this->seed());
 	solve_controller = internal::ReverseControl<H>(std::move(new_model));
 	solve_controller.wait();
-	reward_space->reset(model());
-	termination_space->reset(model());
-	obs_space->reset(model());
-	bool const done = solve_controller.is_done() || termination_space->is_done(model());
-	auto&& obs = obs_space->get(model());
+	reward_func->reset(model());
+	termination_func->reset(model());
+	obs_func->reset(model());
+	bool const done = solve_controller.is_done() || termination_func->is_done(model());
+	auto&& obs = obs_func->get(model());
 	return std::make_tuple(std::move(obs), done);
 }
 
 template <typename A, typename O, template <typename...> class H>
 auto Env<A, O, H>::_step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
-	auto const var = action_space->get(model(), action);
+	auto const var = action_func->get(model(), action);
 	solve_controller.resume(var);
 	solve_controller.wait();
-	bool const done = solve_controller.is_done() || termination_space->is_done(model());
-	auto const reward = reward_space->get(model(), done);
-	auto&& obs = obs_space->get(model());
+	bool const done = solve_controller.is_done() || termination_func->is_done(model());
+	auto const reward = reward_func->get(model(), done);
+	auto&& obs = obs_func->get(model());
 	return std::make_tuple(std::move(obs), reward, done, info_t{});
 }
 

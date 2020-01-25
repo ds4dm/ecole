@@ -8,8 +8,8 @@
 namespace ecole {
 namespace reward {
 
-struct Done : public base::RewardSpace {
-	std::unique_ptr<RewardSpace> clone() const override;
+struct Done : public base::RewardFunction {
+	std::unique_ptr<RewardFunction> clone() const override;
 	reward_t get(scip::Model const& model, bool done = false) override;
 };
 

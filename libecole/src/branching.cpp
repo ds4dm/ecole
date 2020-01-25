@@ -190,7 +190,7 @@ scip::VarProxy Fractional::get(scip::Model& model, std::size_t const& action) {
 	return model.lp_branch_vars().at(action);
 }
 
-auto Fractional::clone() const -> std::unique_ptr<ActionSpace> {
+auto Fractional::clone() const -> std::unique_ptr<ActionFunction> {
 	return std::make_unique<Fractional>(*this);
 }
 

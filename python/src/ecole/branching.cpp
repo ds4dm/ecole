@@ -20,12 +20,12 @@ PYBIND11_MODULE(branching, m) {
 	// Import of base required for resolving inheritance to base types
 	py11::module base_mod = py11::module::import("ecole.base");
 
-	using ActionSpace = py::ActionSpaceBase<branching::ActionSpace>;
-	using Fractional = py::ActionSpace<branching::Fractional, branching::ActionSpace>;
+	using ActionFunction = py::ActionFunctionBase<branching::ActionFunction>;
+	using Fractional = py::ActionFunction<branching::Fractional, branching::ActionFunction>;
 	using Env = py::Env<branching::Env>;
 
-	py11::class_<ActionSpace, std::shared_ptr<ActionSpace>>(m, "ActionSpace");
-	py11::class_<Fractional, ActionSpace, std::shared_ptr<Fractional>>(m, "Fractional")  //
+	py11::class_<ActionFunction, std::shared_ptr<ActionFunction>>(m, "ActionFunction");
+	py11::class_<Fractional, ActionFunction, std::shared_ptr<Fractional>>(m, "Fractional")  //
 		.def(py11::init<>());
 
 	py11::class_<Env, py::EnvBase>(m, "Env")  //
@@ -34,15 +34,15 @@ PYBIND11_MODULE(branching, m) {
 			[] {
 				return std::make_unique<Env>(
 					std::make_unique<Fractional>(),
-					std::make_unique<py::obs::ObsSpace<obs::BasicObsSpace>>(),
+					std::make_unique<py::obs::ObsFunction<obs::BasicObsFunction>>(),
 					std::make_unique<reward::Done>(),
 					std::make_unique<termination::Solved>());
 			})
 		.def(py11::init<
-				 Env::ptr<ActionSpace> const&,
-				 Env::ptr<py::obs::ObsSpaceBase> const&,
-				 Env::ptr<base::RewardSpace> const&,
-				 Env::ptr<base::TerminationSpace> const&>())  //
+				 Env::ptr<ActionFunction> const&,
+				 Env::ptr<py::obs::ObsFunctionBase> const&,
+				 Env::ptr<base::RewardFunction> const&,
+				 Env::ptr<base::TerminationFunction> const&>())  //
 		.def("step", [](py::EnvBase& env, branching::Fractional::action_t const& action) {
 			return env.step(py::Action<std::size_t>(action));
 		});

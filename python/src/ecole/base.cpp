@@ -22,20 +22,20 @@ PYBIND11_MODULE(base, m) {
 	py::obs::base_obs_class_(m, "Observation")  //
 		.def(py11::init<>());
 
-	py::obs::base_space_class_(m, "ObservationSpace")
+	py::obs::base_func_class_(m, "ObservationFunction")
 		.def(py11::init<>())
-		.def("reset", &py::obs::ObsSpaceBase::reset, py11::arg("model"))
-		.def("get", &py::obs::ObsSpaceBase::get, py11::arg("model"));
+		.def("reset", &py::obs::ObsFunctionBase::reset, py11::arg("model"))
+		.def("get", &py::obs::ObsFunctionBase::get, py11::arg("model"));
 
-	py::reward::base_space_class_(m, "RewardSpace")
+	py::reward::base_func_class_(m, "RewardFunction")
 		.def(py11::init<>())
-		.def("reset", &base::RewardSpace::reset, py11::arg("model"))
-		.def("get", &base::RewardSpace::get, py11::arg("model"), py11::arg("done") = false);
+		.def("reset", &base::RewardFunction::reset, py11::arg("model"))
+		.def("get", &base::RewardFunction::get, py11::arg("model"), py11::arg("done") = false);
 
-	py::termination::base_space_class_(m, "TerminationSpace")
+	py::termination::base_func_class_(m, "TerminationFunction")
 		.def(py11::init<>())
-		.def("reset", &base::TerminationSpace::reset, py11::arg("model"))
-		.def("is_done", &base::TerminationSpace::is_done, py11::arg("model"));
+		.def("reset", &base::TerminationFunction::reset, py11::arg("model"))
+		.def("is_done", &base::TerminationFunction::is_done, py11::arg("model"));
 
 	py11::class_<py::EnvBase>(m, "Env")  //
 		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))

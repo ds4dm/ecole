@@ -3,11 +3,11 @@
 namespace ecole {
 namespace base {
 
-void RewardSpace::reset(scip::Model const& model) {
+void RewardFunction::reset(scip::Model const& model) {
 	(void)model;
 }
 
-void TerminationSpace::reset(scip::Model const& model) {
+void TerminationFunction::reset(scip::Model const& model) {
 	(void)model;
 }
 

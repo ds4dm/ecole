@@ -3,7 +3,7 @@
 namespace ecole {
 namespace reward {
 
-std::unique_ptr<base::RewardSpace> Done::clone() const {
+std::unique_ptr<base::RewardFunction> Done::clone() const {
 	return std::make_unique<Done>(*this);
 }
 
