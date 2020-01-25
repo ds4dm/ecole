@@ -30,7 +30,8 @@ PYBIND11_MODULE(base, m) {
 	py::reward::base_func_class_(m, "RewardFunction")
 		.def(py11::init<>())
 		.def("reset", &base::RewardFunction::reset, py11::arg("model"))
-		.def("get", &base::RewardFunction::get, py11::arg("model"), py11::arg("done") = false);
+		.def(
+			"get", &base::RewardFunction::get, py11::arg("model"), py11::arg("done") = false);
 
 	py::termination::base_func_class_(m, "TerminationFunction")
 		.def(py11::init<>())

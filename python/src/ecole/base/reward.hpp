@@ -19,8 +19,8 @@ namespace internal {
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam RewardFunction The type of @ref base::RewardFunction currently being bound (abstract
- *     or derived).
+ * @tparam RewardFunction The type of @ref base::RewardFunction currently being bound
+ * (abstract or derived).
  */
 template <typename RewardFunction>
 struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
@@ -55,17 +55,19 @@ struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
  *
  * Inherit override from @ref PyRewardBase and override @ref PyRewardBase::get to non
  * pure overload.
- * Similarily, if a reward function needs to make additional method overridable from Python,
- * it needs to define a new trampoline class (inheriting this one) with additional
+ * Similarily, if a reward function needs to make additional method overridable from
+ * Python, it needs to define a new trampoline class (inheriting this one) with additional
  * overrides to call `PYBIND11_OVERLOAD_XXX`.
  *
  * @tparam RewardFunction The type of @ref base::RewardFunction currently being bound.
  */
 template <typename RewardFunction>
-struct Py_RewardFunction_Trampoline : public Py_RewardFunctionBase_Trampoline<RewardFunction> {
+struct Py_RewardFunction_Trampoline :
+	public Py_RewardFunctionBase_Trampoline<RewardFunction> {
 	using typename base::RewardFunction::reward_t;
 
-	using Py_RewardFunctionBase_Trampoline<RewardFunction>::Py_RewardFunctionBase_Trampoline;
+	using Py_RewardFunctionBase_Trampoline<
+		RewardFunction>::Py_RewardFunctionBase_Trampoline;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
@@ -92,9 +94,9 @@ struct Py_RewardFunction_Trampoline : public Py_RewardFunctionBase_Trampoline<Re
  * to stored in environments).
  */
 using base_func_class_ = py11::class_<
-	base::RewardFunction,                                           // Class
+	base::RewardFunction,                                              // Class
 	internal::Py_RewardFunctionBase_Trampoline<base::RewardFunction>,  // Trampoline
-	std::shared_ptr<base::RewardFunction>                           // Holder
+	std::shared_ptr<base::RewardFunction>                              // Holder
 	>;
 
 /**
@@ -106,10 +108,10 @@ using base_func_class_ = py11::class_<
  */
 template <typename RewardFunction>
 using function_class_ = py11::class_<
-	RewardFunction,                                       // Class
-	base::RewardFunction,                                 // Base
+	RewardFunction,                                          // Class
+	base::RewardFunction,                                    // Base
 	internal::Py_RewardFunction_Trampoline<RewardFunction>,  // Trampoline
-	std::shared_ptr<RewardFunction>                       // Holder
+	std::shared_ptr<RewardFunction>                          // Holder
 	>;
 
 }  // namespace reward

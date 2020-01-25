@@ -25,7 +25,8 @@ PYBIND11_MODULE(branching, m) {
 	using Env = py::Env<branching::Env>;
 
 	py11::class_<ActionFunction, std::shared_ptr<ActionFunction>>(m, "ActionFunction");
-	py11::class_<Fractional, ActionFunction, std::shared_ptr<Fractional>>(m, "Fractional")  //
+	py11::class_<Fractional, ActionFunction, std::shared_ptr<Fractional>>(
+		m, "Fractional")  //
 		.def(py11::init<>());
 
 	py11::class_<Env, py::EnvBase>(m, "Env")  //

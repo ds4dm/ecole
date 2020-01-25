@@ -30,7 +30,8 @@ struct BasicObsFunction : public base::ObservationFunction<BasicObs<ContainerSel
 	obs_t get(scip::Model const& model) override;
 };
 
-template <typename CS> auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
+template <typename CS>
+auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
 	return std::make_unique<BasicObsFunction>(*this);
 }
 

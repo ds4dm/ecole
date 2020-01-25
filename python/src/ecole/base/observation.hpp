@@ -50,8 +50,8 @@ using Py_ObsFunctionBase = base::ObservationFunction<std::shared_ptr<Py_ObsBase>
 /**
  * Wrapper to make C++ observation functions.
  *
- * Make the wrapped class properly inherit @ref Py_ObsFunctionBase and returned observation
- * in the proper way (using @ref std::shared_ptr).
+ * Make the wrapped class properly inherit @ref Py_ObsFunctionBase and returned
+ * observation in the proper way (using @ref std::shared_ptr).
  *
  * @tparam ObsFunction The C++ observation function to warp.
  */
@@ -86,10 +86,11 @@ template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBas
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam PyObsFunction The type of @ref Py_ObsFunctionBase currently being bound (abstract or
- * derived).
+ * @tparam PyObsFunction The type of @ref Py_ObsFunctionBase currently being bound
+ * (abstract or derived).
  */
-template <typename PyObsFunction> struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
+template <typename PyObsFunction>
+struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
 	using typename Py_ObsFunctionBase::obs_t;
 
 	using PyObsFunction::PyObsFunction;
@@ -215,9 +216,9 @@ using obs_class_ = py11::class_<
  * to be stored in environments).
  */
 using base_func_class_ = py11::class_<
-	ObsFunctionBase,                                        // Class
+	ObsFunctionBase,                                           // Class
 	internal::Py_ObsFunctionBase_Trampoline<ObsFunctionBase>,  // Trampoline
-	std::shared_ptr<ObsFunctionBase>                        // Holder
+	std::shared_ptr<ObsFunctionBase>                           // Holder
 	>;
 
 /**
@@ -232,10 +233,10 @@ using base_func_class_ = py11::class_<
  */
 template <template <typename> class ObservationFunction>
 using function_class_ = py11::class_<
-	ObsFunction<ObservationFunction>,                                    // Class
-	ObsFunctionBase,                                                  // Base
+	ObsFunction<ObservationFunction>,                                       // Class
+	ObsFunctionBase,                                                        // Base
 	internal::Py_ObsFunction_Trampoline<ObsFunction<ObservationFunction>>,  // Trampoline
-	std::shared_ptr<ObsFunction<ObservationFunction>>                    // Holder
+	std::shared_ptr<ObsFunction<ObservationFunction>>                       // Holder
 	>;
 
 }  // namespace obs

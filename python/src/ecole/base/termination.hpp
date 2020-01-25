@@ -19,8 +19,8 @@ namespace internal {
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being bound
- * (abstract or derived).
+ * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being
+ * bound (abstract or derived).
  */
 template <typename TerminationFunction>
 struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
@@ -49,19 +49,23 @@ struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
 };
 
 /**
- * PyBind trampoline class for Python inheritance of vanilla `TerminationFunctions` classes.
+ * PyBind trampoline class for Python inheritance of vanilla `TerminationFunctions`
+ * classes.
  *
  * Inherit override from @ref PyRewardBase and override @ref PyRewardBase::get to non
  * pure overload.
- * Similarily, if a reward function needs to make additional method overridable from Python,
- * it needs to define a new trampoline class (inheriting this one) with additional
+ * Similarily, if a reward function needs to make additional method overridable from
+ * Python, it needs to define a new trampoline class (inheriting this one) with additional
  * overrides to call `PYBIND11_OVERLOAD_XXX`.
  *
- * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being bound.
+ * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being
+ * bound.
  */
 template <typename TerminationFunction>
-struct Py_TermFunction_Trampoline : public Py_TermFunctionBase_Trampoline<TerminationFunction> {
-	using Py_TermFunctionBase_Trampoline<TerminationFunction>::Py_TermFunctionBase_Trampoline;
+struct Py_TermFunction_Trampoline :
+	public Py_TermFunctionBase_Trampoline<TerminationFunction> {
+	using Py_TermFunctionBase_Trampoline<
+		TerminationFunction>::Py_TermFunctionBase_Trampoline;
 
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
@@ -88,9 +92,9 @@ struct Py_TermFunction_Trampoline : public Py_TermFunctionBase_Trampoline<Termin
  * to stored in environments).
  */
 using base_func_class_ = py11::class_<
-	base::TerminationFunction,                                         // Class
+	base::TerminationFunction,                                            // Class
 	internal::Py_TermFunctionBase_Trampoline<base::TerminationFunction>,  // Trampoline
-	std::shared_ptr<base::TerminationFunction>                         // Holder
+	std::shared_ptr<base::TerminationFunction>                            // Holder
 	>;
 
 /**
@@ -102,10 +106,10 @@ using base_func_class_ = py11::class_<
  */
 template <typename TerminationFunction>
 using function_class_ = py11::class_<
-	TerminationFunction,                                     // Class
-	base::TerminationFunction,                               // Base
+	TerminationFunction,                                        // Class
+	base::TerminationFunction,                                  // Base
 	internal::Py_TermFunction_Trampoline<TerminationFunction>,  // Trampoline
-	std::shared_ptr<TerminationFunction>                     // Holder
+	std::shared_ptr<TerminationFunction>                        // Holder
 	>;
 
 }  // namespace termination

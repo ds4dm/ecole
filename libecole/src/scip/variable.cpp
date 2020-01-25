@@ -15,6 +15,5 @@ auto VarProxy::lb() const noexcept -> decltype(SCIPvarGetLbLocal(nullptr)) {
 	return SCIPvarGetLbLocal(value);
 }
 
-
 }  // namespace scip
 }  // namespace ecole
