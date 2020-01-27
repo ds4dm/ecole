@@ -2,13 +2,14 @@
 
 #include <memory>
 
-#include "ecole/base.hpp"
+#include "ecole/reward/base.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
 namespace reward {
 
-struct Done : public base::RewardFunction {
+class IsDone : public RewardFunction {
+public:
 	std::unique_ptr<RewardFunction> clone() const override;
 	reward_t get(scip::Model const& model, bool done = false) override;
 };

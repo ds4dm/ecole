@@ -7,8 +7,8 @@ add_library(
 	src/scip/variable.cpp
 	src/scip/column.cpp
 	src/exception.cpp
-	src/reward.cpp
 	src/reward/base.cpp
+	src/reward/isdone.cpp
 	src/termination.cpp
 	src/termination/base.cpp
 	src/branching.cpp
