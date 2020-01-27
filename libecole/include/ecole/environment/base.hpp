@@ -5,10 +5,11 @@
 #include <tuple>
 
 #include "ecole/exception.hpp"
+#include "ecole/reward/base.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
-namespace base {
+namespace environment {
 
 /**
  * Abstract base class for all environments.
@@ -27,18 +28,18 @@ template <
 	typename Action,
 	typename Observation,
 	template <typename...> class Holder = std::unique_ptr>
-class Env {
+class Environment {
 public:
 	using action_t = Action;
 	using obs_t = Observation;
-	using reward_t = RewardFunction::reward_t;
+	using reward_t = reward::RewardFunction::reward_t;
 	using seed_t = int;
 	using info_t = int;
 
 	// Template a hodler type. Enable using std::shared_ptr for Python bindings
 	template <typename T> using ptr = Holder<T>;
 
-	virtual ~Env() = default;
+	virtual ~Environment() = default;
 
 	/**
 	 * Set the random seed for the environment, hence making its internals deterministic.
@@ -93,22 +94,22 @@ private:
 	virtual std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) = 0;
 };
 
-template <typename O> void ObservationFunction<O>::reset(scip::Model const& model) {
-	(void)model;
-}
+/***********************************
+ *  Implementation of Environment  *
+ ***********************************/
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::seed(seed_t seed) noexcept -> seed_t {
+auto Environment<A, O, H>::seed(seed_t seed) noexcept -> seed_t {
 	return seed_v = seed;
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::seed() const noexcept -> seed_t {
+auto Environment<A, O, H>::seed() const noexcept -> seed_t {
 	return seed_v;
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
+auto Environment<A, O, H>::reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
 	if (model == nullptr) throw Exception("Invalid null pointer to Model");
 	mutate_seed();
 	try {
@@ -122,18 +123,19 @@ auto Env<A, O, H>::reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
+auto Environment<A, O, H>::reset(scip::Model&& model) -> std::tuple<obs_t, bool> {
 	return reset(std::make_unique<scip::Model>(std::move(model)));
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
+auto Environment<A, O, H>::reset(std::string const& filename) -> std::tuple<obs_t, bool> {
 	return reset(scip::Model::from_file(filename));
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Env<A, O, H>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, info_t> {
-	if (!can_transition) throw Exception("Environment need to be reset.");
+auto Environment<A, O, H>::step(action_t action)
+	-> std::tuple<obs_t, reward_t, bool, info_t> {
+	if (!can_transition) throw environment::Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));
 		can_transition = !std::get<2>(result);
@@ -145,9 +147,9 @@ auto Env<A, O, H>::step(action_t action) -> std::tuple<obs_t, reward_t, bool, in
 }
 
 template <typename A, typename O, template <typename...> class H>
-void Env<A, O, H>::mutate_seed() noexcept {
+void Environment<A, O, H>::mutate_seed() noexcept {
 	++seed_v;
 }
 
-}  // namespace base
+}  // namespace environment
 }  // namespace ecole
