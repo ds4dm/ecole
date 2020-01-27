@@ -6,12 +6,12 @@
 
 #include <xtensor/xview.hpp>
 
-#include "ecole/base.hpp"
 #include "ecole/container.hpp"
+#include "ecole/observation/base.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {
-namespace obs {
+namespace observation {
 
 template <typename ContainerSelector = container::xtensor> struct BasicObs {
 	using dtype = double;
@@ -21,14 +21,18 @@ template <typename ContainerSelector = container::xtensor> struct BasicObs {
 };
 
 template <typename ContainerSelector = container::xtensor>
-struct BasicObsFunction : public base::ObservationFunction<BasicObs<ContainerSelector>> {
+struct BasicObsFunction : public ObservationFunction<BasicObs<ContainerSelector>> {
 	using obs_t = BasicObs<ContainerSelector>;
-	using base_t = base::ObservationFunction<obs_t>;
+	using base_t = ObservationFunction<obs_t>;
 
 	std::unique_ptr<base_t> clone() const override;
 
 	obs_t get(scip::Model const& model) override;
 };
+
+/****************************************
+ *  Implementation of BasicObsFunction  *
+ ****************************************/
 
 template <typename CS>
 auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
@@ -47,5 +51,5 @@ template <typename CS> auto BasicObsFunction<CS>::get(scip::Model const& model) 
 	return {std::move(var_feat)};
 }
 
-}  // namespace obs
+}  // namespace observation
 }  // namespace ecole
