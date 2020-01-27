@@ -2,14 +2,15 @@
 
 #include <memory>
 
-#include "ecole/base.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/termination/base.hpp"
 
 namespace ecole {
 namespace termination {
 
-struct Solved : public base::TerminationFunction {
-	std::unique_ptr<base::TerminationFunction> clone() const override;
+class WhenSolved : public TerminationFunction {
+public:
+	std::unique_ptr<TerminationFunction> clone() const override;
 	bool is_done(scip::Model const& model) override;
 };
 
