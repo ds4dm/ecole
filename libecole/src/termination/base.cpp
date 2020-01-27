@@ -1,11 +1,11 @@
-#include "ecole/base.hpp"
+#include "ecole/termination/base.hpp"
 
 namespace ecole {
-namespace base {
+namespace termination {
 
 void TerminationFunction::reset(scip::Model const& model) {
 	(void)model;
 }
 
-}  // namespace base
+}  // namespace termination
 }  // namespace ecole
