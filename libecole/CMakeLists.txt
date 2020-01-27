@@ -9,6 +9,7 @@ add_library(
 	src/exception.cpp
 	src/base.cpp
 	src/reward.cpp
+	src/reward/base.cpp
 	src/termination.cpp
 	src/branching.cpp
 )
