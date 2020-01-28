@@ -2,14 +2,14 @@
 
 #include <memory>
 
-#include "ecole/base.hpp"
+#include "ecole/environment/base.hpp"
 
-#include "base/observation.hpp"
+#include "wrapper/observation.hpp"
 
 namespace ecole {
-namespace py {
+namespace pyenvironment {
 
-namespace hidden {
+namespace internal {
 
 struct Py_ActionBase {
 	virtual ~Py_ActionBase() = default;
@@ -86,26 +86,28 @@ struct Py_ActionFunction_SFINAE<AF, AFB, has_t<decltype(&AF::get)>> :
 	}
 };
 
-using Py_EnvBase =
-	base::Env<Py_ActionBase const&, py::obs::ObsFunctionBase::obs_t, std::shared_ptr>;
+using Py_EnvBase = environment::Environment<
+	Py_ActionBase const&,
+	pyobservation::ObsFunctionBase::obs_t,
+	std::shared_ptr>;
 
 template <  //
 	template <typename, typename, template <typename...> class>
 	class Env>
 using Py_Env = Env<Py_EnvBase::action_t, Py_EnvBase::obs_t, std::shared_ptr>;
 
-}  // namespace hidden
+}  // namespace internal
 
-using ActionBase = hidden::Py_ActionBase;
-template <typename A> using Action = hidden::Py_Action<A>;
+using ActionBase = internal::Py_ActionBase;
+template <typename A> using Action = internal::Py_Action<A>;
 template <template <typename> class AFB>
-using ActionFunctionBase = hidden::Py_ActionFunctionBase<AFB>;
+using ActionFunctionBase = internal::Py_ActionFunctionBase<AFB>;
 template <typename AF, template <typename> class AFB>
-using ActionFunction = hidden::Py_ActionFunction_SFINAE<AF, AFB>;
+using ActionFunction = internal::Py_ActionFunction_SFINAE<AF, AFB>;
 
-using EnvBase = hidden::Py_EnvBase;
+using EnvBase = internal::Py_EnvBase;
 template <template <typename, typename, template <typename...> class> class E>
-using Env = hidden::Py_Env<E>;
+using Env = internal::Py_Env<E>;
 
-}  // namespace py
+}  // namespace pyenvironment
 }  // namespace ecole

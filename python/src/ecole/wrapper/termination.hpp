@@ -2,25 +2,28 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/base.hpp"
-#include "ecole/termination.hpp"
+#include "ecole/termination/base.hpp"
 
 namespace py11 = pybind11;
 
 namespace ecole {
-namespace py {
-namespace termination {
+namespace pytermination {
+
+/*********************************
+ *  Base and trampoline classes  *
+ *********************************/
+
 namespace internal {
 
 /**
- * PyBind trampoline class for Python inheritance of base::TerminationFunction.
+ * PyBind trampoline class for Python inheritance of termination::TerminationFunction.
  *
  * Trampoline classes must inherit the type currently being bound and override all methods
  * to call `PYBIND_OVERLOAD_XXX`.
  * Every class needs its own trampoline with all override.
  *
- * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being
- * bound (abstract or derived).
+ * @tparam TerminationFunction The type of @ref termination::TerminationFunction
+ * currently being bound (abstract or derived).
  */
 template <typename TerminationFunction>
 struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
@@ -29,7 +32,7 @@ struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<base::TerminationFunction> clone() const override {
+	std::unique_ptr<termination::TerminationFunction> clone() const override {
 		return std::make_unique<Py_TermFunctionBase_Trampoline>();
 	}
 
@@ -58,8 +61,8 @@ struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
  * Python, it needs to define a new trampoline class (inheriting this one) with additional
  * overrides to call `PYBIND11_OVERLOAD_XXX`.
  *
- * @tparam TerminationFunction The type of @ref base::TerminationFunction currently being
- * bound.
+ * @tparam TerminationFunction The type of @ref termination::TerminationFunction
+ * currently being bound.
  */
 template <typename TerminationFunction>
 struct Py_TermFunction_Trampoline :
@@ -70,7 +73,7 @@ struct Py_TermFunction_Trampoline :
 	/**
 	 * Implement clone method required to make the class non pure abstract for C++ end.
 	 */
-	std::unique_ptr<base::TerminationFunction> clone() const override {
+	std::unique_ptr<termination::TerminationFunction> clone() const override {
 		return std::make_unique<Py_TermFunction_Trampoline>();
 	}
 
@@ -84,17 +87,21 @@ struct Py_TermFunction_Trampoline :
 
 }  // namespace internal
 
+/*************************
+ *  User facing aliases  *
+ *************************/
+
 /**
- * The @ref pybind11::class_ type for @ref base::TerminationFunction.
+ * The @ref pybind11::class_ type for @ref termination::TerminationFunction.
  *
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to stored in environments).
  */
 using base_func_class_ = py11::class_<
-	base::TerminationFunction,                                            // Class
-	internal::Py_TermFunctionBase_Trampoline<base::TerminationFunction>,  // Trampoline
-	std::shared_ptr<base::TerminationFunction>                            // Holder
+	termination::TerminationFunction,                                            // Class
+	internal::Py_TermFunctionBase_Trampoline<termination::TerminationFunction>,  // Trampo
+	std::shared_ptr<termination::TerminationFunction>                            // Holder
 	>;
 
 /**
@@ -107,11 +114,10 @@ using base_func_class_ = py11::class_<
 template <typename TerminationFunction>
 using function_class_ = py11::class_<
 	TerminationFunction,                                        // Class
-	base::TerminationFunction,                                  // Base
+	termination::TerminationFunction,                           // Base
 	internal::Py_TermFunction_Trampoline<TerminationFunction>,  // Trampoline
 	std::shared_ptr<TerminationFunction>                        // Holder
 	>;
 
-}  // namespace termination
-}  // namespace py
+}  // namespace pytermination
 }  // namespace ecole

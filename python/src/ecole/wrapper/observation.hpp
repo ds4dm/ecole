@@ -4,16 +4,19 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/base.hpp"
-#include "ecole/observation.hpp"
+#include "ecole/observation/base.hpp"
 
 #include "container.hpp"
 
 namespace py11 = pybind11;
 
 namespace ecole {
-namespace py {
-namespace obs {
+namespace pyobservation {
+
+/*********************************
+ *  Base and trampoline classes  *
+ *********************************/
+
 namespace internal {
 
 /**
@@ -45,7 +48,7 @@ template <typename Obs> struct Py_Obs : public Py_ObsBase {
  * These pointers need to be @ref std::shared_ptr and not @ref std::unique_ptr because
  * they can be created from Python when creating an observation function.
  */
-using Py_ObsFunctionBase = base::ObservationFunction<std::shared_ptr<Py_ObsBase>>;
+using Py_ObsFunctionBase = observation::ObservationFunction<std::shared_ptr<Py_ObsBase>>;
 
 /**
  * Wrapper to make C++ observation functions.
@@ -151,6 +154,10 @@ struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFun
 
 }  // namespace internal
 
+/*************************
+ *  User facing aliases  *
+ *************************/
+
 /**
  * Alias for Python observation base class.
  */
@@ -209,7 +216,7 @@ using obs_class_ = py11::class_<
 	>;
 
 /**
- * The @ref pybind11::class_ type for @ref base::ObservationFunction.
+ * The @ref pybind11::class_ type for @ref observation::ObservationFunction.
  *
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
@@ -239,6 +246,5 @@ using function_class_ = py11::class_<
 	std::shared_ptr<ObsFunction<ObservationFunction>>                       // Holder
 	>;
 
-}  // namespace obs
-}  // namespace py
+}  // namespace pyobservation
 }  // namespace ecole
