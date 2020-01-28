@@ -3,13 +3,13 @@ import pytest
 import ecole.termination as T
 
 
-def test_Solved(model):
-    termination_func = T.Solved()
+def test_WhenSolved(model):
+    termination_func = T.WhenSolved()
     termination_func.reset(model)
     assert termination_func.is_done(model) is False
 
 
-@pytest.mark.parametrize("Class", (T.Solved,))
+@pytest.mark.parametrize("Class", (T.WhenSolved,))
 def test_Inheritance(model, Class):
     class FunctionCalled(Class):
         def __init__(self):

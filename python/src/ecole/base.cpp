@@ -6,60 +6,59 @@
 #include "ecole/base.hpp"
 #include "ecole/scip/model.hpp"
 
-#include "base.hpp"
-#include "base/observation.hpp"
-#include "base/reward.hpp"
-#include "base/termination.hpp"
+#include "wrapper/environment.hpp"
+#include "wrapper/observation.hpp"
+#include "wrapper/reward.hpp"
+#include "wrapper/termination.hpp"
 
-namespace py11 = pybind11;
+namespace py = pybind11;
 using namespace ecole;
 
 PYBIND11_MODULE(base, m) {
 	m.doc() = "Abstract base classes for ecole environments.";
 
-	auto const scip_module = py11::module::import("ecole.scip");
+	auto const scip_module = py::module::import("ecole.scip");
 
-	py::obs::base_obs_class_(m, "Observation")  //
-		.def(py11::init<>());
+	pyobservation::base_obs_class_(m, "Observation")  //
+		.def(py::init<>());
 
-	py::obs::base_func_class_(m, "ObservationFunction")
-		.def(py11::init<>())
-		.def("reset", &py::obs::ObsFunctionBase::reset, py11::arg("model"))
-		.def("get", &py::obs::ObsFunctionBase::get, py11::arg("model"));
+	pyobservation::base_func_class_(m, "ObservationFunction")
+		.def(py::init<>())
+		.def("reset", &pyobservation::ObsFunctionBase::reset, py::arg("model"))
+		.def("get", &pyobservation::ObsFunctionBase::get, py::arg("model"));
 
-	py::reward::base_func_class_(m, "RewardFunction")
-		.def(py11::init<>())
-		.def("reset", &base::RewardFunction::reset, py11::arg("model"))
-		.def(
-			"get", &base::RewardFunction::get, py11::arg("model"), py11::arg("done") = false);
+	pyreward::base_func_class_(m, "RewardFunction")
+		.def(py::init<>())
+		.def("reset", &reward::RewardFunction::reset, py::arg("model"))
+		.def("get", &reward::RewardFunction::get, py::arg("model"), py::arg("done") = false);
 
-	py::termination::base_func_class_(m, "TerminationFunction")
-		.def(py11::init<>())
-		.def("reset", &base::TerminationFunction::reset, py11::arg("model"))
-		.def("is_done", &base::TerminationFunction::is_done, py11::arg("model"));
+	pytermination::base_func_class_(m, "TerminationFunction")
+		.def(py::init<>())
+		.def("reset", &termination::TerminationFunction::reset, py::arg("model"))
+		.def("is_done", &termination::TerminationFunction::is_done, py::arg("model"));
 
-	py11::class_<py::EnvBase>(m, "Env")  //
-		.def("seed", py11::overload_cast<>(&py::EnvBase::seed, py11::const_))
+	py::class_<pyenvironment::EnvBase>(m, "Env")  //
+		.def("seed", py::overload_cast<>(&pyenvironment::EnvBase::seed, py::const_))
 		.def(
 			"seed",
-			py11::overload_cast<py::EnvBase::seed_t>(&py::EnvBase::seed),
-			py11::arg("value"))
+			py::overload_cast<pyenvironment::EnvBase::seed_t>(&pyenvironment::EnvBase::seed),
+			py::arg("value"))
 
 		.def(
 			"reset",
-			[](py::EnvBase& env, py::EnvBase::ptr<scip::Model> model) {
+			[](pyenvironment::EnvBase& env, pyenvironment::EnvBase::ptr<scip::Model> model) {
 				return env.reset(std::move(model));
 			},
-			py11::arg("model"))
+			py::arg("model"))
 		.def(
 			"reset",
-			py11::overload_cast<std::string const&>(&py::EnvBase::reset),
-			py11::arg("filename"))
+			py::overload_cast<std::string const&>(&pyenvironment::EnvBase::reset),
+			py::arg("filename"))
 
 		.def(
 			"step",
-			[](py::EnvBase& env, py11::object action) {
-				return env.step(py::Action<py11::object>(action));
+			[](pyenvironment::EnvBase& env, py::object action) {
+				return env.step(pyenvironment::Action<py::object>(action));
 			},
-			py11::arg("action"));
+			py::arg("action"));
 }

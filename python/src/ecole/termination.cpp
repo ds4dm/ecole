@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 
-#include "ecole/termination.hpp"
+#include "ecole/termination/whensolved.hpp"
 
-#include "base/termination.hpp"
+#include "wrapper/termination.hpp"
 
 namespace py11 = pybind11;
 
@@ -13,6 +13,6 @@ PYBIND11_MODULE(termination, m) {
 
 	auto const base_module = py11::module::import("ecole.base");
 
-	py::termination::function_class_<termination::Solved>(m, "Solved")  //
+	pytermination::function_class_<termination::WhenSolved>(m, "WhenSolved")  //
 		.def(py11::init<>());
 }

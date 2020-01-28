@@ -21,8 +21,8 @@ def test_Configure_error(model):
 
 
 @pytest.mark.slow
-def test_configuring_env(model):
-    env = ecole.configuring.Env.make_dummy("conflict/lpiterations")
+def test_configuring_environment(model):
+    env = ecole.configuring.Environment.make_dummy("conflict/lpiterations")
     for _ in range(2):
         count = 0
         obs, done = env.reset(model.clone())

@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 
-#include "ecole/reward.hpp"
+#include "ecole/reward/isdone.hpp"
 
-#include "base/reward.hpp"
+#include "wrapper/reward.hpp"
 
 namespace py11 = pybind11;
 
@@ -13,6 +13,6 @@ PYBIND11_MODULE(reward, m) {
 
 	auto const base_module = py11::module::import("ecole.base");
 
-	py::reward::function_class_<reward::Done>(m, "Done")  //
+	pyreward::function_class_<reward::IsDone>(m, "IsDone")  //
 		.def(py11::init<>());
 }

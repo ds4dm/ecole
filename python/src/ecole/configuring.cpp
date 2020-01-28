@@ -6,12 +6,13 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/configuring.hpp"
-#include "ecole/observation.hpp"
+#include "ecole/observation/basicobs.hpp"
 #include "ecole/scip/model.hpp"
 
-#include "base.hpp"
+#include "wrapper/environment.hpp"
 
 namespace py11 = pybind11;
+
 using namespace ecole;
 
 namespace ecole {
@@ -42,31 +43,33 @@ PYBIND11_MODULE(configuring, m) {
 	// Import of base required for resolving inheritance to base types
 	py11::module base_mod = py11::module::import("ecole.base");
 
-	using ActionFunction = py::ActionFunctionBase<configuring::ActionFunction>;
-	using Configure =
-		py::ActionFunction<configuring::Configure<py11::object>, configuring::ActionFunction>;
-	using Env = py::Env<configuring::Env>;
+	using ActionFunction = pyenvironment::ActionFunctionBase<configuring::ActionFunction>;
+	using Configure = pyenvironment::
+		ActionFunction<configuring::Configure<py11::object>, configuring::ActionFunction>;
+	using Env = pyenvironment::Env<configuring::Environment>;
 
 	py11::class_<ActionFunction, std::shared_ptr<ActionFunction>>(m, "ActionFunction");
 	py11::class_<Configure, ActionFunction, std::shared_ptr<Configure>>(m, "Configure")  //
 		.def(py11::init<std::string const&>())
 		.def("set", [](Configure& c, scip::Model model, py11::object param) {
-			c.set(model, py::Action<py11::object>(param));
+			c.set(model, pyenvironment::Action<py11::object>(param));
 		});
 
-	py11::class_<Env, py::EnvBase>(m, "Env")  //
+	py11::class_<Env, pyenvironment::EnvBase>(m, "Environment")  //
 		.def_static(
 			"make_dummy",
 			[](std::string const& param) {
 				return std::make_unique<Env>(
-					std::make_unique<py::obs::ObsFunction<obs::BasicObsFunction>>(),
+					std::make_unique<pyobservation::ObsFunction<observation::BasicObsFunction>>(),
 					std::make_unique<Configure>(param));
 			})
-		.def(py11::init(
-			[](py::obs::ObsFunctionBase const& obs_func, ActionFunction const& action_func) {
+		.def(py11::init(  //
+			[](
+				pyobservation::ObsFunctionBase const& obs_func,
+				ActionFunction const& action_func) {
 				return std::make_unique<Env>(obs_func.clone(), action_func.clone());
 			}))
-		.def("step", [](py::EnvBase& env, py11::object const& action) {
-			return env.step(py::Action<py11::object>(action));
+		.def("step", [](pyenvironment::EnvBase& env, py11::object const& action) {
+			return env.step(pyenvironment::Action<py11::object>(action));
 		});
 }

@@ -3,14 +3,14 @@ import pytest
 import ecole.reward as R
 
 
-def test_Done(model):
-    reward_func = R.Done()
+def test_IsDone(model):
+    reward_func = R.IsDone()
     reward_func.reset(model)
     assert reward_func.get(model) == 0
     assert reward_func.get(model, done=True) == 1
 
 
-@pytest.mark.parametrize("Class", (R.Done,))
+@pytest.mark.parametrize("Class", (R.IsDone,))
 def test_Inheritance(model, Class):
     class FunctionCalled(Class):
         def __init__(self):
