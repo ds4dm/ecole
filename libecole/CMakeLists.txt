@@ -26,12 +26,12 @@ target_include_directories(
 
 find_package(SCIP REQUIRED)
 find_package(Threads REQUIRED)
-target_link_libraries(libecole PRIVATE libscip Threads::Threads)
+target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
 find_package(xtensor REQUIRED)
 target_link_libraries(libecole PUBLIC xtensor)
 if(CMAKE_BUILD_TYPE MATCHES RELEASE)
-	target_link_libraries(libecole PRIVATE xtensor::optimize)
+	target_link_libraries(libecole PUBLIC xtensor::optimize)
 endif()
 
 target_compile_features(libecole PUBLIC cxx_std_14)
