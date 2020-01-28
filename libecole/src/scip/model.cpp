@@ -17,12 +17,12 @@ namespace ecole {
 namespace scip {
 
 template <> void Deleter<Scip>::operator()(Scip* scip) {
-	call(SCIPfree, &scip);
+	scip::call(SCIPfree, &scip);
 }
 
 unique_ptr<Scip> create() {
 	Scip* scip_raw;
-	call(SCIPcreate, &scip_raw);
+	scip::call(SCIPcreate, &scip_raw);
 	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), true);
 	auto scip_ptr = unique_ptr<Scip>{};
 	scip_ptr.reset(scip_raw);
@@ -36,7 +36,7 @@ unique_ptr<Scip> copy(Scip const* source) {
 	// Copy operation is not thread safe
 	static std::mutex m{};
 	std::lock_guard<std::mutex> g{m};
-	call(
+	scip::call(
 		SCIPcopy,
 		const_cast<Scip*>(source),
 		dest.get(),
@@ -55,7 +55,7 @@ Scip* Model::get_scip_ptr() const noexcept {
 }
 
 Model::Model() : scip(create()) {
-	call(SCIPincludeDefaultPlugins, get_scip_ptr());
+	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
 Model::Model(unique_ptr<Scip>&& scip) {
@@ -82,7 +82,7 @@ bool Model::operator!=(Model const& other) const noexcept {
 
 Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
-	call(SCIPreadProb, model.get_scip_ptr(), filename.c_str(), nullptr);
+	scip::call(SCIPreadProb, model.get_scip_ptr(), filename.c_str(), nullptr);
 	return model;
 }
 
@@ -140,18 +140,18 @@ void Model::seed(param_t<ParamType::Int> seed_v) {
 }
 
 void Model::solve() {
-	call(SCIPsolve, get_scip_ptr());
+	scip::call(SCIPsolve, get_scip_ptr());
 }
 
 void Model::interrupt_solve() {
-	call(SCIPinterruptSolve, get_scip_ptr());
+	scip::call(SCIPinterruptSolve, get_scip_ptr());
 }
 
 void Model::disable_presolve() {
-	call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
+	scip::call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 void Model::disable_cuts() {
-	call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
+	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
 bool Model::is_solved() const noexcept {
@@ -166,7 +166,7 @@ VarView Model::variables() const noexcept {
 VarView Model::lp_branch_vars() const noexcept {
 	int n_vars{};
 	SCIP_VAR** vars{};
-	call(
+	scip::call(
 		SCIPgetLPBranchCands,
 		get_scip_ptr(),
 		&vars,
@@ -220,7 +220,7 @@ private:
 			if (var == VarProxy::None)
 				*result = SCIP_DIDNOTRUN;
 			else {
-				call(SCIPbranchVar, scip, var.value, nullptr, nullptr, nullptr);
+				scip::call(SCIPbranchVar, scip, var.value, nullptr, nullptr, nullptr);
 				*result = SCIP_BRANCHED;
 			}
 		} catch (std::exception& e) {
@@ -235,7 +235,7 @@ private:
 	static auto include_void_branch_rule(Model& model) {
 		auto const scip = model.get_scip_ptr();
 		SCIP_BRANCHRULE* branch_rule;
-		call(
+		scip::call(
 			SCIPincludeBranchruleBasic,
 			scip,
 			&branch_rule,
@@ -245,7 +245,7 @@ private:
 			maxdepth,
 			maxbounddist,
 			new SCIP_BranchruleData{Model::BranchFunc{nullptr}, model});
-		call(SCIPsetBranchruleExecLp, scip, branch_rule, exec_lp);
+		scip::call(SCIPsetBranchruleExecLp, scip, branch_rule, exec_lp);
 		return branch_rule;
 	}
 
@@ -282,22 +282,22 @@ void Model::set_branch_rule(BranchFunc const& func) {
 namespace internal {
 
 template <> void set_scip_param(Scip* scip, const char* name, SCIP_Bool value) {
-	call(SCIPsetBoolParam, scip, name, value);
+	scip::call(SCIPsetBoolParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, char value) {
-	call(SCIPsetCharParam, scip, name, value);
+	scip::call(SCIPsetCharParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, int value) {
-	call(SCIPsetIntParam, scip, name, value);
+	scip::call(SCIPsetIntParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, SCIP_Longint value) {
-	call(SCIPsetLongintParam, scip, name, value);
+	scip::call(SCIPsetLongintParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, SCIP_Real value) {
-	call(SCIPsetRealParam, scip, name, value);
+	scip::call(SCIPsetRealParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, const char* value) {
-	call(SCIPsetStringParam, scip, name, value);
+	scip::call(SCIPsetStringParam, scip, name, value);
 }
 template <> void set_scip_param(Scip* scip, const char* name, std::string const& value) {
 	return set_scip_param(scip, name, value.c_str());
@@ -305,32 +305,32 @@ template <> void set_scip_param(Scip* scip, const char* name, std::string const&
 
 template <> SCIP_Bool get_scip_param(Scip* scip, const char* name) {
 	SCIP_Bool value{};
-	call(SCIPgetBoolParam, scip, name, &value);
+	scip::call(SCIPgetBoolParam, scip, name, &value);
 	return value;
 }
 template <> char get_scip_param(Scip* scip, const char* name) {
 	char value{};
-	call(SCIPgetCharParam, scip, name, &value);
+	scip::call(SCIPgetCharParam, scip, name, &value);
 	return value;
 }
 template <> int get_scip_param(Scip* scip, const char* name) {
 	int value{};
-	call(SCIPgetIntParam, scip, name, &value);
+	scip::call(SCIPgetIntParam, scip, name, &value);
 	return value;
 }
 template <> SCIP_Longint get_scip_param(Scip* scip, const char* name) {
 	SCIP_Longint value{};
-	call(SCIPgetLongintParam, scip, name, &value);
+	scip::call(SCIPgetLongintParam, scip, name, &value);
 	return value;
 }
 template <> SCIP_Real get_scip_param(Scip* scip, const char* name) {
 	SCIP_Real value{};
-	call(SCIPgetRealParam, scip, name, &value);
+	scip::call(SCIPgetRealParam, scip, name, &value);
 	return value;
 }
 template <> const char* get_scip_param(Scip* scip, const char* name) {
 	char* ptr = nullptr;
-	call(SCIPgetStringParam, scip, name, &ptr);
+	scip::call(SCIPgetStringParam, scip, name, &ptr);
 	return ptr;
 }
 
@@ -338,7 +338,7 @@ template <> Cast_SFINAE<char, const char*>::operator char() const {
 	if (std::strlen(val) == 1)
 		return *val;
 	else
-		throw Exception("Can only convert a string with a single character to a char");
+		throw scip::Exception("Can only convert a string with a single character to a char");
 }
 
 }  // namespace internal
