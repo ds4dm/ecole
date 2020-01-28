@@ -5,9 +5,9 @@
 
 #include "ecole/branching.hpp"
 #include "ecole/exception.hpp"
-#include "ecole/observation.hpp"
-#include "ecole/reward.hpp"
-#include "ecole/termination.hpp"
+#include "ecole/observation/basicobs.hpp"
+#include "ecole/reward/isdone.hpp"
+#include "ecole/termination/whensolved.hpp"
 
 #include "conftest.hpp"
 
@@ -21,12 +21,12 @@ scip::Model get_model() {
 }
 
 TEST_CASE("BranchEnv") {
-	using BranchEnv = branching::Env<std::size_t, obs::BasicObs<>>;
+	using BranchEnv = branching::Environment<std::size_t, observation::BasicObs<>>;
 	auto env = BranchEnv(
 		std::make_unique<branching::Fractional>(),
-		std::make_unique<obs::BasicObsFunction<>>(),
-		std::make_unique<reward::Done>(),
-		std::make_unique<termination::Solved>());
+		std::make_unique<observation::BasicObsFunction<>>(),
+		std::make_unique<reward::IsDone>(),
+		std::make_unique<termination::WhenSolved>());
 	auto model = get_model();
 
 	SECTION("reset, reset, and delete") {
