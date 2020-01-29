@@ -15,5 +15,9 @@ real VarProxy::lb_local() const noexcept {
 	return SCIPvarGetLbLocal(value);
 }
 
+var_type VarProxy::type_() const noexcept {
+	return SCIPvarGetType(value);
+}
+
 }  // namespace scip
 }  // namespace ecole

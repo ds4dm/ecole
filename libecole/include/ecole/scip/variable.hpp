@@ -17,6 +17,7 @@ public:
 
 	real ub_local() const noexcept;
 	real lb_local() const noexcept;
+	var_type type_() const noexcept;
 
 	friend class Model;
 };

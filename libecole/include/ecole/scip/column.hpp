@@ -17,6 +17,7 @@ public:
 	real ub() const noexcept;
 	real lb() const noexcept;
 	real reduced_cost() const noexcept;
+	real obj() const noexcept;
 
 	VarProxy var() const noexcept;
 };

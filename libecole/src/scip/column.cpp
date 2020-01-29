@@ -17,6 +17,10 @@ real ColProxy::reduced_cost() const noexcept {
 	return SCIPgetColRedcost(scip, value);
 }
 
+real ColProxy::obj() const noexcept {
+	return SCIPcolGetObj(value);
+}
+
 VarProxy ColProxy::var() const noexcept {
 	return VarProxy(scip, SCIPcolGetVar(value));
 }
