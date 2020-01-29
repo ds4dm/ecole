@@ -15,8 +15,8 @@ public:
 
 	static VarProxy const None;
 
-	real ub() const noexcept;
-	real lb() const noexcept;
+	real ub_local() const noexcept;
+	real lb_local() const noexcept;
 
 	friend class Model;
 };

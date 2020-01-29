@@ -40,7 +40,9 @@ auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
 }
 
 template <typename CS> auto BasicObsFunction<CS>::get(scip::Model const& model) -> obs_t {
-	auto const extract_feat = [](auto const var, auto out_iter) { *out_iter = var.ub(); };
+	auto const extract_feat = [](auto const var, auto out_iter) {
+		*out_iter = var.ub_local();
+	};
 
 	auto var_feat = decltype(obs_t::var_feat)::from_shape(
 		std::array<std::size_t, 2>{model.variables().size, 1});
