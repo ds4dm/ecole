@@ -5,16 +5,15 @@
 namespace ecole {
 namespace scip {
 
-auto ColProxy::ub() const noexcept -> decltype(SCIPcolGetUb(nullptr)) {
+real ColProxy::ub() const noexcept {
 	return SCIPcolGetUb(value);
 }
 
-auto ColProxy::lb() const noexcept -> decltype(SCIPcolGetLb(nullptr)) {
+real ColProxy::lb() const noexcept {
 	return SCIPcolGetLb(value);
 }
 
-auto ColProxy::reduced_cost() const noexcept
-	-> decltype(SCIPgetColRedcost(nullptr, nullptr)) {
+real ColProxy::reduced_cost() const noexcept {
 	return SCIPgetColRedcost(scip, value);
 }
 

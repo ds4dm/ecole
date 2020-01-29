@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecole/scip/type.hpp"
 #include "ecole/scip/view.hpp"
 
 // Avoid including SCIP header
@@ -14,8 +15,8 @@ public:
 
 	static VarProxy const None;
 
-	double ub() const noexcept;
-	double lb() const noexcept;
+	real ub() const noexcept;
+	real lb() const noexcept;
 
 	friend class Model;
 };

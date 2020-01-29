@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecole/scip/type.hpp"
 #include "ecole/scip/variable.hpp"
 #include "ecole/scip/view.hpp"
 
@@ -13,9 +14,9 @@ class ColProxy : public Proxy<SCIP_Col> {
 public:
 	using Proxy::Proxy;
 
-	double ub() const noexcept;
-	double lb() const noexcept;
-	double reduced_cost() const noexcept;
+	real ub() const noexcept;
+	real lb() const noexcept;
+	real reduced_cost() const noexcept;
 
 	VarProxy var() const noexcept;
 };

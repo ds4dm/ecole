@@ -7,11 +7,11 @@ namespace scip {
 
 VarProxy const VarProxy::None = VarProxy(nullptr, nullptr);
 
-auto VarProxy::ub() const noexcept -> decltype(SCIPvarGetUbLocal(nullptr)) {
+real VarProxy::ub() const noexcept {
 	return SCIPvarGetUbLocal(value);
 }
 
-auto VarProxy::lb() const noexcept -> decltype(SCIPvarGetLbLocal(nullptr)) {
+real VarProxy::lb() const noexcept {
 	return SCIPvarGetLbLocal(value);
 }
 
