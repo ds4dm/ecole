@@ -9,7 +9,6 @@ dependencies:
   - cmake>=3.15
   - clangdev>=3.4  # Necessary for tools such as clang-format
   - conan
-  - catch2
   - python>=3.6
   - pybind11
   - ipython

@@ -18,8 +18,6 @@ target_compile_options(test-libecole PRIVATE -Werror -Wall -Wextra)
 
 target_include_directories(test-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-find_package(Catch2 REQUIRED)
+conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS NO_OUTPUT_DIRS SKIP_STD)
 find_package(SCIP REQUIRED)
-target_link_libraries(test-libecole PRIVATE Catch2::Catch2 Ecole::libecole libscip)
-
-catch_discover_tests(test-libecole)
+target_link_libraries(test-libecole PRIVATE CONAN_PKG::Catch2 Ecole::libecole libscip)
