@@ -23,12 +23,10 @@ public:
 
 template <typename Action> class Configure : public ActionFunction<Action> {
 public:
-	using typename ActionFunction<Action>::action_t;
-
 	std::string const param;
 
 	Configure(std::string param) noexcept;
-	void set(scip::Model& model, action_t const& action) override;
+	void set(scip::Model& model, Action const& action) override;
 	virtual std::unique_ptr<ActionFunction<Action>> clone() const override;
 };
 
@@ -39,25 +37,22 @@ template <
 class Environment : public environment::Environment<Action, Observation, Holder> {
 public:
 	using env_t = environment::Environment<Action, Observation, Holder>;
-	using typename env_t::action_t;
 	using typename env_t::info_t;
-	using typename env_t::obs_t;
-	using typename env_t::reward_t;
 	using typename env_t::seed_t;
 
 	template <typename T> using ptr = typename env_t::template ptr<T>;
 
 	Environment(
-		ptr<observation::ObservationFunction<obs_t>>&& obs_func,
-		ptr<ActionFunction<action_t>>&& action_func);
+		ptr<observation::ObservationFunction<Observation>>&& obs_func,
+		ptr<ActionFunction<Action>>&& action_func);
 
 private:
 	ptr<scip::Model> _model;
-	ptr<observation::ObservationFunction<obs_t>> obs_func;
-	ptr<ActionFunction<action_t>> action_func;
+	ptr<observation::ObservationFunction<Observation>> obs_func;
+	ptr<ActionFunction<Action>> action_func;
 
-	std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) override;
-	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
+	std::tuple<Observation, bool> _reset(ptr<scip::Model>&& model) override;
+	std::tuple<Observation, Reward, bool, info_t> _step(Action action) override;
 	bool is_done() const noexcept;
 };
 
@@ -68,7 +63,7 @@ private:
 template <typename A>
 Configure<A>::Configure(std::string param) noexcept : param(std::move(param)) {}
 
-template <typename A> void Configure<A>::set(scip::Model& model, action_t const& action) {
+template <typename A> void Configure<A>::set(scip::Model& model, A const& action) {
 	model.set_param(param, action);
 }
 
@@ -79,19 +74,19 @@ auto Configure<A>::clone() const -> std::unique_ptr<ActionFunction<A>> {
 
 template <typename A, typename O, template <typename...> class H>
 Environment<A, O, H>::Environment(
-	ptr<observation::ObservationFunction<obs_t>>&& obs_func,
-	ptr<ActionFunction<action_t>>&& action_func) :
+	ptr<observation::ObservationFunction<O>>&& obs_func,
+	ptr<ActionFunction<A>>&& action_func) :
 	obs_func(std::move(obs_func)), action_func(std::move(action_func)) {}
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_reset(ptr<scip::Model>&& model) -> std::tuple<obs_t, bool> {
+auto Environment<A, O, H>::_reset(ptr<scip::Model>&& model) -> std::tuple<O, bool> {
 	_model = std::move(model);
 	return {obs_func->get(*_model), is_done()};
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_step(action_t action)
-	-> std::tuple<obs_t, reward_t, bool, info_t> {
+auto Environment<A, O, H>::_step(A action)
+       -> std::tuple<O, Reward, bool, info_t> {
 	action_func->set(*_model, action);
 	_model->solve();
 	return {obs_func->get(*_model), 0., true, info_t{}};

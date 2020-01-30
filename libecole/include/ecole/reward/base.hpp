@@ -7,6 +7,8 @@
 namespace ecole {
 namespace reward {
 
+using Reward = double;
+
 /**
  * Abstract base class for all reward functions.
  *
@@ -15,8 +17,6 @@ namespace reward {
  */
 class RewardFunction {
 public:
-	using reward_t = double;
-
 	virtual ~RewardFunction() = default;
 	virtual std::unique_ptr<RewardFunction> clone() const = 0;
 
@@ -29,7 +29,7 @@ public:
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual reward_t get(scip::Model const& model, bool done = false) = 0;
+	virtual Reward get(scip::Model const& model, bool done = false) = 0;
 };
 
 }  // namespace reward
