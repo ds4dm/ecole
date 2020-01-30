@@ -6,6 +6,8 @@
 
 namespace py11 = pybind11;
 
+using ecole::reward::Reward;
+
 namespace ecole {
 namespace pyreward {
 
@@ -27,7 +29,6 @@ namespace internal {
  */
 template <typename RewardFunction>
 struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
-	using typename reward::RewardFunction::reward_t;
 
 	using RewardFunction::RewardFunction;
 
@@ -48,8 +49,8 @@ struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
-	reward_t get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD_PURE(reward_t, RewardFunction, get, model, done);
+	Reward get(scip::Model const& model, bool done = false) override {
+		PYBIND11_OVERLOAD_PURE(Reward, RewardFunction, get, model, done);
 	}
 };
 
@@ -68,7 +69,6 @@ struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
 template <typename RewardFunction>
 struct Py_RewardFunction_Trampoline :
 	public Py_RewardFunctionBase_Trampoline<RewardFunction> {
-	using typename reward::RewardFunction::reward_t;
 
 	using Py_RewardFunctionBase_Trampoline<
 		RewardFunction>::Py_RewardFunctionBase_Trampoline;
@@ -83,8 +83,8 @@ struct Py_RewardFunction_Trampoline :
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
-	reward_t get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD(reward_t, RewardFunction, get, model, done);
+	Reward get(scip::Model const& model, bool done = false) override {
+		PYBIND11_OVERLOAD(Reward, RewardFunction, get, model, done);
 	}
 };
 

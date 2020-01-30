@@ -11,7 +11,7 @@ namespace reward {
 class IsDone : public RewardFunction {
 public:
 	std::unique_ptr<RewardFunction> clone() const override;
-	reward_t get(scip::Model const& model, bool done = false) override;
+	Reward get(scip::Model const& model, bool done = false) override;
 };
 
 }  // namespace reward

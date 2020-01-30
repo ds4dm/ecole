@@ -7,7 +7,7 @@ std::unique_ptr<RewardFunction> IsDone::clone() const {
 	return std::make_unique<IsDone>(*this);
 }
 
-auto IsDone::get(scip::Model const& model, bool done) -> reward_t {
+Reward IsDone::get(scip::Model const& model, bool done) {
 	(void)model;
 	return done ? 1 : 0;
 }

@@ -11,6 +11,8 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/termination/base.hpp"
 
+using ecole::reward::Reward;
+
 namespace ecole {
 namespace branching {
 
@@ -67,41 +69,38 @@ template <
 class Environment : public environment::Environment<Action, Observation, Holder> {
 public:
 	using env_t = environment::Environment<Action, Observation, Holder>;
-	using typename env_t::action_t;
 	using typename env_t::info_t;
-	using typename env_t::obs_t;
-	using typename env_t::reward_t;
 	using typename env_t::seed_t;
 
 	template <typename T> using ptr = typename env_t::template ptr<T>;
 
 	Environment(
-		ptr<ActionFunction<action_t>>&& action_func,
-		ptr<observation::ObservationFunction<obs_t>>&& obs_func,
+		ptr<ActionFunction<Action>>&& action_func,
+		ptr<observation::ObservationFunction<Observation>>&& obs_func,
 		ptr<reward::RewardFunction>&& reward_func,
 		ptr<termination::TerminationFunction>&& termination_func);
 	Environment(
-		ptr<ActionFunction<action_t>> const& action_func,
-		ptr<observation::ObservationFunction<obs_t>> const& obs_func,
+		ptr<ActionFunction<Action>> const& action_func,
+		ptr<observation::ObservationFunction<Observation>> const& obs_func,
 		ptr<reward::RewardFunction> const& reward_func,
 		ptr<termination::TerminationFunction> const& termination_func);
 
 private:
-	ptr<ActionFunction<action_t>> action_func;
-	ptr<observation::ObservationFunction<obs_t>> obs_func;
+	ptr<ActionFunction<Action>> action_func;
+	ptr<observation::ObservationFunction<Observation>> obs_func;
 	ptr<reward::RewardFunction> reward_func;
 	ptr<termination::TerminationFunction> termination_func;
 	internal::ReverseControl<Holder> solve_controller;
 
 	inline scip::Model& model() noexcept;
-	std::tuple<obs_t, bool> _reset(ptr<scip::Model>&& model) override;
-	std::tuple<obs_t, reward_t, bool, info_t> _step(action_t action) override;
+	std::tuple<Observation, bool> _reset(ptr<scip::Model>&& model) override;
+	std::tuple<Observation, Reward, bool, info_t> _step(Action action) override;
 };
 
 template <typename A, typename O, template <typename...> class H>
 Environment<A, O, H>::Environment(
-	ptr<ActionFunction<action_t>>&& action_func,
-	ptr<observation::ObservationFunction<obs_t>>&& obs_func,
+	ptr<ActionFunction<A>>&& action_func,
+	ptr<observation::ObservationFunction<O>>&& obs_func,
 	ptr<reward::RewardFunction>&& reward_func,
 	ptr<termination::TerminationFunction>&& termination_func) :
 	action_func(std::move(action_func)),
@@ -111,8 +110,8 @@ Environment<A, O, H>::Environment(
 
 template <typename A, typename O, template <typename...> class H>
 Environment<A, O, H>::Environment(
-	ptr<ActionFunction<action_t>> const& action_func,
-	ptr<observation::ObservationFunction<obs_t>> const& obs_func,
+	ptr<ActionFunction<A>> const& action_func,
+	ptr<observation::ObservationFunction<O>> const& obs_func,
 	ptr<reward::RewardFunction> const& reward_func,
 	ptr<termination::TerminationFunction> const& termination_func) :
 	action_func(action_func),
@@ -127,7 +126,7 @@ scip::Model& Environment<A, O, H>::model() noexcept {
 
 template <typename A, typename O, template <typename...> class H>
 auto Environment<A, O, H>::_reset(ptr<scip::Model>&& new_model)
-	-> std::tuple<obs_t, bool> {
+	-> std::tuple<O, bool> {
 	new_model->seed(this->seed());
 	solve_controller = internal::ReverseControl<H>(std::move(new_model));
 	solve_controller.wait();
@@ -140,8 +139,8 @@ auto Environment<A, O, H>::_reset(ptr<scip::Model>&& new_model)
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_step(action_t action)
-	-> std::tuple<obs_t, reward_t, bool, info_t> {
+auto Environment<A, O, H>::_step(A action)
+	-> std::tuple<O, Reward, bool, info_t> {
 	auto const var = action_func->get(model(), action);
 	solve_controller.resume(var);
 	solve_controller.wait();
