@@ -20,6 +20,10 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-include(CTest)  # Enable testing and set BUILD_TESTING
+# Activate Testing by default
+if(NOT DEFINED BUILD_TESTING)
+	set(BUILD_TESTING ON)
+endif()
+
 add_subdirectory(libecole)
 add_subdirectory(python)
