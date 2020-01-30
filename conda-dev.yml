@@ -16,6 +16,4 @@ dependencies:
   - black
 
   # Build time dependencies
-  - xtensor
   - xtensor-python
-  - xsimd

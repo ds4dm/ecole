@@ -30,11 +30,8 @@ find_package(SCIP REQUIRED)
 find_package(Threads REQUIRED)
 target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
-find_package(xtensor REQUIRED)
-target_link_libraries(libecole PUBLIC xtensor)
-if(CMAKE_BUILD_TYPE MATCHES RELEASE)
-	target_link_libraries(libecole PUBLIC xtensor::optimize)
-endif()
+conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS NO_OUTPUT_DIRS SKIP_STD)
+target_link_libraries(libecole PUBLIC CONAN_PKG::xtensor)
 
 target_compile_features(libecole PUBLIC cxx_std_14)
 target_compile_options(
