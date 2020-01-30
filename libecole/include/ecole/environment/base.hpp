@@ -113,7 +113,8 @@ std::tuple<O, bool> Environment<A, O, H>::reset(ptr<scip::Model>&& model) {
 	mutate_seed();
 	try {
 		auto result = _reset(std::move(model));
-		can_transition = !std::get<1>(result);
+		auto done = std::get<1>(result);
+		can_transition = !done;
 		return result;
 	} catch (std::exception const&) {
 		can_transition = false;
@@ -137,7 +138,8 @@ auto Environment<A, O, H>::step(A action)
 	if (!can_transition) throw environment::Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));
-		can_transition = !std::get<2>(result);
+		auto done = std::get<2>(result);
+		can_transition = !done;
 		return result;
 	} catch (std::exception const&) {
 		can_transition = false;
