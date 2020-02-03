@@ -1,4 +1,5 @@
 #include <scip/scip.h>
+#include <scip/struct_lp.h>
 
 #include "ecole/scip/column.hpp"
 
@@ -29,8 +30,40 @@ real ColProxy::obj() const noexcept {
 	return SCIPcolGetObj(value);
 }
 
+real ColProxy::prim_sol() const noexcept {
+	return SCIPcolGetPrimsol(value);
+}
+
+real ColProxy::prim_sol_frac() const noexcept {
+	return SCIPfeasFrac(scip, prim_sol());
+}
+
+bool ColProxy::prim_sol_at_lb() const noexcept {
+	auto const lb_val = lb();
+	if (lb_val)
+		return SCIPisEQ(scip, prim_sol(), lb_val.value());
+	else
+		return false;
+}
+
+bool ColProxy::prim_sol_at_ub() const noexcept {
+	auto const ub_val = ub();
+	if (ub_val)
+		return SCIPisEQ(scip, prim_sol(), ub_val.value());
+	else
+		return false;
+}
+
+base_stat ColProxy::basis_status() const noexcept {
+	return SCIPcolGetBasisStatus(value);
+}
+
 VarProxy ColProxy::var() const noexcept {
 	return VarProxy(scip, SCIPcolGetVar(value));
+}
+
+int ColProxy::age() const noexcept {
+	return value->age;
 }
 
 }  // namespace scip

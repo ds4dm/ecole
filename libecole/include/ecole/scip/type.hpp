@@ -8,10 +8,13 @@ namespace scip {
 using long_int = SCIP_Longint;
 using real = SCIP_Real;
 
+/**
+ * Class template to store the number of elements in Scip enums.
+ *
+ * Template is specialized for each Scip enum for which we need the number of element
+ * (for instance for one-hot encoding categorical variables in observations).
+ */
 template <typename Enum> struct enum_size;
-
-using var_type = SCIP_Vartype;
-template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
 
 }  // namespace scip
 }  // namespace ecole

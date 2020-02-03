@@ -23,6 +23,21 @@ optional<real> VarProxy::lb_local() const noexcept {
 		return lb_val;
 }
 
+optional<real> VarProxy::best_sol_val() const noexcept {
+	auto const sol = SCIPgetBestSol(scip);
+	if (sol != nullptr)
+		return SCIPgetSolVal(scip, sol, value);
+	else
+		return {};
+}
+
+optional<real> VarProxy::avg_sol() const noexcept {
+	if (SCIPgetBestSol(scip) == nullptr)
+		return SCIPvarGetAvgSol(value);
+	else
+		return {};
+}
+
 var_type VarProxy::type_() const noexcept {
 	return SCIPvarGetType(value);
 }
