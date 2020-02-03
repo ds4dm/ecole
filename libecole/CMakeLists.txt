@@ -31,7 +31,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
 conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS NO_OUTPUT_DIRS SKIP_STD)
-target_link_libraries(libecole PUBLIC CONAN_PKG::xtensor)
+target_link_libraries(libecole PUBLIC CONAN_PKG::xtensor CONAN_PKG::optional-lite)
 
 target_compile_features(libecole PUBLIC cxx_std_14)
 target_compile_options(
@@ -57,5 +57,5 @@ set_target_properties(libecole PROPERTIES
 
 # Add test if this is the main project and testing is enabled
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    add_subdirectory(tests)
+	add_subdirectory(tests)
 endif()

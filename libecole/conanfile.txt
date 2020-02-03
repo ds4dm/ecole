@@ -1,5 +1,6 @@
 [requires]
 xtensor/0.21.2
+optional-lite/3.2.0
 
 [generators]
 cmake
