@@ -5,12 +5,20 @@
 namespace ecole {
 namespace scip {
 
-real ColProxy::ub() const noexcept {
-	return SCIPcolGetUb(value);
+optional<real> ColProxy::ub() const noexcept {
+	auto const ub_val = SCIPcolGetUb(value);
+	if (SCIPisInfinity(scip, REALABS(ub_val)))
+		return {};
+	else
+		return ub_val;
 }
 
-real ColProxy::lb() const noexcept {
-	return SCIPcolGetLb(value);
+optional<real> ColProxy::lb() const noexcept {
+	auto const lb_val = SCIPcolGetLb(value);
+	if (SCIPisInfinity(scip, REALABS(lb_val)))
+		return {};
+	else
+		return lb_val;
 }
 
 real ColProxy::reduced_cost() const noexcept {
