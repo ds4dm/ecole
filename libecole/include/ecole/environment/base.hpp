@@ -133,8 +133,7 @@ std::tuple<O, bool> Environment<A, O, H>::reset(std::string const& filename) {
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::step(A action)
-	-> std::tuple<O, Reward, bool, info_t> {
+auto Environment<A, O, H>::step(A action) -> std::tuple<O, Reward, bool, info_t> {
 	if (!can_transition) throw environment::Exception("Environment need to be reset.");
 	try {
 		auto result = _step(std::move(action));

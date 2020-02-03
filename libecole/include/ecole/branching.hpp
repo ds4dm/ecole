@@ -125,8 +125,7 @@ scip::Model& Environment<A, O, H>::model() noexcept {
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_reset(ptr<scip::Model>&& new_model)
-	-> std::tuple<O, bool> {
+auto Environment<A, O, H>::_reset(ptr<scip::Model>&& new_model) -> std::tuple<O, bool> {
 	new_model->seed(this->seed());
 	solve_controller = internal::ReverseControl<H>(std::move(new_model));
 	solve_controller.wait();
@@ -139,8 +138,7 @@ auto Environment<A, O, H>::_reset(ptr<scip::Model>&& new_model)
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_step(A action)
-	-> std::tuple<O, Reward, bool, info_t> {
+auto Environment<A, O, H>::_step(A action) -> std::tuple<O, Reward, bool, info_t> {
 	auto const var = action_func->get(model(), action);
 	solve_controller.resume(var);
 	solve_controller.wait();

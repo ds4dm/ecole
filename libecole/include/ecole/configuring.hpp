@@ -85,8 +85,7 @@ auto Environment<A, O, H>::_reset(ptr<scip::Model>&& model) -> std::tuple<O, boo
 }
 
 template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::_step(A action)
-       -> std::tuple<O, Reward, bool, info_t> {
+auto Environment<A, O, H>::_step(A action) -> std::tuple<O, Reward, bool, info_t> {
 	action_func->set(*_model, action);
 	_model->solve();
 	return {obs_func->get(*_model), 0., true, info_t{}};
