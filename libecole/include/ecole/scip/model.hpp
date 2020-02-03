@@ -144,7 +144,7 @@ public:
 	bool is_solved() const noexcept;
 
 	VarView variables() const noexcept;
-	VarView lp_branch_vars() const noexcept;
+	VarView lp_branch_cands() const noexcept;
 	ColView lp_columns() const;
 
 	using BranchFunc = std::function<VarProxy(Model&)>;

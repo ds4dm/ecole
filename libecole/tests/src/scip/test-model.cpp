@@ -80,7 +80,7 @@ TEST_CASE("Add a branching rule") {
 	auto count = 0;
 	model.set_branch_rule([&count](scip::Model const& m) mutable {
 		count++;
-		return *m.lp_branch_vars().cbegin();
+		return *m.lp_branch_cands().cbegin();
 	});
 	model.solve();
 	REQUIRE(count > 0);
@@ -92,7 +92,7 @@ TEST_CASE("Run a branching rule") {
 	model.disable_presolve();
 
 	SECTION("Arbitrary branching rule") {
-		model.set_branch_rule([](auto const& model) { return model.lp_branch_vars()[0]; });
+		model.set_branch_rule([](auto const& model) { return model.lp_branch_cands()[0]; });
 		model.solve();
 		REQUIRE(model.is_solved());
 	}

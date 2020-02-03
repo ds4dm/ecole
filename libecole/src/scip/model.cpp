@@ -164,7 +164,7 @@ VarView Model::variables() const noexcept {
 	return VarView(scip_ptr, SCIPgetVars(scip_ptr), n_vars);
 }
 
-VarView Model::lp_branch_vars() const noexcept {
+VarView Model::lp_branch_cands() const noexcept {
 	int n_vars{};
 	SCIP_VAR** vars{};
 	scip::call(
@@ -182,7 +182,7 @@ VarView Model::lp_branch_vars() const noexcept {
 ColView Model::lp_columns() const {
 	auto const scip_ptr = get_scip_ptr();
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING)
-		throw Exception("Columns are only available during solving");
+		throw Exception("LP columns are only available during solving");
 	auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr));
 	return ColView(scip_ptr, SCIPgetLPCols(scip_ptr), n_cols);
 }

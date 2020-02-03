@@ -187,7 +187,7 @@ template class ReverseControl<std::shared_ptr>;
 }  // namespace internal
 
 scip::VarProxy Fractional::get(scip::Model& model, std::size_t const& action) {
-	return model.lp_branch_vars().at(action);
+	return model.lp_branch_cands().at(action);
 }
 
 auto Fractional::clone() const -> std::unique_ptr<ActionFunction> {
