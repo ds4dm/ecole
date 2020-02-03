@@ -187,6 +187,14 @@ ColView Model::lp_columns() const {
 	return ColView(scip_ptr, SCIPgetLPCols(scip_ptr), n_cols);
 }
 
+RowView Model::lp_rows() const {
+	auto const scip_ptr = get_scip_ptr();
+	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING)
+		throw Exception("LP rows are only available during solving");
+	auto const n_rows = static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr));
+	return RowView(scip_ptr, SCIPgetLPRows(scip_ptr), n_rows);
+}
+
 }  // namespace scip
 }  // namespace ecole
 

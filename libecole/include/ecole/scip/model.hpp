@@ -11,6 +11,7 @@
 #include <scip/scip.h>
 
 #include "ecole/scip/column.hpp"
+#include "ecole/scip/row.hpp"
 #include "ecole/scip/variable.hpp"
 
 namespace ecole {
@@ -145,6 +146,7 @@ public:
 	VarView variables() const noexcept;
 	VarView lp_branch_cands() const noexcept;
 	ColView lp_columns() const;
+	RowView lp_rows() const;
 
 	using BranchFunc = std::function<VarProxy(Model&)>;
 	void set_branch_rule(BranchFunc const& func);
