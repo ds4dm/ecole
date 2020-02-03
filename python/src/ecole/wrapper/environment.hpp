@@ -94,7 +94,8 @@ using Py_EnvBase = environment::Environment<
 template <  //
 	template <typename, typename, template <typename...> class>
 	class Env>
-using Py_Env = Env<Py_ActionBase const&, pyobservation::ObsFunctionBase::obs_t, std::shared_ptr>;
+using Py_Env =
+	Env<Py_ActionBase const&, pyobservation::ObsFunctionBase::obs_t, std::shared_ptr>;
 
 }  // namespace internal
 
