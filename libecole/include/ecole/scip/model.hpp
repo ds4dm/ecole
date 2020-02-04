@@ -8,28 +8,27 @@
 #include <memory>
 #include <string>
 
+#include <scip/scip.h>
+
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/variable.hpp"
-
-// Avoid including SCIP header
-typedef struct Scip Scip;
 
 namespace ecole {
 namespace scip {
 
 /**
- * Wrap Scip pointer free function in a deleter for use with smart pointers.
+ * Wrap SCIP pointer free function in a deleter for use with smart pointers.
  */
 template <typename T> struct Deleter { void operator()(T* ptr); };
 template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 
 /**
- * Create an initialized Scip pointer without message handler.
+ * Create an initialized SCIP pointer without message handler.
  */
-unique_ptr<Scip> create();
+unique_ptr<SCIP> create();
 
 /**
- * Types of parameters supported by Scip.
+ * Types of parameters supported by SCIP.
  *
  * @see param_t to get the associated type.
  */
@@ -38,7 +37,7 @@ enum class ParamType { Bool, Int, LongInt, Real, Char, String };
 namespace internal {
 // Use with `param_t`.
 // File `model.cpp` contains `static_assert`s to ensure this is never out of date
-// with Scip internals.
+// with SCIP internals.
 template <ParamType> struct ParamType_get;
 template <> struct ParamType_get<ParamType::Bool> { using type = unsigned int; };
 template <> struct ParamType_get<ParamType::Int> { using type = int; };
@@ -54,20 +53,20 @@ template <> struct ParamType_get<ParamType::String> { using type = const char*; 
 template <ParamType T> using param_t = typename internal::ParamType_get<T>::type;
 
 /**
- * A stateful Scip solver object.
+ * A stateful SCIP solver object.
  *
  * A RAII class to manage an underlying `SCIP*`.
  * This is somehow similar to a `pyscipopt.Model`, but with higher level methods
  * tailored for the needs in Ecole.
- * This is the only interface to Scip in the library.
+ * This is the only interface to SCIP in the library.
  */
 class Model {
 public:
 	/**
-	 * Construct an *initialized* model with default Scip plugins.
+	 * Construct an *initialized* model with default SCIP plugins.
 	 */
 	Model();
-	Model(unique_ptr<Scip>&& scip);
+	Model(unique_ptr<SCIP>&& scip);
 	/**
 	 * Deep copy the model.
 	 */
@@ -78,13 +77,13 @@ public:
 	~Model() = default;
 
 	/**
-	 * Compare if two model share the same Scip pointer, _i.e._ the same memory.
+	 * Compare if two model share the same SCIP pointer, _i.e._ the same memory.
 	 */
 	bool operator==(Model const& other) const noexcept;
 	bool operator!=(Model const& other) const noexcept;
 
 	/**
-	 * Construct a model by reading a problem file supported by Scip (LP, MPS,...).
+	 * Construct a model by reading a problem file supported by SCIP (LP, MPS,...).
 	 */
 	static Model from_file(std::string const& filename);
 
@@ -92,10 +91,10 @@ public:
 	ParamType get_param_type(std::string const& name) const;
 
 	/**
-	 * Get and set parameters by their exact Scip type.
+	 * Get and set parameters by their exact SCIP type.
 	 *
 	 * The method will throw an exception if the type is not *exactly* the one used
-	 * by Scip.
+	 * by SCIP.
 	 *
 	 * @see get_param, set_param to convert automatically.
 	 */
@@ -125,8 +124,8 @@ public:
 	/**
 	 * Set the Model random seed shift.
 	 *
-	 * Set the shift used by with all random seeds in Scip.
-	 * Random seed for individual compenents of Scip can be set throught the parameters
+	 * Set the shift used by with all random seeds in SCIP.
+	 * Random seed for individual compenents of SCIP can be set throught the parameters
 	 * but will nontheless be shifted by the value set here.
 	 * Set a value of zero to disable shiftting.
 	 */
@@ -150,11 +149,17 @@ public:
 	using BranchFunc = std::function<VarProxy(Model&)>;
 	void set_branch_rule(BranchFunc const& func);
 
+	/**
+	 * Access the underlying SCIP pointer.
+	 *
+	 * Ownership of the pointer is however not released by the Model.
+	 * This function is meant to use the original C API of SCIP.
+	 */
+	SCIP* get_scip_ptr() const noexcept;
+
 private:
 	class LambdaBranchRule;
-	unique_ptr<Scip> scip;
-
-	Scip* get_scip_ptr() const noexcept;
+	unique_ptr<SCIP> scip;
 };
 
 namespace internal {
@@ -162,8 +167,8 @@ namespace internal {
 // Specializations are instantiated in cpp file.
 // Having this proxy avoid specializing memeber function of Model, which is not
 // compatible with template class.
-template <typename T> void set_scip_param(Scip* scip, const char* name, T value);
-template <typename T> T get_scip_param(Scip* scip, const char* name);
+template <typename T> void set_scip_param(SCIP* scip, const char* name, T value);
+template <typename T> T get_scip_param(SCIP* scip, const char* name);
 
 // SFINAE to check if type exists
 template <typename> struct exists { using type = void; };

@@ -16,29 +16,29 @@
 namespace ecole {
 namespace scip {
 
-template <> void Deleter<Scip>::operator()(Scip* scip) {
+template <> void Deleter<SCIP>::operator()(SCIP* scip) {
 	scip::call(SCIPfree, &scip);
 }
 
-unique_ptr<Scip> create() {
-	Scip* scip_raw;
+unique_ptr<SCIP> create() {
+	SCIP* scip_raw;
 	scip::call(SCIPcreate, &scip_raw);
 	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), true);
-	auto scip_ptr = unique_ptr<Scip>{};
+	auto scip_ptr = unique_ptr<SCIP>{};
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
 }
 
-unique_ptr<Scip> copy(Scip const* source) {
+unique_ptr<SCIP> copy(SCIP const* source) {
 	if (!source) return nullptr;
-	if (SCIPgetStage(const_cast<Scip*>(source)) == SCIP_STAGE_INIT) return create();
+	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) return create();
 	auto dest = create();
 	// Copy operation is not thread safe
 	static std::mutex m{};
 	std::lock_guard<std::mutex> g{m};
 	scip::call(
 		SCIPcopy,
-		const_cast<Scip*>(source),
+		const_cast<SCIP*>(source),
 		dest.get(),
 		nullptr,
 		nullptr,
@@ -50,7 +50,7 @@ unique_ptr<Scip> copy(Scip const* source) {
 	return dest;
 }
 
-Scip* Model::get_scip_ptr() const noexcept {
+SCIP* Model::get_scip_ptr() const noexcept {
 	return scip.get();
 }
 
@@ -58,7 +58,7 @@ Model::Model() : scip(create()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
-Model::Model(unique_ptr<Scip>&& scip) {
+Model::Model(unique_ptr<SCIP>&& scip) {
 	if (scip)
 		this->scip = std::move(scip);
 	else
@@ -89,13 +89,13 @@ Model Model::from_file(const std::string& filename) {
 // Assumptions made while defining ParamType
 static_assert(
 	std::is_same<SCIP_Bool, param_t<ParamType::Bool>>::value,
-	"Scip bool type is not the same as the one redefined by Ecole");
+	"SCIP bool type is not the same as the one redefined by Ecole");
 static_assert(
 	std::is_same<SCIP_Longint, param_t<ParamType::LongInt>>::value,
-	"Scip long int type is not the same as the one redefined by Ecole");
+	"SCIP long int type is not the same as the one redefined by Ecole");
 static_assert(
 	std::is_same<SCIP_Real, param_t<ParamType::Real>>::value,
-	"Scip real type is not the same as the one redefined by Ecole");
+	"SCIP real type is not the same as the one redefined by Ecole");
 
 ParamType Model::get_param_type(const char* name) const {
 	auto* scip_param = SCIPgetParam(get_scip_ptr(), name);
@@ -199,7 +199,7 @@ namespace ecole {
 namespace scip {
 
 class Model::LambdaBranchRule {
-	// A Scip branch rule class that runs a given function.
+	// A SCIP branch rule class that runs a given function.
 	// The scip BranchRule is actually never substituted, but its internal data is changed
 	// to a new function.
 
@@ -216,7 +216,7 @@ private:
 		SCIP_Bool allow_addcons,
 		SCIP_RESULT* result) {
 		// The function that is called to branch on lp fractional varaibles, as required
-		// by Scip.
+		// by SCIP.
 		(void)allow_addcons;
 		auto const branch_data = SCIPbranchruleGetData(branch_rule);
 		assert(branch_data->model.get_scip_ptr() == scip);
@@ -290,54 +290,54 @@ void Model::set_branch_rule(BranchFunc const& func) {
 
 namespace internal {
 
-template <> void set_scip_param(Scip* scip, const char* name, SCIP_Bool value) {
+template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Bool value) {
 	scip::call(SCIPsetBoolParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, char value) {
+template <> void set_scip_param(SCIP* scip, const char* name, char value) {
 	scip::call(SCIPsetCharParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, int value) {
+template <> void set_scip_param(SCIP* scip, const char* name, int value) {
 	scip::call(SCIPsetIntParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, SCIP_Longint value) {
+template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Longint value) {
 	scip::call(SCIPsetLongintParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, SCIP_Real value) {
+template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Real value) {
 	scip::call(SCIPsetRealParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, const char* value) {
+template <> void set_scip_param(SCIP* scip, const char* name, const char* value) {
 	scip::call(SCIPsetStringParam, scip, name, value);
 }
-template <> void set_scip_param(Scip* scip, const char* name, std::string const& value) {
+template <> void set_scip_param(SCIP* scip, const char* name, std::string const& value) {
 	return set_scip_param(scip, name, value.c_str());
 }
 
-template <> SCIP_Bool get_scip_param(Scip* scip, const char* name) {
+template <> SCIP_Bool get_scip_param(SCIP* scip, const char* name) {
 	SCIP_Bool value{};
 	scip::call(SCIPgetBoolParam, scip, name, &value);
 	return value;
 }
-template <> char get_scip_param(Scip* scip, const char* name) {
+template <> char get_scip_param(SCIP* scip, const char* name) {
 	char value{};
 	scip::call(SCIPgetCharParam, scip, name, &value);
 	return value;
 }
-template <> int get_scip_param(Scip* scip, const char* name) {
+template <> int get_scip_param(SCIP* scip, const char* name) {
 	int value{};
 	scip::call(SCIPgetIntParam, scip, name, &value);
 	return value;
 }
-template <> SCIP_Longint get_scip_param(Scip* scip, const char* name) {
+template <> SCIP_Longint get_scip_param(SCIP* scip, const char* name) {
 	SCIP_Longint value{};
 	scip::call(SCIPgetLongintParam, scip, name, &value);
 	return value;
 }
-template <> SCIP_Real get_scip_param(Scip* scip, const char* name) {
+template <> SCIP_Real get_scip_param(SCIP* scip, const char* name) {
 	SCIP_Real value{};
 	scip::call(SCIPgetRealParam, scip, name, &value);
 	return value;
 }
-template <> const char* get_scip_param(Scip* scip, const char* name) {
+template <> const char* get_scip_param(SCIP* scip, const char* name) {
 	char* ptr = nullptr;
 	scip::call(SCIPgetStringParam, scip, name, &ptr);
 	return ptr;
