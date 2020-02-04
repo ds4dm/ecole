@@ -51,13 +51,14 @@ TEST_CASE("Raise if file does not exist") {
 }
 
 TEST_CASE("Model solving") {
-	auto model = scip::Model::from_file(problem_file);
-
-	SECTION("Synchronously") { model.solve(); }
+	SECTION("Synchronously") {
+		auto model = get_model();
+		model.solve();
+	}
 
 	SECTION("Asynchronously") {
 		auto load_solve = [] {
-			scip::Model::from_file(problem_file).solve();
+			get_model().solve();
 			return true;
 		};
 		auto fut1 = std::async(std::launch::async, load_solve);
@@ -67,16 +68,14 @@ TEST_CASE("Model solving") {
 }
 
 TEST_CASE("Copy preserve the model internals") {
-	auto model = scip::Model::from_file(problem_file);
+	auto model = get_model();
 	auto model_copy = model;
 	model.solve();
 	model_copy.solve();
 }
 
 TEST_CASE("Add a branching rule") {
-	auto model = scip::Model::from_file(problem_file);
-	model.disable_presolve();
-	model.disable_cuts();
+	auto model = get_model();
 	auto count = 0;
 	model.set_branch_rule([&count](scip::Model const& m) mutable {
 		count++;
@@ -87,9 +86,7 @@ TEST_CASE("Add a branching rule") {
 }
 
 TEST_CASE("Run a branching rule") {
-	auto model = scip::Model::from_file(problem_file);
-	model.disable_cuts();
-	model.disable_presolve();
+	auto model = get_model();
 
 	SECTION("Arbitrary branching rule") {
 		model.set_branch_rule([](auto const& model) { return model.lp_branch_cands()[0]; });

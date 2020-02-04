@@ -7,7 +7,7 @@
 using namespace ecole;
 
 TEST_CASE("Model has column view iterator") {
-	auto model = scip::Model::from_file(problem_file);
+	auto model = get_model();
 
 	SECTION("Throw if not in solving stage") {
 		REQUIRE_THROWS_AS(model.lp_columns(), scip::Exception);

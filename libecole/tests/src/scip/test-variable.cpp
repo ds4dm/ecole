@@ -7,7 +7,7 @@
 using namespace ecole;
 
 TEST_CASE("Model has variable view iterator") {
-	auto model = scip::Model::from_file(problem_file);
+	auto model = get_model();
 	int count = 0;
 	for (auto var : model.variables()) {
 		if (var.ub_local() == 1.) ++count;

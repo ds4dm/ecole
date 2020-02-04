@@ -13,13 +13,6 @@
 
 using namespace ecole;
 
-scip::Model get_model() {
-	auto model = scip::Model::from_file(problem_file);
-	model.disable_cuts();
-	model.disable_presolve();
-	return model;
-}
-
 TEST_CASE("BranchEnv") {
 	using BranchEnv = branching::Environment<std::size_t, observation::BasicObs<>>;
 	auto env = BranchEnv(

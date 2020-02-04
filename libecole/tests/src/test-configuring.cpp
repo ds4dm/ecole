@@ -16,7 +16,7 @@ TEST_CASE("Model creation") {
 		std::make_unique<configuring::Configure<int>>("conflict/lpiterations"));
 
 	for (auto i = 0L; i < 2; ++i) {
-		env.reset(problem_file);
+		env.reset(get_model());
 		env.step(0);
 	}
 }
