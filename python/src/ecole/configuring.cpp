@@ -6,7 +6,7 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/configuring.hpp"
-#include "ecole/observation/basicobs.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "wrapper/environment.hpp"
@@ -60,7 +60,7 @@ PYBIND11_MODULE(configuring, m) {
 			"make_dummy",
 			[](std::string const& param) {
 				return std::make_unique<Env>(
-					std::make_unique<pyobservation::ObsFunction<observation::BasicObsFunction>>(),
+					std::make_unique<pyobservation::ObsFunction<observation::NodeBipartite>>(),
 					std::make_unique<Configure>(param));
 			})
 		.def(py11::init(  //

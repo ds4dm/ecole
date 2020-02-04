@@ -4,15 +4,15 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/configuring.hpp"
-#include "ecole/observation/basicobs.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("Model creation") {
-	auto env = configuring::Environment<int, observation::BasicObs<>>(
-		std::make_unique<observation::BasicObsFunction<>>(),
+	auto env = configuring::Environment<int, observation::NodeBipartiteObs<>>(
+		std::make_unique<observation::NodeBipartite<>>(),
 		std::make_unique<configuring::Configure<int>>("conflict/lpiterations"));
 
 	for (auto i = 0L; i < 2; ++i) {

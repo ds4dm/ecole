@@ -14,7 +14,8 @@
 namespace ecole {
 namespace observation {
 
-template <typename ContainerSelector = container::xtensor> struct BasicObs {
+template <typename ContainerSelector = container::xtensor> class NodeBipartiteObs {
+public:
 	using dtype = double;
 	using tensor_t = container::tensor_t<ContainerSelector, dtype, 2>;
 
@@ -22,8 +23,9 @@ template <typename ContainerSelector = container::xtensor> struct BasicObs {
 };
 
 template <typename ContainerSelector = container::xtensor>
-struct BasicObsFunction : public ObservationFunction<BasicObs<ContainerSelector>> {
-	using obs_t = BasicObs<ContainerSelector>;
+class NodeBipartite : public ObservationFunction<NodeBipartiteObs<ContainerSelector>> {
+public:
+	using obs_t = NodeBipartiteObs<ContainerSelector>;
 	using base_t = ObservationFunction<obs_t>;
 
 	std::unique_ptr<base_t> clone() const override;
@@ -32,19 +34,18 @@ struct BasicObsFunction : public ObservationFunction<BasicObs<ContainerSelector>
 };
 
 /****************************************
- *  Implementation of BasicObsFunction  *
+ *  Implementation of NodeBipartite  *
  ****************************************/
 
 template <typename T> static constexpr T nan() {
 	return std::numeric_limits<T>::quiet_NaN();
 }
 
-template <typename CS>
-auto BasicObsFunction<CS>::clone() const -> std::unique_ptr<base_t> {
-	return std::make_unique<BasicObsFunction>(*this);
+template <typename CS> auto NodeBipartite<CS>::clone() const -> std::unique_ptr<base_t> {
+	return std::make_unique<NodeBipartite>(*this);
 }
 
-template <typename CS> auto BasicObsFunction<CS>::get(scip::Model const& model) -> obs_t {
+template <typename CS> auto NodeBipartite<CS>::get(scip::Model const& model) -> obs_t {
 	auto const extract_feat = [](auto const var, auto out_iter) {
 		*out_iter = var.ub_local().value_or(nan<double>());
 	};

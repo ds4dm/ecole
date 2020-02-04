@@ -4,16 +4,16 @@ import numpy as np
 import ecole.observation as O
 
 
-def test_BasicObsFunction(model):
-    obs_func = O.BasicObsFunction()
-    assert isinstance(obs_func, O.BasicObsFunction)
+def test_NodeBipartite(model):
+    obs_func = O.NodeBipartite()
+    assert isinstance(obs_func, O.NodeBipartite)
     obs_func.reset(model)
     obs = obs_func.get(model)
-    assert isinstance(obs, O.BasicObs)
+    assert isinstance(obs, O.NodeBipartiteObs)
 
 
-def test_BasicObs(model):
-    obs = O.BasicObsFunction().get(model)
+def test_NodeBipartite(model):
+    obs = O.NodeBipartite().get(model)
     assert isinstance(obs.var_feat, np.ndarray)
 
     assert obs.var_feat.size > 0
@@ -23,7 +23,7 @@ def test_BasicObs(model):
     assert np.all(obs.var_feat != old_var_feat)
 
 
-@pytest.mark.parametrize("Class", (O.BasicObsFunction,))
+@pytest.mark.parametrize("Class", (O.NodeBipartite,))
 def test_Inheritance(model, Class):
     class FunctionCalled(Class):
         def __init__(self):

@@ -6,7 +6,7 @@
 
 #include "ecole/base.hpp"
 #include "ecole/branching.hpp"
-#include "ecole/observation/basicobs.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
@@ -37,7 +37,7 @@ PYBIND11_MODULE(branching, m) {
 			[] {
 				return std::make_unique<Env>(
 					std::make_unique<Fractional>(),
-					std::make_unique<pyobservation::ObsFunction<observation::BasicObsFunction>>(),
+					std::make_unique<pyobservation::ObsFunction<observation::NodeBipartite>>(),
 					std::make_unique<reward::IsDone>(),
 					std::make_unique<termination::WhenSolved>());
 			})

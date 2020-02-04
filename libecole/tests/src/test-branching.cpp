@@ -5,7 +5,7 @@
 
 #include "ecole/branching.hpp"
 #include "ecole/exception.hpp"
-#include "ecole/observation/basicobs.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
@@ -14,10 +14,10 @@
 using namespace ecole;
 
 TEST_CASE("BranchEnv") {
-	using BranchEnv = branching::Environment<std::size_t, observation::BasicObs<>>;
+	using BranchEnv = branching::Environment<std::size_t, observation::NodeBipartiteObs<>>;
 	auto env = BranchEnv(
 		std::make_unique<branching::Fractional>(),
-		std::make_unique<observation::BasicObsFunction<>>(),
+		std::make_unique<observation::NodeBipartite<>>(),
 		std::make_unique<reward::IsDone>(),
 		std::make_unique<termination::WhenSolved>());
 	auto model = get_model();

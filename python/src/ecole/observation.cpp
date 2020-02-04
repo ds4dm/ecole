@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/observation/basicobs.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 
 #include "wrapper/observation.hpp"
 
@@ -18,12 +18,14 @@ PYBIND11_MODULE(observation, m) {
 
 	auto const base_module = py11::module::import("ecole.base");
 
-	pyobservation::obs_class_<observation::BasicObs> basic_obs_bind(m, "BasicObs");
-	using py_basic_obs_t = decltype(basic_obs_bind)::type;
-	basic_obs_bind  //
+	pyobservation::obs_class_<observation::NodeBipartiteObs> node_bipartite_binding(
+		m, "NodeBipartiteObs");
+	using py_node_bipartite_t = decltype(node_bipartite_binding)::type;
+	node_bipartite_binding  //
 		.def_property_readonly(
-			"var_feat", [](py_basic_obs_t const& obs) -> auto& { return obs.obs.var_feat; });
+			"var_feat",
+			[](py_node_bipartite_t const& obs) -> auto& { return obs.obs.var_feat; });
 
-	pyobservation::function_class_<observation::BasicObsFunction>(m, "BasicObsFunction")
+	pyobservation::function_class_<observation::NodeBipartite>(m, "NodeBipartite")
 		.def(py11::init<>());
 }
