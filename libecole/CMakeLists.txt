@@ -6,6 +6,7 @@ add_library(
 	src/scip/utils.cpp
 	src/scip/variable.cpp
 	src/scip/column.cpp
+	src/scip/row.cpp
 	src/exception.cpp
 	src/reward/base.cpp
 	src/reward/isdone.cpp

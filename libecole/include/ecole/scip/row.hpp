@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nonstd/optional.hpp>
 #include <scip/scip.h>
 
 #include "ecole/scip/type.hpp"
@@ -8,9 +9,14 @@
 namespace ecole {
 namespace scip {
 
+using nonstd::optional;
+
 class RowProxy : public Proxy<SCIP_Row> {
 public:
 	using Proxy::Proxy;
+
+	optional<real> lhs() const noexcept;
+	optional<real> rhs() const noexcept;
 };
 
 using RowView = View<RowProxy>;
