@@ -19,7 +19,7 @@ TEST_CASE("Model has column view iterator") {
 			for (auto col : model.lp_columns()) {
 				if (col.ub() == 1.) ++count;
 			}
-			REQUIRE(count == 64);
+			REQUIRE(count == 67);
 		};
 
 		// Create a contex where lp_columns can be tested
