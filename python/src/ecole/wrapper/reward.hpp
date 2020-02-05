@@ -2,7 +2,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/reward/base.hpp"
+#include "ecole/reward/abstract.hpp"
 
 namespace py11 = pybind11;
 
@@ -101,7 +101,7 @@ struct Py_RewardFunction_Trampoline :
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to stored in environments).
  */
-using base_func_class_ = py11::class_<
+using abstract_func_class_ = py11::class_<
 	reward::RewardFunction,                                              // Class
 	internal::Py_RewardFunctionBase_Trampoline<reward::RewardFunction>,  // Trampoline
 	std::shared_ptr<reward::RewardFunction>                              // Holder

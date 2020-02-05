@@ -3,11 +3,11 @@
 #include <memory>
 #include <tuple>
 
-#include "ecole/environment/base.hpp"
-#include "ecole/observation/base.hpp"
-#include "ecole/reward/base.hpp"
+#include "ecole/environment/abstract.hpp"
+#include "ecole/observation/abstract.hpp"
+#include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/termination/base.hpp"
+#include "ecole/termination/abstract.hpp"
 
 namespace ecole {
 namespace configuring {

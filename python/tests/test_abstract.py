@@ -1,8 +1,8 @@
-import ecole.base as B
+import ecole.abstract as abst
 
 
 def test_ObservationFunction_Inheritance(model):
-    class FunctionCalled(B.ObservationFunction):
+    class FunctionCalled(abst.ObservationFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -14,7 +14,7 @@ def test_ObservationFunction_Inheritance(model):
 
         def get(self, *args, **kwargs):
             self.get_called = True
-            return B.Observation()
+            return abst.Observation()
 
     function = FunctionCalled()
     function.reset(model)
@@ -24,7 +24,7 @@ def test_ObservationFunction_Inheritance(model):
 
 
 def test_RewardFunction_Inheritance(model):
-    class FunctionCalled(B.RewardFunction):
+    class FunctionCalled(abst.RewardFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False
@@ -46,7 +46,7 @@ def test_RewardFunction_Inheritance(model):
 
 
 def test_Termination_Inheritance(model):
-    class FunctionCalled(B.TerminationFunction):
+    class FunctionCalled(abst.TerminationFunction):
         def __init__(self):
             super().__init__()
             self.reset_called = False

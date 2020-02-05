@@ -1,4 +1,4 @@
-#include "ecole/reward/base.hpp"
+#include "ecole/reward/abstract.hpp"
 
 namespace ecole {
 namespace reward {

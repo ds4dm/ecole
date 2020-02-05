@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ecole/environment/base.hpp"
+#include "ecole/environment/abstract.hpp"
 
 #include "wrapper/observation.hpp"
 
@@ -22,7 +22,7 @@ template <typename Action> struct Py_Action : public Py_ActionBase {
 	Py_Action(Action const& action) : action(std::move(action)) {}
 };
 
-// Action function do not have a single base, but one per environment
+// Action function do not have a single abstract base, but one per environment
 template <template <typename Action> class ActionFunctionBase>
 using Py_ActionFunctionBase = ActionFunctionBase<Py_ActionBase const&>;
 

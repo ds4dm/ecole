@@ -8,7 +8,7 @@
 #include <xtensor/xview.hpp>
 
 #include "ecole/container.hpp"
-#include "ecole/observation/base.hpp"
+#include "ecole/observation/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {

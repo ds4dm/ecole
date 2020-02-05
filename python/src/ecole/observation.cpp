@@ -16,7 +16,7 @@ PYBIND11_MODULE(observation, m) {
 
 	xt::import_numpy();
 
-	auto const base_module = py11::module::import("ecole.base");
+	auto const abstract_module = py11::module::import("ecole.abstract");
 
 	pyobservation::obs_class_<observation::NodeBipartiteObs> node_bipartite_binding(
 		m, "NodeBipartiteObs");

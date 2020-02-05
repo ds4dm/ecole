@@ -4,7 +4,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/base.hpp"
+#include "ecole/abstract.hpp"
 #include "ecole/branching.hpp"
 #include "ecole/observation/node-bipartite.hpp"
 #include "ecole/reward/isdone.hpp"

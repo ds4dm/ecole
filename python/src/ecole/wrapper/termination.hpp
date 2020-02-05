@@ -2,7 +2,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/termination/base.hpp"
+#include "ecole/termination/abstract.hpp"
 
 namespace py11 = pybind11;
 
@@ -98,7 +98,7 @@ struct Py_TermFunction_Trampoline :
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to stored in environments).
  */
-using base_func_class_ = py11::class_<
+using abstract_func_class_ = py11::class_<
 	termination::TerminationFunction,                                            // Class
 	internal::Py_TermFunctionBase_Trampoline<termination::TerminationFunction>,  // Trampo
 	std::shared_ptr<termination::TerminationFunction>                            // Holder

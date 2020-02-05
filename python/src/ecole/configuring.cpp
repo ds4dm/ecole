@@ -40,8 +40,8 @@ void Configure<py11::object>::set(scip::Model& model, action_t const& action) {
 
 PYBIND11_MODULE(configuring, m) {
 	m.doc() = "Learning to configure task.";
-	// Import of base required for resolving inheritance to base types
-	py11::module base_mod = py11::module::import("ecole.base");
+	// Import of abstract required for resolving inheritance to abstract types
+	py11::module abstract_mod = py11::module::import("ecole.abstract");
 
 	using ActionFunction = pyenvironment::ActionFunctionBase<configuring::ActionFunction>;
 	using Configure = pyenvironment::

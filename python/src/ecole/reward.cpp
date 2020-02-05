@@ -11,7 +11,7 @@ using namespace ecole;
 PYBIND11_MODULE(reward, m) {
 	m.doc() = "Reward classes for ecole.";
 
-	auto const base_module = py11::module::import("ecole.base");
+	auto const abstract_module = py11::module::import("ecole.abstract");
 
 	pyreward::function_class_<reward::IsDone>(m, "IsDone")  //
 		.def(py11::init<>());

@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "ecole/base.hpp"
+#include "ecole/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "wrapper/environment.hpp"
@@ -14,25 +14,25 @@
 namespace py = pybind11;
 using namespace ecole;
 
-PYBIND11_MODULE(base, m) {
+PYBIND11_MODULE(abstract, m) {
 	m.doc() = "Abstract base classes for ecole environments.";
 
 	auto const scip_module = py::module::import("ecole.scip");
 
-	pyobservation::base_obs_class_(m, "Observation")  //
+	pyobservation::abstract_obs_class_(m, "Observation")  //
 		.def(py::init<>());
 
-	pyobservation::base_func_class_(m, "ObservationFunction")
+	pyobservation::abstract_func_class_(m, "ObservationFunction")
 		.def(py::init<>())
 		.def("reset", &pyobservation::ObsFunctionBase::reset, py::arg("model"))
 		.def("get", &pyobservation::ObsFunctionBase::get, py::arg("model"));
 
-	pyreward::base_func_class_(m, "RewardFunction")
+	pyreward::abstract_func_class_(m, "RewardFunction")
 		.def(py::init<>())
 		.def("reset", &reward::RewardFunction::reset, py::arg("model"))
 		.def("get", &reward::RewardFunction::get, py::arg("model"), py::arg("done") = false);
 
-	pytermination::base_func_class_(m, "TerminationFunction")
+	pytermination::abstract_func_class_(m, "TerminationFunction")
 		.def(py::init<>())
 		.def("reset", &termination::TerminationFunction::reset, py::arg("model"))
 		.def("is_done", &termination::TerminationFunction::is_done, py::arg("model"));

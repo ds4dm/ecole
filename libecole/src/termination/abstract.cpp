@@ -1,4 +1,4 @@
-#include "ecole/termination/base.hpp"
+#include "ecole/termination/abstract.hpp"
 
 namespace ecole {
 namespace termination {

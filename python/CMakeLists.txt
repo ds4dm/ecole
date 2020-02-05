@@ -30,7 +30,7 @@ pybind11_add_module(
 	ecole-python
 	src/ecole/core.cpp
 	src/ecole/scip.cpp
-	src/ecole/base.cpp
+	src/ecole/abstract.cpp
 	src/ecole/observation.cpp
 	src/ecole/reward.cpp
 	src/ecole/termination.cpp

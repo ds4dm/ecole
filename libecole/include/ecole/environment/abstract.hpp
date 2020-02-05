@@ -5,7 +5,7 @@
 #include <tuple>
 
 #include "ecole/exception.hpp"
-#include "ecole/reward/base.hpp"
+#include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
 using ecole::reward::Reward;

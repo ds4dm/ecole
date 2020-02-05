@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ecole/reward/base.hpp"
+#include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole {

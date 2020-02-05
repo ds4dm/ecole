@@ -4,7 +4,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/observation/base.hpp"
+#include "ecole/observation/abstract.hpp"
 
 #include "container.hpp"
 
@@ -30,7 +30,7 @@ struct Py_ObsBase {
 };
 
 /**
- * Wrapper to make C++ observation inherit form the base observation @ref Py_ObsBase.
+ * Wrapper to make C++ observation inherit form the abstract observation @ref Py_ObsBase.
  *
  * @tparam Obs The C++ observation to wrap.
  */
@@ -159,7 +159,7 @@ struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFun
  *************************/
 
 /**
- * Alias for Python observation base class.
+ * Alias for Python observation abstract class.
  */
 using ObsBase = internal::Py_ObsBase;
 
@@ -174,7 +174,7 @@ template <template <typename> class Observation>
 using Obs = internal::Py_Obs<Observation<container::pytensor>>;
 
 /**
- * Alias for Python observation function base class.
+ * Alias for Python observation function abstract class.
  */
 using ObsFunctionBase = internal::Py_ObsFunctionBase;
 
@@ -194,7 +194,7 @@ using ObsFunction = internal::Py_ObsFunction<ObservationFunction<container::pyte
  * Set the holder type to @ref std::shared_ptr inheriting observation functions prevent
  * from having it as a @ref std::unique_ptr.
  */
-using base_obs_class_ = py11::class_<
+using abstract_obs_class_ = py11::class_<
 	ObsBase,                  // Class
 	std::shared_ptr<ObsBase>  // Holder
 	>;
@@ -202,7 +202,7 @@ using base_obs_class_ = py11::class_<
 /**
  * The @ref pybind11::class_ type for all observation.
  *
- * Set the parent base class.
+ * Set the parent abstract class.
  * Set the holder type to @ref std::shared_ptr inheriting observation functions prevent
  * from having it as a @ref std::unique_ptr.
  *
@@ -222,7 +222,7 @@ using obs_class_ = py11::class_<
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to be stored in environments).
  */
-using base_func_class_ = py11::class_<
+using abstract_func_class_ = py11::class_<
 	ObsFunctionBase,                                           // Class
 	internal::Py_ObsFunctionBase_Trampoline<ObsFunctionBase>,  // Trampoline
 	std::shared_ptr<ObsFunctionBase>                           // Holder
@@ -231,7 +231,7 @@ using base_func_class_ = py11::class_<
 /**
  * The @ref pybind11::class_ type for all observation functions.
  *
- * Set the parent base class.
+ * Set the parent abstract class.
  * Set the trampoline class.
  * Set the holder type to @ref std::shared_ptr (as the objects created from Python needs
  * to be stored in environments).

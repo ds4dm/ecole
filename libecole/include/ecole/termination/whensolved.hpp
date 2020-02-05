@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "ecole/scip/model.hpp"
-#include "ecole/termination/base.hpp"
+#include "ecole/termination/abstract.hpp"
 
 namespace ecole {
 namespace termination {
