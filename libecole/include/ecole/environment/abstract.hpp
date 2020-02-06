@@ -1,17 +1,15 @@
 #pragma once
 
-#include <memory>
-#include <string>
 #include <tuple>
 
-#include "ecole/exception.hpp"
 #include "ecole/reward/abstract.hpp"
-#include "ecole/scip/model.hpp"
-
-using ecole::reward::Reward;
 
 namespace ecole {
 namespace environment {
+
+using ecole::reward::Reward;
+using Seed = int;
+using Info = int;  // FIXME dummy type while the information is not implemented
 
 /**
  * Abstract base class for all environments.
@@ -22,21 +20,14 @@ namespace environment {
  * [OpenAi Gym](https://gym.openai.com/), with some differences nontheless due to the
  * requirements of Ecole.
  *
- * @tparam Action The type of the action accepted to transition from one state to another.
- * @tparam Observation The type of the observation returned on every state.
- * @tparam Holder type for functions and @ref scip::Model. The default should be used.
+ * @tparam Action_ The type of the action accepted to transition from one state to
+ * another.
+ * @tparam Observation_ The type of the observation returned on every state.
  */
-template <
-	typename Action,
-	typename Observation,
-	template <typename...> class Holder = std::unique_ptr>
-class Environment {
+template <typename Action_, typename Observation_> class Environment {
 public:
-	using seed_t = int;
-	using info_t = int;
-
-	// Template a holder type. Enable using std::shared_ptr for Python bindings
-	template <typename T> using ptr = Holder<T>;
+	using Action = Action_;
+	using Observation = Observation_;
 
 	virtual ~Environment() = default;
 
@@ -49,12 +40,12 @@ public:
 	 * sequence of action taken are also unchanged), one has to seed the environment before
 	 * every call to reset.
 	 */
-	seed_t seed(seed_t seed) noexcept;
+	virtual void seed(Seed seed) = 0;
 
 	/**
 	 * Get the current random seed.
 	 */
-	seed_t seed() const noexcept;
+	virtual Seed seed() const = 0;
 
 	/**
 	 * Reset the environment to the initial state on the given problem instance.
@@ -64,9 +55,7 @@ public:
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
-	std::tuple<Observation, bool> reset(ptr<scip::Model>&& model);
-	std::tuple<Observation, bool> reset(scip::Model&& model);
-	std::tuple<Observation, bool> reset(std::string const& filename);
+	virtual std::tuple<Observation, bool> reset(std::string const& filename) = 0;
 
 	/**
 	 * Transition from one state to another.
@@ -82,74 +71,8 @@ public:
 	 * @pre The envrionment must not be on a terminal state, or have thrown an exception.
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
-	std::tuple<Observation, Reward, bool, info_t> step(Action action);
-
-private:
-	bool can_transition = false;
-	seed_t seed_v = 0;
-
-	void mutate_seed() noexcept;
-	virtual std::tuple<Observation, bool> _reset(ptr<scip::Model>&& model) = 0;
-	virtual std::tuple<Observation, Reward, bool, info_t> _step(Action action) = 0;
+	virtual std::tuple<Observation, Reward, bool, Info> step(Action const& action) = 0;
 };
-
-/***********************************
- *  Implementation of Environment  *
- ***********************************/
-
-template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::seed(seed_t seed) noexcept -> seed_t {
-	return seed_v = seed;
-}
-
-template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::seed() const noexcept -> seed_t {
-	return seed_v;
-}
-
-template <typename A, typename O, template <typename...> class H>
-std::tuple<O, bool> Environment<A, O, H>::reset(ptr<scip::Model>&& model) {
-	if (model == nullptr) throw Exception("Invalid null pointer to Model");
-	mutate_seed();
-	try {
-		auto result = _reset(std::move(model));
-		auto done = std::get<1>(result);
-		can_transition = !done;
-		return result;
-	} catch (std::exception const&) {
-		can_transition = false;
-		throw;
-	}
-}
-
-template <typename A, typename O, template <typename...> class H>
-std::tuple<O, bool> Environment<A, O, H>::reset(scip::Model&& model) {
-	return reset(std::make_unique<scip::Model>(std::move(model)));
-}
-
-template <typename A, typename O, template <typename...> class H>
-std::tuple<O, bool> Environment<A, O, H>::reset(std::string const& filename) {
-	return reset(scip::Model::from_file(filename));
-}
-
-template <typename A, typename O, template <typename...> class H>
-auto Environment<A, O, H>::step(A action) -> std::tuple<O, Reward, bool, info_t> {
-	if (!can_transition) throw environment::Exception("Environment need to be reset.");
-	try {
-		auto result = _step(std::move(action));
-		auto done = std::get<2>(result);
-		can_transition = !done;
-		return result;
-	} catch (std::exception const&) {
-		can_transition = false;
-		throw;
-	}
-}
-
-template <typename A, typename O, template <typename...> class H>
-void Environment<A, O, H>::mutate_seed() noexcept {
-	++seed_v;
-}
 
 }  // namespace environment
 }  // namespace ecole
