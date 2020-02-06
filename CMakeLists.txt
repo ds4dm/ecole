@@ -7,6 +7,11 @@ project(
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
+# Set a default build type (required for conan)
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE None CACHE STRING "Set build type, see CMake documentation" FORCE)
+endif()
+
 # Get Conan CMake wrapper for C++ package management
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
 	# Download automatically, you can also just copy the conan.cmake file
