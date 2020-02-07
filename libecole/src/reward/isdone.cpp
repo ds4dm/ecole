@@ -3,12 +3,12 @@
 namespace ecole {
 namespace reward {
 
-std::unique_ptr<RewardFunction> IsDone::clone() const {
+auto IsDone::clone() const -> std::unique_ptr<RewardFunction<State>> {
 	return std::make_unique<IsDone>(*this);
 }
 
-Reward IsDone::get(scip::Model const& model, bool done) {
-	(void)model;
+Reward IsDone::get(State const& state, bool done) {
+	(void)state;
 	return done ? 1 : 0;
 }
 

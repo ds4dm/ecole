@@ -8,7 +8,6 @@ add_library(
 	src/scip/column.cpp
 	src/scip/row.cpp
 	src/exception.cpp
-	src/reward/abstract.cpp
 	src/reward/isdone.cpp
 	src/termination/whensolved.cpp
 	src/branching.cpp
