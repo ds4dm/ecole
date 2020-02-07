@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include <objscip/objbranchrule.h>
 #include <scip/scip.h>
 
 #include "ecole/scip/column.hpp"
@@ -153,8 +154,7 @@ public:
 	ColView lp_columns() const;
 	RowView lp_rows() const;
 
-	using BranchFunc = std::function<VarProxy(Model&)>;
-	void set_branch_rule(BranchFunc const& func);
+	void include_branchrule(std::unique_ptr<::scip::ObjBranchrule>&& branchrule);
 
 	/**
 	 * Access the underlying SCIP pointer.
@@ -165,7 +165,6 @@ public:
 	SCIP* get_scip_ptr() const noexcept;
 
 private:
-	class LambdaBranchRule;
 	unique_ptr<SCIP> scip;
 };
 
