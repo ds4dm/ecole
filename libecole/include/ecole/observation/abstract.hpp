@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include "ecole/scip/model.hpp"
-
 namespace ecole {
 namespace observation {
 
@@ -18,33 +16,25 @@ namespace observation {
  * function.
  *
  * @tparam Observation the type of the observation extracted by this class.
+ * @tparam State The internal state used by the environment.
  */
-template <typename Observation> class ObservationFunction {
+template <typename Observation, typename State> class ObservationFunction {
 public:
-	using obs_t = Observation;
-
 	virtual ~ObservationFunction() = default;
 	virtual std::unique_ptr<ObservationFunction> clone() const = 0;
 
 	/**
-	 * The method called by the environment at the begining of every episode (on the
-	 * initial state).
+	 * The method called by the environment on the initial state
+	 *
+	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(scip::Model const& model);
+	virtual void reset(State const& initial_state) { (void)initial_state; }
 
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual obs_t get(scip::Model const& model) = 0;
+	virtual Observation get(State const& state) = 0;
 };
-
-/******************************************
- *  Implementation of ObservationFunction *
- ******************************************/
-
-template <typename O> void ObservationFunction<O>::reset(scip::Model const& model) {
-	(void)model;
-}
 
 }  // namespace observation
 }  // namespace ecole
