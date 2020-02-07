@@ -3,12 +3,12 @@
 namespace ecole {
 namespace termination {
 
-std::unique_ptr<TerminationFunction> WhenSolved::clone() const {
+auto WhenSolved::clone() const -> std::unique_ptr<TerminationFunction<State>> {
 	return std::make_unique<WhenSolved>(*this);
 }
 
-bool WhenSolved::is_done(scip::Model const& model) {
-	return model.is_solved();
+bool WhenSolved::is_done(State const& state) {
+	return state.model.is_solved();
 }
 
 }  // namespace termination

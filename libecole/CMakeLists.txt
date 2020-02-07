@@ -10,7 +10,6 @@ add_library(
 	src/exception.cpp
 	src/reward/abstract.cpp
 	src/reward/isdone.cpp
-	src/termination/abstract.cpp
 	src/termination/whensolved.cpp
 	src/branching.cpp
 )
