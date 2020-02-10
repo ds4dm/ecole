@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "ecole/abstract.hpp"
+#include "ecole/exception.hpp"
 
 /**
  * Backport of simple utilities from the standard library to C++14.
@@ -34,8 +35,25 @@ namespace environment {
  */
 template <typename Action, typename State> class SimpleEnvironment {
 public:
-	virtual void reset(State& state) = 0;
-	virtual void step(State& state, Action&& action) = 0;
+	/**
+	 * The environment core logic for reseting an environemnt.
+	 *
+	 * @param initial_state
+	 * @return Whether the environment can logically go any further.
+	 *         This will be combined witht the early TerminationFunction to provide the
+	 *         final `done` flag for the user.
+	 */
+	virtual bool reset(State& initial_state) = 0;
+
+	/**
+	 * The environment core logic for transitionning.
+	 *
+	 * @param state
+	 * @return Whether the environment can logically go any further.
+	 *         This will be combined witht the early TerminationFunction to provide the
+	 *         final `done` flag for the user.
+	 */
+	virtual bool step(State& state, Action&& action) = 0;
 };
 
 namespace internal {
@@ -128,11 +146,11 @@ public:
 	std::tuple<Observation, bool> reset() {
 		mutate_seed();
 		try {
-			simple_env.reset();
+			auto const env_done = simple_env.reset();
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
-			return {obs_func().get(state()), term_func().get(state())};
+			return {obs_func().get(state()), env_done || term_func().get(state())};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -145,9 +163,9 @@ public:
 	std::tuple<Observation, Reward, bool, Info> step(Action&& action) {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
-			simple_env.step(action);
+			auto done = simple_env.step(action);
 			auto&& obs = obs_func().get(state());
-			bool const done = term_func().get(state());
+			done = done || term_func().get(state());
 			can_transition = !done;
 			auto const reward = reward_func().get(state(), done);
 			return {obs, reward, done, Info{}};
