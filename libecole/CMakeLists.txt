@@ -10,7 +10,7 @@ add_library(
 	src/exception.cpp
 	src/reward/isdone.cpp
 	src/termination/whensolved.cpp
-	src/branching.cpp
+	src/environment/branching.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 
