@@ -7,6 +7,7 @@ add_library(
 	src/scip/variable.cpp
 	src/scip/column.cpp
 	src/scip/row.cpp
+	src/utility/reverse-control.cpp
 	src/exception.cpp
 	src/reward/isdone.cpp
 	src/termination/whensolved.cpp
