@@ -4,12 +4,13 @@
 #include <tuple>
 
 #include "ecole/reward/abstract.hpp"
+#include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace environment {
 
 using ecole::reward::Reward;
-using Seed = int;
+using Seed = scip::Seed;
 using Info = int;  // FIXME dummy type while the information is not implemented
 
 /**
@@ -35,8 +36,10 @@ public:
 	/**
 	 * Set the random seed for the environment, hence making its internals deterministic.
 	 *
-	 * The seed is deteministically changed at every new episode (every call to reset) to
-	 * avoid overfitting on a single seed.
+	 * Internally, the behavior of the environment uses a random number generator to
+	 * change its behavior on every trajectroy (every call to @ref reset.
+	 * Hence it is only required to seed the environment once.
+	 *
 	 * To get the same trajectory at every episode (provided the problem instance and
 	 * sequence of action taken are also unchanged), one has to seed the environment before
 	 * every call to reset.
