@@ -10,7 +10,8 @@ TEST_CASE("Model has variable view iterator") {
 	auto model = get_model();
 	int count = 0;
 	for (auto var : model.variables()) {
-		if (var.ub_local() == 1.) ++count;
+		count++;
+		var.ub_local();
 	}
-	REQUIRE(count == 64);
+	REQUIRE(count == model.variables().size);
 }
