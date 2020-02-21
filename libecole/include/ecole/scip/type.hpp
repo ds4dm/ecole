@@ -16,5 +16,9 @@ using real = SCIP_Real;
  */
 template <typename Enum> struct enum_size;
 
+using Seed = int;
+constexpr Seed min_seed = 0;
+constexpr Seed max_seed = 2147483647;
+
 }  // namespace scip
 }  // namespace ecole
