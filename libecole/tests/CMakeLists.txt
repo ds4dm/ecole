@@ -7,8 +7,8 @@ add_executable(
 	src/scip/test-model.cpp
 	src/scip/test-variable.cpp
 	src/scip/test-view.cpp
-	src/test-branching.cpp
-	src/test-configuring.cpp
+	src/environment/test-branching.cpp
+	src/environment/test-configuring.cpp
 )
 target_compile_definitions(
 	test-libecole PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"

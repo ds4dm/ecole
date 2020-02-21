@@ -3,7 +3,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/branching.hpp"
+#include "ecole/environment/branching.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/observation/node-bipartite.hpp"
 #include "ecole/reward/isdone.hpp"
@@ -14,27 +14,23 @@
 using namespace ecole;
 
 TEST_CASE("BranchEnv") {
-	using BranchEnv = branching::Environment<std::size_t, observation::NodeBipartiteObs<>>;
-	auto env = BranchEnv(
-		std::make_unique<branching::Fractional>(),
-		std::make_unique<observation::NodeBipartite<>>(),
-		std::make_unique<reward::IsDone>(),
-		std::make_unique<termination::WhenSolved>());
-	auto model = get_model();
+	auto env = environment::
+		Branching<observation::NodeBipartite<>, reward::IsDone, termination::WhenSolved>(
+			observation::NodeBipartite<>{}, reward::IsDone{}, termination::WhenSolved{});
 
 	SECTION("reset, reset, and delete") {
-		env.reset(scip::Model{model});
-		env.reset(std::move(model));
+		env.reset(problem_file);
+		env.reset(problem_file);
 	}
 
 	SECTION("reset, step, and delete") {
-		env.reset(std::move(model));
+		env.reset(problem_file);
 		env.step(0);
 	}
 
 	SECTION("run full trajectory") {
-		auto run_trajectory = [](auto& env, auto& model) {
-			auto obs_done = env.reset(scip::Model{model});
+		auto run_trajectory = [](auto& env, std::string const& filename) {
+			auto obs_done = env.reset(filename);
 			auto done = std::get<bool>(obs_done);
 			auto count = 0;
 			while (!done) {
@@ -44,14 +40,14 @@ TEST_CASE("BranchEnv") {
 			}
 			REQUIRE(count > 0);
 		};
-		run_trajectory(env, model);
+		run_trajectory(env, problem_file);
 
-		SECTION("Run another trajectory") { run_trajectory(env, model); }
+		SECTION("Run another trajectory") { run_trajectory(env, problem_file); }
 	}
 
 	SECTION("manage errors") {
 		auto guard = ScipNoErrorGuard{};
-		env.reset(std::move(model));
+		env.reset(problem_file);
 		REQUIRE_THROWS_AS(env.step(-1), scip::Exception);
 	}
 }
