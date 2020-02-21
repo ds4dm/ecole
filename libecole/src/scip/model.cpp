@@ -186,10 +186,6 @@ RowView Model::lp_rows() const {
 	return RowView(scip_ptr, SCIPgetLPRows(scip_ptr), n_rows);
 }
 
-void Model::include_branchrule(std::unique_ptr<::scip::ObjBranchrule>&& branchrule) {
-	scip::call(SCIPincludeObjBranchrule, get_scip_ptr(), branchrule.release(), true);
-}
-
 namespace internal {
 
 template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Bool value) {

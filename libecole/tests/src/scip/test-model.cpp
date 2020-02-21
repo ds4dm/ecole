@@ -74,40 +74,6 @@ TEST_CASE("Copy preserve the model internals") {
 	model_copy.solve();
 }
 
-TEST_CASE("Add a branching rule") {
-	auto model = get_model();
-	auto count = 0;
-	model.set_branch_rule([&count](scip::Model const& m) mutable {
-		count++;
-		return *m.lp_branch_cands().cbegin();
-	});
-	model.solve();
-	REQUIRE(count > 0);
-}
-
-TEST_CASE("Run a branching rule") {
-	auto model = get_model();
-
-	SECTION("Arbitrary branching rule") {
-		model.set_branch_rule([](auto const& model) { return model.lp_branch_cands()[0]; });
-		model.solve();
-		REQUIRE(model.is_solved());
-	}
-
-	SECTION("Void branching rule") {
-		model.set_branch_rule([](auto const&) { return scip::VarProxy::None; });
-		model.solve();
-		REQUIRE(model.is_solved());
-	}
-
-	SECTION("Exception in branching rule") {
-		auto guard = ScipNoErrorGuard{};
-		model.set_branch_rule([](auto const&) -> scip::VarProxy { throw ":("; });
-		REQUIRE_THROWS_AS(model.solve(), scip::Exception);
-		REQUIRE(!model.is_solved());
-	}
-}
-
 TEST_CASE("Get and set parameters") {
 	auto model = scip::Model{};
 	auto constexpr param = "conflict/conflictgraphweight";

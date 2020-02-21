@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include <objscip/objbranchrule.h>
 #include <scip/scip.h>
 
 #include "ecole/scip/column.hpp"
@@ -139,8 +138,6 @@ public:
 	VarView lp_branch_cands() const noexcept;
 	ColView lp_columns() const;
 	RowView lp_rows() const;
-
-	void include_branchrule(std::unique_ptr<::scip::ObjBranchrule>&& branchrule);
 
 	/**
 	 * Access the underlying SCIP pointer.
