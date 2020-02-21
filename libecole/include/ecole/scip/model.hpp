@@ -124,20 +124,6 @@ public:
 	template <typename T> T get_param(const char* name) const;
 	template <typename T> T get_param(std::string const& name) const;
 
-	/**
-	 * Get the current random seed of the Model.
-	 */
-	param_t<ParamType::Int> seed() const;
-	/**
-	 * Set the Model random seed shift.
-	 *
-	 * Set the shift used by with all random seeds in SCIP.
-	 * Random seed for individual compenents of SCIP can be set throught the parameters
-	 * but will nontheless be shifted by the value set here.
-	 * Set a value of zero to disable shiftting.
-	 */
-	void seed(param_t<ParamType::Int> seed_v);
-
 	void disable_presolve();
 	void disable_cuts();
 
