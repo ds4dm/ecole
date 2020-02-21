@@ -82,8 +82,12 @@ bool Model::operator!=(Model const& other) const noexcept {
 
 Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
-	scip::call(SCIPreadProb, model.get_scip_ptr(), filename.c_str(), nullptr);
+	model.read_prob(filename);
 	return model;
+}
+
+void Model::read_prob(std::string const& filename) {
+	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
 // Assumptions made while defining ParamType

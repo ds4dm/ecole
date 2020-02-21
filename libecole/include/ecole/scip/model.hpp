@@ -88,6 +88,11 @@ public:
 	 */
 	static Model from_file(std::string const& filename);
 
+	/**
+	 * Read a problem file into the Model.
+	 */
+	void read_prob(std::string const& filename);
+
 	ParamType get_param_type(const char* name) const;
 	ParamType get_param_type(std::string const& name) const;
 
