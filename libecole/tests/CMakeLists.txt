@@ -6,8 +6,6 @@ add_executable(
 	src/conftest.cpp
 	src/scip/test-model.cpp
 	src/scip/test-variable.cpp
-	src/scip/test-column.cpp
-	src/scip/test-row.cpp
 	src/scip/test-view.cpp
 	src/test-branching.cpp
 	src/test-configuring.cpp
