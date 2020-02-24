@@ -90,17 +90,6 @@ void Model::read_prob(std::string const& filename) {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
-// Assumptions made while defining ParamType
-static_assert(
-	std::is_same<SCIP_Bool, param_t<ParamType::Bool>>::value,
-	"SCIP bool type is not the same as the one redefined by Ecole");
-static_assert(
-	std::is_same<SCIP_Longint, param_t<ParamType::LongInt>>::value,
-	"SCIP long int type is not the same as the one redefined by Ecole");
-static_assert(
-	std::is_same<SCIP_Real, param_t<ParamType::Real>>::value,
-	"SCIP real type is not the same as the one redefined by Ecole");
-
 ParamType Model::get_param_type(const char* name) const {
 	auto* scip_param = SCIPgetParam(get_scip_ptr(), name);
 	if (!scip_param)

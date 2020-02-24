@@ -29,31 +29,6 @@ template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 unique_ptr<SCIP> create();
 
 /**
- * Types of parameters supported by SCIP.
- *
- * @see param_t to get the associated type.
- */
-enum class ParamType { Bool, Int, LongInt, Real, Char, String };
-
-namespace internal {
-// Use with `param_t`.
-// File `model.cpp` contains `static_assert`s to ensure this is never out of date
-// with SCIP internals.
-template <ParamType> struct ParamType_get;
-template <> struct ParamType_get<ParamType::Bool> { using type = unsigned int; };
-template <> struct ParamType_get<ParamType::Int> { using type = int; };
-template <> struct ParamType_get<ParamType::LongInt> { using type = long long int; };
-template <> struct ParamType_get<ParamType::Real> { using type = double; };
-template <> struct ParamType_get<ParamType::Char> { using type = char; };
-template <> struct ParamType_get<ParamType::String> { using type = const char*; };
-}  // namespace internal
-
-/**
- * Type associated with a ParamType.
- */
-template <ParamType T> using param_t = typename internal::ParamType_get<T>::type;
-
-/**
  * A stateful SCIP solver object.
  *
  * A RAII class to manage an underlying `SCIP*`.
