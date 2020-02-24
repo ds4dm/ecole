@@ -30,7 +30,16 @@ find_package(Threads REQUIRED)
 target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
 conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS NO_OUTPUT_DIRS SKIP_STD)
-target_link_libraries(libecole PUBLIC CONAN_PKG::xtensor CONAN_PKG::optional-lite)
+target_link_libraries(
+	libecole
+	PUBLIC
+		libscip
+		CONAN_PKG::xtensor
+		CONAN_PKG::optional-lite
+		CONAN_PKG::variant-lite
+	PRIVATE
+		Threads::Threads
+)
 
 target_compile_features(libecole PUBLIC cxx_std_14)
 target_compile_options(
