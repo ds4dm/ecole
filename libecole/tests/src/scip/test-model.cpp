@@ -75,24 +75,31 @@ TEST_CASE("Copy preserve the model internals") {
 }
 
 TEST_CASE("Get and set parameters") {
+	using scip::ParamType;
+
 	auto model = scip::Model{};
 	auto constexpr param = "conflict/conflictgraphweight";
 
-	SECTION("Get parameters explicitly") { model.get_param_explicit<double>(param); }
+	SECTION("Get parameters explicitly") {
+		model.get_param_explicit<ParamType::Real>(param);
+	}
 
-	SECTION("Set parameters explicitly") { model.set_param_explicit<double>(param, false); }
+	SECTION("Set parameters explicitly") {
+		model.set_param_explicit<ParamType::Real>(param, false);
+	}
 
 	SECTION("Throw on wrong parameters type") {
 		auto guard = ScipNoErrorGuard{};
-		REQUIRE_THROWS_AS(model.get_param_explicit<int>(param), scip::Exception);
-		REQUIRE_THROWS_AS(model.set_param_explicit<int>(param, 3), scip::Exception);
+		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Int>(param), scip::Exception);
+		REQUIRE_THROWS_AS(
+			model.set_param_explicit<ParamType::Int>(param, 3), scip::Exception);
 	}
 
 	SECTION("Get parameters with automatic casting") { model.get_param<int>(param); }
 
 	SECTION("Set parameters with automatic casting") { model.set_param(param, 1); }
 
-	SECTION("String parameters can be convert to chars") {
+	SECTION("String parameters can be converted to chars") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
 	}

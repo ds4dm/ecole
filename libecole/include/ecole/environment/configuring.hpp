@@ -13,7 +13,7 @@ namespace environment {
 /**
  * A Dictionnary of parameter names to parameter values.
  */
-using ParamDict = std::map<std::string, scip::ParamType>;
+using ParamDict = std::map<std::string, scip::Param>;
 
 template <typename... EnvTypes>
 class Configuring : public DefaultEnvironment<ParamDict, DefaultState, EnvTypes...> {

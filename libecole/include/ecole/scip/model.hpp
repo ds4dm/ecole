@@ -13,6 +13,7 @@
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/row.hpp"
 #include "ecole/scip/variable.hpp"
+#include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
 namespace scip {
@@ -68,7 +69,6 @@ public:
 	 */
 	void read_prob(std::string const& filename);
 
-	ParamType get_param_type(const char* name) const;
 	ParamType get_param_type(std::string const& name) const;
 
 	/**
@@ -79,10 +79,11 @@ public:
 	 *
 	 * @see get_param, set_param to convert automatically.
 	 */
-	template <typename T> void set_param_explicit(const char* name, T value);
-	template <typename T> void set_param_explicit(std::string const& name, T value);
-	template <typename T> T get_param_explicit(const char* name) const;
-	template <typename T> T get_param_explicit(std::string const& name) const;
+	template <ParamType T, std::enable_if_t<T != ParamType::String, int> = 0>
+	void set_param_explicit(std::string const& name, param_t<T> value);
+	template <ParamType T, std::enable_if_t<T == ParamType::String, int> = 0>
+	void set_param_explicit(std::string const& name, std::string const& value);
+	template <ParamType T> param_t<T> get_param_explicit(std::string const& name) const;
 
 	/**
 	 * Get and set parameters with automatic casting.
@@ -93,9 +94,7 @@ public:
 	 *
 	 * @see get_param_explicit, set_param_explicit to avoid any conversions.
 	 */
-	template <typename T> void set_param(const char* name, T value);
 	template <typename T> void set_param(std::string const& name, T value);
-	template <typename T> T get_param(const char* name) const;
 	template <typename T> T get_param(std::string const& name) const;
 
 	void disable_presolve();
@@ -128,108 +127,51 @@ private:
 
 namespace internal {
 
-// Specializations are instantiated in cpp file.
-// Having this proxy avoid specializing memeber function of Model, which is not
-// compatible with template class.
-template <typename T> void set_scip_param(SCIP* scip, const char* name, T value);
-template <typename T> T get_scip_param(SCIP* scip, const char* name);
-
-// SFINAE to check if type exists
-template <typename> struct exists { using type = void; };
-template <typename T> using exists_t = typename exists<T>::type;
-// Helper to check static cast ability
-template <typename To, typename From>
-using can_cast_t = exists_t<decltype(static_cast<To>(std::declval<From>()))>;
-
 // SFINAE default class for no available cast
-template <typename To, typename From, typename = void> struct Cast_SFINAE {
-	From val;
-	operator To() const { throw Exception("Cannot convert to the desired type"); }
+template <typename To, typename From, typename = void> struct Caster {
+	static To cast(From) { throw Exception("Cannot convert to the desired type"); }
 };
 
-// SFINAE for available cast
-template <typename To, typename From> struct Cast_SFINAE<To, From, can_cast_t<To, From>> {
-	From val;
-	operator To() const { return static_cast<To>(val); }
+// SFINAE class for available cast
+template <typename To, typename From>
+struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> {
+	static To cast(From val) { return val; }
 };
 
 // Pointers must not convert to bools
-template <typename From> struct Cast_SFINAE<bool, From*> {
-	From val;
-	operator bool() const { throw Exception("Cannot convert to the desired type"); }
+template <typename From> struct Caster<bool, std::remove_cv<From>*> {
+	static bool cast(From) { throw Exception("Cannot convert pointers to bool"); }
 };
 
-// C-string can be converted to char if single character
-template <> Cast_SFINAE<char, const char*>::operator char() const;
+// Convert charachter to string
+template <> std::string Caster<std::string, char>::cast(char);
 
-// Don't convert std::string to const char* (dangling pointer).
-// Leave the string as it is to pass to set_param_explicit.
-template <> struct Cast_SFINAE<const char*, std::string> : public std::string {};
+// Convert string to character
+template <> char Caster<char, char const*>::cast(char const*);
+template <> char Caster<char, std::string>::cast(std::string);
 
 // Helper func to deduce From type automatically
-template <typename To, typename From> To cast(From x) {
-	return Cast_SFINAE<To, From>{x};
+template <typename To, typename From> To cast(From val) {
+	return Caster<To, From>::cast(val);
 }
 
 }  // namespace internal
 
-template <typename T> void Model::set_param_explicit(const char* name, T value) {
-	return internal::set_scip_param<T>(get_scip_ptr(), name, value);
-}
-
-template <typename T> T Model::get_param_explicit(const char* name) const {
-	return internal::get_scip_param<T>(get_scip_ptr(), name);
-}
-
-template <typename T> void Model::set_param_explicit(std::string const& name, T value) {
-	return set_param_explicit(name.c_str(), value);
-}
-
-template <typename T> void Model::set_param(const char* name, T value) {
-	using namespace internal;
-	switch (get_param_type(name)) {
-	case ParamType::Bool:
-		return set_param_explicit(name, cast<param_t<ParamType::Bool>>(value));
-	case ParamType::Int:
-		return set_param_explicit(name, cast<param_t<ParamType::Int>>(value));
-	case ParamType::LongInt:
-		return set_param_explicit(name, cast<param_t<ParamType::LongInt>>(value));
-	case ParamType::Real:
-		return set_param_explicit(name, cast<param_t<ParamType::Real>>(value));
-	case ParamType::Char:
-		return set_param_explicit(name, cast<param_t<ParamType::Char>>(value));
-	case ParamType::String:
-		return set_param_explicit(name, cast<param_t<ParamType::String>>(value));
-	default:
-		assert(false);  // All enum value should be handled
-		// Non void return for optimized build
-		throw Exception("Could not find type for given parameter");
-	}
-}
-
 template <typename T> void Model::set_param(std::string const& name, T value) {
-	return set_param(name.c_str(), value);
-}
-
-template <typename T> T Model::get_param_explicit(std::string const& name) const {
-	return get_param_explicit<T>(name.c_str());
-}
-
-template <typename T> T Model::get_param(const char* name) const {
-	using namespace internal;
+	using internal::cast;
 	switch (get_param_type(name)) {
 	case ParamType::Bool:
-		return cast<T>(get_param_explicit<param_t<ParamType::Bool>>(name));
+		return set_param_explicit<ParamType::Bool>(name, cast<bool>(value));
 	case ParamType::Int:
-		return cast<T>(get_param_explicit<param_t<ParamType::Int>>(name));
+		return set_param_explicit<ParamType::Int>(name, cast<int>(value));
 	case ParamType::LongInt:
-		return cast<T>(get_param_explicit<param_t<ParamType::LongInt>>(name));
+		return set_param_explicit<ParamType::LongInt>(name, cast<long_int>(value));
 	case ParamType::Real:
-		return cast<T>(get_param_explicit<param_t<ParamType::Real>>(name));
+		return set_param_explicit<ParamType::Real>(name, cast<real>(value));
 	case ParamType::Char:
-		return cast<T>(get_param_explicit<param_t<ParamType::Char>>(name));
+		return set_param_explicit<ParamType::Char>(name, cast<char>(value));
 	case ParamType::String:
-		return cast<T>(get_param_explicit<param_t<ParamType::String>>(name));
+		return set_param_explicit<ParamType::String>(name, cast<std::string>(value));
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build
@@ -238,7 +180,25 @@ template <typename T> T Model::get_param(const char* name) const {
 }
 
 template <typename T> T Model::get_param(std::string const& name) const {
-	return get_param<T>(name.c_str());
+	using namespace internal;
+	switch (get_param_type(name)) {
+	case ParamType::Bool:
+		return cast<T>(get_param_explicit<ParamType::Bool>(name));
+	case ParamType::Int:
+		return cast<T>(get_param_explicit<ParamType::Int>(name));
+	case ParamType::LongInt:
+		return cast<T>(get_param_explicit<ParamType::LongInt>(name));
+	case ParamType::Real:
+		return cast<T>(get_param_explicit<ParamType::Real>(name));
+	case ParamType::Char:
+		return cast<T>(get_param_explicit<ParamType::Char>(name));
+	case ParamType::String:
+		return cast<T>(get_param_explicit<ParamType::String>(name));
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception("Could not find type for given parameter");
+	}
 }
 
 }  // namespace scip

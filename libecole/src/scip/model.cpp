@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <mutex>
 #include <string>
@@ -90,8 +91,8 @@ void Model::read_prob(std::string const& filename) {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
-ParamType Model::get_param_type(const char* name) const {
-	auto* scip_param = SCIPgetParam(get_scip_ptr(), name);
+ParamType Model::get_param_type(std::string const& name) const {
+	auto* scip_param = SCIPgetParam(get_scip_ptr(), name.c_str());
 	if (!scip_param)
 		throw make_exception(SCIP_PARAMETERUNKNOWN);
 	else
@@ -115,8 +116,69 @@ ParamType Model::get_param_type(const char* name) const {
 		}
 }
 
-ParamType Model::get_param_type(std::string const& name) const {
-	return get_param_type(name.c_str());
+template <>
+void Model::set_param_explicit<ParamType::Bool>(std::string const& name, bool value) {
+	scip::call(SCIPsetBoolParam, get_scip_ptr(), name.c_str(), value);
+}
+template <>
+void Model::set_param_explicit<ParamType::Int>(std::string const& name, int value) {
+	scip::call(SCIPsetIntParam, get_scip_ptr(), name.c_str(), value);
+}
+template <>
+void Model::set_param_explicit<ParamType::LongInt>(
+	std::string const& name,
+	long_int value) {
+	scip::call(SCIPsetLongintParam, get_scip_ptr(), name.c_str(), value);
+}
+template <>
+void Model::set_param_explicit<ParamType::Real>(std::string const& name, real value) {
+	scip::call(SCIPsetRealParam, get_scip_ptr(), name.c_str(), value);
+}
+template <>
+void Model::set_param_explicit<ParamType::Char>(std::string const& name, char value) {
+	scip::call(SCIPsetCharParam, get_scip_ptr(), name.c_str(), value);
+}
+template <>
+void Model::set_param_explicit<ParamType::String>(
+	std::string const& name,
+	std::string const& value) {
+	scip::call(SCIPsetStringParam, get_scip_ptr(), name.c_str(), value.c_str());
+}
+
+template <>
+bool Model::get_param_explicit<ParamType::Bool>(std::string const& name) const {
+	SCIP_Bool value{};
+	scip::call(SCIPgetBoolParam, get_scip_ptr(), name.c_str(), &value);
+	return value;
+}
+template <> int Model::get_param_explicit<ParamType::Int>(std::string const& name) const {
+	int value{};
+	scip::call(SCIPgetIntParam, get_scip_ptr(), name.c_str(), &value);
+	return value;
+}
+template <>
+long_int Model::get_param_explicit<ParamType::LongInt>(std::string const& name) const {
+	SCIP_Longint value{};
+	scip::call(SCIPgetLongintParam, get_scip_ptr(), name.c_str(), &value);
+	return value;
+}
+template <>
+real Model::get_param_explicit<ParamType::Real>(std::string const& name) const {
+	SCIP_Real value{};
+	scip::call(SCIPgetRealParam, get_scip_ptr(), name.c_str(), &value);
+	return value;
+}
+template <>
+char Model::get_param_explicit<ParamType::Char>(std::string const& name) const {
+	char value{};
+	scip::call(SCIPgetCharParam, get_scip_ptr(), name.c_str(), &value);
+	return value;
+}
+template <>
+std::string Model::get_param_explicit<ParamType::String>(std::string const& name) const {
+	char* ptr{};
+	scip::call(SCIPgetStringParam, get_scip_ptr(), name.c_str(), &ptr);
+	return ptr;
 }
 
 void Model::solve() {
@@ -177,62 +239,19 @@ RowView Model::lp_rows() const {
 
 namespace internal {
 
-template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Bool value) {
-	scip::call(SCIPsetBoolParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, char value) {
-	scip::call(SCIPsetCharParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, int value) {
-	scip::call(SCIPsetIntParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Longint value) {
-	scip::call(SCIPsetLongintParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, SCIP_Real value) {
-	scip::call(SCIPsetRealParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, const char* value) {
-	scip::call(SCIPsetStringParam, scip, name, value);
-}
-template <> void set_scip_param(SCIP* scip, const char* name, std::string const& value) {
-	return set_scip_param(scip, name, value.c_str());
+template <> std::string Caster<std::string, char>::cast(char val) {
+	return std::string{val};
 }
 
-template <> SCIP_Bool get_scip_param(SCIP* scip, const char* name) {
-	SCIP_Bool value{};
-	scip::call(SCIPgetBoolParam, scip, name, &value);
-	return value;
+template <> char Caster<char, char const*>::cast(char const* val) {
+	if (strlen(val) == 1)
+		return val[0];
+	else
+		throw scip::Exception("Can only convert a string with a single character to a char");
 }
-template <> char get_scip_param(SCIP* scip, const char* name) {
-	char value{};
-	scip::call(SCIPgetCharParam, scip, name, &value);
-	return value;
-}
-template <> int get_scip_param(SCIP* scip, const char* name) {
-	int value{};
-	scip::call(SCIPgetIntParam, scip, name, &value);
-	return value;
-}
-template <> SCIP_Longint get_scip_param(SCIP* scip, const char* name) {
-	SCIP_Longint value{};
-	scip::call(SCIPgetLongintParam, scip, name, &value);
-	return value;
-}
-template <> SCIP_Real get_scip_param(SCIP* scip, const char* name) {
-	SCIP_Real value{};
-	scip::call(SCIPgetRealParam, scip, name, &value);
-	return value;
-}
-template <> const char* get_scip_param(SCIP* scip, const char* name) {
-	char* ptr = nullptr;
-	scip::call(SCIPgetStringParam, scip, name, &ptr);
-	return ptr;
-}
-
-template <> Cast_SFINAE<char, const char*>::operator char() const {
-	if (std::strlen(val) == 1)
-		return *val;
+template <> char Caster<char, std::string>::cast(std::string val) {
+	if (val.length() == 1)
+		return val[0];
 	else
 		throw scip::Exception("Can only convert a string with a single character to a char");
 }
