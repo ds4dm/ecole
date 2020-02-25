@@ -16,6 +16,11 @@ class DefaultState {
 public:
 	scip::Model model;
 
+	DefaultState() = default;
+	DefaultState(DefaultState const&) = default;
+	DefaultState(DefaultState&&) = default;
+	DefaultState& operator=(DefaultState const&) = default;
+	DefaultState& operator=(DefaultState&&) = default;
 	virtual ~DefaultState() = default;
 };
 
