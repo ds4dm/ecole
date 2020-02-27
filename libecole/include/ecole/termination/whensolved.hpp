@@ -8,12 +8,10 @@
 namespace ecole {
 namespace termination {
 
-class WhenSolved : public TerminationFunction<environment::State> {
+class WhenSolved : public TerminationFunction {
 public:
-	using State = environment::State;
-
 	std::unique_ptr<TerminationFunction> clone() const override;
-	bool is_done(State const& state) override;
+	bool is_done(environment::State const& state) override;
 };
 
 }  // namespace termination
