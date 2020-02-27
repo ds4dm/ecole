@@ -39,15 +39,15 @@ struct Py_TermFunctionBase_Trampoline : public TerminationFunction {
 	/**
 	 * Override method to make it overridable from Python.
 	 */
-	void reset(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(void, TerminationFunction, reset, model);
+	void reset(environment::State const& init_state) override {
+		PYBIND11_OVERLOAD(void, TerminationFunction, reset, init_state);
 	}
 
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
-	bool is_done(scip::Model const& model) override {
-		PYBIND11_OVERLOAD_PURE(bool, TerminationFunction, is_done, model);
+	bool is_done(environment::State const& state) override {
+		PYBIND11_OVERLOAD_PURE(bool, TerminationFunction, is_done, state);
 	}
 };
 
@@ -80,8 +80,8 @@ struct Py_TermFunction_Trampoline :
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
-	bool is_done(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(bool, TerminationFunction, is_done, model);
+	bool is_done(environment::State const& state) override {
+		PYBIND11_OVERLOAD(bool, TerminationFunction, is_done, state);
 	}
 };
 

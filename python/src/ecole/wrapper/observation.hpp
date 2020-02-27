@@ -59,7 +59,7 @@ using Py_ObsFunctionBase = observation::ObservationFunction<std::shared_ptr<Py_O
  * @tparam ObsFunction The C++ observation function to warp.
  */
 template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBase {
-	using obs_t = typename Py_ObsFunctionBase::obs_t;
+	using Observation = typename Py_ObsFunctionBase::Observation;
 
 	ObsFunction obs_func;
 
@@ -76,9 +76,9 @@ template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBas
 	/**
 	 * Move the observation from the wrapped @ref obs_func into a @ref std::shared_ptr
 	 */
-	obs_t get(scip::Model const& model) override {
-		using py_obs_t = Py_Obs<typename ObsFunction::obs_t>;
-		return std::make_shared<py_obs_t>(obs_func.get(model));
+	Observation get(environment::State const& state) override {
+		using py_obs_t = Py_Obs<typename ObsFunction::Observation>;
+		return std::make_shared<py_obs_t>(obs_func.get(state));
 	}
 };
 
@@ -94,7 +94,7 @@ template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBas
  */
 template <typename PyObsFunction>
 struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
-	using typename Py_ObsFunctionBase::obs_t;
+	using typename Py_ObsFunctionBase::Observation;
 
 	using PyObsFunction::PyObsFunction;
 
@@ -108,15 +108,15 @@ struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
 	/**
 	 * Override method to make it overridable from Python.
 	 */
-	void reset(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(void, PyObsFunction, reset, model);
+	void reset(environment::State const& init_state) override {
+		PYBIND11_OVERLOAD(void, PyObsFunction, reset, init_state);
 	}
 
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
-	obs_t get(scip::Model const& model) override {
-		PYBIND11_OVERLOAD_PURE(obs_t, PyObsFunction, get, model);
+	Observation get(environment::State const& state) override {
+		PYBIND11_OVERLOAD_PURE(Observation, PyObsFunction, get, state);
 	}
 };
 
@@ -133,7 +133,7 @@ struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
  */
 template <typename PyObsFunction>
 struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFunction> {
-	using typename Py_ObsFunctionBase::obs_t;
+	using typename Py_ObsFunctionBase::Observation;
 
 	using Py_ObsFunctionBase_Trampoline<PyObsFunction>::Py_ObsFunctionBase_Trampoline;
 
@@ -147,8 +147,8 @@ struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFun
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
-	obs_t get(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(obs_t, PyObsFunction, get, model);
+	Observation get(environment::State const& state) override {
+		PYBIND11_OVERLOAD(Observation, PyObsFunction, get, state);
 	}
 };
 

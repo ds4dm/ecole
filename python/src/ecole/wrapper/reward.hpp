@@ -42,15 +42,15 @@ struct Py_RewardFunctionBase_Trampoline : public RewardFunction {
 	/**
 	 * Override method to make it overridable from Python.
 	 */
-	void reset(scip::Model const& model) override {
-		PYBIND11_OVERLOAD(void, RewardFunction, reset, model);
+	void reset(environment::State const& init_state) override {
+		PYBIND11_OVERLOAD(void, RewardFunction, reset, init_state);
 	}
 
 	/**
 	 * Override pure method to make it overridable from Python.
 	 */
-	Reward get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD_PURE(Reward, RewardFunction, get, model, done);
+	Reward get(environment::State const& state, bool done = false) override {
+		PYBIND11_OVERLOAD_PURE(Reward, RewardFunction, get, state, done);
 	}
 };
 
@@ -83,8 +83,8 @@ struct Py_RewardFunction_Trampoline :
 	/**
 	 * Override no longer pure method to make default implemntation visible.
 	 */
-	Reward get(scip::Model const& model, bool done = false) override {
-		PYBIND11_OVERLOAD(Reward, RewardFunction, get, model, done);
+	Reward get(environment::State const& state, bool done = false) override {
+		PYBIND11_OVERLOAD(Reward, RewardFunction, get, state, done);
 	}
 };
 
