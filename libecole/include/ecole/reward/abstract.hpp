@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "ecole/environment/state.hpp"
+
 namespace ecole {
 namespace reward {
 
@@ -12,10 +14,8 @@ using Reward = double;
  *
  * Reward functions can be given to environments to parametrize what rewards are returned
  * at every transition.
- *
- * @tparam State The internal state used by the environment.
  */
-template <typename State> class RewardFunction {
+class RewardFunction {
 public:
 	virtual ~RewardFunction() = default;
 	virtual std::unique_ptr<RewardFunction> clone() const = 0;
@@ -25,12 +25,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(State const& initial_state) { (void)initial_state; }
+	virtual void reset(environment::State const& initial_state) { (void)initial_state; }
 
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual Reward get(State const& state, bool done = false) = 0;
+	virtual Reward get(environment::State const& state, bool done = false) = 0;
 };
 
 }  // namespace reward

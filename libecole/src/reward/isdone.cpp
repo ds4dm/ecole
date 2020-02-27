@@ -3,11 +3,11 @@
 namespace ecole {
 namespace reward {
 
-auto IsDone::clone() const -> std::unique_ptr<RewardFunction<State>> {
+auto IsDone::clone() const -> std::unique_ptr<RewardFunction> {
 	return std::make_unique<IsDone>(*this);
 }
 
-Reward IsDone::get(State const& state, bool done) {
+Reward IsDone::get(environment::State const& state, bool done) {
 	(void)state;
 	return done ? 1 : 0;
 }
