@@ -12,16 +12,16 @@ namespace environment {
  * observations, rewards, etc.
  * Can safely be inherited from to defined mode specialized states.
  */
-class DefaultState {
+class State {
 public:
 	scip::Model model;
 
-	DefaultState() = default;
-	DefaultState(DefaultState const&) = default;
-	DefaultState(DefaultState&&) = default;
-	DefaultState& operator=(DefaultState const&) = default;
-	DefaultState& operator=(DefaultState&&) = default;
-	virtual ~DefaultState() = default;
+	State() = default;
+	State(State const&) = default;
+	State(State&&) = default;
+	State& operator=(State const&) = default;
+	State& operator=(State&&) = default;
+	virtual ~State() = default;
 };
 
 }  // namespace environment

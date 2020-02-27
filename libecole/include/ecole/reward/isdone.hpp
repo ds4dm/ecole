@@ -8,9 +8,9 @@
 namespace ecole {
 namespace reward {
 
-class IsDone : public RewardFunction<environment::DefaultState> {
+class IsDone : public RewardFunction<environment::State> {
 public:
-	using State = environment::DefaultState;
+	using State = environment::State;
 
 	std::unique_ptr<RewardFunction> clone() const override;
 	Reward get(State const& state, bool done = false) override;

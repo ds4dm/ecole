@@ -63,9 +63,7 @@ auto ReverseBranchrule::scip_execlp(
 
 namespace internal {
 
-bool reset_state(
-	std::shared_ptr<utility::Controller>& controller,
-	DefaultState& init_state) {
+bool reset_state(std::shared_ptr<utility::Controller>& controller, State& init_state) {
 	auto& model = init_state.model;
 	controller = utility::Controller::make_shared(
 		[&model](std::weak_ptr<utility::Controller> weak_controller) {
@@ -99,7 +97,7 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 
 bool step_state(
 	std::shared_ptr<utility::Controller>& controller,
-	DefaultState&,
+	State&,
 	std::size_t const& action) {
 	controller->environment_interface().resume_thread(
 		[action](SCIP* scip, SCIP_RESULT* result) {

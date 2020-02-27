@@ -16,30 +16,29 @@ namespace environment {
 using ParamDict = std::map<std::string, scip::Param>;
 
 template <typename... EnvTypes>
-class Configuring : public DefaultEnvironment<ParamDict, DefaultState, EnvTypes...> {
+class Configuring : public DefaultEnvironment<ParamDict, State, EnvTypes...> {
 public:
-	using Base = DefaultEnvironment<ParamDict, DefaultState, EnvTypes...>;
+	using Base = DefaultEnvironment<ParamDict, State, EnvTypes...>;
 	using typename Base::Action;
 	using typename Base::Observation;
 
 	using Base::Base;
 
-	bool reset_state(DefaultState& initial_state) override;
-	bool step_state(DefaultState& state, ParamDict const& action) override;
+	bool reset_state(State& initial_state) override;
+	bool step_state(State& state, ParamDict const& action) override;
 };
 
 /***********************************
  *  Implementation of Configuring  *
  ***********************************/
 
-template <typename... EnvTypes>
-bool Configuring<EnvTypes...>::reset_state(DefaultState&) {
+template <typename... EnvTypes> bool Configuring<EnvTypes...>::reset_state(State&) {
 	return false;
 }
 
 template <typename... EnvTypes>
 bool Configuring<EnvTypes...>::step_state(
-	DefaultState& state,
+	State& state,
 	ParamDict const& param_dict  //
 ) {
 	for (auto const& name_value : param_dict)

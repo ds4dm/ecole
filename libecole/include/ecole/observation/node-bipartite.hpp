@@ -24,12 +24,10 @@ public:
 
 template <typename ContainerSelector = container::xtensor>
 class NodeBipartite :
-	public ObservationFunction<
-		NodeBipartiteObs<ContainerSelector>,
-		environment::DefaultState> {
+	public ObservationFunction<NodeBipartiteObs<ContainerSelector>, environment::State> {
 public:
 	using Observation = NodeBipartiteObs<ContainerSelector>;
-	using State = environment::DefaultState;
+	using State = environment::State;
 	using Base = ObservationFunction<Observation, State>;
 
 	std::unique_ptr<Base> clone() const override;
