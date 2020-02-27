@@ -23,16 +23,14 @@ public:
 };
 
 template <typename ContainerSelector = container::xtensor>
-class NodeBipartite :
-	public ObservationFunction<NodeBipartiteObs<ContainerSelector>, environment::State> {
+class NodeBipartite : public ObservationFunction<NodeBipartiteObs<ContainerSelector>> {
 public:
 	using Observation = NodeBipartiteObs<ContainerSelector>;
-	using State = environment::State;
-	using Base = ObservationFunction<Observation, State>;
+	using Base = ObservationFunction<Observation>;
 
 	std::unique_ptr<Base> clone() const override;
 
-	Observation get(State const& state) override;
+	Observation get(environment::State const& state) override;
 };
 
 /****************************************
@@ -47,7 +45,8 @@ template <typename CS> auto NodeBipartite<CS>::clone() const -> std::unique_ptr<
 	return std::make_unique<NodeBipartite>(*this);
 }
 
-template <typename CS> auto NodeBipartite<CS>::get(State const& state) -> Observation {
+template <typename CS>
+auto NodeBipartite<CS>::get(environment::State const& state) -> Observation {
 	auto const extract_feat = [](auto const var, auto out_iter) {
 		*out_iter = var.ub_local().value_or(nan<double>());
 	};

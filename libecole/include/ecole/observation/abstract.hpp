@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "ecole/environment/state.hpp"
+
 namespace ecole {
 namespace observation {
 
@@ -16,9 +18,8 @@ namespace observation {
  * function.
  *
  * @tparam Observation the type of the observation extracted by this class.
- * @tparam State The internal state used by the environment.
  */
-template <typename Observation, typename State> class ObservationFunction {
+template <typename Observation> class ObservationFunction {
 public:
 	virtual ~ObservationFunction() = default;
 	virtual std::unique_ptr<ObservationFunction> clone() const = 0;
@@ -28,12 +29,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(State const& initial_state) { (void)initial_state; }
+	virtual void reset(environment::State const& initial_state) { (void)initial_state; }
 
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual Observation get(State const& state) = 0;
+	virtual Observation get(environment::State const& state) = 0;
 };
 
 }  // namespace observation
