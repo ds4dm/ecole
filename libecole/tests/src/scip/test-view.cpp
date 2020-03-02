@@ -5,7 +5,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/exception.hpp"
+#include "ecole/scip/exception.hpp"
 #include "ecole/scip/view.hpp"
 
 using namespace ecole;

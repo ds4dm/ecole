@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "ecole/abstract.hpp"
-#include "ecole/exception.hpp"
+#include "ecole/environment/exception.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/type_traits.hpp"
 

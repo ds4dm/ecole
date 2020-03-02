@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <scip/scip.h>
 
-#include "ecole/exception.hpp"
+#include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "conftest.hpp"

@@ -7,11 +7,12 @@ add_library(
 	src/scip/variable.cpp
 	src/scip/column.cpp
 	src/scip/row.cpp
+	src/scip/exception.cpp
 	src/utility/reverse-control.cpp
-	src/exception.cpp
 	src/reward/isdone.cpp
 	src/termination/whensolved.cpp
 	src/environment/branching.cpp
+	src/environment/exception.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 

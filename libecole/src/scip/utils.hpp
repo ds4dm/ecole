@@ -2,7 +2,7 @@
 
 #include <scip/scip.h>
 
-#include "ecole/exception.hpp"
+#include "ecole/scip/exception.hpp"
 
 namespace ecole {
 namespace scip {

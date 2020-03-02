@@ -4,7 +4,7 @@
 #include <iterator>
 #include <string>
 
-#include <ecole/exception.hpp>
+#include "ecole/scip/exception.hpp"
 
 // Avoid including SCIP header
 typedef struct Scip Scip;
