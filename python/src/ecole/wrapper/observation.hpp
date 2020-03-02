@@ -20,47 +20,25 @@ namespace pyobservation {
 namespace internal {
 
 /**
- * Base class for all observation.
- *
- * All observation must inherit from this class before being bound to Python in order to
- * be properly returned from environments.
- */
-struct Py_ObsBase {
-	virtual ~Py_ObsBase() = default;
-};
-
-/**
- * Wrapper to make C++ observation inherit form the abstract observation @ref Py_ObsBase.
- *
- * @tparam Obs The C++ observation to wrap.
- */
-template <typename Obs> struct Py_Obs : public Py_ObsBase {
-	Obs obs;
-	Py_Obs(Obs&& obs) : obs(std::move(obs)) {}
-};
-
-/**
  * Base class for all observation functions.
  *
  * All observation functions must inherit from this class before being bound to Python in
  * order to be properly passed to environments.
- * Observations need to be returned as pointers for dynamic polymorphism.
- * These pointers need to be @ref std::shared_ptr and not @ref std::unique_ptr because
- * they can be created from Python when creating an observation function.
  */
-using Py_ObsFunctionBase = observation::ObservationFunction<std::shared_ptr<Py_ObsBase>>;
+using Py_ObsFunctionBase = observation::ObservationFunction<py11::object>;
 
 /**
- * Wrapper to make C++ observation functions.
+ * Adaptor to make C++ observation functions.
  *
- * Make the wrapped class properly inherit @ref Py_ObsFunctionBase and returned
- * observation in the proper way (using @ref std::shared_ptr).
+ * Make the adapted class properly inherit @ref Py_ObsFunctionBase and return
+ * observation in the proper way (using @refpy11::object)).
  *
- * @tparam ObsFunction The C++ observation function to warp.
+ * @tparam ObsFunction The C++ observation function to adapt.
  */
 template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBase {
-	using Observation = typename Py_ObsFunctionBase::Observation;
+	using typename Py_ObsFunctionBase::Observation;
 
+	// TODO make a alias of State to be able to combine by inheritance (no return conflict).
 	ObsFunction obs_func;
 
 	template <typename... Args>
@@ -74,11 +52,10 @@ template <typename ObsFunction> struct Py_ObsFunction : public Py_ObsFunctionBas
 	}
 
 	/**
-	 * Move the observation from the wrapped @ref obs_func into a @ref std::shared_ptr
+	 * Cast the observation from the adapted @ref obs_func into a @ref py11::object.
 	 */
 	Observation get(environment::State const& state) override {
-		using py_obs_t = Py_Obs<typename ObsFunction::Observation>;
-		return std::make_shared<py_obs_t>(obs_func.get(state));
+		return py11::cast(obs_func.get(state));
 	}
 };
 
@@ -121,7 +98,7 @@ struct Py_ObsFunctionBase_Trampoline : public PyObsFunction {
 };
 
 /**
- * PyBind trampoline class for Python inheritance of vanilla @ ref Py_ObsFunction classes.
+ * PyBind trampoline class for Python inheritance of vanilla @ref Py_ObsFunction classes.
  *
  * Inherit override from @ref Py_ObsFunctionBase_Trampoline and override
  * @ref Py_ObsFunctionBase_Trampoline::get to non pure overload.
@@ -159,21 +136,6 @@ struct Py_ObsFunction_Trampoline : public Py_ObsFunctionBase_Trampoline<PyObsFun
  *************************/
 
 /**
- * Alias for Python observation abstract class.
- */
-using ObsBase = internal::Py_ObsBase;
-
-/**
- * Alias for Python observation class.
- *
- * Set the container type to @ref container::pytensor.
- *
- * @tparam An observation template class
- */
-template <template <typename> class Observation>
-using Obs = internal::Py_Obs<Observation<container::pytensor>>;
-
-/**
  * Alias for Python observation function abstract class.
  */
 using ObsFunctionBase = internal::Py_ObsFunctionBase;
@@ -183,21 +145,10 @@ using ObsFunctionBase = internal::Py_ObsFunctionBase;
  *
  * Set the container type to @ref container::pytensor.
  *
- * @tparam An observation function template class
+ * @tparam ObservationFunction An observation function template class
  */
 template <template <typename> class ObservationFunction>
 using ObsFunction = internal::Py_ObsFunction<ObservationFunction<container::pytensor>>;
-
-/**
- * The @ref pybind11::class_ type for @ref ObsBase
- *
- * Set the holder type to @ref std::shared_ptr inheriting observation functions prevent
- * from having it as a @ref std::unique_ptr.
- */
-using abstract_obs_class_ = py11::class_<
-	ObsBase,                  // Class
-	std::shared_ptr<ObsBase>  // Holder
-	>;
 
 /**
  * The @ref pybind11::class_ type for all observation.
@@ -209,11 +160,7 @@ using abstract_obs_class_ = py11::class_<
  * @tparam Observation The C++ observation to bind to Python
  */
 template <template <typename> class Observation>
-using obs_class_ = py11::class_<
-	Obs<Observation>,                  // Class
-	ObsBase,                           // Base
-	std::shared_ptr<Obs<Observation>>  // Holder
-	>;
+using obs_class_ = py11::class_<Observation<container::pytensor>>;
 
 /**
  * The @ref pybind11::class_ type for @ref observation::ObservationFunction.
