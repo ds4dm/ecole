@@ -2,7 +2,7 @@
 
 #include "ecole/reward/isdone.hpp"
 
-#include "wrapper/reward.hpp"
+#include "reward/adaptor.hpp"
 
 namespace py11 = pybind11;
 

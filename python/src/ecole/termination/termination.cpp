@@ -2,7 +2,7 @@
 
 #include "ecole/termination/whensolved.hpp"
 
-#include "wrapper/termination.hpp"
+#include "termination/adaptor.hpp"
 
 namespace py11 = pybind11;
 

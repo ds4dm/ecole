@@ -6,10 +6,10 @@
 #include "ecole/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
-#include "wrapper/environment.hpp"
-#include "wrapper/observation.hpp"
-#include "wrapper/reward.hpp"
-#include "wrapper/termination.hpp"
+#include "environment/adaptor.hpp"
+#include "observation/adaptor.hpp"
+#include "reward/adaptor.hpp"
+#include "termination/adaptor.hpp"
 
 namespace py = pybind11;
 using namespace ecole;

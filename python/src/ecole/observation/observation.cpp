@@ -5,7 +5,7 @@
 
 #include "ecole/observation/node-bipartite.hpp"
 
-#include "wrapper/observation.hpp"
+#include "observation/adaptor.hpp"
 
 namespace py11 = pybind11;
 

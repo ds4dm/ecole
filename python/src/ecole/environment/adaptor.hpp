@@ -8,7 +8,7 @@
 #include "ecole/reward/abstract.hpp"
 #include "ecole/termination/abstract.hpp"
 
-#include "wrapper/observation.hpp"
+#include "observation/adaptor.hpp"
 
 namespace py11 = pybind11;
 

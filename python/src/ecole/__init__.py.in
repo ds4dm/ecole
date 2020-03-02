@@ -21,10 +21,8 @@ def __get_module(name: str):
 
 scip = __get_module("scip")
 abstract = __get_module("abstract")
+environment = __get_module("environment")
 observation = __get_module("observation")
-abstract = __get_module("abstract")
-branching = __get_module("branching")
-configuring = __get_module("configuring")
 reward = __get_module("reward")
 termination = __get_module("termination")
 
