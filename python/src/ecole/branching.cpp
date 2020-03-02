@@ -1,14 +1,11 @@
 #include <memory>
+#include <string>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/abstract.hpp"
-#include "ecole/branching.hpp"
-#include "ecole/observation/node-bipartite.hpp"
-#include "ecole/reward/isdone.hpp"
-#include "ecole/termination/whensolved.hpp"
+#include "ecole/environment/branching.hpp"
 
 #include "wrapper/environment.hpp"
 
@@ -18,38 +15,13 @@ using namespace ecole;
 
 PYBIND11_MODULE(branching, m) {
 	m.doc() = "Learning to branch task.";
+
 	// Import of abstract required for resolving inheritance to abstract base types
-	py11::module abstract_mod = py11::module::import("ecole.abstract");
+	py11::module const abstract_mod = py11::module::import("ecole.abstract");
 
-	using ActionFunction = pyenvironment::ActionFunctionBase<branching::ActionFunction>;
-	using Fractional =
-		pyenvironment::ActionFunction<branching::Fractional, branching::ActionFunction>;
-	using Env = pyenvironment::Env<branching::Environment>;
-
-	py11::class_<ActionFunction, std::shared_ptr<ActionFunction>>(m, "ActionFunction");
-	py11::class_<Fractional, ActionFunction, std::shared_ptr<Fractional>>(
-		m, "Fractional")  //
-		.def(py11::init<>());
-
-	py11::class_<Env, pyenvironment::EnvBase>(m, "Environment")  //
-		.def_static(
-			"make_dummy",
-			[] {
-				return std::make_unique<Env>(
-					std::make_unique<Fractional>(),
-					std::make_unique<pyobservation::ObsFunction<observation::NodeBipartite>>(),
-					std::make_unique<reward::IsDone>(),
-					std::make_unique<termination::WhenSolved>());
-			})
+	pyenvironment::env_class_<environment::Branching>(m, "Configuring")  //
 		.def(py11::init<
-				 Env::ptr<ActionFunction> const&,
-				 Env::ptr<pyobservation::ObsFunctionBase> const&,
-				 Env::ptr<reward::RewardFunction> const&,
-				 Env::ptr<termination::TerminationFunction> const&>())  //
-		.def(
-			"step",
-			[](pyenvironment::EnvBase& env, branching::Fractional::action_t const& action) {
-				return env.step(pyenvironment::Action<std::size_t>(action));
-			});
-	;
+				 std::shared_ptr<pyobservation::ObsFunctionBase>,
+				 std::shared_ptr<reward::RewardFunction>,
+				 std::shared_ptr<termination::TerminationFunction>>());
 }

@@ -2,113 +2,113 @@
 
 #include <memory>
 
+#include <pybind11/pybind11.h>
+
 #include "ecole/environment/abstract.hpp"
+#include "ecole/reward/abstract.hpp"
+#include "ecole/termination/abstract.hpp"
 
 #include "wrapper/observation.hpp"
+
+namespace py11 = pybind11;
 
 namespace ecole {
 namespace pyenvironment {
 
+using environment::Info;
+using environment::Reward;
+using environment::Seed;
+
+/*********************************
+ *  Base and trampoline classes  *
+ *********************************/
+
 namespace internal {
 
-struct Py_ActionBase {
-	virtual ~Py_ActionBase() = default;
-};
+/**
+ * Base class for all environments.
+ *
+ * All environments inherit from this class before being bound to Python in order to
+ * properly recieve actions.
+ */
+using Py_EnvBase = environment::Environment<py11::object, py11::object>;
 
-template <typename Action> struct Py_Action : public Py_ActionBase {
-	// Using const ref because object is owned by python
-	Action const& action;
-	operator Action() const { return action; }
-	Py_Action(Action const& action) : action(std::move(action)) {}
-};
+/**
+ * Adaptor to make C++ environments.
+ *
+ * Inherits from the environment class and the @ref Py_EnvBase to combine methods in a way
+ * that properly expose Python objects.
+ *
+ * @tparam Env The C++ Environment to adapt.
+ */
+template <typename Env> struct Py_Env : Py_EnvBase, Env {
+	using Action = Py_EnvBase::Action;
+	using Observation = Py_EnvBase::Observation;
 
-// Action function do not have a single abstract base, but one per environment
-template <template <typename Action> class ActionFunctionBase>
-using Py_ActionFunctionBase = ActionFunctionBase<Py_ActionBase const&>;
+	using Env::Env;
 
-template <typename ActionFunction, template <typename Action> class ActionFunctionBase>
-struct Py_ActionFunction : public Py_ActionFunctionBase<ActionFunctionBase> {
-	using py_action_t = Py_Action<typename ActionFunction::action_t>;
-	using action_t = typename Py_ActionFunctionBase<ActionFunctionBase>::action_t;
+	/**
+	 * @copydoc Py_EnvBase::seed
+	 */
+	void seed(Seed seed) override { return Env::seed(seed); }
+	Seed seed() const noexcept override { return Env::seed(); }
 
-	ActionFunction action_func;
-	Py_ActionFunction(ActionFunction const& action_func) : action_func(action_func) {}
-	Py_ActionFunction(ActionFunction&& action_func) : action_func(std::move(action_func)) {}
-	template <typename... Args>
-	Py_ActionFunction(Args... args) : action_func(std::forward<Args>(args)...) {}
-};
-
-template <typename AF, template <typename> class AFB, typename = void>
-struct Py_ActionFunction_SFINAE;
-
-template <typename> struct has { using type = void; };
-template <typename T> using has_t = typename has<T>::type;
-
-template <typename AF, template <typename> class AFB>
-struct Py_ActionFunction_SFINAE<AF, AFB, has_t<decltype(&AF::set)>> :
-	public Py_ActionFunction<AF, AFB> {
-	using typename Py_ActionFunction<AF, AFB>::py_action_t;
-	using typename Py_ActionFunction<AF, AFB>::action_t;
-
-	using Py_ActionFunction<AF, AFB>::Py_ActionFunction;  // Inherit constructors
-
-	// Core method to override
-	void set(scip::Model& model, action_t const& action) override {
-		this->action_func.set(model, dynamic_cast<py_action_t const&>(action));
+	/**
+	 * @copydoc Py_EnvBase::reset
+	 */
+	std::tuple<Observation, bool> reset(std::string const& filename) override {
+		return Env::reset(filename);
 	}
 
-	// Clone could not go in a parent class because they are pure abstract
-	std::unique_ptr<Py_ActionFunctionBase<AFB>> clone() const override {
-		using this_t = typename std::remove_const_t<std::remove_pointer_t<decltype(this)>>;
-		return std::make_unique<this_t>(this->action_func);
+	/**
+	 * Cast the action from the @ref py11::object into the adapted @ref Env.
+	 */
+	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
+		return Env::step(py11::cast<typename Env::Action>(action));
 	}
 };
-
-// Specialization for get type of ActionFunction
-template <typename AF, template <typename> class AFB>
-struct Py_ActionFunction_SFINAE<AF, AFB, has_t<decltype(&AF::get)>> :
-	public Py_ActionFunction<AF, AFB> {
-	using typename Py_ActionFunction<AF, AFB>::py_action_t;
-	using typename Py_ActionFunction<AF, AFB>::action_t;
-
-	using Py_ActionFunction<AF, AFB>::Py_ActionFunction;  // Inherit constructors
-
-	// Core method to override
-	auto get(scip::Model& model, action_t const& action) -> decltype(
-		this->action_func.get(model, std::declval<typename AF::action_t>())) override {
-		return this->action_func.get(model, dynamic_cast<py_action_t const&>(action));
-	}
-
-	// Clone could not go in a parent class because they are pure abstract
-	std::unique_ptr<Py_ActionFunctionBase<AFB>> clone() const override {
-		using this_t = typename std::remove_const_t<std::remove_pointer_t<decltype(this)>>;
-		return std::make_unique<this_t>(this->action_func);
-	}
-};
-
-using Py_EnvBase = environment::Environment<
-	Py_ActionBase const&,
-	pyobservation::ObsFunctionBase::obs_t,
-	std::shared_ptr>;
-
-template <  //
-	template <typename, typename, template <typename...> class>
-	class Env>
-using Py_Env =
-	Env<Py_ActionBase const&, pyobservation::ObsFunctionBase::obs_t, std::shared_ptr>;
 
 }  // namespace internal
 
-using ActionBase = internal::Py_ActionBase;
-template <typename A> using Action = internal::Py_Action<A>;
-template <template <typename> class AFB>
-using ActionFunctionBase = internal::Py_ActionFunctionBase<AFB>;
-template <typename AF, template <typename> class AFB>
-using ActionFunction = internal::Py_ActionFunction_SFINAE<AF, AFB>;
+/*************************
+ *  User facing aliases  *
+ *************************/
 
+/**
+ * Alias for Python environment abstract class.
+ */
 using EnvBase = internal::Py_EnvBase;
-template <template <typename, typename, template <typename...> class> class E>
-using Env = internal::Py_Env<E>;
+
+/**
+ * Alias for Python environment class.
+ *
+ * Set the state functions to a @ref std::shared_ptr of their binded type.
+ *
+ * @tparam Environment An environment template class
+ */
+template <template <typename...> class Environment>
+using Env = internal::Py_Env<Environment<
+	std::shared_ptr<pyobservation::ObsFunctionBase>,
+	std::shared_ptr<reward::RewardFunction>,
+	std::shared_ptr<termination::TerminationFunction>>>;
+
+/**
+ * The @ref pybind11::class_ type for @ref environment::Environment.
+ */
+using abstract_env_class_ = py11::class_<EnvBase>;
+
+/**
+ * The @ref pybind11::class_ type for all environment functions.
+ *
+ * Set the parent abstract class.
+ *
+ * @tparam Environment The C++ environment to bind to Python
+ */
+template <template <typename...> class Environment>
+using env_class_ = py11::class_<  //
+	Env<Environment>,               // Class
+	EnvBase                         // Base
+	>;
 
 }  // namespace pyenvironment
 }  // namespace ecole

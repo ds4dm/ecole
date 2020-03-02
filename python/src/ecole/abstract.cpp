@@ -37,28 +37,14 @@ PYBIND11_MODULE(abstract, m) {
 		.def("reset", &termination::TerminationFunction::reset, py::arg("model"))
 		.def("is_done", &termination::TerminationFunction::is_done, py::arg("model"));
 
-	py::class_<pyenvironment::EnvBase>(m, "Env")  //
+	pyenvironment::abstract_env_class_(m, "Environment")  //
 		.def("seed", py::overload_cast<>(&pyenvironment::EnvBase::seed, py::const_))
 		.def(
 			"seed",
-			py::overload_cast<pyenvironment::EnvBase::seed_t>(&pyenvironment::EnvBase::seed),
+			py::overload_cast<environment::Seed>(&pyenvironment::EnvBase::seed),
 			py::arg("value"))
 
-		.def(
-			"reset",
-			[](pyenvironment::EnvBase& env, pyenvironment::EnvBase::ptr<scip::Model> model) {
-				return env.reset(std::move(model));
-			},
-			py::arg("model"))
-		.def(
-			"reset",
-			py::overload_cast<std::string const&>(&pyenvironment::EnvBase::reset),
-			py::arg("filename"))
+		.def("reset", &pyenvironment::EnvBase::reset, py::arg("filename"))
 
-		.def(
-			"step",
-			[](pyenvironment::EnvBase& env, py::object action) {
-				return env.step(pyenvironment::Action<py::object>(action));
-			},
-			py::arg("action"));
+		.def("step", &pyenvironment::EnvBase::step, py::arg("action"));
 }
