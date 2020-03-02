@@ -17,10 +17,12 @@ namespace observation {
  * An observation on the contrary hand is a purely self contained data class with no
  * function.
  *
- * @tparam Observation the type of the observation extracted by this class.
+ * @tparam Observation_ the type of the observation extracted by this class.
  */
-template <typename Observation> class ObservationFunction {
+template <typename Observation_> class ObservationFunction {
 public:
+	using Observation = Observation_;
+
 	virtual ~ObservationFunction() = default;
 	virtual std::unique_ptr<ObservationFunction> clone() const = 0;
 
