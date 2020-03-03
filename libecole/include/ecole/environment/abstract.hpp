@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "ecole/reward/abstract.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {
@@ -54,11 +55,15 @@ public:
 	/**
 	 * Reset the environment to the initial state on the given problem instance.
 	 *
+	 * Takes as input a filename or loaded model.
+	 *
 	 * @return An observation of the new state.
 	 * @return A boolean flag indicating whether the state is terminal.
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
+	virtual std::tuple<Observation, bool> reset(scip::Model&& model) = 0;
+	virtual std::tuple<Observation, bool> reset(scip::Model const& model) = 0;
 	virtual std::tuple<Observation, bool> reset(std::string const& filename) = 0;
 
 	/**

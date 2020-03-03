@@ -1,4 +1,4 @@
-#include <memory>
+#include <string>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -41,7 +41,14 @@ PYBIND11_MODULE(abstract, m) {
 			py::overload_cast<environment::Seed>(&pyenvironment::EnvBase::seed),
 			py::arg("value"))
 
-		.def("reset", &pyenvironment::EnvBase::reset, py::arg("filename"))
+		.def(
+			"reset",
+			py::overload_cast<std::string const&>(&pyenvironment::EnvBase::reset),
+			py::arg("filename"))
+		.def(
+			"reset",
+			py::overload_cast<scip::Model const&>(&pyenvironment::EnvBase::reset),
+			py::arg("filename"))
 
 		.def("step", &pyenvironment::EnvBase::step, py::arg("action"));
 }

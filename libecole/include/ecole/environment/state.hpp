@@ -17,8 +17,8 @@ public:
 	scip::Model model;
 
 	State() = default;
-	State(scip::Model&& model) : model(std::move(model)){};
-	State(scip::Model const& model) : model(model){};
+	explicit State(scip::Model&& model) : model(std::move(model)){};
+	explicit State(scip::Model const& model) : model(model){};
 	State(State const&) = default;
 	State(State&&) = default;
 	State& operator=(State const&) = default;

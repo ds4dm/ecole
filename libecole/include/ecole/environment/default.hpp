@@ -148,13 +148,12 @@ public:
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(std::string const& filename) override {
+	std::tuple<Observation, bool> reset(scip::Model&& model) override {
 		can_transition = true;
 		try {
 			// Create clean new state
-			state() = State{};
+			state() = State{std::move(model)};
 			seed_state(state(), seed_distrib(random_engine));
-			state().model.read_prob(filename);
 
 			// Bring state to initial state and reset state functions
 			auto const env_done = reset_state(state());
@@ -167,6 +166,20 @@ public:
 			can_transition = false;
 			throw;
 		}
+	}
+
+	/**
+	 * @copydoc Environment::reset
+	 */
+	std::tuple<Observation, bool> reset(std::string const& filename) override {
+		return reset(scip::Model::from_file(filename));
+	}
+
+	/**
+	 * @copydoc Environment::reset
+	 */
+	std::tuple<Observation, bool> reset(scip::Model const& model) override {
+		return reset(scip::Model{model});
 	}
 
 	/**

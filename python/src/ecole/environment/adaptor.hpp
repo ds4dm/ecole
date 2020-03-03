@@ -6,6 +6,7 @@
 
 #include "ecole/environment/abstract.hpp"
 #include "ecole/reward/abstract.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/termination/abstract.hpp"
 
 #include "observation/adaptor.hpp"
@@ -56,6 +57,12 @@ template <typename Env> struct Py_Env : Py_EnvBase, Env {
 	/**
 	 * @copydoc Py_EnvBase::reset
 	 */
+	std::tuple<Observation, bool> reset(scip::Model&& model) override {
+		return Env::reset(std::move(model));
+	}
+	std::tuple<Observation, bool> reset(scip::Model const& model) override {
+		return Env::reset(model);
+	}
 	std::tuple<Observation, bool> reset(std::string const& filename) override {
 		return Env::reset(filename);
 	}
