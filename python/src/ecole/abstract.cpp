@@ -19,6 +19,10 @@ PYBIND11_MODULE(abstract, m) {
 
 	auto const scip_module = py::module::import("ecole.scip");
 
+	pyenvironment::base_state_class_(m, "State")  //
+		.def(py::init<scip::Model const&>())
+		.def_readwrite("model", &environment::State::model);
+
 	pyobservation::abstract_func_class_(m, "ObservationFunction")
 		.def(py::init<>())
 		.def("reset", &pyobservation::ObsFunctionBase::reset, py::arg("model"))

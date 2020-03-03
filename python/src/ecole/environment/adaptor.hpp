@@ -5,6 +5,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/environment/abstract.hpp"
+#include "ecole/environment/state.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/termination/abstract.hpp"
@@ -80,6 +81,14 @@ template <typename Env> struct Py_Env : Py_EnvBase, Env {
 /*************************
  *  User facing aliases  *
  *************************/
+
+/**
+ * Alias for the State class.
+ */
+using base_state_class_ = py11::class_<
+	environment::State,                  // Class
+	std::shared_ptr<environment::State>  // Holder
+	>;
 
 /**
  * Alias for Python environment abstract class.
