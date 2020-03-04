@@ -49,6 +49,8 @@ template <typename Env> struct Py_Env : Py_EnvBase, Env {
 
 	using Env::Env;
 
+	using Env::state;
+
 	/**
 	 * @copydoc Py_EnvBase::seed
 	 */
