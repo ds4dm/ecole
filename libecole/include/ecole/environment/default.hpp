@@ -248,6 +248,14 @@ protected:
 	 */
 	virtual bool step_state(State& state, Action const& action) = 0;
 
+	/**
+	 * Getter methods to access attributes regardless of whether they are in a container.
+	 */
+	auto& state() { return internal::dereference(m_state); }
+	auto& obs_func() { return internal::dereference(m_obs_func); }
+	auto& reward_func() { return internal::dereference(m_reward_func); }
+	auto& term_func() { return internal::dereference(m_term_func); }
+
 private:
 	internal::remove_cvref_t<StateHolder> m_state;
 	internal::remove_cvref_t<ObservationFunction> m_obs_func;
@@ -256,14 +264,6 @@ private:
 	internal::RandomEngine random_engine;
 	std::uniform_int_distribution<Seed> seed_distrib;
 	bool can_transition = false;
-
-	/**
-	 * Getter methods to access attributes regardless of whether they are in a container.
-	 */
-	auto& state() { return internal::dereference(m_state); }
-	auto& obs_func() { return internal::dereference(m_obs_func); }
-	auto& reward_func() { return internal::dereference(m_reward_func); }
-	auto& term_func() { return internal::dereference(m_term_func); }
 };
 
 }  // namespace environment
