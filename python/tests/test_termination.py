@@ -3,14 +3,14 @@ import pytest
 import ecole.termination as T
 
 
-def test_WhenSolved(model):
+def test_WhenSolved(state):
     termination_func = T.WhenSolved()
-    termination_func.reset(model)
-    assert termination_func.is_done(model) is False
+    termination_func.reset(state)
+    assert termination_func.is_done(state) is False
 
 
 @pytest.mark.parametrize("Class", (T.WhenSolved,))
-def test_Inheritance(model, Class):
+def test_Inheritance(state, Class):
     class FunctionCalled(Class):
         def __init__(self):
             super().__init__()
@@ -26,7 +26,7 @@ def test_Inheritance(model, Class):
             return super().is_done(*args, **kwargs)
 
     term_func = FunctionCalled()
-    term_func.reset(model)
+    term_func.reset(state)
     assert term_func.reset_called
-    term_func.is_done(model)
+    term_func.is_done(state)
     assert term_func.is_done_called

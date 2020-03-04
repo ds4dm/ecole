@@ -3,15 +3,15 @@ import pytest
 import ecole.reward as R
 
 
-def test_IsDone(model):
+def test_IsDone(state):
     reward_func = R.IsDone()
-    reward_func.reset(model)
-    assert reward_func.get(model) == 0
-    assert reward_func.get(model, done=True) == 1
+    reward_func.reset(state)
+    assert reward_func.get(state) == 0
+    assert reward_func.get(state, done=True) == 1
 
 
 @pytest.mark.parametrize("Class", (R.IsDone,))
-def test_Inheritance(model, Class):
+def test_Inheritance(state, Class):
     class FunctionCalled(Class):
         def __init__(self):
             super().__init__()
@@ -27,7 +27,7 @@ def test_Inheritance(model, Class):
             return super().get(*args, **kwargs)
 
     reward_func = FunctionCalled()
-    reward_func.reset(model)
+    reward_func.reset(state)
     assert reward_func.reset_called
-    reward_func.get(model)
+    reward_func.get(state)
     assert reward_func.get_called

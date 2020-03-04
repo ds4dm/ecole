@@ -1,7 +1,14 @@
+import pytest
+
 import ecole.abstract as abst
+import ecole.scip as scip
 
 
-def test_ObservationFunction_Inheritance(model):
+def test_State(state):
+    assert isinstance(state.model, scip.Model)
+
+
+def test_ObservationFunction_Inheritance(state):
     class FunctionCalled(abst.ObservationFunction):
         def __init__(self):
             super().__init__()
@@ -14,16 +21,16 @@ def test_ObservationFunction_Inheritance(model):
 
         def get(self, *args, **kwargs):
             self.get_called = True
-            return abst.Observation()
+            return "What an observation!"
 
     function = FunctionCalled()
-    function.reset(model)
+    function.reset(state)
     assert function.reset_called
-    function.get(model)
+    function.get(state)
     assert function.get_called
 
 
-def test_RewardFunction_Inheritance(model):
+def test_RewardFunction_Inheritance(state):
     class FunctionCalled(abst.RewardFunction):
         def __init__(self):
             super().__init__()
@@ -39,13 +46,13 @@ def test_RewardFunction_Inheritance(model):
             return 0
 
     function = FunctionCalled()
-    function.reset(model)
+    function.reset(state)
     assert function.reset_called
-    function.get(model)
+    function.get(state)
     assert function.get_called
 
 
-def test_Termination_Inheritance(model):
+def test_Termination_Inheritance(state):
     class FunctionCalled(abst.TerminationFunction):
         def __init__(self):
             super().__init__()
@@ -61,7 +68,7 @@ def test_Termination_Inheritance(model):
             return True
 
     function = FunctionCalled()
-    function.reset(model)
+    function.reset(state)
     assert function.reset_called
-    function.is_done(model)
+    function.is_done(state)
     assert function.is_done_called

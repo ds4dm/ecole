@@ -4,16 +4,16 @@ import numpy as np
 import ecole.observation as O
 
 
-def test_NodeBipartite(model):
+def test_NodeBipartite(state):
     obs_func = O.NodeBipartite()
     assert isinstance(obs_func, O.NodeBipartite)
-    obs_func.reset(model)
-    obs = obs_func.get(model)
+    obs_func.reset(state)
+    obs = obs_func.get(state)
     assert isinstance(obs, O.NodeBipartiteObs)
 
 
-def test_NodeBipartite(model):
-    obs = O.NodeBipartite().get(model)
+def test_NodeBipartite(state):
+    obs = O.NodeBipartite().get(state)
     assert isinstance(obs.var_feat, np.ndarray)
 
     assert obs.var_feat.size > 0
@@ -24,7 +24,7 @@ def test_NodeBipartite(model):
 
 
 @pytest.mark.parametrize("Class", (O.NodeBipartite,))
-def test_Inheritance(model, Class):
+def test_Inheritance(state, Class):
     class FunctionCalled(Class):
         def __init__(self):
             super().__init__()
@@ -40,7 +40,7 @@ def test_Inheritance(model, Class):
             return super().get(*args, **kwargs)
 
     function = FunctionCalled()
-    function.reset(model)
+    function.reset(state)
     assert function.reset_called
-    function.get(model)
+    function.get(state)
     assert function.get_called

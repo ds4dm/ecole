@@ -4,7 +4,7 @@ import pathlib
 
 import pytest
 
-import ecole.scip
+import ecole
 
 
 TEST_SOURCE_DIR = pathlib.Path(__file__).parent.resolve()
@@ -45,3 +45,8 @@ def model(problem_file):
     model_obj.disable_cuts()
     model_obj.disable_presolve()
     return model_obj
+
+
+@pytest.fixture
+def state(model):
+    return ecole.abstract.State(model)

@@ -1,11 +1,11 @@
 import pytest
 
-import ecole.branching
+from ecole.environment import Branching
 
 
 @pytest.mark.slow
 def test_branching_environment(model):
-    env = ecole.branching.Environment.make_dummy()
+    env = Branching()
     for _ in range(2):
         count = 0
         obs, done = env.reset(model.clone())
