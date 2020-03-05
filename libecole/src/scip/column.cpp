@@ -38,7 +38,7 @@ real ColProxy::prim_sol_frac() const noexcept {
 	return SCIPfeasFrac(scip, prim_sol());
 }
 
-bool ColProxy::prim_sol_at_lb() const noexcept {
+bool ColProxy::is_prim_sol_at_lb() const noexcept {
 	auto const lb_val = lb();
 	if (lb_val)
 		return SCIPisEQ(scip, prim_sol(), lb_val.value());
@@ -46,7 +46,7 @@ bool ColProxy::prim_sol_at_lb() const noexcept {
 		return false;
 }
 
-bool ColProxy::prim_sol_at_ub() const noexcept {
+bool ColProxy::is_prim_sol_at_ub() const noexcept {
 	auto const ub_val = ub();
 	if (ub_val)
 		return SCIPisEQ(scip, prim_sol(), ub_val.value());

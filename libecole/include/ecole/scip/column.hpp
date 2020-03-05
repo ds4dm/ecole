@@ -12,9 +12,6 @@ namespace scip {
 
 using nonstd::optional;
 
-using base_stat = SCIP_BASESTAT;
-template <> struct enum_size<base_stat> { static constexpr std::size_t value = 4; };
-
 class ColProxy : public Proxy<SCIP_Col> {
 public:
 	using Proxy::Proxy;
@@ -25,8 +22,8 @@ public:
 	real obj() const noexcept;
 	real prim_sol() const noexcept;
 	real prim_sol_frac() const noexcept;
-	bool prim_sol_at_lb() const noexcept;
-	bool prim_sol_at_ub() const noexcept;
+	bool is_prim_sol_at_lb() const noexcept;
+	bool is_prim_sol_at_ub() const noexcept;
 	base_stat basis_status() const noexcept;
 	int age() const noexcept;
 
