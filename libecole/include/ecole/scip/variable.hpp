@@ -11,9 +11,6 @@ namespace scip {
 
 using nonstd::optional;
 
-using var_type = SCIP_Vartype;
-template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
-
 class VarProxy : public Proxy<SCIP_Var> {
 public:
 	using Proxy::Proxy;

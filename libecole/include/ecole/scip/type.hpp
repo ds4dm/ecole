@@ -44,6 +44,10 @@ using Param = nonstd::variant<
 	param_t<ParamType::Char>,
 	param_t<ParamType::String>>;
 
+using Seed = int;
+constexpr Seed min_seed = 0;
+constexpr Seed max_seed = 2147483647;
+
 /**
  * Class template to store the number of elements in Scip enums.
  *
@@ -52,9 +56,11 @@ using Param = nonstd::variant<
  */
 template <typename Enum> struct enum_size;
 
-using Seed = int;
-constexpr Seed min_seed = 0;
-constexpr Seed max_seed = 2147483647;
+using base_stat = SCIP_BASESTAT;
+template <> struct enum_size<base_stat> { static constexpr std::size_t value = 4; };
+
+using var_type = SCIP_Vartype;
+template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
 
 }  // namespace scip
 }  // namespace ecole
