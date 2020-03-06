@@ -15,8 +15,8 @@ using namespace ecole;
 
 TEST_CASE("BranchEnv") {
 	auto env = environment::
-		Branching<observation::NodeBipartite<>, reward::IsDone, termination::WhenSolved>(
-			observation::NodeBipartite<>{}, reward::IsDone{}, termination::WhenSolved{});
+		Branching<observation::NodeBipartite, reward::IsDone, termination::WhenSolved>(
+			observation::NodeBipartite{}, reward::IsDone{}, termination::WhenSolved{});
 
 	SECTION("reset, reset, and delete") {
 		env.reset(problem_file);

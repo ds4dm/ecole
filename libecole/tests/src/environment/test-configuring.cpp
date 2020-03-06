@@ -14,8 +14,8 @@ using namespace ecole;
 
 TEST_CASE("Model creation") {
 	auto env = environment::
-		Configuring<observation::NodeBipartite<>, reward::IsDone, termination::WhenSolved>(
-			observation::NodeBipartite<>{}, reward::IsDone{}, termination::WhenSolved{});
+		Configuring<observation::NodeBipartite, reward::IsDone, termination::WhenSolved>(
+			observation::NodeBipartite{}, reward::IsDone{}, termination::WhenSolved{});
 
 	for (auto i = 0L; i < 2; ++i) {
 		env.reset(problem_file);
