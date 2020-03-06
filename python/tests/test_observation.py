@@ -14,13 +14,13 @@ def test_NodeBipartite(state):
 
 def test_NodeBipartite(state):
     obs = O.NodeBipartite().get(state)
-    assert isinstance(obs.var_feat, np.ndarray)
+    assert isinstance(obs.col_feat, np.ndarray)
 
-    assert obs.var_feat.size > 0
-    old_var_feat = np.copy(obs.var_feat)
+    assert obs.col_feat.size > 0
+    old_col_feat = np.copy(obs.col_feat)
     # A transformation that leaves all elements changed (even with float approx).
-    obs.var_feat[:] = 2 * obs.var_feat + 1
-    assert np.all(obs.var_feat != old_var_feat)
+    obs.col_feat[:] = 2 * obs.col_feat + 1
+    assert np.all(obs.col_feat != old_col_feat)
 
 
 @pytest.mark.parametrize("Class", (O.NodeBipartite,))

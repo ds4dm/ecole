@@ -18,12 +18,10 @@ PYBIND11_MODULE(observation, m) {
 
 	auto const abstract_module = py11::module::import("ecole.abstract");
 
-	pyobservation::obs_class_<observation::NodeBipartiteObs> node_bipartite_binding(
-		m, "NodeBipartiteObs");
-	using py_node_bipartite_t = decltype(node_bipartite_binding)::type;
-	node_bipartite_binding  //
+	pyobservation::obs_class_<observation::NodeBipartiteObs>(m, "NodeBipartiteObs")  //
 		.def_property_readonly(
-			"var_feat", [](py_node_bipartite_t const& obs) -> auto& { return obs.var_feat; });
+			"col_feat",
+			[](observation::NodeBipartiteObs & self) -> auto& { return self.col_feat; });
 
 	pyobservation::function_class_<observation::NodeBipartite>(m, "NodeBipartite")
 		.def(py11::init<>());

@@ -6,8 +6,6 @@
 
 #include "ecole/observation/abstract.hpp"
 
-#include "container.hpp"
-
 namespace py11 = pybind11;
 
 namespace ecole {
@@ -147,8 +145,8 @@ using ObsFunctionBase = internal::Py_ObsFunctionBase;
  *
  * @tparam ObservationFunction An observation function template class
  */
-template <template <typename> class ObservationFunction>
-using ObsFunction = internal::Py_ObsFunction<ObservationFunction<container::pytensor>>;
+template <typename ObservationFunction>
+using ObsFunction = internal::Py_ObsFunction<ObservationFunction>;
 
 /**
  * The @ref pybind11::class_ type for all observation.
@@ -159,8 +157,7 @@ using ObsFunction = internal::Py_ObsFunction<ObservationFunction<container::pyte
  *
  * @tparam Observation The C++ observation to bind to Python
  */
-template <template <typename> class Observation>
-using obs_class_ = py11::class_<Observation<container::pytensor>>;
+template <typename Observation> using obs_class_ = py11::class_<Observation>;
 
 /**
  * The @ref pybind11::class_ type for @ref observation::ObservationFunction.
@@ -185,7 +182,7 @@ using abstract_func_class_ = py11::class_<
  *
  * @tparam ObsSapce The C++ observation function to bind to Python
  */
-template <template <typename> class ObservationFunction>
+template <typename ObservationFunction>
 using function_class_ = py11::class_<
 	ObsFunction<ObservationFunction>,                                       // Class
 	ObsFunctionBase,                                                        // Base
