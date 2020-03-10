@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <nonstd/optional.hpp>
 #include <pybind11/pybind11.h>
 
 #include "ecole/environment/abstract.hpp"
@@ -26,6 +27,8 @@ using environment::Seed;
  *********************************/
 
 namespace internal {
+
+using nonstd::optional;
 
 /**
  * Base class for all environments.
@@ -60,20 +63,21 @@ template <typename Env> struct Py_Env : Py_EnvBase, Env {
 	/**
 	 * @copydoc Py_EnvBase::reset
 	 */
-	std::tuple<Observation, bool> reset(scip::Model&& model) override {
+	std::tuple<optional<Observation>, bool> reset(scip::Model&& model) override {
 		return Env::reset(std::move(model));
 	}
-	std::tuple<Observation, bool> reset(scip::Model const& model) override {
+	std::tuple<optional<Observation>, bool> reset(scip::Model const& model) override {
 		return Env::reset(model);
 	}
-	std::tuple<Observation, bool> reset(std::string const& filename) override {
+	std::tuple<optional<Observation>, bool> reset(std::string const& filename) override {
 		return Env::reset(filename);
 	}
 
 	/**
 	 * Cast the action from the @ref py11::object into the adapted @ref Env.
 	 */
-	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
+	std::tuple<optional<Observation>, Reward, bool, Info>
+	step(Action const& action) override {
 		return Env::step(py11::cast<typename Env::Action>(action));
 	}
 };

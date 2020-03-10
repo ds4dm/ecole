@@ -7,6 +7,7 @@
 #include "ecole/scip/model.hpp"
 
 #include "environment/adaptor.hpp"
+#include "nonstd.hpp"
 #include "observation/adaptor.hpp"
 #include "reward/adaptor.hpp"
 #include "termination/adaptor.hpp"
