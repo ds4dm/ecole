@@ -1,5 +1,5 @@
 #include <memory>
-#include <stdexcept>
+#include <string>
 
 #include <catch2/catch.hpp>
 
@@ -18,7 +18,21 @@ TEST_CASE("Model creation") {
 			observation::NodeBipartite{}, reward::IsDone{}, termination::WhenSolved{});
 
 	for (auto i = 0L; i < 2; ++i) {
-		env.reset(problem_file);
-		env.step({{"conflict/lpiterations", 0}});
+		auto obs_done = env.reset(problem_file);
+		auto done = std::get<bool>(obs_done);
+
+		REQUIRE(!done);
+
+		auto obs_rew_done_info = env.step({
+			{"branching/scorefunc", 's'},
+			{"branching/scorefac", 0.1},
+			{"branching/divingpscost", false},
+			{"conflict/lpiterations", 0},
+			// std::string has lower priority than bool for converting const char*
+			{"heuristics/undercover/fixingalts", std::string("ln")},
+		});
+		done = std::get<bool>(obs_rew_done_info);
+
+		REQUIRE(done);
 	}
 }
