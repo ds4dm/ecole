@@ -8,8 +8,6 @@
 namespace ecole {
 namespace scip {
 
-using nonstd::variant;
-
 using long_int = SCIP_Longint;
 using real = SCIP_Real;
 
@@ -47,6 +45,8 @@ using Param = nonstd::variant<
 using Seed = int;
 constexpr Seed min_seed = 0;
 constexpr Seed max_seed = 2147483647;
+
+using Stage = SCIP_STAGE;
 
 /**
  * Class template to store the number of elements in Scip enums.

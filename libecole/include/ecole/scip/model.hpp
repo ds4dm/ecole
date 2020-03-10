@@ -69,6 +69,8 @@ public:
 	 */
 	void read_prob(std::string const& filename);
 
+	Stage get_stage() const noexcept;
+
 	ParamType get_param_type(std::string const& name) const;
 
 	/**
@@ -124,6 +126,10 @@ public:
 private:
 	unique_ptr<SCIP> scip;
 };
+
+/*****************************
+ *  Implementation of Model  *
+ *****************************/
 
 namespace internal {
 

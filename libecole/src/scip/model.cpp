@@ -92,6 +92,10 @@ void Model::read_prob(std::string const& filename) {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
+Stage Model::get_stage() const noexcept {
+	return SCIPgetStage(get_scip_ptr());
+}
+
 ParamType Model::get_param_type(std::string const& name) const {
 	auto* scip_param = SCIPgetParam(get_scip_ptr(), name.c_str());
 	if (!scip_param)
