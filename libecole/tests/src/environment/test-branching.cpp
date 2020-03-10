@@ -33,11 +33,19 @@ TEST_CASE("BranchEnv") {
 			auto obs_done = env.reset(filename);
 			auto done = std::get<bool>(obs_done);
 			auto count = 0;
+
+			// Test that the observation is none only on terminal states
+			REQUIRE(std::get<0>(obs_done).has_value() != done);
+
 			while (!done) {
 				auto obs_rew_done_info = env.step(0);
 				done = std::get<bool>(obs_rew_done_info);
 				++count;
+
+				// Test that the observation is none only on terminal states
+				REQUIRE(std::get<0>(obs_rew_done_info).has_value() != done);
 			}
+
 			REQUIRE(count > 0);
 		};
 		run_trajectory(env, problem_file);

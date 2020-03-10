@@ -3,12 +3,16 @@
 #include <string>
 #include <tuple>
 
+#include <nonstd/optional.hpp>
+
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace environment {
+
+using nonstd::optional;
 
 using ecole::reward::Reward;
 using Seed = scip::Seed;
@@ -57,14 +61,14 @@ public:
 	 *
 	 * Takes as input a filename or loaded model.
 	 *
-	 * @return An observation of the new state.
+	 * @return An observation of the new state, or nothing on terminal states.
 	 * @return A boolean flag indicating whether the state is terminal.
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
-	virtual std::tuple<Observation, bool> reset(scip::Model&& model) = 0;
-	virtual std::tuple<Observation, bool> reset(scip::Model const& model) = 0;
-	virtual std::tuple<Observation, bool> reset(std::string const& filename) = 0;
+	virtual std::tuple<optional<Observation>, bool> reset(scip::Model&& model) = 0;
+	virtual std::tuple<optional<Observation>, bool> reset(scip::Model const& model) = 0;
+	virtual std::tuple<optional<Observation>, bool> reset(std::string const& filename) = 0;
 
 	/**
 	 * Transition from one state to another.
@@ -72,7 +76,7 @@ public:
 	 * Take an action on the previously observed state and transition to a new state.
 	 *
 	 * @param action
-	 * @return An observation of the new state.
+	 * @return An observation of the new state, or nothing on terminal states.
 	 * @return A scalar reward from the signal to maximize.
 	 * @return A boolean flag indicating whether the state is terminal.
 	 * @return Any additional information about the transition.
@@ -80,7 +84,8 @@ public:
 	 * @pre The envrionment must not be on a terminal state, or have thrown an exception.
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
-	virtual std::tuple<Observation, Reward, bool, Info> step(Action const& action) = 0;
+	virtual std::tuple<optional<Observation>, Reward, bool, Info>
+	step(Action const& action) = 0;
 };
 
 }  // namespace environment

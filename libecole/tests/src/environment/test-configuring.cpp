@@ -22,6 +22,8 @@ TEST_CASE("Model creation") {
 		auto done = std::get<bool>(obs_done);
 
 		REQUIRE(!done);
+		// Test that the observation is none only on terminal states
+		REQUIRE(std::get<0>(obs_done).has_value() != done);
 
 		auto obs_rew_done_info = env.step({
 			{"branching/scorefunc", 's'},
@@ -34,5 +36,7 @@ TEST_CASE("Model creation") {
 		done = std::get<bool>(obs_rew_done_info);
 
 		REQUIRE(done);
+		// Test that the observation is none only on terminal states
+		REQUIRE(std::get<0>(obs_rew_done_info).has_value() != done);
 	}
 }

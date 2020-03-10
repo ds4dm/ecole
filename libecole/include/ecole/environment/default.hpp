@@ -3,6 +3,8 @@
 #include <random>
 #include <type_traits>
 
+#include <nonstd/optional.hpp>
+
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/scip/type.hpp"
@@ -148,7 +150,7 @@ public:
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(scip::Model&& model) override {
+	std::tuple<optional<Observation>, bool> reset(scip::Model&& model) override {
 		can_transition = true;
 		try {
 			// Create clean new state
@@ -156,12 +158,17 @@ public:
 			seed_state(state(), seed_distrib(random_engine));
 
 			// Bring state to initial state and reset state functions
-			auto const env_done = reset_state(state());
+			auto done = reset_state(state());
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
 
-			return {obs_func().get(state()), env_done || term_func().is_done(state())};
+			done = done || term_func().is_done(state());
+			can_transition = !done;
+			if (done)
+				return {{}, done};
+			else
+				return {obs_func().get(state()), done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -171,29 +178,33 @@ public:
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(std::string const& filename) override {
+	std::tuple<optional<Observation>, bool> reset(std::string const& filename) override {
 		return reset(scip::Model::from_file(filename));
 	}
 
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(scip::Model const& model) override {
+	std::tuple<optional<Observation>, bool> reset(scip::Model const& model) override {
 		return reset(scip::Model{model});
 	}
 
 	/**
 	 * @copydoc Environment::step
 	 */
-	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
+	std::tuple<optional<Observation>, Reward, bool, Info>
+	step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
 			auto done = step_state(state(), action);
-			auto&& obs = obs_func().get(state());
 			done = done || term_func().is_done(state());
 			can_transition = !done;
 			auto const reward = reward_func().get(state(), done);
-			return {obs, reward, done, Info{}};
+
+			if (done)
+				return {{}, reward, done, Info{}};
+			else
+				return {obs_func().get(state()), reward, done, Info{}};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
