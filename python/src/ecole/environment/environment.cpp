@@ -88,7 +88,12 @@ PYBIND11_MODULE(environment, m) {
 				std::make_shared<pyobservation::ObsFunction<observation::NodeBipartite>>(),
 				std::make_shared<reward::IsDone>(),
 				std::make_shared<termination::WhenSolved>()};
-		}));
+		}))
+		.def_property(
+			"state",
+			&pyenvironment::Env<environment::Branching>::state,
+			&pyenvironment::Env<environment::Branching>::state);
+	;
 
 	pyenvironment::env_class_<environment::Configuring>(m, "Configuring")  //
 		.def(py11::init<
