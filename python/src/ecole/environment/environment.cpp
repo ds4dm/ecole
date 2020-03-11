@@ -8,6 +8,7 @@
 #include "ecole/environment/branching.hpp"
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/none.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
@@ -102,7 +103,7 @@ PYBIND11_MODULE(environment, m) {
 				 std::shared_ptr<termination::TerminationFunction>>())
 		.def(py11::init<>([] {
 			return pyenvironment::Env<environment::Configuring>{
-				std::make_shared<pyobservation::ObsFunction<observation::NodeBipartite>>(),
+				std::make_shared<pyobservation::ObsFunction<observation::None>>(),
 				std::make_shared<reward::IsDone>(),
 				std::make_shared<termination::WhenSolved>()};
 		}))
