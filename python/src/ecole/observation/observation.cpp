@@ -4,6 +4,7 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/none.hpp"
 
 #include "observation/adaptor.hpp"
 
@@ -24,5 +25,10 @@ PYBIND11_MODULE(observation, m) {
 			[](observation::NodeBipartiteObs & self) -> auto& { return self.col_feat; });
 
 	pyobservation::function_class_<observation::NodeBipartite>(m, "NodeBipartite")
+		.def(py11::init<>());
+
+	pyobservation::obs_class_<observation::NoneObs>(m, "NoneObs");
+
+	pyobservation::function_class_<observation::None>(m, "None_")  //
 		.def(py11::init<>());
 }
