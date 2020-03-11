@@ -11,7 +11,7 @@ add_library(
 	src/utility/reverse-control.cpp
 	src/reward/isdone.cpp
 	src/termination/whensolved.cpp
-	src/observation/node-bipartite.cpp
+	src/observation/nodebipartite.cpp
 	src/environment/branching.cpp
 	src/environment/exception.cpp
 )

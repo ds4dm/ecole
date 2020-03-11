@@ -4,7 +4,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/configuring.hpp"
-#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/observation/nodebipartite.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 

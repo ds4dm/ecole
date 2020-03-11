@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/observation/nodebipartite.hpp"
 
 #include "observation/adaptor.hpp"
 

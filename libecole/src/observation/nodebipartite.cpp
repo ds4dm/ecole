@@ -4,7 +4,7 @@
 
 #include <xtensor/xview.hpp>
 
-#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/observation/nodebipartite.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {

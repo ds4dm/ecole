@@ -5,7 +5,7 @@
 
 #include "ecole/environment/branching.hpp"
 #include "ecole/environment/exception.hpp"
-#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/observation/nodebipartite.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
