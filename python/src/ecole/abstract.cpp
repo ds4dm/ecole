@@ -26,18 +26,18 @@ PYBIND11_MODULE(abstract, m) {
 
 	pyobservation::abstract_func_class_(m, "ObservationFunction")
 		.def(py::init<>())
-		.def("reset", &pyobservation::ObsFunctionBase::reset, py::arg("model"))
-		.def("get", &pyobservation::ObsFunctionBase::get, py::arg("model"));
+		.def("reset", &pyobservation::ObsFunctionBase::reset, py::arg("state"))
+		.def("get", &pyobservation::ObsFunctionBase::get, py::arg("state"));
 
 	pyreward::abstract_func_class_(m, "RewardFunction")
 		.def(py::init<>())
-		.def("reset", &reward::RewardFunction::reset, py::arg("model"))
-		.def("get", &reward::RewardFunction::get, py::arg("model"), py::arg("done") = false);
+		.def("reset", &reward::RewardFunction::reset, py::arg("state"))
+		.def("get", &reward::RewardFunction::get, py::arg("state"), py::arg("done") = false);
 
 	pytermination::abstract_func_class_(m, "TerminationFunction")
 		.def(py::init<>())
-		.def("reset", &termination::TerminationFunction::reset, py::arg("model"))
-		.def("is_done", &termination::TerminationFunction::is_done, py::arg("model"));
+		.def("reset", &termination::TerminationFunction::reset, py::arg("state"))
+		.def("is_done", &termination::TerminationFunction::is_done, py::arg("state"));
 
 	pyenvironment::abstract_env_class_(m, "Environment")  //
 		.def("seed", py::overload_cast<>(&pyenvironment::EnvBase::seed, py::const_))
