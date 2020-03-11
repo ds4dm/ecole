@@ -1,9 +1,7 @@
 #include <cmath>
 
-#include <scip/lp.h>
 #include <scip/scip.h>
 #include <scip/struct_lp.h>
-#include <scip/struct_scip.h>
 
 #include "ecole/scip/row.hpp"
 
@@ -39,10 +37,9 @@ real RowProxy::l2_norm() const noexcept {
 }
 
 real RowProxy::obj_cos_sim() const noexcept {
-	SCIPlpRecalculateObjSqrNorm(scip->set, scip->lp);
-	auto const prod = value->sqrnorm * scip->lp->objsqrnorm;
-	if (SCIPisPositive(scip, prod))
-		return value->objprod / std::sqrt(prod);
+	auto const norm_prod = SCIProwGetNorm(value) * SCIPgetObjNorm(scip);
+	if (SCIPisPositive(scip, norm_prod))
+		return value->objprod / norm_prod;
 	else
 		return 0.;
 }
