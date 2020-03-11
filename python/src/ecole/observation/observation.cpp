@@ -22,7 +22,10 @@ PYBIND11_MODULE(observation, m) {
 	pyobservation::obs_class_<observation::NodeBipartiteObs>(m, "NodeBipartiteObs")  //
 		.def_property_readonly(
 			"col_feat",
-			[](observation::NodeBipartiteObs & self) -> auto& { return self.col_feat; });
+			[](observation::NodeBipartiteObs & self) -> auto& { return self.col_feat; })
+		.def_property_readonly(
+			"row_feat",
+			[](observation::NodeBipartiteObs & self) -> auto& { return self.row_feat; });
 
 	pyobservation::function_class_<observation::NodeBipartite>(m, "NodeBipartite")
 		.def(py11::init<>());

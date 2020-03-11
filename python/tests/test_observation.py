@@ -18,10 +18,13 @@ def test_NodeBipartite(solving_state):
     assert isinstance(obs.col_feat, np.ndarray)
 
     assert obs.col_feat.size > 0
-    old_col_feat = np.copy(obs.col_feat)
-    # A transformation that leaves all elements changed (even with float approx).
-    obs.col_feat[:] = 2 * obs.col_feat + 1
-    assert np.all(obs.col_feat != old_col_feat)
+    assert obs.row_feat.size > 0
+
+    val = np.random.rand()
+    obs.col_feat[:] = val
+    assert np.all(obs.col_feat == val)
+    obs.row_feat[:] = val
+    assert np.all(obs.row_feat == val)
 
 
 @pytest.mark.parametrize("Class", (O.NodeBipartite,))
