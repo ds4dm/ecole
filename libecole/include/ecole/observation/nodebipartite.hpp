@@ -15,6 +15,7 @@ public:
 	using value_type = double;
 
 	xt::xtensor<value_type, 2> col_feat;
+	xt::xtensor<value_type, 2> row_feat;
 };
 
 class NodeBipartite : public ObservationFunction<NodeBipartiteObs> {
