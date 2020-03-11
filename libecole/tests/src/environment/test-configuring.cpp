@@ -4,7 +4,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/configuring.hpp"
-#include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/none.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
@@ -13,9 +13,9 @@
 using namespace ecole;
 
 TEST_CASE("Model creation") {
-	auto env = environment::
-		Configuring<observation::NodeBipartite, reward::IsDone, termination::WhenSolved>(
-			observation::NodeBipartite{}, reward::IsDone{}, termination::WhenSolved{});
+	auto env =
+		environment::Configuring<observation::None, reward::IsDone, termination::WhenSolved>(
+			observation::None{}, reward::IsDone{}, termination::WhenSolved{});
 
 	for (auto i = 0L; i < 2; ++i) {
 		auto obs_done = env.reset(problem_file);
