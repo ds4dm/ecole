@@ -13,6 +13,7 @@
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/row.hpp"
 #include "ecole/scip/variable.hpp"
+#include "ecole/utility/sparse_matrix.hpp"
 #include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
@@ -114,6 +115,8 @@ public:
 	VarView lp_branch_cands() const noexcept;
 	ColView lp_columns() const;
 	RowView lp_rows() const;
+
+	utility::coo_matrix<real> lp_matrix() const;
 
 	/**
 	 * Access the underlying SCIP pointer.

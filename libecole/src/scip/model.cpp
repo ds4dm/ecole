@@ -242,6 +242,43 @@ RowView Model::lp_rows() const {
 	return RowView(scip_ptr, SCIPgetLPRows(scip_ptr), n_rows);
 }
 
+static auto matrix_size(Model const& model) {
+	std::size_t nnz = 0;
+	for (auto row : model.lp_rows())
+		nnz += static_cast<std::size_t>(row.n_lp_nonz());
+	return nnz;
+}
+
+utility::coo_matrix<real> Model::lp_matrix() const {
+	auto const scip = get_scip_ptr();
+	if (SCIPgetStage(scip) != SCIP_STAGE_SOLVING)
+		throw Exception("LP matrix are only available during solving");
+
+	using coo_matrix = utility::coo_matrix<real>;
+	auto const nnz = matrix_size(*this);
+	auto values = decltype(coo_matrix::values)::from_shape({nnz});
+	auto indices = decltype(coo_matrix::indices)::from_shape({2, nnz});
+
+	auto n_rows = static_cast<std::size_t>(SCIPgetNLPRows(scip));
+	auto n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip));
+
+	SCIP_ROW** const rows = SCIPgetLPRows(scip);
+
+	for (std::size_t i = 0, j = 0; i < n_rows; ++i) {
+		SCIP_COL** const row_cols = SCIProwGetCols(rows[i]);
+		real const* const row_vals = SCIProwGetVals(rows[i]);
+		std::size_t const row_nnz = static_cast<std::size_t>(SCIProwGetNLPNonz(rows[i]));
+		for (std::size_t k = 0; k < row_nnz; ++k) {
+			indices(0, j + k) = i;
+			indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetLPPos(row_cols[k]));
+			values[j + k] = row_vals[k];
+		}
+		j += row_nnz;
+	}
+
+	return {values, indices, {n_rows, n_cols}};
+}
+
 namespace internal {
 
 template <> std::string Caster<std::string, char>::cast(char val) {
