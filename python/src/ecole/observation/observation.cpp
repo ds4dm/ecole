@@ -30,7 +30,7 @@ PYBIND11_MODULE(observation, m) {
 			"indices", [](coo_matrix & self) -> auto& { return self.indices; })
 		.def_property_readonly(
 			"shape",
-			[](coo_matrix& self) -> std::pair<std::size_t, std::size_t> { return self.shape; })
+			[](coo_matrix& self) { return std::make_pair(self.shape[0], self.shape[1]); })
 		.def_property_readonly("nnz", &coo_matrix::nnz);
 
 	pyobservation::obs_class_<observation::NodeBipartiteObs>(m, "NodeBipartiteObs")  //
