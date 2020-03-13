@@ -18,13 +18,19 @@ def test_NodeBipartite(solving_state):
     assert isinstance(obs.col_feat, np.ndarray)
 
     assert obs.col_feat.size > 0
+    assert len(obs.col_feat.shape) == 2
     assert obs.row_feat.size > 0
+    assert len(obs.row_feat.shape) == 2
+    assert obs.matrix.shape == (obs.row_feat.shape[0], obs.col_feat.shape[0])
+    assert obs.matrix.indices.shape == (2, obs.matrix.nnz)
 
     val = np.random.rand()
     obs.col_feat[:] = val
     assert np.all(obs.col_feat == val)
     obs.row_feat[:] = val
     assert np.all(obs.row_feat == val)
+    obs.matrix.values[:] = val
+    assert np.all(obs.matrix.values == val)
 
 
 @pytest.mark.parametrize("Class", (O.NodeBipartite,))

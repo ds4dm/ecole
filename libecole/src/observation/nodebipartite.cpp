@@ -84,7 +84,11 @@ static auto extract_row_feat(scip::Model const& model) {
 }
 
 auto NodeBipartite::get(environment::State const& state) -> NodeBipartiteObs {
-	return {extract_col_feat(state.model), extract_row_feat(state.model)};
+	return {
+		extract_col_feat(state.model),
+		extract_row_feat(state.model),
+		state.model.lp_matrix(),
+	};
 }
 
 }  // namespace observation

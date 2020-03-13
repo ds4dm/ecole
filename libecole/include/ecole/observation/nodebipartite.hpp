@@ -6,6 +6,7 @@
 
 #include "ecole/environment/state.hpp"
 #include "ecole/observation/abstract.hpp"
+#include "ecole/utility/sparse_matrix.hpp"
 
 namespace ecole {
 namespace observation {
@@ -16,6 +17,7 @@ public:
 
 	xt::xtensor<value_type, 2> col_feat;
 	xt::xtensor<value_type, 2> row_feat;
+	utility::coo_matrix<value_type> matrix;
 };
 
 class NodeBipartite : public ObservationFunction<NodeBipartiteObs> {
