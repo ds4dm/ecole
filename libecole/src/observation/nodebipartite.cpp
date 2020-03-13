@@ -113,12 +113,62 @@ static auto extract_row_feat(scip::Model const& model) {
 	return row_feat;
 }
 
+/**
+ * Number of non zero element in the constraint matrix.
+ *
+ * Row are counted once per right hand side and once per left hand side.
+ */
+static auto matrix_nnz(scip::Model const& model) {
+	std::size_t nnz = 0;
+	for (auto row : model.lp_rows()) {
+		auto const row_size = static_cast<std::size_t>(row.n_lp_nonz());
+		if (row.lhs().has_value()) nnz += row_size;
+		if (row.rhs().has_value()) nnz += row_size;
+	}
+	return nnz;
+}
+
+static utility::coo_matrix<value_type> matrix(scip::Model const& model) {
+	auto const scip = model.get_scip_ptr();
+
+	using coo_matrix = utility::coo_matrix<value_type>;
+	auto const nnz = matrix_nnz(model);
+	auto values = decltype(coo_matrix::values)::from_shape({nnz});
+	auto indices = decltype(coo_matrix::indices)::from_shape({2, nnz});
+
+	std::size_t i = 0, j = 0;
+	for (auto const row : model.lp_rows()) {
+		SCIP_COL** const row_cols = SCIProwGetCols(row.value);
+		scip::real const* const row_vals = SCIProwGetVals(row.value);
+		std::size_t const row_nnz = static_cast<std::size_t>(SCIProwGetNLPNonz(row.value));
+		if (row.lhs().has_value()) {
+			for (std::size_t k = 0; k < row_nnz; ++k) {
+				indices(0, j + k) = i;
+				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetLPPos(row_cols[k]));
+				values[j + k] = -row_vals[k];
+			}
+			j += row_nnz;
+			i++;
+		}
+		if (row.rhs().has_value()) {
+			for (std::size_t k = 0; k < row_nnz; ++k) {
+				indices(0, j + k) = i;
+				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetLPPos(row_cols[k]));
+				values[j + k] = row_vals[k];
+			}
+			j += row_nnz;
+			i++;
+		}
+	}
+
+	auto const n_rows = get_n_ineq_rows(model);
+	auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip));
+	return {values, indices, {n_rows, n_cols}};
+}
+
 auto NodeBipartite::get(environment::State const& state) -> NodeBipartiteObs {
 	return {
-		extract_col_feat(state.model),
-		extract_row_feat(state.model),
-		state.model.lp_matrix(),
-	};
+		extract_col_feat(state.model), extract_row_feat(state.model), matrix(state.model)};
 }
 
 }  // namespace observation

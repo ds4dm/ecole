@@ -24,7 +24,6 @@ public:
 		return value == other.value;
 	}
 
-protected:
 	Scip* scip;
 	T* value;
 };
