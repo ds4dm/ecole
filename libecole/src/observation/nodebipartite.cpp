@@ -31,7 +31,7 @@ static value_type get_obj_norm(scip::Model const& model) {
 static auto extract_col_feat(scip::Model const& model) {
 	tensor col_feat{{model.lp_columns().size, n_col_feat}, 0.};
 
-	value_type const n_lps = SCIPgetNLPs(model.get_scip_ptr());
+	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(model.get_scip_ptr()));
 	value_type const obj_l2_norm = get_obj_norm(model);
 
 	auto iter = col_feat.begin();
@@ -80,7 +80,7 @@ static std::size_t get_n_ineq_rows(scip::Model const& model) {
 static auto extract_row_feat(scip::Model const& model) {
 	tensor row_feat{{get_n_ineq_rows(model), n_row_feat}, 0.};
 
-	value_type const n_lps = SCIPgetNLPs(model.get_scip_ptr());
+	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(model.get_scip_ptr()));
 	value_type const obj_l2_norm = get_obj_norm(model);
 
 	auto extract_row = [n_lps, obj_l2_norm](auto& iter, auto const row, bool const lhs) {
