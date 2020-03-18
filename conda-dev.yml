@@ -3,17 +3,20 @@ channels:
   - defaults
 
 dependencies:
+  # General convenience
   - wget
   - git
+  # C++ dev tools
   - make
   - cmake>=3.15
   - clangdev>=3.4  # Necessary for tools such as clang-format
   - conan
+  # Build time Python dependencies
   - python>=3.6
   - pybind11
+  - numpy
+  - xtensor-python
+  # Python dev tools
   - ipython
   - pytest
   - black
-
-  # Build time dependencies
-  - xtensor-python
