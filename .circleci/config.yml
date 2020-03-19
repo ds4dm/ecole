@@ -5,12 +5,26 @@ jobs:
   build_test:
     docker:
       - image: ecoleai/ci
+    environment:
+      CONAN_USER_HOME: &conan_cache_dir /cache/conan
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - &conan_cache_key >-
+              conan-v1.1-{{
+              arch }}-{{
+              checksum "libecole/conanfile.txt" }}-{{
+              checksum "libecole/tests/conanfile.txt" }}
+            - conan-v1.1-{{ arch }}-
       - run:
           name: "CMake configure"
           command: >
             cmake -B build -D CMAKE_BUILD_TYPE=Release
+      - save_cache:
+          key: *conan_cache_key
+          paths:
+            - *conan_cache_dir
       - run:
           name: "CMake build"
           command: cmake --build build
