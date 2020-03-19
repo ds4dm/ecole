@@ -19,7 +19,7 @@ jobs:
           command: ./build/libecole/tests/test-libecole
       - run:
           name: "Install Python ecole"
-          command: python3 pip install -I build/python
+          command: python3 -m pip install -I build/python
       - run:
           name: "Test Python ecole"
           command: python3 -m pytest python/tests
