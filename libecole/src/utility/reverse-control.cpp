@@ -150,13 +150,14 @@ auto Controller::ThreadInterface::terminate(std::exception_ptr&& except) -> void
  **********************************/
 
 Controller::~Controller() noexcept {
-	try {
-		if (solving_thread.joinable()) {
+	if (solving_thread.joinable()) {
+		try {
 			environment_interface().stop_thread();
-			solving_thread.join();
+		} catch (...) {
+			// if the Controller is deleted but not waited on, then we ignore potential
+			// exceptions
 		}
-	} catch (...) {
-		// if the Controller is deleted bu not waited on, then we ignore potential exceptions
+		solving_thread.join();
 	}
 }
 
