@@ -30,7 +30,7 @@ WORKDIR /tmp/scipoptsuite
 
 # Download SCIP
 RUN \
-	wget -q "${scipoptsuite_url}" && \
+	wget -q "${scipoptsuite_url:?}" && \
 	tar -xzf scipoptsuite-6.0.2.tgz && \
 	rm scipoptsuite-6.0.2.tgz
 
