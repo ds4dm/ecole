@@ -1,4 +1,4 @@
-#include "utility/reverse-control.hpp"
+#include "ecole/utility/reverse-control.hpp"
 
 namespace ecole {
 namespace utility {
@@ -95,54 +95,28 @@ auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
 		return std::move(lk);
 }
 
-/********************************************************
- *  Implementation of Controller::EnvironmentInterface  *
- ********************************************************/
+/********************************************
+ *  Implementation of Controller::Executor  *
+ ********************************************/
 
-auto Controller::EnvironmentInterface::wait_thread() -> void {
-	lk = synchronizer.env_wait_thread();
-}
-
-auto Controller::EnvironmentInterface::resume_thread(action_func_t&& action_func)
-	-> void {
-	synchronizer.env_resume_thread(std::move(lk), std::move(action_func));
-}
-
-auto Controller::EnvironmentInterface::is_done() const noexcept -> bool {
-	return synchronizer.env_thread_is_done(lk);
-}
-
-Controller::EnvironmentInterface::EnvironmentInterface(
-	Synchronizer& synchronizer) noexcept :
+Controller::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer) noexcept :
 	synchronizer(synchronizer) {}
 
-auto Controller::EnvironmentInterface::stop_thread() -> void {
-	if (!lk.owns_lock()) lk = synchronizer.env_wait_thread();
-	synchronizer.env_stop_thread(std::move(lk));
+auto Controller::Executor::start() -> void {
+	lk = synchronizer->thread_start();
 }
 
-/***************************************
- *  Implementation of Controller::ThreadInterface  *
- ***************************************/
-
-auto Controller::ThreadInterface::hold_env() -> action_func_t {
-	lk = synchronizer.thread_hold_env(std::move(lk));
-	return synchronizer.thread_action_function(lk);
+auto Controller::Executor::hold_env() -> action_func_t {
+	lk = synchronizer->thread_hold_env(std::move(lk));
+	return synchronizer->thread_action_function(lk);
 }
 
-Controller::ThreadInterface::ThreadInterface(Synchronizer& synchronizer) noexcept :
-	synchronizer(synchronizer) {}
-
-auto Controller::ThreadInterface::start() -> void {
-	lk = synchronizer.thread_start();
+auto Controller::Executor::terminate() -> void {
+	synchronizer->thread_terminate(std::move(lk));
 }
 
-auto Controller::ThreadInterface::terminate() -> void {
-	synchronizer.thread_terminate(std::move(lk));
-}
-
-auto Controller::ThreadInterface::terminate(std::exception_ptr&& except) -> void {
-	synchronizer.thread_terminate(std::move(lk), std::move(except));
+auto Controller::Executor::terminate(std::exception_ptr&& except) -> void {
+	synchronizer->thread_terminate(std::move(lk), std::move(except));
 }
 
 /**********************************
@@ -150,9 +124,10 @@ auto Controller::ThreadInterface::terminate(std::exception_ptr&& except) -> void
  **********************************/
 
 Controller::~Controller() noexcept {
+	assert(std::this_thread::get_id() != solving_thread.get_id());
 	if (solving_thread.joinable()) {
 		try {
-			environment_interface().stop_thread();
+			stop_thread();
 		} catch (...) {
 			// if the Controller is deleted but not waited on, then we ignore potential
 			// exceptions
@@ -161,18 +136,24 @@ Controller::~Controller() noexcept {
 	}
 }
 
-auto Controller::environment_interface() noexcept -> EnvironmentInterface& {
-	return m_environment_interface;
+auto Controller::wait_thread() -> void {
+	lk = synchronizer->env_wait_thread();
 }
 
-auto Controller::thread_interface() noexcept -> ThreadInterface& {
-	return m_thread_interface;
+auto Controller::resume_thread(action_func_t&& action_func) -> void {
+	synchronizer->env_resume_thread(std::move(lk), std::move(action_func));
 }
 
-Controller::Controller() :
-	synchronizer(),
-	m_environment_interface(synchronizer),
-	m_thread_interface(synchronizer) {}
+auto Controller::is_done() const noexcept -> bool {
+	return synchronizer->env_thread_is_done(lk);
+}
+
+auto Controller::stop_thread() -> void {
+	if (!lk.owns_lock()) lk = synchronizer->env_wait_thread();
+	synchronizer->env_stop_thread(std::move(lk));
+}
+
+Controller::Controller() : synchronizer(std::make_shared<Synchronizer>()) {}
 
 }  // namespace utility
 }  // namespace ecole
