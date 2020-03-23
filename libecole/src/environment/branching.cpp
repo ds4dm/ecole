@@ -7,7 +7,6 @@
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
-#include "utility/reverse-control.hpp"
 
 namespace ecole {
 namespace environment {
@@ -20,7 +19,7 @@ public:
 	static constexpr int no_maxdepth = -1;
 	static constexpr double no_maxbounddist = 1.0;
 
-	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller> weak_controller);
+	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor>);
 
 	auto scip_execlp(
 		SCIP* scip,
@@ -29,12 +28,12 @@ public:
 		SCIP_RESULT* result) -> SCIP_RETCODE override;
 
 private:
-	std::weak_ptr<utility::Controller> weak_controller;
+	std::weak_ptr<utility::Controller::Executor> weak_executor;
 };
 
 ReverseBranchrule::ReverseBranchrule(
 	SCIP* scip,
-	std::weak_ptr<utility::Controller> weak_controller) :
+	std::weak_ptr<utility::Controller::Executor> weak_executor) :
 	::scip::ObjBranchrule(
 		scip,
 		"ecole::ReverseBranchrule",
@@ -42,19 +41,18 @@ ReverseBranchrule::ReverseBranchrule(
 		max_priority,
 		no_maxdepth,
 		no_maxbounddist),
-	weak_controller(weak_controller) {}
+	weak_executor(weak_executor) {}
 
 auto ReverseBranchrule::scip_execlp(
 	SCIP* scip,
 	SCIP_BRANCHRULE*,
 	SCIP_Bool,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_controller.expired()) {
+	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;
 	} else {
-		auto controller = weak_controller.lock();
-		auto action_func = controller->thread_interface().hold_env();
+		auto action_func = weak_executor.lock()->hold_env();
 		return action_func(scip, result);
 	}
 }
@@ -63,21 +61,18 @@ auto ReverseBranchrule::scip_execlp(
 
 namespace internal {
 
-bool reset_state(std::shared_ptr<utility::Controller>& controller, State& init_state) {
+bool reset_state(std::unique_ptr<utility::Controller>& controller, State& init_state) {
 	auto& model = init_state.model;
-	controller = utility::Controller::make_shared(
-		[&model](std::weak_ptr<utility::Controller> weak_controller) {
+	controller = std::make_unique<utility::Controller>(
+		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 			auto scip = model.get_scip_ptr();
 			scip::call(
-				SCIPincludeObjBranchrule,
-				scip,
-				new ReverseBranchrule(scip, weak_controller),
-				true);
+				SCIPincludeObjBranchrule, scip, new ReverseBranchrule(scip, weak_executor), true);
 			model.solve();
 		});
 
-	controller->environment_interface().wait_thread();
-	return controller->environment_interface().is_done();
+	controller->wait_thread();
+	return controller->is_done();
 }
 
 static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
@@ -96,19 +91,18 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 }
 
 bool step_state(
-	std::shared_ptr<utility::Controller>& controller,
+	std::unique_ptr<utility::Controller>& controller,
 	State&,
 	std::size_t const& action) {
-	controller->environment_interface().resume_thread(
-		[action](SCIP* scip, SCIP_RESULT* result) {
-			auto lp_cands = lp_branch_cands(scip);
-			if (action >= lp_cands.second) return SCIP_ERROR;
-			SCIP_CALL(SCIPbranchVar(scip, lp_cands.first[action], nullptr, nullptr, nullptr));
-			*result = SCIP_BRANCHED;
-			return SCIP_OKAY;
-		});
-	controller->environment_interface().wait_thread();
-	return controller->environment_interface().is_done();
+	controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
+		auto lp_cands = lp_branch_cands(scip);
+		if (action >= lp_cands.second) return SCIP_ERROR;
+		SCIP_CALL(SCIPbranchVar(scip, lp_cands.first[action], nullptr, nullptr, nullptr));
+		*result = SCIP_BRANCHED;
+		return SCIP_OKAY;
+	});
+	controller->wait_thread();
+	return controller->is_done();
 }
 
 }  // namespace internal

@@ -4,12 +4,9 @@
 
 #include "ecole/environment/default.hpp"
 #include "ecole/environment/state.hpp"
+#include "ecole/utility/reverse-control.hpp"
 
 namespace ecole {
-
-namespace utility {
-class Controller;
-}
 
 namespace environment {
 
@@ -24,7 +21,7 @@ public:
 	bool step_state(State& state, std::size_t const& action) override;
 
 private:
-	std::shared_ptr<utility::Controller> controller;
+	std::unique_ptr<utility::Controller> controller = nullptr;
 };
 
 /*********************************
@@ -32,8 +29,8 @@ private:
  *********************************/
 
 namespace internal {
-bool reset_state(std::shared_ptr<utility::Controller>&, State&);
-bool step_state(std::shared_ptr<utility::Controller>&, State&, std::size_t const&);
+bool reset_state(std::unique_ptr<utility::Controller>&, State&);
+bool step_state(std::unique_ptr<utility::Controller>&, State&, std::size_t const&);
 }  // namespace internal
 
 template <typename... EnvTypes>
