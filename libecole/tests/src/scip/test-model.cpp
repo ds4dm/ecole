@@ -21,7 +21,7 @@ TEST_CASE("Dealocation of ressources") {
 	auto scip = scip::create();
 	scip.reset();
 	REQUIRE(scip == nullptr);
-	REQUIRE(BMSgetMemoryUsed() == 0);
+	BMScheckEmptyMemory();
 }
 
 TEST_CASE("Creation of model") {
