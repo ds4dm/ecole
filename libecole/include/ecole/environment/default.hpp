@@ -154,6 +154,7 @@ public:
 		can_transition = true;
 		try {
 			// Create clean new state
+			del_state(state());  // FIXME issue #24
 			state() = State{std::move(model)};
 			seed_state(state(), seed_distrib(random_engine));
 
@@ -258,6 +259,9 @@ protected:
 	 *         final `done` flag for the user.
 	 */
 	virtual bool step_state(State& state, Action const& action) = 0;
+
+	// FIXME issue #24
+	virtual void del_state(State&) {}
 
 	/**
 	 * Getter methods to access attributes regardless of whether they are in a container.

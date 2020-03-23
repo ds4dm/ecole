@@ -19,6 +19,7 @@ public:
 
 	bool reset_state(State& initial_state) override;
 	bool step_state(State& state, std::size_t const& action) override;
+	void del_state(State&) override;  // FIXME issue #24
 
 private:
 	std::unique_ptr<utility::Controller> controller = nullptr;
@@ -41,6 +42,11 @@ bool Branching<EnvTypes...>::reset_state(State& init_state) {
 template <typename... EnvTypes>
 bool Branching<EnvTypes...>::step_state(State& state, std::size_t const& action) {
 	return internal::step_state(controller, state, action);
+}
+
+// FIXME issue #24
+template <typename... EnvTypes> void Branching<EnvTypes...>::del_state(State&) {
+	controller = nullptr;
 }
 
 }  // namespace environment
