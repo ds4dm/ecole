@@ -67,8 +67,11 @@ bool reset_state(std::unique_ptr<utility::Controller>& controller, State& init_s
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 			auto scip = model.get_scip_ptr();
 			scip::call(
-				SCIPincludeObjBranchrule, scip, new ReverseBranchrule(scip, weak_executor), true);
-			model.solve();
+				SCIPincludeObjBranchrule,
+				scip,
+				new ReverseBranchrule(scip, weak_executor),  // NOLINT
+				true);
+			model.solve();  // NOLINT
 		});
 
 	controller->wait_thread();
