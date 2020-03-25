@@ -150,7 +150,7 @@ public:
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<optional<Observation>, bool> reset(scip::Model&& model) override {
+	std::tuple<nonstd::optional<Observation>, bool> reset(scip::Model&& model) override {
 		can_transition = true;
 		try {
 			// Create clean new state
@@ -167,7 +167,7 @@ public:
 			done = done || term_func().is_done(state());
 			can_transition = !done;
 			if (done)
-				return {{}, done};
+				return {nonstd::nullopt, done};
 			else
 				return {obs_func().get(state()), done};
 		} catch (std::exception const&) {
@@ -179,21 +179,23 @@ public:
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<optional<Observation>, bool> reset(std::string const& filename) override {
+	std::tuple<nonstd::optional<Observation>, bool>
+	reset(std::string const& filename) override {
 		return reset(scip::Model::from_file(filename));
 	}
 
 	/**
 	 * @copydoc Environment::reset
 	 */
-	std::tuple<optional<Observation>, bool> reset(scip::Model const& model) override {
+	std::tuple<nonstd::optional<Observation>, bool>
+	reset(scip::Model const& model) override {
 		return reset(scip::Model{model});
 	}
 
 	/**
 	 * @copydoc Environment::step
 	 */
-	std::tuple<optional<Observation>, Reward, bool, Info>
+	std::tuple<nonstd::optional<Observation>, Reward, bool, Info>
 	step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
