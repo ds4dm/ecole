@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iterator>
 #include <string>
+#include <fmt/format.h>  // C++20-like format
 
 #include "ecole/scip/exception.hpp"
 
@@ -108,7 +109,7 @@ public:
 	}
 	auto at(std::size_t n) const {
 		if (n < 0 || n >= size)
-			throw Exception("Out of range: " + std::to_string(n));
+			throw Exception(fmt::format("Out of range: {}", n));
 		else
 			return (*this)[n];
 	}

@@ -39,6 +39,7 @@ target_link_libraries(
 		CONAN_PKG::xtensor
 		CONAN_PKG::optional-lite
 		CONAN_PKG::variant-lite
+        CONAN_PKG::fmt
 	PRIVATE
 		Threads::Threads
 )
