@@ -1,14 +1,40 @@
-version: 2
+version: 2.1
 
-jobs:
+# Environments where jobs are executed
+executors:
 
-  build_test:
+  # Run inside a conda environment in our custom Docker image
+  ecole_conda:
     docker:
       - image: ecoleai/ci
-    environment:
-      CONAN_USER_HOME: &conan_cache_dir /cache/conan
+    parameters:
+      environment:
+        type: string
+        default: ecole-py3.8
+    shell: conda run -n <<parameters.environment>> /bin/bash -c
+
+
+# Reusable set of instructions to be used in jobs
+commands:
+
+  # Build the entire project
+  build_ecole:
+    parameters:
+      source_dir:
+        type: string
+        default: "."
+      build_dir:
+        type: string
+        default: build
+      compiler:
+        type: enum
+        enum: ["gcc", "clang"]
+        default: "gcc"
+      cmake_options:
+        type: string
+        default: ""
+    description: "Compiling the Ecole project"
     steps:
-      - checkout
       - restore_cache:
           keys:
             - &conan_cache_key >-
@@ -18,9 +44,19 @@ jobs:
               checksum "libecole/tests/conanfile.txt" }}
             - conan-v1.1-{{ arch }}-
       - run:
+          name: "Set compiler"
+          command: |
+            if [[ <<parameters.compiler>> == "clang" ]]; then
+              echo "export CC=$(which clang)" >> $BASH_ENV
+              echo "export CXX=$(which clang++)" >> $BASH_ENV
+            fi
+      - run:
           name: "CMake configure"
+          environment:
+            CONAN_USER_HOME: &conan_cache_dir /cache/conan
           command: >
-            cmake -B build -D CMAKE_BUILD_TYPE=Release
+            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
+            -D CMAKE_BUILD_TYPE=Release <<parameters.cmake_options>>
       - save_cache:
           key: *conan_cache_key
           paths:
@@ -28,6 +64,25 @@ jobs:
       - run:
           name: "CMake build"
           command: cmake --build build
+
+
+# Execute a set of commands in a clean executor
+jobs:
+
+  build_test:
+    parameters:
+      python:
+        type: string
+      compiler:
+        type: enum
+        enum: ["gcc", "clang"]
+    executor:
+      name: ecole_conda
+      environment: "ecole-py<<parameters.python>>"
+    steps:
+      - checkout
+      - build_ecole:
+          compiler: "<<parameters.compiler>>"
       - run:
           name: "Test libecole"
           command: ./build/libecole/tests/test-libecole
@@ -39,23 +94,42 @@ jobs:
           command: python3 -m pytest python/tests
 
   check_format:
-    docker:
-      - image: ecoleai/ci
+    executor: ecole_conda
     steps:
       - checkout
       - run:
           name: "Check C++ formatting"
           command: |
             for file in $(find libecole python -name '*.cpp' -o -name '*.hpp'); do
-              [ $? -eq 0 ] && clang-format --style=file $file | diff - $file
+              [ $? -eq 0 ] && clang-format --style=file "$file" | diff - "$file"
             done
       - run:
           name: "Check Python formatting"
           command: python3 -m black --check python/
 
 workflows:
-  version: 2
-  build_and_test:
+  continuous_testing:
     jobs:
-      - build_test
       - check_format
+      - build_test:
+          name: build_py38_gcc
+          python: "3.8"
+          compiler: gcc
+      - build_test:
+          name: build_py37_gcc
+          python: "3.7"
+          compiler: gcc
+          requires:
+            - build_py38_gcc
+      - build_test:
+          name: build_py36_gcc
+          python: "3.6"
+          compiler: gcc
+          requires:
+            - build_py38_gcc
+      - build_test:
+          name: build_py38_clang
+          python: "3.8"
+          compiler: clang
+          requires:
+            - build_py38_gcc
