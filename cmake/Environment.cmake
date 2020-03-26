@@ -1,0 +1,6 @@
+macro(set_from_env cmake_var env_var)
+	if(DEFINED ENV{${env_var}})
+		message(STATUS "Setting ${cmake_var} to $ENV{${env_var}}")
+		set(${cmake_var} $ENV{${env_var}} ${ARGV2} ${ARGV3} ${ARGV4})
+	endif()
+endmacro()
