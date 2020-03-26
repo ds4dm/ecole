@@ -5,6 +5,7 @@
 #include <exception>
 #include <mutex>
 #include <string>
+#include <fmt/format.h>  // C++20-like format
 
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
@@ -112,7 +113,7 @@ ParamType Model::get_param_type(std::string const& name) const {
 		default:
 			assert(false);  // All enum value should be handled
 			// Non void return for optimized build
-			throw Exception("Could not find type for given parameter");
+			throw Exception(fmt::format("Could not find type for parameter '{}'", name));
 		}
 }
 
