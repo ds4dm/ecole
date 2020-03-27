@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstddef>
+#include <fmt/format.h>  // C++20-like format
 #include <iterator>
 #include <string>
-#include <fmt/format.h>  // C++20-like format
 
 #include "ecole/scip/exception.hpp"
 
