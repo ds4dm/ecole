@@ -6,6 +6,7 @@
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/none.hpp"
 #include "ecole/reward/isdone.hpp"
+#include "ecole/reward/nlpiterations.hpp"
 #include "ecole/termination/whensolved.hpp"
 
 #include "conftest.hpp"
@@ -43,4 +44,15 @@ TEST_CASE("Model creation") {
 		// Assert that no observation is returned on terminal states
 		REQUIRE(!obs.has_value());
 	}
+}
+
+TEST_CASE("Changing the reward function") {
+	auto env = environment::Configuring<
+		observation::NodeBipartite<>,
+		reward::NLPIterations,
+		termination::WhenSolved>(
+		observation::NodeBipartite<>{}, reward::NLPIterations{}, termination::WhenSolved{});
+
+	env.reset(problem_file);
+	env.step({{"lp/solvefreq", 0}, {"presolving/maxrounds", 0}});
 }
