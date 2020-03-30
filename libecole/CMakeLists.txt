@@ -10,6 +10,7 @@ add_library(
 	src/scip/exception.cpp
 	src/utility/reverse-control.cpp
 	src/reward/isdone.cpp
+	src/reward/nlpiterations.cpp
 	src/termination/whensolved.cpp
 	src/observation/nodebipartite.cpp
 	src/environment/branching.cpp

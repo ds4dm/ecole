@@ -10,6 +10,13 @@ def test_IsDone(state):
     assert reward_func.get(state, done=True) == 1
 
 
+def test_NLPIterations(state):
+    reward_func = R.NLPIterations()
+    reward_func.reset(state)
+    reward_func.get(state)
+    assert reward_func.get(state, done=True) == 0
+
+
 @pytest.mark.parametrize("Class", (R.IsDone,))
 def test_Inheritance(state, Class):
     class FunctionCalled(Class):
