@@ -103,20 +103,20 @@ Controller::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer) noexc
 	synchronizer(synchronizer) {}
 
 auto Controller::Executor::start() -> void {
-	lk = synchronizer->thread_start();
+	model_lock = synchronizer->thread_start();
 }
 
 auto Controller::Executor::hold_env() -> action_func_t {
-	lk = synchronizer->thread_hold_env(std::move(lk));
-	return synchronizer->thread_action_function(lk);
+	model_lock = synchronizer->thread_hold_env(std::move(model_lock));
+	return synchronizer->thread_action_function(model_lock);
 }
 
 auto Controller::Executor::terminate() -> void {
-	synchronizer->thread_terminate(std::move(lk));
+	synchronizer->thread_terminate(std::move(model_lock));
 }
 
 auto Controller::Executor::terminate(std::exception_ptr&& except) -> void {
-	synchronizer->thread_terminate(std::move(lk), std::move(except));
+	synchronizer->thread_terminate(std::move(model_lock), std::move(except));
 }
 
 /**********************************
@@ -137,20 +137,20 @@ Controller::~Controller() noexcept {
 }
 
 auto Controller::wait_thread() -> void {
-	lk = synchronizer->env_wait_thread();
+	model_lock = synchronizer->env_wait_thread();
 }
 
 auto Controller::resume_thread(action_func_t&& action_func) -> void {
-	synchronizer->env_resume_thread(std::move(lk), std::move(action_func));
+	synchronizer->env_resume_thread(std::move(model_lock), std::move(action_func));
 }
 
 auto Controller::is_done() const noexcept -> bool {
-	return synchronizer->env_thread_is_done(lk);
+	return synchronizer->env_thread_is_done(model_lock);
 }
 
 auto Controller::stop_thread() -> void {
-	if (!lk.owns_lock()) lk = synchronizer->env_wait_thread();
-	synchronizer->env_stop_thread(std::move(lk));
+	if (!model_lock.owns_lock()) model_lock = synchronizer->env_wait_thread();
+	synchronizer->env_stop_thread(std::move(model_lock));
 }
 
 Controller::Controller() : synchronizer(std::make_shared<Synchronizer>()) {}

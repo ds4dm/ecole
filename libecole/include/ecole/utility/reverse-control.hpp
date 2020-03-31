@@ -67,13 +67,13 @@ public:
 
 	private:
 		std::shared_ptr<Synchronizer> synchronizer;
-		lock_t lk;
+		lock_t model_lock;
 	};
 
 private:
 	std::shared_ptr<Synchronizer> synchronizer;
 	std::thread solving_thread;
-	lock_t lk;
+	lock_t model_lock;
 
 	Controller();
 	auto stop_thread() -> void;
