@@ -141,7 +141,7 @@ template <typename To, typename From, typename = void> struct Caster {
 // SFINAE class for available cast
 template <typename To, typename From>
 struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> {
-	static To cast(From val) { return val; }
+	static To cast(From val) { return static_cast<To>(val); }
 };
 
 // Pointers must not convert to bools

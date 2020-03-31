@@ -1,3 +1,4 @@
+#include <limits>
 #include <memory>
 #include <stdexcept>
 
@@ -56,6 +57,7 @@ TEST_CASE("BranchEnv") {
 	SECTION("manage errors") {
 		auto guard = ScipNoErrorGuard{};
 		env.reset(problem_file);
-		REQUIRE_THROWS_AS(env.step(-1), scip::Exception);
+		auto const branch_var_too_large = std::numeric_limits<std::size_t>::max();
+		REQUIRE_THROWS_AS(env.step(branch_var_too_large), scip::Exception);
 	}
 }

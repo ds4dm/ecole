@@ -144,8 +144,10 @@ public:
 	/**
 	 * @copydoc Environment::seed
 	 */
-	void seed(Seed new_seed) override { random_engine.seed(new_seed); }
-	Seed seed() const noexcept override { return random_engine.seed(); }
+	void seed(Seed new_seed) override {
+		random_engine.seed(static_cast<internal::RandomEngine::result_type>(new_seed));
+	}
+	Seed seed() const noexcept override { return static_cast<Seed>(random_engine.seed()); }
 
 	/**
 	 * @copydoc Environment::reset

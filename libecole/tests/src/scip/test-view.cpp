@@ -46,7 +46,9 @@ TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 
 	SECTION("Random access iterator") {
 		auto iter = view.begin();
-		REQUIRE(iter[size - 1].times(1) == static_cast<TestType>(size - 1));
+		REQUIRE(
+			iter[static_cast<std::ptrdiff_t>(size) - 1].times(1) ==
+			static_cast<TestType>(size - 1));
 	}
 
 	SECTION("View accessor") {
