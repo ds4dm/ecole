@@ -13,6 +13,9 @@ project(
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
+# Defines a target Ecole::warnings with all compiler warnings
+include(cmake/CompilerWarnings.cmake)
+
 # Set a default build type (required for conan)
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE None CACHE STRING "Set build type, see CMake documentation" FORCE)

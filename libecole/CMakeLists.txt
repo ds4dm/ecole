@@ -49,29 +49,19 @@ target_link_libraries(
 		CONAN_PKG::variant-lite
 		CONAN_PKG::fmt
 	PRIVATE
+		Ecole::warnings
 		Threads::Threads
 )
 
 target_compile_features(libecole PUBLIC cxx_std_14)
-target_compile_options(
-	libecole
-	PRIVATE
-		-Werror
-		-Wall
-		-Wextra
-		-Wconversion
-		-Wunreachable-code
-		-Wuninitialized
-		-pedantic-errors
-		-Wold-style-cast
-)
+
 set_target_properties(libecole PROPERTIES
 	# All code ending in a shared library should be made PIC
 	POSITION_INDEPENDENT_CODE ON
-	# Compiling wiht hidden visibility
+	# Compiling with hidden visibility
 	# FIXME use CMAKE_GENERATE_EXPORT_HEADER when supporting building shared library
 	CXX_VISIBILITY_PRESET hidden
-	CMAKE_VISIBILITY_INLINES_HIDDEN ON
+	VISIBILITY_INLINES_HIDDEN ON
 )
 
 # Add test if this is the main project and testing is enabled
