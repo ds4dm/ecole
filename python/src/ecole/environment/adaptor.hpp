@@ -35,8 +35,23 @@ using nonstd::optional;
  *
  * All environments inherit from this class before being bound to Python in order to
  * properly recieve actions.
+ *
+ * Implement a helper method `step_helper` for `step` to avoid conflict of the virtual\
+ * method with different paramters types in `Py_Env`.
  */
-using Py_EnvBase = environment::Environment<py11::object, py11::object>;
+class Py_EnvBase : public environment::Environment<py11::object, py11::object> {
+public:
+	using Observation = py11::object;
+	using Action = py11::object;
+
+	virtual std::tuple<optional<Observation>, Reward, bool, Info>
+	step_helper(Action const& action) = 0;
+
+	std::tuple<optional<Observation>, Reward, bool, Info>
+	step(Action const& action) override final {
+		return step_helper(action);
+	}
+};
 
 /**
  * Adaptor to make C++ environments.
@@ -77,7 +92,7 @@ template <typename Env> struct Py_Env : Py_EnvBase, Env {
 	 * Cast the action from the @ref py11::object into the adapted @ref Env.
 	 */
 	std::tuple<optional<Observation>, Reward, bool, Info>
-	step(Action const& action) override {
+	step_helper(Action const& action) override {
 		return Env::step(py11::cast<typename Env::Action>(action));
 	}
 };
