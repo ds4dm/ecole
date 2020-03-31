@@ -40,7 +40,13 @@ pybind11_add_module(
 target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole)
 
 target_link_libraries(
-	ecole-python PRIVATE Ecole::libecole xtensor xtensor-python Python::NumPy
+	ecole-python
+	PRIVATE
+		Ecole::libecole
+		Ecole::warnings
+		Python::NumPy
+		xtensor
+		xtensor-python
 )
 if(CMAKE_BUILD_TYPE MATCHES RELEASE)
 	target_link_libraries(ecole-python PRIVATE xtensor::optimize)
