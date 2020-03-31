@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
 # The following are set by conda compiler tools but not read by CMake
-include(Environment)
+include(cmake/Environment.cmake)
 set_from_env(CMAKE_AR AR CACHE FILEPATH "Archiving tool for static libraries")
 set_from_env(CMAKE_RANLIB RANLIB CACHE FILEPATH "Randomizing tool for static libraries")
 
