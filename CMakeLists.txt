@@ -13,27 +13,19 @@ project(
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
-# Defines a target Ecole::warnings with all compiler warnings
+# Define a target Ecole::warnings with all compiler warnings.
 include(cmake/CompilerWarnings.cmake)
 
-# Defines a target Ecole::sanitizers with enabled sanitizers
+# Define a target Ecole::sanitizers with enabled sanitizers.
 include(cmake/Sanitizers.cmake)
+
+# Activate the Conan CMake wrapper (download if necessary).
+include(cmake/Conan.cmake)
 
 # Set a default build type (required for conan)
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE None CACHE STRING "Set build type, see CMake documentation" FORCE)
 endif()
-
-# Get Conan CMake wrapper for C++ package management
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-	# Download automatically, you can also just copy the conan.cmake file
-	message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-	file(
-		DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-		"${CMAKE_BINARY_DIR}/conan.cmake"
-	)
-endif()
-include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 # Activate Testing by default
 if(NOT DEFINED BUILD_TESTING)
