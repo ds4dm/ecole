@@ -50,6 +50,7 @@ target_link_libraries(
 		CONAN_PKG::fmt
 	PRIVATE
 		Ecole::warnings
+		Ecole::sanitizers
 		Threads::Threads
 )
 

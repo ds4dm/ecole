@@ -25,6 +25,7 @@ target_link_libraries(
 	PRIVATE
 		Ecole::libecole
 		Ecole::warnings
+		Ecole::sanitizers
 		CONAN_PKG::Catch2
 		libscip
 )
