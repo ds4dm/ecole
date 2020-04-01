@@ -3,9 +3,9 @@
 namespace ecole {
 namespace scip {
 
-Exception::Exception(std::string const& message) : message(message) {}
+Exception::Exception(std::string const& message_) : message(message_) {}
 
-Exception::Exception(std::string&& message) : message(std::move(message)) {}
+Exception::Exception(std::string&& message_) : message(std::move(message_)) {}
 
 const char* Exception::what() const noexcept {
 	return message.c_str();

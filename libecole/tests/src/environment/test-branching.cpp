@@ -30,7 +30,7 @@ TEST_CASE("BranchEnv") {
 	}
 
 	SECTION("run full trajectory") {
-		auto run_trajectory = [](auto& env, std::string const& filename) {
+		auto run_trajectory = [&env](std::string const& filename) {
 			auto obs_done = env.reset(filename);
 			auto done = std::get<bool>(obs_done);
 			auto count = 0;
@@ -49,9 +49,9 @@ TEST_CASE("BranchEnv") {
 
 			REQUIRE(count > 0);
 		};
-		run_trajectory(env, problem_file);
+		run_trajectory(problem_file);
 
-		SECTION("Run another trajectory") { run_trajectory(env, problem_file); }
+		SECTION("Run another trajectory") { run_trajectory(problem_file); }
 	}
 
 	SECTION("manage errors") {

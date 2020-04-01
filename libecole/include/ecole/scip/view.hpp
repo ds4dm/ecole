@@ -18,7 +18,7 @@ template <typename T> class Proxy {
 public:
 	using type = T;
 
-	explicit Proxy(Scip* scip, T* value) noexcept : scip(scip), value(value) {}
+	explicit Proxy(Scip* scip_, T* value_) noexcept : scip(scip_), value(value_) {}
 
 	inline bool operator==(Proxy const& other) const noexcept {
 		return value == other.value;
@@ -51,7 +51,8 @@ private:
 		using reference = void;
 
 		ViewIterator() = delete;
-		explicit ViewIterator(Scip* scip, T* const* ptr) noexcept : scip(scip), ptr(ptr) {}
+		explicit ViewIterator(Scip* scip_, T* const* ptr_) noexcept :
+			scip(scip_), ptr(ptr_) {}
 
 		inline bool operator==(ViewIterator other) const { return ptr == other.ptr; }
 		inline bool operator!=(ViewIterator other) const { return !(*this == other); }
@@ -96,8 +97,8 @@ private:
 
 public:
 	View() = delete;
-	explicit View(Scip* scip, T* const* data, std::size_t size) noexcept :
-		size(size), scip(scip), data(data) {}
+	explicit View(Scip* scip_, T* const* data_, std::size_t size_) noexcept :
+		size(size_), scip(scip_), data(data_) {}
 
 	inline auto cbegin() const { return ViewIterator(scip, data); }
 	inline auto begin() const { return cbegin(); }

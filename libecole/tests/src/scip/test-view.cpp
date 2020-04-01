@@ -27,7 +27,7 @@ template <typename T> auto arange(std::size_t size) {
 
 TEMPLATE_TEST_CASE("View represent a pointer on data", "", int, double) {
 	struct Proxy : public scip::Proxy<TestType> {
-		Proxy(Scip*, TestType* value) noexcept : scip::Proxy<TestType>(nullptr, value) {}
+		Proxy(Scip*, TestType* value_) noexcept : scip::Proxy<TestType>(nullptr, value_) {}
 		TestType times(TestType n) const noexcept { return *(this->value) * n; }
 	};
 

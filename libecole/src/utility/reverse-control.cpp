@@ -99,8 +99,8 @@ auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
  *  Implementation of Controller::Executor  *
  ********************************************/
 
-Controller::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer) noexcept :
-	synchronizer(synchronizer) {}
+Controller::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer_) noexcept :
+	synchronizer(synchronizer_) {}
 
 auto Controller::Executor::start() -> void {
 	model_lock = synchronizer->thread_start();

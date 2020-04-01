@@ -39,20 +39,20 @@ static auto extract_col_feat(scip::Model const& model) {
 		auto const var = col.var();
 		*(iter++) = static_cast<value_type>(col.lb().has_value());
 		*(iter++) = static_cast<value_type>(col.ub().has_value());
-		*(iter++) = static_cast<value_type>(col.reduced_cost()) / obj_l2_norm;
-		*(iter++) = static_cast<value_type>(col.obj()) / obj_l2_norm;
-		*(iter++) = static_cast<value_type>(col.prim_sol());
+		*(iter++) = col.reduced_cost() / obj_l2_norm;
+		*(iter++) = col.obj() / obj_l2_norm;
+		*(iter++) = col.prim_sol();
 		if (var.type_() == SCIP_VARTYPE_CONTINUOUS)
 			*(iter++) = 0.;
 		else
-			*(iter++) = static_cast<value_type>(col.prim_sol_frac());
+			*(iter++) = col.prim_sol_frac();
 		*(iter++) = static_cast<value_type>(col.is_prim_sol_at_lb());
 		*(iter++) = static_cast<value_type>(col.is_prim_sol_at_ub());
 		*(iter++) = static_cast<value_type>(col.age()) / (n_lps + cste);
 		iter[static_cast<std::size_t>(col.basis_status())] = 1.;
 		iter += scip::enum_size<scip::base_stat>::value;
-		*(iter++) = static_cast<value_type>(var.best_sol_val().value_or(nan));
-		*(iter++) = static_cast<value_type>(var.avg_sol().value_or(nan));
+		*(iter++) = var.best_sol_val().value_or(nan);
+		*(iter++) = var.avg_sol().value_or(nan);
 		iter[static_cast<std::size_t>(var.type_())] = 1.;
 		iter += scip::enum_size<scip::var_type>::value;
 	}
@@ -98,17 +98,17 @@ static auto extract_row_feat(scip::Model const& model) {
 		*(iter++) = sign * row.dual_sol() / (row_l2_norm * obj_l2_norm);
 	};
 
-	auto iter = row_feat.begin();
-	for (auto const row : model.lp_rows()) {
+	auto iter_ = row_feat.begin();
+	for (auto const row_ : model.lp_rows()) {
 		// Rows are counted once per rhs and once per lhs
-		if (row.lhs().has_value()) extract_row(iter, row, true);
-		if (row.rhs().has_value()) extract_row(iter, row, false);
+		if (row_.lhs().has_value()) extract_row(iter_, row_, true);
+		if (row_.rhs().has_value()) extract_row(iter_, row_, false);
 	}
 
 	// Make sure we iterated over as many element as there are in the tensor
-	auto diff = iter - row_feat.begin();
+	auto diff = iter_ - row_feat.begin();
 	(void)diff;
-	assert(static_cast<std::size_t>(iter - row_feat.begin()) == row_feat.size());
+	assert(static_cast<std::size_t>(iter_ - row_feat.begin()) == row_feat.size());
 
 	return row_feat;
 }

@@ -60,9 +60,9 @@ Model::Model() : scip(create()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
-Model::Model(unique_ptr<SCIP>&& scip) {
-	if (scip)
-		this->scip = std::move(scip);
+Model::Model(unique_ptr<SCIP>&& scip_) {
+	if (scip_)
+		this->scip = std::move(scip_);
 	else
 		throw Exception("Cannot create empty model");
 }

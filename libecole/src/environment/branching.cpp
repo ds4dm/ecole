@@ -33,7 +33,7 @@ private:
 
 ReverseBranchrule::ReverseBranchrule(
 	SCIP* scip,
-	std::weak_ptr<utility::Controller::Executor> weak_executor) :
+	std::weak_ptr<utility::Controller::Executor> weak_executor_) :
 	::scip::ObjBranchrule(
 		scip,
 		"ecole::ReverseBranchrule",
@@ -41,7 +41,7 @@ ReverseBranchrule::ReverseBranchrule(
 		max_priority,
 		no_maxdepth,
 		no_maxbounddist),
-	weak_executor(weak_executor) {}
+	weak_executor(weak_executor_) {}
 
 auto ReverseBranchrule::scip_execlp(
 	SCIP* scip,
