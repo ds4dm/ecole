@@ -50,5 +50,5 @@ TEST_CASE("Changing the reward function") {
 		observation::NodeBipartite<>{}, reward::NLPIterations{}, termination::WhenSolved{});
 
 	env.reset(problem_file);
-	env.step({{"lp/solvefreq", 0}, {"presolving/maxrounds", 0}});
+	env.step({{"presolving/maxrounds", 0}});
 }
