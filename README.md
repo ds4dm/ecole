@@ -33,7 +33,7 @@ instructions.
   ```
   *Note: this environment contains tools to build ecole and scip, format code, test,
   generate documentation etc. These are more than the dependencies to only use Ecole.*
-  
+
 #### CMake
   [CMake](https://cmake.org/) is a meta-build tool, configuring other build tools
   (_e.g._ Make) or IDE's.
@@ -69,10 +69,14 @@ instructions.
   Building Ecole is very similar to building SCIP, as they both use CMake.
   In the Ecole source repository, configure using
   ```bash
-  cmake -B build
+  cmake -B build -D ECOLE_DEVELOPPER=ON
   ```
-  It is possible to add `-D CMAKE_BUILD_TYPE=debug` to this previous command to
-  build with debugging information.
+  The definition `-D ECOLE_DEVELOPPER` changes the defaults settings (such as the build
+  type, static analysis, _etc._) for added convenience and ensuring high quality
+  contributions.
+  Only the default settings are changed.
+  This mode does not override any explicitly setting.
+
   Then, build Ecole with
   ```bash
   cmake --build build/
@@ -93,7 +97,7 @@ instructions.
   ```bash
   find libecole python \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format --style=file -i {} \;
   ```
- 
+
   Python code is formatted using [Black](https://black.readthedocs.io).
   `black` is available in the conda environment, and all files can be formatted using
   ```bash

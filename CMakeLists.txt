@@ -13,6 +13,9 @@ project(
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
 
+# Set default parameters. Assumes Ecole user,
+include(cmake/DefaultSettings.cmake)
+
 # Define a target Ecole::warnings with all compiler warnings.
 include(cmake/CompilerWarnings.cmake)
 
@@ -25,15 +28,6 @@ include(cmake/Conan.cmake)
 # Enable tools for checking the code at compile time.
 include(cmake/StaticAnalysis.cmake)
 
-# Set a default build type (required for conan)
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE None CACHE STRING "Set build type, see CMake documentation" FORCE)
-endif()
-
-# Activate Testing by default
-if(NOT DEFINED BUILD_TESTING)
-	set(BUILD_TESTING ON)
-endif()
-
+# Ecole libraries
 add_subdirectory(libecole)
 add_subdirectory(python)
