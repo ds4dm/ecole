@@ -22,6 +22,9 @@ include(cmake/Sanitizers.cmake)
 # Activate the Conan CMake wrapper (download if necessary).
 include(cmake/Conan.cmake)
 
+# Enable tools for checking the code at compile time.
+include(cmake/StaticAnalysis.cmake)
+
 # Set a default build type (required for conan)
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE None CACHE STRING "Set build type, see CMake documentation" FORCE)
