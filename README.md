@@ -86,20 +86,44 @@ instructions.
   python -m pip install -I build/python
   ```
 
-### Formatting
-  Automatic tools are used to format the code. Pull request will be denied if the
-  code is not formatted properly.
+### Coding standards
+  The quality and conventions of the code are enforced automatically with various tools
+  detailed here.
 
-  C++ code is formatted using
+#### C++ toolset
+  Visual layout of the code is formated using
   [clang-format](https://clang.llvm.org/docs/ClangFormat.html).
-  `clang-format` is available in the conda environment, and all files can be formatted
-  using
+  All files can be formatted at once using
   ```bash
-  find libecole python \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format --style=file -i {} \;
+  find libecole python -name '*.[hc]pp' -exec clang-format --style=file -i {} \;
   ```
 
+  Additional coding best practices are enforced through
+  [clang-tidy](https://clang.llvm.org/extra/clang-tidy/).
+  `clang-tidy` is run automatically in CMake when using `-D ECOLE_DEVELOPPER=ON` to
+  ensure that the guidelines are respected.
+  The tool also has the ability to fix (some) errors automatically, but this is not done
+  in CMake (which does not modify the source code).
+  To run, the tool needs access to a _compilation database_.
+  The database is also created automatically when using `-D ECOLE_DEVELOPPER=ON`, but the
+  file need to be accessible at the root directory of the project.
+  One can create a symbolic link (assuming the build dircetory is named `build`) using
+  ```bash
+  ln -s build/compile_commands.json
+  ```
+  Then, `clang-tidy` can be run on all files for fixing with
+  ```bash
+  find libecole python -name '*.[hc]pp' -exec clang-tidy --fix --fix-errors {} \;
+  ```
+
+  Both these tools are available in the conda environment.
+  They also integrate seamlessly with most editors and IDE to avoid running these
+  commands manually.
+
+
+#### Pyhton toolset
   Python code is formatted using [Black](https://black.readthedocs.io).
   `black` is available in the conda environment, and all files can be formatted using
   ```bash
-  black python/
+  python -m black python/
   ```
