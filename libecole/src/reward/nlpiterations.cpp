@@ -15,7 +15,7 @@ Reward NLPIterations::get(environment::State const& state, bool done) {
 	(void)done;
 	auto lp_iter_diff = SCIPgetNLPIterations(state.model.get_scip_ptr()) - last_lp_iter;
 	last_lp_iter += lp_iter_diff;
-	return static_cast<double>(lp_iter_diff);
+	return static_cast<double>(-lp_iter_diff);
 }
 
 }  // namespace reward
