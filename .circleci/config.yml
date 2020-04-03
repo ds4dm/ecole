@@ -94,6 +94,14 @@ jobs:
           name: "Test Python ecole"
           command: python3 -m pytest python/tests
 
+  static_analysis:
+    executor:
+      name: ecole_conda
+    steps:
+      - checkout
+      - build_ecole:
+          cmake_options: "-D ENABLE_CLANG_TIDY=ON"
+
   check_format:
     executor: ecole_conda
     steps:
@@ -132,5 +140,8 @@ workflows:
           name: build_py38_clang
           python: "3.8"
           compiler: clang
+          requires:
+            - build_py38_gcc
+      - static_analysis:
           requires:
             - build_py38_gcc
