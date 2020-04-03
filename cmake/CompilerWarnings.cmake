@@ -98,16 +98,17 @@ function(set_project_warnings project_name)
 
 	set(GCC_WARNINGS
 		${CLANG_WARNINGS}
+		# FIXME currently not adding more warning for GCC because they fail on clang-tidy
 		# warn if identation implies blocks where blocks do not exist
-		-Wmisleading-indentation
+		# -Wmisleading-indentation
 		# warn if if / else chain has duplicated conditions
-		-Wduplicated-cond
+		# -Wduplicated-cond
 		# warn if if / else branches have duplicated code
-		-Wduplicated-branches
+		# -Wduplicated-branches
 		# warn about logical operations being used where bitwise were probably wanted
-		-Wlogical-op
+		# -Wlogical-op
 		# warn if you perform a cast to the same type
-		-Wuseless-cast
+		# -Wuseless-cast
 	)
 
 	if(MSVC)
