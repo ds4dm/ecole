@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "ecole/reward/abstract.hpp"
-#include "ecole/termination/abstract.hpp"
 
 namespace ecole {
 namespace reward {
