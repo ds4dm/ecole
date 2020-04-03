@@ -13,7 +13,7 @@ def test_IsDone(state):
 def test_NLPIterations(state):
     reward_func = R.NLPIterations()
     reward_func.reset(state)
-    assert reward_func.get(state) >= 0
+    assert reward_func.get(state) <= 0
     assert reward_func.get(state, done=True) == 0
 
 
