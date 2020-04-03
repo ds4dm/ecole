@@ -164,11 +164,6 @@ workflows:
           sanitizer: "ADDRESS"
           requires:
             - build_py38
-      - sanitize:
-          name: build_tsan
-          sanitizer: "THREAD"
-          requires:
-            - build_py38
       - static_analysis:
           requires:
             - build_py38
