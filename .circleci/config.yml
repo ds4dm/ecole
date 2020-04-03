@@ -74,9 +74,14 @@ jobs:
     parameters:
       python:
         type: string
+        default: "3.8"
       compiler:
         type: enum
         enum: ["gcc", "clang"]
+        default: "gcc"
+      cmake_options:
+        type: string
+        default: ""
     executor:
       name: ecole_conda
       environment: "ecole-py<<parameters.python>>"
@@ -84,6 +89,7 @@ jobs:
       - checkout
       - build_ecole:
           compiler: "<<parameters.compiler>>"
+          cmake_options: "<<parameters.cmake_options>>"
       - run:
           name: "Test libecole"
           command: ./build/libecole/tests/test-libecole
@@ -93,6 +99,21 @@ jobs:
       - run:
           name: "Test Python ecole"
           command: python3 -m pytest python/tests
+
+  sanitize:
+    parameters:
+      sanitizer:
+        type: enum
+        enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
+    executor: ecole_conda
+    steps:
+      - checkout
+      - build_ecole:
+          cmake_options: "-D SANITIZE_<<parameters.sanitizer>>=ON"
+      - run:
+          name: "Test libecole"
+          command: ./build/libecole/tests/test-libecole
+        # Python library cannot be sanitized so far
 
   static_analysis:
     executor:
@@ -109,7 +130,7 @@ jobs:
       - run:
           name: "Check C++ formatting"
           command: |
-            for file in $(find libecole python -name '*.cpp' -o -name '*.hpp'); do
+            for file in $(find libecole python -name '*.[hc]pp'); do
               [ $? -eq 0 ] && clang-format --style=file "$file" | diff - "$file"
             done
       - run:
@@ -121,27 +142,33 @@ workflows:
     jobs:
       - check_format
       - build_test:
-          name: build_py38_gcc
+          name: build_py38
           python: "3.8"
-          compiler: gcc
       - build_test:
-          name: build_py37_gcc
+          name: build_py37
           python: "3.7"
-          compiler: gcc
           requires:
-            - build_py38_gcc
+            - build_py38
       - build_test:
-          name: build_py36_gcc
+          name: build_py36
           python: "3.6"
-          compiler: gcc
           requires:
-            - build_py38_gcc
+            - build_py38
       - build_test:
-          name: build_py38_clang
-          python: "3.8"
+          name: build_clang
           compiler: clang
           requires:
-            - build_py38_gcc
+            - build_py38
+      - sanitize:
+          name: build_asan
+          sanitizer: "ADDRESS"
+          requires:
+            - build_py38
+      - sanitize:
+          name: build_tsan
+          sanitizer: "THREAD"
+          requires:
+            - build_py38
       - static_analysis:
           requires:
-            - build_py38_gcc
+            - build_py38
