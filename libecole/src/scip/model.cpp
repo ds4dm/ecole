@@ -3,10 +3,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <fmt/format.h>  // C++20-like format
 #include <mutex>
 #include <string>
 
+#include <fmt/format.h>
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
