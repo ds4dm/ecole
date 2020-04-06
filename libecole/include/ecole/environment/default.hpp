@@ -75,7 +75,7 @@ public:
 	 */
 	void seed(result_type new_seed) {
 		Base::seed(new_seed);
-		m_seed = new_seed = 0;
+		m_seed = new_seed;
 	}
 
 	/**
