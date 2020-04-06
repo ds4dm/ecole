@@ -56,6 +56,7 @@ commands:
             CONAN_USER_HOME: &conan_cache_dir /cache/conan
           command: >
             cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
+            -D CMAKE_TOOLCHAIN_FILE="${PWD}/.circleci/conda.cmake"
             -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON
             <<parameters.cmake_options>>
       - save_cache:

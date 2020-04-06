@@ -39,6 +39,7 @@ conan_cmake_run(
 	NO_OUTPUT_DIRS
 	SKIP_STD
 	BUILD missing
+	ENV CONAN_CMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}"
 )
 target_link_libraries(
 	libecole
