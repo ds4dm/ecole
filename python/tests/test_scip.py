@@ -1,5 +1,7 @@
 import pytest
 
+import ecole.scip
+
 
 def test_equality(model):
     assert model == model
@@ -10,6 +12,11 @@ def test_clone(model):
     model_copy = model.clone()
     assert model is not model_copy
     assert model != model_copy
+
+
+def test_exception(model):
+    with pytest.raises(ecole.scip.Exception):
+        model.get_param("not_a_param")
 
 
 names_types = (

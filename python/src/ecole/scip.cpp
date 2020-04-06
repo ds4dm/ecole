@@ -33,6 +33,8 @@ template <> py11::object scip::Model::get_param(std::string const& name) const {
 PYBIND11_MODULE(scip, m) {
 	m.doc() = "Scip wrappers for ecole.";
 
+	py11::register_exception<scip::Exception>(m, "Exception");
+
 	py11::class_<scip::Model, std::shared_ptr<scip::Model>>(m, "Model")  //
 		.def_static("from_file", &scip::Model::from_file)
 

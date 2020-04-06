@@ -79,6 +79,8 @@ PYBIND11_MODULE(environment, m) {
 	// Import of abstract required for resolving inheritance to abstract base types
 	py11::module const abstract_mod = py11::module::import("ecole.abstract");
 
+	py11::register_exception<environment::Exception>(m, "Exception");
+
 	pyenvironment::env_class_<environment::Branching>(m, "Branching")  //
 		.def(py11::init<
 				 std::shared_ptr<pyobservation::ObsFunctionBase>,

@@ -1,11 +1,11 @@
 import pytest
 
-from ecole.environment import Branching
+import ecole.environment as environment
 
 
 @pytest.mark.slow
 def test_branching_environment(model):
-    env = Branching()
+    env = environment.Branching()
     for _ in range(2):
         count = 0
         obs, done = env.reset(model.clone())
@@ -13,3 +13,9 @@ def test_branching_environment(model):
             obs, reward, done, info = env.step(0)
             count += 1
         assert count > 0
+
+
+def test_exception(model):
+    with pytest.raises(environment.Exception):
+        env = environment.Branching()
+        env.step(0)
