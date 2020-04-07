@@ -28,21 +28,18 @@ endmacro()
 macro(set_developper_defaults)
 	set_default_build_type(Debug)
 
-	# Activate Testing by default
-	if(NOT DEFINED BUILD_TESTING)
-		set(BUILD_TESTING ON)
-	endif()
+	option(BUILD_TESTING "Build tests in Ecole" ON)
 
 	# Generate compile_commands.json to make it easier to work with clang based tools
 	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-	set(ENABLE_CLANG_TIDY ON)
+	option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
 
 	# Enable compiler cache if found
 	find_program(CCACHE ccache)
 	if(CCACHE)
 		message(STATUS "Using ccache")
-		set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+		set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE} CACHE FILEPATH "Compiler launching tool")
 	else()
 		message(STATUS "Cannot find requirement ccache")
 	endif()
