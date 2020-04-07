@@ -11,7 +11,8 @@ namespace termination {
  * Abstract base class for all termination functions.
  *
  * Termination functions can be given to environments to parametrize when the environment
- * terminates (that is, @ref Env::step returns `true` for the `done` flag).
+ * terminates (that is, @ref environment::Environment::step returns `true` for the `done`
+ * flag).
  */
 class TerminationFunction {
 public:

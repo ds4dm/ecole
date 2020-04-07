@@ -33,7 +33,7 @@ using namespace nonstd;
 /**
  * SFINAE utility to statically detect if a given type behaves like a pointer.
  *
- * Could be a raw pointer, a @ref std::unique_ptr, a @ref std::shared_ptr etc.
+ * Could be a raw pointer, a `std::unique_ptr`, a `std::shared_ptr` etc.
  */
 template <typename, typename = void_t<>> struct is_pointer_like : std::false_type {};
 template <typename T>
@@ -106,7 +106,7 @@ private:
  * @tparam ObservationFunction
  * @tparam RewardFunction
  * @tparam TerminationFunction
- * @tparam Observation As returned from @ref reset and @step.
+ * @tparam Observation As returned from @ref reset and @ref step.
  * @tparam StateHolder If the way to store a State is different from what the derived
  *         class is expecting.
  */
@@ -128,8 +128,8 @@ public:
 	 *
 	 * @tparam ObsFunc Cannot be set. The template is used to use universal references and
 	 *                 enable both rvalues and lvalues references at once.
-	 * @tparam RewFunc Same as @ref ObsFunc.
-	 * @tparam TermFunc Same as @ref ObsFunc.
+	 * @tparam RewFunc Same as @p ObsFunc.
+	 * @tparam TermFunc Same as @p ObsFunc.
 	 */
 	template <
 		typename ObsFunc = ObservationFunction,
@@ -142,7 +142,7 @@ public:
 		seed_distrib(scip::min_seed, scip::max_seed) {}
 
 	/**
-	 * @copydoc Environment::seed
+	 * @copydoc ecole::environment::Environment::seed
 	 */
 	void seed(Seed new_seed) override {
 		random_engine.seed(static_cast<internal::RandomEngine::result_type>(new_seed));
@@ -150,7 +150,7 @@ public:
 	Seed seed() const noexcept override { return static_cast<Seed>(random_engine.seed()); }
 
 	/**
-	 * @copydoc Environment::reset
+	 * @copydoc ecole::environment::Environment::reset
 	 */
 	std::tuple<nonstd::optional<Observation>, bool> reset(scip::Model&& model) override {
 		can_transition = true;
@@ -179,7 +179,7 @@ public:
 	}
 
 	/**
-	 * @copydoc Environment::reset
+	 * @copydoc ecole::environment::Environment::reset
 	 */
 	std::tuple<nonstd::optional<Observation>, bool>
 	reset(std::string const& filename) override {
@@ -187,7 +187,7 @@ public:
 	}
 
 	/**
-	 * @copydoc Environment::reset
+	 * @copydoc ecole::environment::Environment::reset
 	 */
 	std::tuple<nonstd::optional<Observation>, bool>
 	reset(scip::Model const& model) override {
@@ -195,7 +195,7 @@ public:
 	}
 
 	/**
-	 * @copydoc Environment::step
+	 * @copydoc ecole::environment::Environment::step
 	 */
 	std::tuple<nonstd::optional<Observation>, Reward, bool, Info>
 	step(Action const& action) override {
@@ -258,6 +258,7 @@ protected:
 	 *
 	 * @param state The state as it was in the last call to @ref step_state or
 	 *        @ref reset_state.
+	 * @param action The action passed to @ref step.
 	 * @return Whether the environment can logically go any further.
 	 *         This will be combined witht the early TerminationFunction to provide the
 	 *         final `done` flag for the user.
