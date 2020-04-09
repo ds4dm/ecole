@@ -17,7 +17,7 @@ using namespace ecole;
 TEST_CASE("BranchEnv") {
 	auto env = environment::
 		Branching<observation::NodeBipartite, reward::IsDone, termination::WhenSolved>(
-			observation::NodeBipartite{}, reward::IsDone{}, termination::WhenSolved{});
+			{}, {}, {});
 
 	SECTION("reset, reset, and delete") {
 		env.reset(problem_file);
@@ -32,19 +32,21 @@ TEST_CASE("BranchEnv") {
 	SECTION("run full trajectory") {
 		auto run_trajectory = [&env](std::string const& filename) {
 			auto obs_done = env.reset(filename);
-			auto done = std::get<bool>(obs_done);
+			auto obs = std::get<0>(obs_done);
+			auto done = std::get<1>(obs_done);
 			auto count = 0;
 
-			// Test that the observation is none only on terminal states
-			REQUIRE(std::get<0>(obs_done).has_value() != done);
+			// Assert that the observation is none only on terminal states
+			REQUIRE(obs.has_value() != done);
 
 			while (!done) {
 				auto obs_rew_done_info = env.step(0);
-				done = std::get<bool>(obs_rew_done_info);
+				obs = std::get<0>(obs_rew_done_info);
+				done = std::get<2>(obs_rew_done_info);
 				++count;
 
-				// Test that the observation is none only on terminal states
-				REQUIRE(std::get<0>(obs_rew_done_info).has_value() != done);
+				// Assert that the observation is none only on terminal states
+				REQUIRE(obs.has_value() != done);
 			}
 
 			REQUIRE(count > 0);
