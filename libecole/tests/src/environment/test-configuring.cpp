@@ -6,7 +6,6 @@
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/none.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/reward/nlpiterations.hpp"
 #include "ecole/termination/whensolved.hpp"
 
 #include "conftest.hpp"
@@ -40,15 +39,4 @@ TEST_CASE("Model creation") {
 		// Test that the observation is none only on terminal states
 		REQUIRE(std::get<0>(obs_rew_done_info).has_value() != done);
 	}
-}
-
-TEST_CASE("Changing the reward function") {
-	auto env = environment::Configuring<
-		observation::NodeBipartite<>,
-		reward::NLPIterations,
-		termination::WhenSolved>(
-		observation::NodeBipartite<>{}, reward::NLPIterations{}, termination::WhenSolved{});
-
-	env.reset(problem_file);
-	env.step({{"presolving/maxrounds", 0}});
 }
