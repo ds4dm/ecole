@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/reward/isdone.hpp"
-#include "ecole/reward/nlpiterations.hpp"
+#include "ecole/reward/lpiterations.hpp"
 
 #include "reward/adaptor.hpp"
 
@@ -16,6 +16,6 @@ PYBIND11_MODULE(reward, m) {
 
 	pyreward::function_class_<reward::IsDone>(m, "IsDone")  //
 		.def(py11::init<>());
-	pyreward::function_class_<reward::NLPIterations>(m, "NLPIterations")  //
+	pyreward::function_class_<reward::LPIterations>(m, "LPIterations")  //
 		.def(py11::init<>());
 }
