@@ -27,9 +27,12 @@ include(cmake/Conan.cmake)
 # Enable tools for checking the code at compile time.
 include(cmake/StaticAnalysis.cmake)
 
+# Find Python and create virtual environment for Ecole
+include(cmake/Python.cmake)
+
 # Ecole libraries
 add_subdirectory(libecole)
 add_subdirectory(python)
 
-# Documentation with doxygen and Sphinx
+# Documentation with Doxygen and Sphinx
 add_subdirectory(docs EXCLUDE_FROM_ALL)
