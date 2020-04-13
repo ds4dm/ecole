@@ -7,7 +7,6 @@ if(NOT ENABLE_DOCUMENTATION)
 endif()
 
 find_package(Doxygen REQUIRED)
-find_package(Sphinx REQUIRED)
 
 # Equivalent to Doxyfile configurations
 set(DOXYGEN_QUIET YES)
@@ -31,7 +30,7 @@ configure_file("${SPHINX_SOURCE_DIR}/conf.py.in" "${SPHINX_BUILD_DIR}/conf.py" @
 add_custom_target(
 	ecole-sphinx
 	COMMAND
-	Sphinx::build -q -W -b html
+	venv-python -m sphinx -q -W -b html
 		-c "${SPHINX_BUILD_DIR}"  # Find config file in build directory
 		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
 		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"

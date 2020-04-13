@@ -9,9 +9,6 @@ project(
 )
 set(Ecole_AUTHORS "Antoine Prouvost")
 
-# Add the cmake folder for external packages
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
 # Set default parameters. Assumes Ecole user,
 include(cmake/DefaultSettings.cmake)
 
