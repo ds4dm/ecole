@@ -33,6 +33,9 @@ commands:
       cmake_options:
         type: string
         default: ""
+      target:
+        type: string
+        default: all
     description: "Compiling the Ecole project"
     steps:
       - restore_cache:
@@ -65,7 +68,7 @@ commands:
             - *conan_cache_dir
       - run:
           name: "CMake build"
-          command: cmake --build build
+          command: cmake --build build --target <<parameters.target>>
 
 
 # Execute a set of commands in a clean executor
@@ -138,6 +141,17 @@ jobs:
           name: "Check Python formatting"
           command: python3 -m black --check python/
 
+  build_doc:
+    executor: ecole_conda
+    steps:
+      - checkout
+      - build_ecole:
+          cmake_options: "-D ENABLE_DOCUMENTATION=ON"
+      - run:
+          name: "Generate documentation"
+          command: cmake --build build --target ecole-sphinx
+
+
 workflows:
   continuous_testing:
     jobs:
@@ -166,5 +180,8 @@ workflows:
           requires:
             - build_py38
       - static_analysis:
+          requires:
+            - build_py38
+      - build_doc:
           requires:
             - build_py38
