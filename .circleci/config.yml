@@ -126,9 +126,7 @@ jobs:
       - checkout
       - build_ecole:
           cmake_options: "-D ENABLE_DOCUMENTATION=ON"
-      - run:
-          name: "Generate documentation"
-          command: cmake --build build --target ecole-sphinx
+          target: "ecole-sphinx"
 
 
 # Reusable set of instructions to be used in jobs
