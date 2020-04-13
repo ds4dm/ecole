@@ -34,6 +34,11 @@ workflows:
       - build_doc:
           requires:
             - build_py38
+      # FIXME should not be done everytime
+      - deploy_doc:
+          deploy_version: "latest"
+
+
 
 
 # Environments where jobs are executed
@@ -128,6 +133,27 @@ jobs:
           cmake_options: "-D ENABLE_DOCUMENTATION=ON"
           target: "ecole-sphinx"
 
+  deploy_doc:
+    executor: ecole_conda
+    parameters:
+      deploy_version:
+        type: string
+        default: "${CIRCLE_BRANCH}"
+    steps:
+      - checkout
+      # Easier/faster to rebuild than to share a workspace
+      - build_ecole:
+          cmake_options: "-D ENABLE_DOCUMENTATION=ON"
+          target: "ecole-sphinx"
+      - deploy_github:
+          build_dir: build/docs/sphinx/html
+          delete_previous: true
+          github_repository: doc.ecole.ai
+          repository_subdir: "<<parameters.deploy_version>>"
+          git_user: "BotEcole"
+          git_email: "BotEcole@users.noreply.github.com"
+          ssh_fingerprints: "a9:13:fc:02:79:6c:60:8a:72:b1:c3:87:6c:5e:06:32"
+
 
 # Reusable set of instructions to be used in jobs
 commands:
@@ -183,4 +209,108 @@ commands:
             - *conan_cache_dir
       - run:
           name: "CMake build"
-          command: cmake --build build --target <<parameters.target>>
+          command: "cmake --build build --target <<parameters.target>>"
+
+  # Deploy files to a Github repository
+  deploy_github:
+    description: |
+      Deploy assets to GitHub. Modified from orb
+      https://circleci.com/orbs/registry/orb/sugarshin/gh-pages
+    parameters:
+      build_dir:
+        description: Directory with files to deploy
+        type: string
+      commit_message:
+        default: "Automatic deploy of ${COMMIT_HASH} [ci skip]"
+        type: string
+      delete_previous:
+        default: false
+        type: boolean
+        description: |
+          Delete previous files before deploying, making the files in the build directory
+          the only ones remaining.
+      git_email:
+        default: "${CIRCLE_USERNAME}@users.noreply.github.com"
+        description: Git email to amke commit.
+        type: string
+      git_user:
+        default: "${CIRCLE_USERNAME}"
+        description: Git user to make commit.
+        type: string
+      github_username:
+        default: "${CIRCLE_PROJECT_USERNAME}"
+        description: Username of the Github repository to push to.
+        type: string
+      github_repository:
+        default: "${CIRCLE_PROJECT_REPONAME}"
+        description: Name of the Github repository to push to.
+        type: string
+      repository_branch:
+        default: "master"
+        type: string
+        description: Branch of the Github repository to push to.
+      repository_subdir:
+        default: ""
+        type: string
+        description: Subdirectory of the deploy repository to push files to.
+      setup_git:
+        default: true
+        description: Setting Git username and email.
+        type: boolean
+      ssh_fingerprints:
+        default: ""
+        type: string
+        description: |
+          Fingerprints for SSH deploy key (add the public key as a read/write key on
+          GitHub; add the private key in CircleCI via SSH Permissions, with github.com as
+          Hostname). Used to push a git tag back to the project's repository.
+      clone_dir:
+        default: /tmp/deploy_github
+        type: string
+        description: The local directory where the repository to deploy to is cloned.
+    steps:
+      - when:
+          condition: "<<parameters.ssh_fingerprints>>"
+          steps:
+          - add_ssh_keys:
+              fingerprints:
+              - "<<parameters.ssh_fingerprints>>"
+      - when:
+          condition: "<<parameters.setup_git>>"
+          steps:
+            - run:
+                name: "Setup git"
+                command: |
+                  git config --global user.name "<<parameters.git_user>>"
+                  git config --global user.email "<<parameters.git_email>>"
+      - run:
+          name: "Clone repository to deploy to"
+          command: |
+            readonly USERNAME="<<parameters.github_username>>"
+            readonly REPONAME="<<parameters.github_repository>>"
+            readonly GIT_URL="git@github.com:${USERNAME}/${REPONAME}.git"
+            readonly BRANCH="<<parameters.repository_branch>>"
+            readonly DIR="<<parameters.clone_dir>>"
+            git clone --depth=1 "${GIT_URL}" -b "${BRANCH}" "${DIR}"
+      - when:
+          condition: "<<parameters.delete_previous>>"
+          steps:
+            - run:
+                name: "Delete previous files in deploy project."
+                command: >
+                  rm -rfv "<<parameters.clone_dir>>/<<parameters.repository_subdir>>"
+      - run:
+          name: "Deploy to GitHub Pages"
+          command: |
+            readonly COMMIT_HASH=$(git rev-parse --short HEAD)
+            readonly MESSAGE="<<parameters.commit_message>>"
+            readonly DIR="<<parameters.clone_dir>>/<<parameters.repository_subdir>>"
+            cp -R "<<parameters.build_dir>>" "${DIR}"
+            cd "${DIR}"
+            git add --all
+            if git diff --quiet --cached; then
+              echo "Nothing to commit"
+            else
+              git commit -m "${MESSAGE}"
+              git push origin
+            fi
