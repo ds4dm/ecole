@@ -34,11 +34,14 @@ workflows:
       - build_doc:
           requires:
             - build_py38
-      # FIXME should not be done everytime
       - deploy_doc:
-          deploy_version: "latest"
-
-
+          requires:
+            - build_doc
+          filters:
+            branches:
+              only:
+                - "master"
+                - '/^v\d+\.\d+\.x/'
 
 
 # Environments where jobs are executed
