@@ -1,4 +1,4 @@
-# Set default parameters depending if user or developper.
+# Set default parameters depending if user or developer.
 
 
 # Set the default build type to the given value if no build type was specified
@@ -24,8 +24,8 @@ macro(set_user_defaults)
 endmacro()
 
 
-# Set of defaults for Ecole developpers (anyone contributing)
-macro(set_developper_defaults)
+# Set of defaults for Ecole developers (anyone contributing)
+macro(set_developer_defaults)
 	set_default_build_type(Debug)
 
 	option(BUILD_TESTING "Build tests in Ecole" ON)
@@ -50,8 +50,8 @@ endmacro()
 
 
 macro(set_defaults)
-	if(ECOLE_DEVELOPPER)
-		set_developper_defaults()
+	if(ECOLE_DEVELOPER)
+		set_developer_defaults()
 	else()
 		set_user_defaults()
 	endif()

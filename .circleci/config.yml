@@ -1,5 +1,49 @@
 version: 2.1
 
+
+workflows:
+  continuous_testing:
+    jobs:
+      - check_format
+      - build_test:
+          name: build_py38
+          python: "3.8"
+      - build_test:
+          name: build_py37
+          python: "3.7"
+          requires:
+            - build_py38
+      - build_test:
+          name: build_py36
+          python: "3.6"
+          requires:
+            - build_py38
+      - build_test:
+          name: build_clang
+          compiler: clang
+          requires:
+            - build_py38
+      - sanitize:
+          name: build_asan
+          sanitizer: "ADDRESS"
+          requires:
+            - build_py38
+      - static_analysis:
+          requires:
+            - build_py38
+      - build_doc:
+          requires:
+            - build_py38
+      - deploy_doc:
+          requires:
+            - build_doc
+          filters:
+            branches:
+              only:
+                - "master"
+                - '/^v\d+\.\d+\.x/'
+
+
 # Environments where jobs are executed
 executors:
 
@@ -12,63 +56,6 @@ executors:
         type: string
         default: ecole-py3.8
     shell: conda run -n <<parameters.environment>> /bin/bash -c
-
-
-# Reusable set of instructions to be used in jobs
-commands:
-
-  # Build the entire project
-  build_ecole:
-    parameters:
-      source_dir:
-        type: string
-        default: "."
-      build_dir:
-        type: string
-        default: build
-      compiler:
-        type: enum
-        enum: ["gcc", "clang"]
-        default: "gcc"
-      cmake_options:
-        type: string
-        default: ""
-      target:
-        type: string
-        default: all
-    description: "Compiling the Ecole project"
-    steps:
-      - restore_cache:
-          keys:
-            - &conan_cache_key >-
-              conan-v1.1-{{
-              arch }}-{{
-              checksum "libecole/conanfile.txt" }}-{{
-              checksum "libecole/tests/conanfile.txt" }}
-            - conan-v1.1-{{ arch }}-
-      - run:
-          name: "Set compiler"
-          command: |
-            if [[ <<parameters.compiler>> == "clang" ]]; then
-              echo "export CC=$(which clang)" >> $BASH_ENV
-              echo "export CXX=$(which clang++)" >> $BASH_ENV
-            fi
-      - run:
-          name: "CMake configure"
-          environment:
-            CONAN_USER_HOME: &conan_cache_dir /cache/conan
-          command: >
-            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
-            -D CMAKE_TOOLCHAIN_FILE="${PWD}/.circleci/conda.cmake"
-            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON
-            <<parameters.cmake_options>>
-      - save_cache:
-          key: *conan_cache_key
-          paths:
-            - *conan_cache_dir
-      - run:
-          name: "CMake build"
-          command: cmake --build build --target <<parameters.target>>
 
 
 # Execute a set of commands in a clean executor
@@ -147,41 +134,186 @@ jobs:
       - checkout
       - build_ecole:
           cmake_options: "-D ENABLE_DOCUMENTATION=ON"
+          target: "ecole-sphinx"
+
+  deploy_doc:
+    executor: ecole_conda
+    parameters:
+      deploy_version:
+        type: string
+        default: "${CIRCLE_BRANCH}"
+    steps:
+      - checkout
+      # Easier/faster to rebuild than to share a workspace
+      - build_ecole:
+          cmake_options: "-D ENABLE_DOCUMENTATION=ON"
+          target: "ecole-sphinx"
+      - deploy_github:
+          build_dir: build/docs/sphinx/html
+          delete_previous: true
+          github_repository: doc.ecole.ai
+          repository_subdir: "<<parameters.deploy_version>>"
+          git_user: "BotEcole"
+          git_email: "BotEcole@users.noreply.github.com"
+          ssh_fingerprints: "a9:13:fc:02:79:6c:60:8a:72:b1:c3:87:6c:5e:06:32"
+
+
+# Reusable set of instructions to be used in jobs
+commands:
+
+  # Build the entire project
+  build_ecole:
+    parameters:
+      source_dir:
+        type: string
+        default: "."
+      build_dir:
+        type: string
+        default: build
+      compiler:
+        type: enum
+        enum: ["gcc", "clang"]
+        default: "gcc"
+      cmake_options:
+        type: string
+        default: ""
+      target:
+        type: string
+        default: all
+    description: "Compiling the Ecole project"
+    steps:
+      - restore_cache:
+          keys:
+            - &conan_cache_key >-
+              conan-v1.1-{{
+              arch }}-{{
+              checksum "libecole/conanfile.txt" }}-{{
+              checksum "libecole/tests/conanfile.txt" }}
+            - conan-v1.1-{{ arch }}-
       - run:
-          name: "Generate documentation"
-          command: cmake --build build --target ecole-sphinx
+          name: "Set compiler"
+          command: |
+            if [[ <<parameters.compiler>> == "clang" ]]; then
+              echo "export CC=$(which clang)" >> $BASH_ENV
+              echo "export CXX=$(which clang++)" >> $BASH_ENV
+            fi
+      - run:
+          name: "CMake configure"
+          environment:
+            CONAN_USER_HOME: &conan_cache_dir /cache/conan
+          command: >
+            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
+            -D CMAKE_TOOLCHAIN_FILE="${PWD}/.circleci/conda.cmake"
+            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON
+            <<parameters.cmake_options>>
+      - save_cache:
+          key: *conan_cache_key
+          paths:
+            - *conan_cache_dir
+      - run:
+          name: "CMake build"
+          command: "cmake --build build --target <<parameters.target>>"
 
-
-workflows:
-  continuous_testing:
-    jobs:
-      - check_format
-      - build_test:
-          name: build_py38
-          python: "3.8"
-      - build_test:
-          name: build_py37
-          python: "3.7"
-          requires:
-            - build_py38
-      - build_test:
-          name: build_py36
-          python: "3.6"
-          requires:
-            - build_py38
-      - build_test:
-          name: build_clang
-          compiler: clang
-          requires:
-            - build_py38
-      - sanitize:
-          name: build_asan
-          sanitizer: "ADDRESS"
-          requires:
-            - build_py38
-      - static_analysis:
-          requires:
-            - build_py38
-      - build_doc:
-          requires:
-            - build_py38
+  # Deploy files to a Github repository
+  deploy_github:
+    description: |
+      Deploy assets to GitHub. Modified from orb
+      https://circleci.com/orbs/registry/orb/sugarshin/gh-pages
+    parameters:
+      build_dir:
+        description: Directory with files to deploy
+        type: string
+      commit_message:
+        default: "Automatic deploy of ${COMMIT_HASH} [ci skip]"
+        type: string
+      delete_previous:
+        default: false
+        type: boolean
+        description: |
+          Delete previous files before deploying, making the files in the build directory
+          the only ones remaining.
+      git_email:
+        default: "${CIRCLE_USERNAME}@users.noreply.github.com"
+        description: Git email to amke commit.
+        type: string
+      git_user:
+        default: "${CIRCLE_USERNAME}"
+        description: Git user to make commit.
+        type: string
+      github_username:
+        default: "${CIRCLE_PROJECT_USERNAME}"
+        description: Username of the Github repository to push to.
+        type: string
+      github_repository:
+        default: "${CIRCLE_PROJECT_REPONAME}"
+        description: Name of the Github repository to push to.
+        type: string
+      repository_branch:
+        default: "master"
+        type: string
+        description: Branch of the Github repository to push to.
+      repository_subdir:
+        default: ""
+        type: string
+        description: Subdirectory of the deploy repository to push files to.
+      setup_git:
+        default: true
+        description: Setting Git username and email.
+        type: boolean
+      ssh_fingerprints:
+        default: ""
+        type: string
+        description: |
+          Fingerprints for SSH deploy key (add the public key as a read/write key on
+          GitHub; add the private key in CircleCI via SSH Permissions, with github.com as
+          Hostname). Used to push a git tag back to the project's repository.
+      clone_dir:
+        default: /tmp/deploy_github
+        type: string
+        description: The local directory where the repository to deploy to is cloned.
+    steps:
+      - when:
+          condition: "<<parameters.ssh_fingerprints>>"
+          steps:
+          - add_ssh_keys:
+              fingerprints:
+              - "<<parameters.ssh_fingerprints>>"
+      - when:
+          condition: "<<parameters.setup_git>>"
+          steps:
+            - run:
+                name: "Setup git"
+                command: |
+                  git config --global user.name "<<parameters.git_user>>"
+                  git config --global user.email "<<parameters.git_email>>"
+      - run:
+          name: "Clone repository to deploy to"
+          command: |
+            readonly USERNAME="<<parameters.github_username>>"
+            readonly REPONAME="<<parameters.github_repository>>"
+            readonly GIT_URL="git@github.com:${USERNAME}/${REPONAME}.git"
+            readonly BRANCH="<<parameters.repository_branch>>"
+            readonly DIR="<<parameters.clone_dir>>"
+            git clone --depth=1 "${GIT_URL}" -b "${BRANCH}" "${DIR}"
+      - when:
+          condition: "<<parameters.delete_previous>>"
+          steps:
+            - run:
+                name: "Delete previous files in deploy project."
+                command: >
+                  rm -rfv "<<parameters.clone_dir>>/<<parameters.repository_subdir>>"
+      - run:
+          name: "Deploy to GitHub Pages"
+          command: |
+            readonly COMMIT_HASH=$(git rev-parse --short HEAD)
+            readonly MESSAGE="<<parameters.commit_message>>"
+            readonly DIR="<<parameters.clone_dir>>/<<parameters.repository_subdir>>"
+            cp -R "<<parameters.build_dir>>" "${DIR}"
+            cd "${DIR}"
+            git add --all
+            if git diff --quiet --cached; then
+              echo "Nothing to commit"
+            else
+              git commit -m "${MESSAGE}"
+              git push origin
+            fi
