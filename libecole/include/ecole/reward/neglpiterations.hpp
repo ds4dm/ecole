@@ -7,7 +7,7 @@
 namespace ecole {
 namespace reward {
 
-class LPIterations : public RewardFunction {
+class NegLPIterations : public RewardFunction {
 public:
 	std::unique_ptr<RewardFunction> clone() const override;
 	void reset(environment::State const& initial_state) override;
