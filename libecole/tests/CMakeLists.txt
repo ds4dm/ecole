@@ -9,7 +9,7 @@ add_executable(
 	src/scip/test-view.cpp
 	src/environment/test-branching.cpp
 	src/environment/test-configuring.cpp
-	src/reward/test-lpiterations.cpp
+	src/reward/test-neglpiterations.cpp
 )
 
 target_compile_definitions(

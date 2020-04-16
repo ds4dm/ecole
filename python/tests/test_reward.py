@@ -10,8 +10,8 @@ def test_IsDone(state):
     assert reward_func.get(state, done=True) == 1
 
 
-def test_LPIterations(state):
-    reward_func = R.LPIterations()
+def test_NegLPIterations(state):
+    reward_func = R.NegLPIterations()
     reward_func.reset(state)
     assert reward_func.get(state) <= 0
 

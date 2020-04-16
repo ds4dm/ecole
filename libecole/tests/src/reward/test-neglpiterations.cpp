@@ -5,7 +5,7 @@
 
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/none.hpp"
-#include "ecole/reward/lpiterations.hpp"
+#include "ecole/reward/neglpiterations.hpp"
 #include "ecole/termination/whensolved.hpp"
 
 #include "conftest.hpp"
@@ -14,7 +14,7 @@ using namespace ecole;
 
 TEST_CASE("Using the reward in a Configuring environment") {
 	auto env = environment::
-		Configuring<observation::None, reward::LPIterations, termination::WhenSolved>(
+		Configuring<observation::None, reward::NegLPIterations, termination::WhenSolved>(
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {
