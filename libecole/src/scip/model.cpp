@@ -12,8 +12,7 @@
 
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
-
-#include "scip/utils.hpp"
+#include "ecole/scip/utils.hpp"
 
 namespace ecole {
 namespace scip {
@@ -186,6 +185,31 @@ std::string Model::get_param_explicit<ParamType::String>(std::string const& name
 	return ptr;
 }
 
+void Model::set_param(std::string const& name, std::string const& value) {
+	using namespace internal;
+	switch (get_param_type(name)) {
+	case ParamType::Bool:
+	case ParamType::Int:
+	case ParamType::LongInt:
+	case ParamType::Real:
+		throw Exception(fmt::format("Parameter {} does not accept string values", name));
+	case ParamType::Char:
+		// accept strings of length 1 as chars
+		if (value.length() == 1) {
+			set_param(name, value[0]);
+			break;
+		}
+		throw Exception(fmt::format("Parameter {} does not accept string values", name));
+	case ParamType::String:
+		set_param_explicit<ParamType::String>(name, value);
+		break;
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception(fmt::format("Could not find type for parameter {}", name));
+	}
+}
+
 void Model::solve() {
 	scip::call(SCIPsolve, get_scip_ptr());
 }
@@ -241,27 +265,6 @@ RowView Model::lp_rows() const {
 	auto const n_rows = static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr));
 	return RowView(scip_ptr, SCIPgetLPRows(scip_ptr), n_rows);
 }
-
-namespace internal {
-
-template <> std::string Caster<std::string, char>::cast(char val) {
-	return std::string{val};
-}
-
-template <> char Caster<char, char const*>::cast(char const* val) {
-	if (strlen(val) == 1)
-		return val[0];
-	else
-		throw scip::Exception("Can only convert a string with a single character to a char");
-}
-template <> char Caster<char, std::string>::cast(std::string val) {
-	if (val.length() == 1)
-		return val[0];
-	else
-		throw scip::Exception("Can only convert a string with a single character to a char");
-}
-
-}  // namespace internal
 
 }  // namespace scip
 }  // namespace ecole

@@ -5,8 +5,7 @@
 
 #include "ecole/environment/branching.hpp"
 #include "ecole/scip/model.hpp"
-
-#include "scip/utils.hpp"
+#include "ecole/scip/utils.hpp"
 
 namespace ecole {
 namespace environment {

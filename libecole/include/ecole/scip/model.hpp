@@ -8,10 +8,13 @@
 #include <memory>
 #include <string>
 
+#include <fmt/format.h>
+
 #include <scip/scip.h>
 
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/row.hpp"
+#include "ecole/scip/utils.hpp"
 #include "ecole/scip/variable.hpp"
 #include "ecole/utility/type_traits.hpp"
 
@@ -96,8 +99,23 @@ public:
 	 *
 	 * @see get_param_explicit, set_param_explicit to avoid any conversions.
 	 */
-	template <typename T> void set_param(std::string const& name, T value);
-	template <typename T> T get_param(std::string const& name) const;
+	// setter specialization for strings
+	void set_param(std::string const& name, std::string const& value);
+	// setter specialization for arithmetic types
+	template <typename T>
+	typename std::enable_if<std::is_arithmetic<typename std::decay<T>::type>::value, void>::
+		type
+		set_param(std::string const& name, T value);
+	// getter specialization for strings
+	template <typename T>
+	typename std::
+		enable_if<std::is_same<typename std::decay<T>::type, std::string>::value, T>::type
+		get_param(std::string const& name) const;
+	// getter specialization for arithmetic types
+	template <typename T>
+	typename std::enable_if<std::is_arithmetic<typename std::decay<T>::type>::value, T>::
+		type
+		get_param(std::string const& name) const;
 
 	void disable_presolve();
 	void disable_cuts();
@@ -133,77 +151,108 @@ private:
 
 namespace internal {
 
-// SFINAE default class for no available cast
-template <typename To, typename From, typename = void> struct Caster {
-	static To cast(From) { throw Exception("Cannot convert to the desired type"); }
-};
+template <class To, class From>
+typename std::enable_if<std::is_same<To, From>::value == true, To>::type
+narrow_cast(From v) {
+	return v;
+}
 
-// SFINAE class for available cast
-template <typename To, typename From>
-struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> {
-	static To cast(From val) { return static_cast<To>(val); }
-};
-
-// Pointers must not convert to bools
-template <typename From> struct Caster<bool, std::remove_cv<From>*> {
-	static bool cast(From) { throw Exception("Cannot convert pointers to bool"); }
-};
-
-// Convert charachter to string
-template <> std::string Caster<std::string, char>::cast(char);
-
-// Convert string to character
-template <> char Caster<char, char const*>::cast(char const*);
-template <> char Caster<char, std::string>::cast(std::string);
-
-// Helper func to deduce From type automatically
-template <typename To, typename From> To cast(From val) {
-	return Caster<To, From>::cast(val);
+template <class To, class From>
+typename std::enable_if<std::is_same<To, From>::value == false, To>::type
+narrow_cast(From v) {
+	auto v_to = static_cast<To>(v);
+	auto v_back = static_cast<From>(v_to);
+	if (v_back != v) {
+		throw Exception(
+			fmt::format("Narrow cast failed: numerical loss from '{}' to '{}'", v, v_to));
+	}
+	return v_to;
 }
 
 }  // namespace internal
 
-template <typename T> void Model::set_param(std::string const& name, T value) {
-	using internal::cast;
-	switch (get_param_type(name)) {
-	case ParamType::Bool:
-		return set_param_explicit<ParamType::Bool>(name, cast<bool>(value));
-	case ParamType::Int:
-		return set_param_explicit<ParamType::Int>(name, cast<int>(value));
-	case ParamType::LongInt:
-		return set_param_explicit<ParamType::LongInt>(name, cast<long_int>(value));
-	case ParamType::Real:
-		return set_param_explicit<ParamType::Real>(name, cast<real>(value));
-	case ParamType::Char:
-		return set_param_explicit<ParamType::Char>(name, cast<char>(value));
-	case ParamType::String:
-		return set_param_explicit<ParamType::String>(name, cast<std::string>(value));
-	default:
-		assert(false);  // All enum value should be handled
-		// Non void return for optimized build
-		throw Exception("Could not find type for given parameter");
-	}
-}
-
-template <typename T> T Model::get_param(std::string const& name) const {
+// set_param() specialization for arithmetic types
+template <typename T>
+typename std::enable_if<std::is_arithmetic<typename std::decay<T>::type>::value, void>::
+	type
+	Model::set_param(std::string const& name, T value) {
 	using namespace internal;
 	switch (get_param_type(name)) {
 	case ParamType::Bool:
-		return cast<T>(get_param_explicit<ParamType::Bool>(name));
+		set_param_explicit<ParamType::Bool>(
+			name, narrow_cast<param_t<ParamType::Bool>>(value));
+		break;
 	case ParamType::Int:
-		return cast<T>(get_param_explicit<ParamType::Int>(name));
+		set_param_explicit<ParamType::Int>(name, narrow_cast<param_t<ParamType::Int>>(value));
+		break;
 	case ParamType::LongInt:
-		return cast<T>(get_param_explicit<ParamType::LongInt>(name));
+		set_param_explicit<ParamType::LongInt>(
+			name, narrow_cast<param_t<ParamType::LongInt>>(value));
+		break;
 	case ParamType::Real:
-		return cast<T>(get_param_explicit<ParamType::Real>(name));
+		set_param_explicit<ParamType::Real>(
+			name, narrow_cast<param_t<ParamType::Real>>(value));
+		break;
 	case ParamType::Char:
-		return cast<T>(get_param_explicit<ParamType::Char>(name));
+		set_param_explicit<ParamType::Char>(
+			name, narrow_cast<param_t<ParamType::Char>>(value));
+		break;
 	case ParamType::String:
-		return cast<T>(get_param_explicit<ParamType::String>(name));
+		throw Exception(fmt::format("Parameter {} does not accept numeric values", name));
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build
-		throw Exception("Could not find type for given parameter");
+		throw Exception(fmt::format("Could not find type for parameter {}", name));
+	}
+}
+
+// get_param() specialization for string types
+template <typename T>
+typename std::
+	enable_if<std::is_same<typename std::decay<T>::type, std::string>::value, T>::type
+	Model::get_param(std::string const& name) const {
+	using namespace internal;
+	switch (get_param_type(name)) {
+	case ParamType::Bool:
+	case ParamType::Int:
+	case ParamType::LongInt:
+	case ParamType::Real:
+		throw Exception(
+			fmt::format("Parameter {} does not export into a string value", name));
+	case ParamType::Char:
+		return std::string{1, get_param_explicit<ParamType::Char>(name)};
+	case ParamType::String:
+		return get_param_explicit<ParamType::String>(name);
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception(fmt::format("Could not find type for parameter {}", name));
+	}
+}
+
+// get_param() specialization for arithmetic types
+template <typename T>
+typename std::enable_if<std::is_arithmetic<typename std::decay<T>::type>::value, T>::type
+Model::get_param(std::string const& name) const {
+	using namespace internal;
+	switch (get_param_type(name)) {
+	case ParamType::Bool:
+		return narrow_cast<T>(get_param_explicit<ParamType::Bool>(name));
+	case ParamType::Int:
+		return narrow_cast<T>(get_param_explicit<ParamType::Int>(name));
+	case ParamType::LongInt:
+		return narrow_cast<T>(get_param_explicit<ParamType::LongInt>(name));
+	case ParamType::Real:
+		return narrow_cast<T>(get_param_explicit<ParamType::Real>(name));
+	case ParamType::Char:
+		return narrow_cast<T>(get_param_explicit<ParamType::Char>(name));
+	case ParamType::String:
+		throw Exception(
+			fmt::format("Parameter {} does not export into a numeric value", name));
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception(fmt::format("Could not find type for parameter {}", name));
 	}
 }
 
