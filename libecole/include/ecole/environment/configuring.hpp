@@ -15,39 +15,18 @@ namespace environment {
  */
 using ParamDict = std::map<std::string, scip::Param>;
 
-template <typename... EnvTypes>
-class Configuring : public DefaultEnvironment<ParamDict, State, EnvTypes...> {
+class ConfiguringDynamics {
 public:
-	using Base = DefaultEnvironment<ParamDict, State, EnvTypes...>;
-	using typename Base::Action;
-	using typename Base::Observation;
+	using Action = ParamDict;
+	using State = environment::State;
 
-	using Base::Base;
-
-	bool reset_state(State& initial_state) override;
-	bool step_state(State& state, ParamDict const& action) override;
+	bool reset_state(State& initial_state);
+	bool step_state(State& state, ParamDict const& action);
+	void del_state(State&){};  // FIXME issue #24
 };
 
-/***********************************
- *  Implementation of Configuring  *
- ***********************************/
-
-template <typename... EnvTypes> bool Configuring<EnvTypes...>::reset_state(State&) {
-	return false;
-}
-
 template <typename... EnvTypes>
-bool Configuring<EnvTypes...>::step_state(
-	State& state,
-	ParamDict const& param_dict  //
-) {
-	for (auto const& name_value : param_dict)
-		nonstd::visit(
-			[&](auto&& val) { state.model.set_param(name_value.first, val); },
-			name_value.second);
-	state.model.solve();
-	return true;
-}
+using Configuring = DefaultEnvironment<ConfiguringDynamics, EnvTypes...>;
 
 }  // namespace environment
 }  // namespace ecole

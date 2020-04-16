@@ -7,47 +7,23 @@
 #include "ecole/utility/reverse-control.hpp"
 
 namespace ecole {
-
 namespace environment {
 
-template <typename... EnvTypes>
-class Branching : public DefaultEnvironment<std::size_t, State, EnvTypes...> {
+class BranchingDynamics {
 public:
-	using Base = DefaultEnvironment<std::size_t, State, EnvTypes...>;
+	using Action = std::size_t;
+	using State = environment::State;
 
-	using Base::Base;
-
-	bool reset_state(State& initial_state) override;
-	bool step_state(State& state, std::size_t const& action) override;
-	void del_state(State&) override;  // FIXME issue #24
+	bool reset_state(State& initial_state);
+	bool step_state(State& state, std::size_t const& action);
+	void del_state(State&);  // FIXME issue #24
 
 private:
 	std::unique_ptr<utility::Controller> controller = nullptr;
 };
 
-/*********************************
- *  Implementation of Branching  *
- *********************************/
-
-namespace internal {
-bool reset_state(std::unique_ptr<utility::Controller>&, State&);
-bool step_state(std::unique_ptr<utility::Controller>&, State&, std::size_t const&);
-}  // namespace internal
-
 template <typename... EnvTypes>
-bool Branching<EnvTypes...>::reset_state(State& init_state) {
-	return internal::reset_state(controller, init_state);
-}
-
-template <typename... EnvTypes>
-bool Branching<EnvTypes...>::step_state(State& state, std::size_t const& action) {
-	return internal::step_state(controller, state, action);
-}
-
-// FIXME issue #24
-template <typename... EnvTypes> void Branching<EnvTypes...>::del_state(State&) {
-	controller = nullptr;
-}
+using Branching = DefaultEnvironment<BranchingDynamics, EnvTypes...>;
 
 }  // namespace environment
 }  // namespace ecole

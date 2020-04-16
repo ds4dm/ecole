@@ -22,6 +22,7 @@ public:
 
 class NodeBipartite : public ObservationFunction<NodeBipartiteObs> {
 public:
+	using Observation = NodeBipartiteObs;
 	using Base = ObservationFunction<Observation>;
 
 	std::unique_ptr<Base> clone() const override;

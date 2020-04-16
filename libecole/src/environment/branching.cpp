@@ -11,6 +11,10 @@
 namespace ecole {
 namespace environment {
 
+/******************************************
+ *  Declaration of the ReverseBranchrule  *
+ ******************************************/
+
 namespace {
 
 class ReverseBranchrule : public ::scip::ObjBranchrule {
@@ -31,37 +35,13 @@ private:
 	std::weak_ptr<utility::Controller::Executor> weak_executor;
 };
 
-ReverseBranchrule::ReverseBranchrule(
-	SCIP* scip,
-	std::weak_ptr<utility::Controller::Executor> weak_executor_) :
-	::scip::ObjBranchrule(
-		scip,
-		"ecole::ReverseBranchrule",
-		"Branchrule that wait for another thread to make the branching.",
-		max_priority,
-		no_maxdepth,
-		no_maxbounddist),
-	weak_executor(weak_executor_) {}
-
-auto ReverseBranchrule::scip_execlp(
-	SCIP* scip,
-	SCIP_BRANCHRULE*,
-	SCIP_Bool,
-	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_executor.expired()) {
-		*result = SCIP_DIDNOTRUN;
-		return SCIP_OKAY;
-	} else {
-		auto action_func = weak_executor.lock()->hold_env();
-		return action_func(scip, result);
-	}
-}
-
 }  // namespace
 
-namespace internal {
+/*************************************
+ *  Definition of BranchingDynamics  *
+ *************************************/
 
-bool reset_state(std::unique_ptr<utility::Controller>& controller, State& init_state) {
+bool BranchingDynamics::reset_state(State& init_state) {
 	auto& model = init_state.model;
 	controller = std::make_unique<utility::Controller>(
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -93,10 +73,7 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 	return {lp_cands, n_lp_cands};
 }
 
-bool step_state(
-	std::unique_ptr<utility::Controller>& controller,
-	State&,
-	std::size_t const& action) {
+bool BranchingDynamics::step_state(State&, std::size_t const& action) {
 	controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto lp_cands = lp_branch_cands(scip);
 		if (action >= lp_cands.second) return SCIP_ERROR;
@@ -108,7 +85,43 @@ bool step_state(
 	return controller->is_done();
 }
 
-}  // namespace internal
+void BranchingDynamics::del_state(State&) {
+	controller = nullptr;
+}
+
+/*************************************
+ *  Definition of ReverseBranchrule  *
+ *************************************/
+
+namespace {
+
+ReverseBranchrule::ReverseBranchrule(
+	SCIP* scip,
+	std::weak_ptr<utility::Controller::Executor> weak_executor_) :
+	::scip::ObjBranchrule(
+		scip,
+		"ecole::ReverseBranchrule",
+		"Branchrule that wait for another thread to make the branching.",
+		max_priority,
+		no_maxdepth,
+		no_maxbounddist),
+	weak_executor(weak_executor_) {}
+
+auto ReverseBranchrule::scip_execlp(
+	SCIP* scip,
+	SCIP_BRANCHRULE*,
+	SCIP_Bool,
+	SCIP_RESULT* result) -> SCIP_RETCODE {
+	if (weak_executor.expired()) {
+		*result = SCIP_DIDNOTRUN;
+		return SCIP_OKAY;
+	} else {
+		auto action_func = weak_executor.lock()->hold_env();
+		return action_func(scip, result);
+	}
+}
+
+}  // namespace
 
 }  // namespace environment
 }  // namespace ecole
