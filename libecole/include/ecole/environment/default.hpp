@@ -34,10 +34,6 @@ public:
 		m_reward_func(std::move(reward_func)),
 		m_term_func(std::move(term_func)) {}
 
-	~DefaultEnvironment() {
-		this->del_state(state());  // FIXME 24
-	}
-
 	/**
 	 * @copydoc ecole::environment::Environment::seed
 	 */
@@ -54,7 +50,6 @@ public:
 		can_transition = true;
 		try {
 			// Create clean new state
-			this->del_state(state());  // FIXME issue #24
 			state() = State{std::move(model)};
 
 			// Bring state to initial state and reset state functions

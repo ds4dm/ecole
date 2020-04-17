@@ -22,7 +22,6 @@ public:
 
 	bool reset_state(State& initial_state);
 	bool step_state(State& state, ParamDict const& action);
-	void del_state(State&){};  // FIXME issue #24
 };
 
 template <typename... EnvTypes>

@@ -11,6 +11,26 @@
 namespace ecole {
 namespace environment {
 
+/***************************************
+ *  Definition of ReverseControlState  *
+ ***************************************/
+
+ReverseControlState::ReverseControlState(scip::Model&& p_model) :
+	State(std::move(p_model)) {}
+
+ReverseControlState::ReverseControlState(scip::Model const& p_model) : State(p_model) {}
+
+ReverseControlState::ReverseControlState(ReverseControlState&& rc_state) {
+	controller = std::move(rc_state.controller);
+	this->model = std::move(rc_state.model);
+}
+
+ReverseControlState& ReverseControlState::operator=(ReverseControlState&& rc_state) {
+	controller = std::move(rc_state.controller);
+	State::operator=(std::move(rc_state));
+	return *this;
+}
+
 /******************************************
  *  Declaration of the ReverseBranchrule  *
  ******************************************/
@@ -43,7 +63,7 @@ private:
 
 bool BranchingDynamics::reset_state(State& init_state) {
 	auto& model = init_state.model;
-	controller = std::make_unique<utility::Controller>(
+	init_state.controller = std::make_unique<utility::Controller>(
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 			auto scip = model.get_scip_ptr();
 			scip::call(
@@ -54,8 +74,8 @@ bool BranchingDynamics::reset_state(State& init_state) {
 			model.solve();  // NOLINT
 		});
 
-	controller->wait_thread();
-	return controller->is_done();
+	init_state.controller->wait_thread();
+	return init_state.controller->is_done();
 }
 
 static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
@@ -73,20 +93,16 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 	return {lp_cands, n_lp_cands};
 }
 
-bool BranchingDynamics::step_state(State&, std::size_t const& action) {
-	controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
+bool BranchingDynamics::step_state(State& state, std::size_t const& action) {
+	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto lp_cands = lp_branch_cands(scip);
 		if (action >= lp_cands.second) return SCIP_ERROR;
 		SCIP_CALL(SCIPbranchVar(scip, lp_cands.first[action], nullptr, nullptr, nullptr));
 		*result = SCIP_BRANCHED;
 		return SCIP_OKAY;
 	});
-	controller->wait_thread();
-	return controller->is_done();
-}
-
-void BranchingDynamics::del_state(State&) {
-	controller = nullptr;
+	state.controller->wait_thread();
+	return state.controller->is_done();
 }
 
 /*************************************

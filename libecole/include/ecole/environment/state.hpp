@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ecole/scip/model.hpp>
+#include "ecole/scip/model.hpp"
 
 namespace ecole {
 namespace environment {
