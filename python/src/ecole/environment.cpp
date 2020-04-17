@@ -7,16 +7,10 @@
 
 #include "ecole/environment/branching.hpp"
 #include "ecole/environment/configuring.hpp"
-#include "ecole/observation/nodebipartite.hpp"
-#include "ecole/observation/none.hpp"
-#include "ecole/reward/isdone.hpp"
-#include "ecole/termination/whensolved.hpp"
 
-#include "environment/adaptor.hpp"
 #include "nonstd.hpp"
-#include "observation/adaptor.hpp"
 
-namespace py11 = pybind11;
+namespace py = pybind11;
 
 using namespace ecole;
 
@@ -73,45 +67,19 @@ public:
 }  // namespace detail
 }  // namespace pybind11
 
+template <typename Dynamics> auto dynamics_class(py::module& m, char const* name) {
+	return py::class_<Dynamics>(m, name)  //
+		.def(py::init<>())
+		.def("reset_dynamics", &Dynamics::reset_dynamics, py::arg("state"))
+		.def("step_dynamics", &Dynamics::step_dynamics, py::arg("state"), py::arg("action"));
+}
+
 PYBIND11_MODULE(environment, m) {
 	m.doc() = "Ecole collection of environments.";
 
-	// Import of abstract required for resolving inheritance to abstract base types
-	py11::module const abstract_mod = py11::module::import("ecole.abstract");
+	py::register_exception<environment::Exception>(m, "Exception");
 
-	py11::register_exception<environment::Exception>(m, "Exception");
+	dynamics_class<environment::BranchingDynamics>(m, "BranchingDynamics");
 
-	pyenvironment::env_class_<environment::Branching>(m, "Branching")  //
-		.def(py11::init<
-				 std::shared_ptr<pyobservation::ObsFunctionBase>,
-				 std::shared_ptr<reward::RewardFunction>,
-				 std::shared_ptr<termination::TerminationFunction>>())
-		.def(py11::init<>([] {
-			return pyenvironment::Env<environment::Branching>{
-				std::make_shared<pyobservation::ObsFunction<observation::NodeBipartite>>(),
-				std::make_shared<reward::IsDone>(),
-				std::make_shared<termination::WhenSolved>()};
-		}))
-		.def_property(
-			"state",
-			&pyenvironment::Env<environment::Branching>::state,
-			&pyenvironment::Env<environment::Branching>::state);
-	;
-
-	pyenvironment::env_class_<environment::Configuring>(m, "Configuring")  //
-		.def(py11::init<
-				 std::shared_ptr<pyobservation::ObsFunctionBase>,
-				 std::shared_ptr<reward::RewardFunction>,
-				 std::shared_ptr<termination::TerminationFunction>>())
-		.def(py11::init<>([] {
-			return pyenvironment::Env<environment::Configuring>{
-				std::make_shared<pyobservation::ObsFunction<observation::None>>(),
-				std::make_shared<reward::IsDone>(),
-				std::make_shared<termination::WhenSolved>()};
-		}))
-		.def_property(
-			"state",
-			&pyenvironment::Env<environment::Configuring>::state,
-			&pyenvironment::Env<environment::Configuring>::state);
-	;
+	dynamics_class<environment::ConfiguringDynamics>(m, "ConfiguringDynamics");
 }

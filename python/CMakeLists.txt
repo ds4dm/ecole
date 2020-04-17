@@ -18,11 +18,10 @@ pybind11_add_module(
 	ecole-python
 	src/ecole/core.cpp
 	src/ecole/scip.cpp
-	src/ecole/abstract.cpp
-	src/ecole/observation/observation.cpp
-	src/ecole/reward/reward.cpp
-	src/ecole/termination/termination.cpp
-	src/ecole/environment/environment.cpp
+	src/ecole/observation.cpp
+	src/ecole/reward.cpp
+	src/ecole/termination.cpp
+	src/ecole/environment.cpp
 )
 
 target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole)

@@ -20,7 +20,6 @@ def __get_module(name: str):
 
 
 scip = __get_module("scip")
-abstract = __get_module("abstract")
 environment = __get_module("environment")
 observation = __get_module("observation")
 reward = __get_module("reward")
