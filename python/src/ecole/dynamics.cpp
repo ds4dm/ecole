@@ -74,7 +74,7 @@ template <typename Dynamics> auto dynamics_class(py::module& m, char const* name
 		.def("step_dynamics", &Dynamics::step_dynamics, py::arg("state"), py::arg("action"));
 }
 
-PYBIND11_MODULE(environment, m) {
+PYBIND11_MODULE(dynamics, m) {
 	m.doc() = "Ecole collection of environments.";
 
 	py::register_exception<environment::Exception>(m, "Exception");

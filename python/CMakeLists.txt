@@ -21,7 +21,7 @@ pybind11_add_module(
 	src/ecole/observation.cpp
 	src/ecole/reward.cpp
 	src/ecole/termination.cpp
-	src/ecole/environment.cpp
+	src/ecole/dynamics.cpp
 )
 
 target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole)
@@ -61,8 +61,7 @@ endif()
 
 add_custom_command(
 	TARGET ecole-python POST_BUILD
-	COMMAND venv-python
-	ARGS -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
+	COMMAND venv-python -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
 	COMMENT "Installing ecole in virtual environment"
 )
 
