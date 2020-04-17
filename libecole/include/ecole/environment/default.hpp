@@ -13,6 +13,39 @@
 namespace ecole {
 namespace environment {
 
+/**
+ * Abstract class for environment Dynamics.
+ *
+ * A subclass defines the dynamics of the environment, that is the initial probability
+ * distribution and state transition.
+ * In other words, it defines an environment wihtout observations or rewards.
+ * This class is used by @ref EnvironmentComposer to create the final environment with
+ * state functions.
+ *
+ * @tparam Action The type of action recived by the environment.
+ * @tparam State The state defines the state of the environment and is shared with
+ *         state functions.
+ *         It contains at least the SCIP @ref scip::Model
+ */
+template <typename Action, typename State> class EnvironmentDynamics {
+public:
+	virtual ~EnvironmentDynamics() = default;
+
+	/**
+	 * Reset the State to a new initial state.
+	 *
+	 * This method called by the environment on @ref Environment::reset.
+	 */
+	virtual bool reset_dynamics(State& init_state) = 0;
+
+	/**
+	 * Transition the State.
+	 *
+	 * This method called by the environment on @ref Environment::step.
+	 */
+	virtual bool step_dynamics(State& state, Action const& action) = 0;
+};
+
 template <
 	typename Dynamics,
 	typename ObservationFunction,
@@ -21,12 +54,12 @@ template <
 	typename Action = typename Dynamics::Action,
 	typename Observation = typename ObservationFunction::Observation,
 	typename State = typename Dynamics::State>
-class DefaultEnvironment : public Environment<Action, Observation>, Dynamics {
+class EnvironmentComposer : public Environment<Action, Observation>, private Dynamics {
 public:
 	/**
 	 * User facing constructor for the Environment.
 	 */
-	DefaultEnvironment(
+	EnvironmentComposer(
 		ObservationFunction obs_func,
 		RewardFunction reward_func,
 		TerminationFunction term_func) :
@@ -53,7 +86,7 @@ public:
 			state() = State{std::move(model)};
 
 			// Bring state to initial state and reset state functions
-			auto done = this->reset_state(state());
+			auto done = reset_dynamics(state());
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
@@ -93,7 +126,7 @@ public:
 	step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
-			auto done = this->step_state(state(), action);
+			auto done = step_dynamics(state(), action);
 			done = done || term_func().is_done(state());
 			can_transition = !done;
 			auto const reward = reward_func().get(state(), done);
@@ -109,6 +142,9 @@ public:
 	}
 
 protected:
+	using Dynamics::reset_dynamics;
+	using Dynamics::step_dynamics;
+
 	/**
 	 * Getter methods to access attributes regardless of whether they are in a container.
 	 */

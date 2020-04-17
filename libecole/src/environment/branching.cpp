@@ -61,7 +61,7 @@ private:
  *  Definition of BranchingDynamics  *
  *************************************/
 
-bool BranchingDynamics::reset_state(State& init_state) {
+bool BranchingDynamics::reset_dynamics(State& init_state) {
 	auto& model = init_state.model;
 	init_state.controller = std::make_unique<utility::Controller>(
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -93,7 +93,7 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 	return {lp_cands, n_lp_cands};
 }
 
-bool BranchingDynamics::step_state(State& state, std::size_t const& action) {
+bool BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto lp_cands = lp_branch_cands(scip);
 		if (action >= lp_cands.second) return SCIP_ERROR;

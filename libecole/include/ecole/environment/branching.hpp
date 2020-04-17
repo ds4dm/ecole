@@ -22,17 +22,17 @@ public:
 	std::unique_ptr<utility::Controller> controller = nullptr;
 };
 
-class BranchingDynamics {
+class BranchingDynamics : public EnvironmentDynamics<std::size_t, ReverseControlState> {
 public:
 	using Action = std::size_t;
 	using State = ReverseControlState;
 
-	bool reset_state(State& initial_state);
-	bool step_state(State& state, std::size_t const& action);
+	bool reset_dynamics(State& initial_state) override;
+	bool step_dynamics(State& state, std::size_t const& action) override;
 };
 
 template <typename... EnvTypes>
-using Branching = DefaultEnvironment<BranchingDynamics, EnvTypes...>;
+using Branching = EnvironmentComposer<BranchingDynamics, EnvTypes...>;
 
 }  // namespace environment
 }  // namespace ecole

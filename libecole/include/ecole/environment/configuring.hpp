@@ -15,17 +15,17 @@ namespace environment {
  */
 using ParamDict = std::map<std::string, scip::Param>;
 
-class ConfiguringDynamics {
+class ConfiguringDynamics : public EnvironmentDynamics<ParamDict, environment::State> {
 public:
 	using Action = ParamDict;
 	using State = environment::State;
 
-	bool reset_state(State& initial_state);
-	bool step_state(State& state, ParamDict const& action);
+	bool reset_dynamics(State& initial_state) override;
+	bool step_dynamics(State& state, ParamDict const& action) override;
 };
 
 template <typename... EnvTypes>
-using Configuring = DefaultEnvironment<ConfiguringDynamics, EnvTypes...>;
+using Configuring = EnvironmentComposer<ConfiguringDynamics, EnvTypes...>;
 
 }  // namespace environment
 }  // namespace ecole
