@@ -19,6 +19,7 @@ public:
 	using lock_t = std::unique_lock<std::mutex>;
 	using action_func_t = std::function<SCIP_RETCODE(SCIP*, SCIP_RESULT*)>;
 
+	Controller() = default;
 	template <class Function, class... Args> Controller(Function&& func, Args&&... args);
 	~Controller() noexcept;
 
@@ -75,7 +76,6 @@ private:
 	std::thread solving_thread;
 	lock_t model_lock;
 
-	Controller();
 	auto stop_thread() -> void;
 };
 
@@ -84,7 +84,8 @@ private:
  **********************************/
 
 template <class Function, class... Args>
-Controller::Controller(Function&& func_, Args&&... args_) : Controller() {
+Controller::Controller(Function&& func_, Args&&... args_) :
+	synchronizer(std::make_shared<Synchronizer>()) {
 	auto executor = std::make_shared<Executor>(synchronizer);
 
 	auto thread_func = [executor](Function&& func, Args&&... args) {

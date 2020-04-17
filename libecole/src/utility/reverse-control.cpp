@@ -153,7 +153,5 @@ auto Controller::stop_thread() -> void {
 	synchronizer->env_stop_thread(std::move(model_lock));
 }
 
-Controller::Controller() : synchronizer(std::make_shared<Synchronizer>()) {}
-
 }  // namespace utility
 }  // namespace ecole
