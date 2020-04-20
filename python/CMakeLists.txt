@@ -59,11 +59,28 @@ else()
 endif()
 
 
+set(PYTHON_FILES "observation.py" "termination.py" "reward.py" "scip.py" "environment.py")
+set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
+list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
+set(PYTHON_COPIED_FILES ${PYTHON_FILES})
+list(TRANSFORM PYTHON_COPIED_FILES PREPEND "${CMAKE_CURRENT_BINARY_DIR}/src/ecole/")
+
 add_custom_command(
-	TARGET ecole-python POST_BUILD
+	OUTPUT ${PYTHON_COPIED_FILES}
+	DEPENDS ${PYTHON_SOURCE_FILES}
+	COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_SOURCE_FILES}
+		"${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
+	COMMENT "Copying Python files"
+)
+
+add_custom_command(
+	OUTPUT "${CMAKE_BINARY_DIR}/venv"
+	DEPENDS ecole-python ${PYTHON_COPIED_FILES}
 	COMMAND venv-python -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
 	COMMENT "Installing ecole in virtual environment"
 )
+
+add_custom_target(ecole-venv ALL DEPENDS "${CMAKE_BINARY_DIR}/venv")
 
 # Add test if this is the main project and testing is enabled
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)

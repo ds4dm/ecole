@@ -35,7 +35,7 @@ add_custom_target(
 		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
 		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
 	BYPRODUCTS "${SPHINX_BUILD_DIR}"
-	DEPENDS ecole-doxygen ecole-python
+	DEPENDS ecole-doxygen ecole-venv
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generating documentation with Sphinx"
 )
