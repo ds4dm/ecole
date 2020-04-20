@@ -42,3 +42,6 @@ Testing
 
 # Compiler databases
 compile_commands.json
+
+# Clang coverage
+*.profraw
