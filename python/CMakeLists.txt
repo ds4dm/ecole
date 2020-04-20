@@ -16,15 +16,15 @@ find_package(xtensor-python REQUIRED)
 
 pybind11_add_module(
 	ecole-python
-	src/ecole/core.cpp
-	src/ecole/scip.cpp
-	src/ecole/observation.cpp
-	src/ecole/reward.cpp
-	src/ecole/termination.cpp
-	src/ecole/dynamics.cpp
+	src/ecole/core/core.cpp
+	src/ecole/core/scip.cpp
+	src/ecole/core/observation.cpp
+	src/ecole/core/reward.cpp
+	src/ecole/core/termination.cpp
+	src/ecole/core/environment.cpp
 )
 
-target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole)
+target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/core)
 
 target_link_libraries(
 	ecole-python

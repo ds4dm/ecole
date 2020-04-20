@@ -2,8 +2,12 @@
 
 #include "ecole/termination/whensolved.hpp"
 
+#include "core.hpp"
+
+namespace ecole {
+namespace termination {
+
 namespace py = pybind11;
-using namespace ecole;
 
 template <typename TerminationFunction>
 auto termination_function_class(py::module& m, char const* name) {
@@ -13,8 +17,11 @@ auto termination_function_class(py::module& m, char const* name) {
 		.def("is_done", &TerminationFunction::is_done, py::arg("state"));
 }
 
-PYBIND11_MODULE(termination, m) {
-	m.doc() = "Termination classes for ecole.";
+void bind_submodule(py::module m) {
+	m.doc() = "Termination classes for Ecole.";
 
-	termination_function_class<termination::WhenSolved>(m, "WhenSolved");
+	termination_function_class<WhenSolved>(m, "WhenSolved");
 }
+
+}  // namespace termination
+}  // namespace ecole

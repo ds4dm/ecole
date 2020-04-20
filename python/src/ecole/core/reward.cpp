@@ -3,8 +3,12 @@
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/neglpiterations.hpp"
 
+#include "core.hpp"
+
+namespace ecole {
+namespace reward {
+
 namespace py = pybind11;
-using namespace ecole;
 
 template <typename RewardFunction>
 auto reward_function_class(py::module& m, char const* name) {
@@ -14,10 +18,13 @@ auto reward_function_class(py::module& m, char const* name) {
 		.def("get", &RewardFunction::get, py::arg("state"), py::arg("done") = false);
 }
 
-PYBIND11_MODULE(reward, m) {
-	m.doc() = "Reward classes for ecole.";
+void bind_submodule(py::module m) {
+	m.doc() = "Reward classes for Ecole.";
 
-	reward_function_class<reward::IsDone>(m, "IsDone");
+	reward_function_class<IsDone>(m, "IsDone");
 
-	reward_function_class<reward::NegLPIterations>(m, "NegLPIterations");
+	reward_function_class<NegLPIterations>(m, "NegLPIterations");
 }
+
+}  // namespace reward
+}  // namespace ecole

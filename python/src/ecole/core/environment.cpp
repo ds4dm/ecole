@@ -8,14 +8,17 @@
 #include "ecole/environment/branching.hpp"
 #include "ecole/environment/configuring.hpp"
 
+#include "core.hpp"
 #include "nonstd.hpp"
 
-namespace py = pybind11;
-
-using namespace ecole;
+/******************************
+ *  Customize PyBind Casting  *
+ ******************************/
 
 namespace pybind11 {
 namespace detail {
+
+using namespace ecole;
 
 /**
  * Custom caster for @ref scip::Param.
@@ -67,6 +70,15 @@ public:
 }  // namespace detail
 }  // namespace pybind11
 
+/********************
+ *  Ecole Bindings  *
+ ********************/
+
+namespace ecole {
+namespace environment {
+
+namespace py = pybind11;
+
 template <typename Dynamics> auto dynamics_class(py::module& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
 		.def(py::init<>())
@@ -74,12 +86,15 @@ template <typename Dynamics> auto dynamics_class(py::module& m, char const* name
 		.def("step_dynamics", &Dynamics::step_dynamics, py::arg("state"), py::arg("action"));
 }
 
-PYBIND11_MODULE(dynamics, m) {
+void bind_submodule(pybind11::module m) {
 	m.doc() = "Ecole collection of environments.";
 
-	py::register_exception<environment::Exception>(m, "Exception");
+	py::register_exception<Exception>(m, "Exception");
 
-	dynamics_class<environment::BranchingDynamics>(m, "BranchingDynamics");
+	dynamics_class<BranchingDynamics>(m, "BranchingDynamics");
 
-	dynamics_class<environment::ConfiguringDynamics>(m, "ConfiguringDynamics");
+	dynamics_class<ConfiguringDynamics>(m, "ConfiguringDynamics");
 }
+
+}  // namespace environment
+}  // namespace ecole
