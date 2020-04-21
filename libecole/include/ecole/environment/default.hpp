@@ -113,8 +113,8 @@ public:
 		m_term_func(std::forward<TermFunc>(term_func)),
 		random_engine(static_cast<std::mt19937::result_type>(time(NULL))),
 		seed_distrib(scip::min_seed, scip::max_seed) {
-			scip_seed = seed_distrib(random_engine);
-        }
+		scip_seed = seed_distrib(random_engine);
+	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::seed
