@@ -34,7 +34,7 @@ int RowProxy::n_lp_nonz() const noexcept {
 
 real RowProxy::l2_norm() const noexcept {
 	auto norm = SCIProwGetNorm(value);
-    return norm > 0 ? norm : 1.;
+	return norm > 0 ? norm : 1.;
 }
 
 real RowProxy::obj_cos_sim() const noexcept {
