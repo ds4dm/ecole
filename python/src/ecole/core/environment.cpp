@@ -91,6 +91,13 @@ void bind_submodule(pybind11::module m) {
 
 	py::register_exception<Exception>(m, "Exception");
 
+	py::class_<State>(m, "State")
+		.def_readwrite("model", &State::model)  //
+		.def(py::init<scip::Model>());
+
+	py::class_<ReverseControlState, State>(m, "ReverseControlState")  //
+		.def(py::init<scip::Model>());
+
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics");
 
 	dynamics_class<ConfiguringDynamics>(m, "ConfiguringDynamics");
