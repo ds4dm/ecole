@@ -4,7 +4,8 @@ import pathlib
 
 import pytest
 
-import ecole
+import ecole.scip
+import ecole.environment
 
 
 TEST_SOURCE_DIR = pathlib.Path(__file__).parent.resolve()
@@ -49,4 +50,4 @@ def model(problem_file):
 
 @pytest.fixture
 def state(model):
-    return ecole.abstract.State(model)
+    return ecole.environment.State(model)
