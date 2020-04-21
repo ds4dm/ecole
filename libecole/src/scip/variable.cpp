@@ -32,7 +32,7 @@ optional<real> VarProxy::best_sol_val() const noexcept {
 }
 
 optional<real> VarProxy::avg_sol() const noexcept {
-	if (SCIPgetBestSol(scip) == nullptr)
+	if (SCIPgetBestSol(scip) != nullptr)
 		return SCIPvarGetAvgSol(value);
 	else
 		return {};

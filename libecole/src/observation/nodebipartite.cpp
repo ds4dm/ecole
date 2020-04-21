@@ -87,10 +87,10 @@ static auto extract_row_feat(scip::Model const& model) {
 		value_type const sign = lhs ? -1. : 1.;
 		value_type const row_l2_norm = static_cast<value_type>(row.l2_norm());
 		if (lhs) {
-			*(iter++) = row.lhs().value() / row_l2_norm;
+			*(iter++) = sign * row.lhs().value() / row_l2_norm;
 			*(iter++) = static_cast<value_type>(row.is_at_lhs());
 		} else {
-			*(iter++) = row.rhs().value() / row_l2_norm;
+			*(iter++) = sign * row.rhs().value() / row_l2_norm;
 			*(iter++) = static_cast<value_type>(row.is_at_rhs());
 		}
 		*(iter++) = static_cast<value_type>(row.age()) / (n_lps + cste);
