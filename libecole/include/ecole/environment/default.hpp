@@ -59,34 +59,6 @@ template <typename ObservationFunction>
 using observation_t = decltype(
 	internal::dereference(std::declval<ObservationFunction>()).get(std::declval<State>()));
 
-/*
- * Wrapper around a standard random engine to remember base seed value;
- */
-class RandomEngine : public std::mt19937 {
-public:
-	using Base = std::mt19937;
-	using Base::default_seed;
-	using typename Base::result_type;
-
-	RandomEngine() : Base{default_seed}, m_seed{default_seed} {}
-
-	/*
-	 * Set the seed of the random engine.
-	 */
-	void seed(result_type new_seed) {
-		Base::seed(new_seed);
-		m_seed = new_seed;
-	}
-
-	/**
-	 * Get the seed used by the random engine.
-	 */
-	result_type seed() const noexcept { return m_seed; }
-
-private:
-	result_type m_seed;
-};
-
 }  // namespace internal
 
 /**
@@ -139,15 +111,19 @@ public:
 		m_obs_func(std::forward<ObsFunc>(obs_func)),
 		m_reward_func(std::forward<RewFunc>(reward_func)),
 		m_term_func(std::forward<TermFunc>(term_func)),
-		seed_distrib(scip::min_seed, scip::max_seed) {}
+		random_engine(static_cast<std::mt19937::result_type>(time(NULL))),
+		seed_distrib(scip::min_seed, scip::max_seed) {
+			scip_seed = seed_distrib(random_engine);
+        }
 
 	/**
 	 * @copydoc ecole::environment::Environment::seed
 	 */
 	void seed(Seed new_seed) override {
-		random_engine.seed(static_cast<internal::RandomEngine::result_type>(new_seed));
+		scip_seed = new_seed;
+		random_engine.seed(static_cast<std::mt19937::result_type>(new_seed));
 	}
-	Seed seed() const noexcept override { return static_cast<Seed>(random_engine.seed()); }
+	Seed seed() const noexcept override { return scip_seed; }
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
@@ -158,7 +134,8 @@ public:
 			// Create clean new state
 			del_state(state());  // FIXME issue #24
 			state() = State{std::move(model)};
-			seed_state(state(), seed_distrib(random_engine));
+			seed_state(state(), scip_seed);
+			scip_seed = seed_distrib(random_engine);
 
 			// Bring state to initial state and reset state functions
 			auto done = reset_state(state());
@@ -281,7 +258,8 @@ private:
 	internal::remove_cvref_t<ObservationFunction> m_obs_func;
 	internal::remove_cvref_t<RewardFunction> m_reward_func;
 	internal::remove_cvref_t<TerminationFunction> m_term_func;
-	internal::RandomEngine random_engine;
+	std::mt19937 random_engine;
+	Seed scip_seed;
 	std::uniform_int_distribution<Seed> seed_distrib;
 	bool can_transition = false;
 };
