@@ -9,7 +9,7 @@ dependencies:
   # C++ dev tools
   - make
   - cmake>=3.15
-  - clang-tools>=3.4  # Necessary for tools such as clang-format
+  - clang-tools>=3.4
   - conan
   # Build time Python dependencies
   - python>=3.6
@@ -20,3 +20,8 @@ dependencies:
   - ipython
   - pytest
   - black
+  # Documentation
+  - doxygen
+  - sphinx>=3.0
+  - breathe>=4.15
+  - sphinx_rtd_theme

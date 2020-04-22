@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.14)
 
 project(
 	Ecole
-	VERSION 0.0.2
+	VERSION 0.1.0
 	LANGUAGES CXX
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
+set(Ecole_AUTHORS "Antoine Prouvost")
 
 # Set default parameters. Assumes Ecole user,
 include(cmake/DefaultSettings.cmake)
@@ -23,6 +24,12 @@ include(cmake/Conan.cmake)
 # Enable tools for checking the code at compile time.
 include(cmake/StaticAnalysis.cmake)
 
+# Find Python and create virtual environment for Ecole
+include(cmake/Python.cmake)
+
 # Ecole libraries
 add_subdirectory(libecole)
 add_subdirectory(python)
+
+# Documentation with Doxygen and Sphinx
+add_subdirectory(docs EXCLUDE_FROM_ALL)

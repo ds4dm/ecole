@@ -8,20 +8,8 @@ foreach(py_file "setup.py" "src/ecole/__init__.py")
 	)
 endforeach(py_file)
 
-# Prefer finding Python from path if possible
-if(NOT DEFINED Python_ROOT_DIR)
-	execute_process(
-		COMMAND which python
-		COMMAND xargs dirname  # Pipe
-		OUTPUT_VARIABLE Python_ROOT_DIR
-		RESULTS_VARIABLE Python_IN_PATH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-endif()
-find_package(Python COMPONENTS Interpreter NumPy REQUIRED)
-# Use FindPython to override wrong pybind resolution
-set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
+find_package(Python COMPONENTS NumPy REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
@@ -57,7 +45,6 @@ target_compile_features(ecole-python PUBLIC cxx_std_14)
 set_target_properties(
 	ecole-python PROPERTIES
 	OUTPUT_NAME core
-	SETUP_DIR ${CMAKE_CURRENT_BINARY_DIR}
 )
 # If no output directory specified, preserve the src/ecole layout
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -72,7 +59,15 @@ else()
 	)
 endif()
 
+
+add_custom_command(
+	TARGET ecole-python POST_BUILD
+	COMMAND venv-python
+	ARGS -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
+	COMMENT "Installing ecole in virtual environment"
+)
+
 # Add test if this is the main project and testing is enabled
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-		add_subdirectory(tests)
+	add_subdirectory(tests)
 endif()
