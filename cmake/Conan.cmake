@@ -4,16 +4,24 @@
 
 
 function(download_cmake_conan)
-	# Get Conan CMake wrapper for C++ package management
-	if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-		# Download automatically, you can also just copy the conan.cmake file
-		message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-		file(
-			DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-			"${CMAKE_BINARY_DIR}/conan.cmake"
-		)
+	set(CONAN_URL "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.15/conan.cmake")
+	set(CONAN_SHA1 "d1f980d55623fd426fc3ad4c79ae0eba45141310")
+	set(CONAN_PATH "${CMAKE_BINARY_DIR}/conan.cmake")
+
+	# Include and exit if correct file exists
+	if(EXISTS "${CONAN_PATH}")
+		file(SHA1 "${CONAN_PATH}" LOCAL_SHA1)
+		if("${LOCAL_SHA1}" STREQUAL "${CONAN_SHA1}")
+			include("${CONAN_PATH}")
+			return()
+		endif()
 	endif()
-	include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+	# Download automatically, you can also just copy the conan.cmake file
+	message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+	file(DOWNLOAD "${CONAN_URL}" "${CONAN_PATH}" EXPECTED_HASH SHA1=${CONAN_SHA1})
+
+	include("${CONAN_PATH}")
 
 endfunction()
 
