@@ -12,6 +12,10 @@ def solving_state(model):
     return env.state
 
 
+def test_Nothing(state):
+    assert O.Nothing().get(state) is None
+
+
 def test_NodeBipartite(solving_state):
     obs = O.NodeBipartite().get(solving_state)
     assert isinstance(obs, O.NodeBipartiteObs)
