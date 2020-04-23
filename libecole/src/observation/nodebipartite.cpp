@@ -85,7 +85,9 @@ static auto extract_row_feat(scip::Model const& model) {
 
 	auto extract_row = [n_lps, obj_l2_norm](auto& iter, auto const row, bool const lhs) {
 		value_type const sign = lhs ? -1. : 1.;
-		value_type const row_l2_norm = static_cast<value_type>(row.l2_norm());
+		value_type row_l2_norm = static_cast<value_type>(row.l2_norm());
+		if (row_l2_norm == 0) row_l2_norm = 1.;
+
 		if (lhs) {
 			*(iter++) = sign * row.lhs().value() / row_l2_norm;
 			*(iter++) = static_cast<value_type>(row.is_at_lhs());
