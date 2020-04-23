@@ -3,6 +3,10 @@ import pytest
 import ecole.reward as R
 
 
+def test_Constant(state):
+    assert R.Constant(33.0).get(state) == 33.0
+
+
 def test_IsDone(state):
     reward_func = R.IsDone()
     reward_func.reset(state)

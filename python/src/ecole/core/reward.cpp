@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 
+#include "ecole/reward/constant.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/neglpiterations.hpp"
 
@@ -13,7 +14,6 @@ namespace py = pybind11;
 template <typename RewardFunction>
 auto reward_function_class(py::module& m, char const* name) {
 	return py::class_<RewardFunction>(m, name)  //
-		.def(py::init<>())
 		.def("reset", &RewardFunction::reset, py::arg("state"))
 		.def("get", &RewardFunction::get, py::arg("state"), py::arg("done") = false);
 }
@@ -21,9 +21,14 @@ auto reward_function_class(py::module& m, char const* name) {
 void bind_submodule(py::module m) {
 	m.doc() = "Reward classes for Ecole.";
 
-	reward_function_class<IsDone>(m, "IsDone");
+	reward_function_class<Constant>(m, "Constant")  //
+		.def(py::init<Reward>(), py::arg("constant") = 0.);
 
-	reward_function_class<NegLPIterations>(m, "NegLPIterations");
+	reward_function_class<IsDone>(m, "IsDone")  //
+		.def(py::init<>());
+
+	reward_function_class<NegLPIterations>(m, "NegLPIterations")  //
+		.def(py::init<>());
 }
 
 }  // namespace reward
