@@ -6,15 +6,15 @@
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/termination/whensolved.hpp"
+#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("Model creation") {
-	auto env = environment::
-		Configuring<observation::Nothing, reward::IsDone, termination::WhenSolved>(
+	auto env =
+		environment::Configuring<observation::Nothing, reward::IsDone, termination::Constant>(
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {

@@ -4,6 +4,10 @@ import ecole.termination as T
 
 
 def test_WhenSolved(state):
+    assert T.Constant(True).get(state)
+
+
+def test_WhenSolved(state):
     termination_func = T.WhenSolved()
     termination_func.reset(state)
     assert termination_func.is_done(state) is False

@@ -8,7 +8,7 @@
 #include "ecole/environment/exception.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/termination/whensolved.hpp"
+#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
@@ -16,7 +16,7 @@ using namespace ecole;
 
 TEST_CASE("BranchEnv") {
 	environment::
-		Branching<observation::NodeBipartite, reward::IsDone, termination::WhenSolved>
+		Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
 			env{{}, {}, {}};
 
 	SECTION("reset, reset, and delete") {
