@@ -1,8 +1,5 @@
 """Ecole collection of environments."""
 
-import enum
-from functools import partial
-
 import ecole.core as core
 import ecole.observation
 import ecole.reward
@@ -10,38 +7,13 @@ import ecole.termination
 from ecole.core.environment import *
 
 
-class ConstantFunction:
-    """A State function to return None.
-
-    An instance of this mock class return the same value on calls, and itself
-    on attribute access.
-    This is convenient to replace any State function, as any call such as
-    ```
-    self.reset_something(some, arguments)
-    ```
-    will return the defined value.
-    """
-
-    def __init__(self, return_value):
-        """Define the value to return."""
-        self.return_value = return_value
-
-    def __call__(self, *args, **kwargs):
-        """Return None."""
-        return self.return_value
-
-    def __getattr__(self, attr):
-        """Return itself."""
-        return self
-
-
 class EnvironmentComposer:
 
     __Dynamics__ = None
     __State__ = None
-    __DefaultObservationFunction__ = partial(ConstantFunction, None)
-    __DefaultRewardFunction__ = partial(ConstantFunction, 0)
-    __DefaultTerminationFunction__ = partial(ConstantFunction, False)
+    __DefaultObservationFunction__ = ecole.observation.Nothing
+    __DefaultRewardFunction__ = ecole.reward.IsDone
+    __DefaultTerminationFunction__ = ecole.termination.Constant
 
     def __init__(
         self,
@@ -53,7 +25,7 @@ class EnvironmentComposer:
         if observation_function == "default":
             self.observation_function = self.__DefaultObservationFunction__()
         elif observation_function is None:
-            self.observation_function = ConstantFunction(None)
+            self.observation_function = ecole.observation.Nothing()
         else:
             self.observation_function = observation_function
 
@@ -61,7 +33,7 @@ class EnvironmentComposer:
         if reward_function == "default":
             self.reward_function = self.__DefaultRewardFunction__()
         elif reward_function is None:
-            self.reward_function = ConstantFunction(0)
+            self.reward_function = ecole.reward.Constant(0.0)
         else:
             self.reward_function = reward_function
 
@@ -69,7 +41,7 @@ class EnvironmentComposer:
         if termination_function == "default":
             self.termination_function = self.__DefaultTerminationFunction__()
         elif termination_function is None:
-            self.termination_function = ConstantFunction(False)
+            self.termination_function = ecole.termination.Constant(false)
         else:
             self.termination_function = termination_function
 
@@ -116,10 +88,8 @@ class Branching(EnvironmentComposer):
     __Dynamics__ = core.environment.BranchingDynamics
     __State__ = core.environment.ReverseControlState
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
-    __DefaultRewardFunction__ = ecole.reward.IsDone
 
 
 class Configuring(EnvironmentComposer):
     __Dynamics__ = core.environment.ConfiguringDynamics
     __State__ = core.environment.State
-    __DefaultRewardFunction__ = ecole.reward.IsDone
