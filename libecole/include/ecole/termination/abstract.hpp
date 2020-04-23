@@ -17,7 +17,6 @@ namespace termination {
 class TerminationFunction {
 public:
 	virtual ~TerminationFunction() = default;
-	virtual std::unique_ptr<TerminationFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment on the initial state

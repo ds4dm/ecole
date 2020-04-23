@@ -3,10 +3,6 @@
 namespace ecole {
 namespace reward {
 
-auto NegLPIterations::clone() const -> std::unique_ptr<RewardFunction> {
-	return std::make_unique<NegLPIterations>(*this);
-}
-
 void NegLPIterations::reset(environment::State const& initial_state) {
 	last_lp_iter = SCIPgetNLPIterations(initial_state.model.get_scip_ptr());
 }

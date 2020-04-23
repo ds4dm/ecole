@@ -10,10 +10,6 @@
 namespace ecole {
 namespace observation {
 
-auto NodeBipartite::clone() const -> std::unique_ptr<Base> {
-	return std::make_unique<NodeBipartite>(*this);
-}
-
 using tensor = decltype(NodeBipartiteObs::col_feat);
 using value_type = tensor::value_type;
 

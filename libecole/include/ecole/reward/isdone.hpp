@@ -9,7 +9,6 @@ namespace reward {
 
 class IsDone : public RewardFunction {
 public:
-	std::unique_ptr<RewardFunction> clone() const override;
 	Reward get(environment::State const& state, bool done = false) override;
 };
 

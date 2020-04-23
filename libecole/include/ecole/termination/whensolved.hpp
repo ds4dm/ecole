@@ -10,7 +10,6 @@ namespace termination {
 
 class WhenSolved : public TerminationFunction {
 public:
-	std::unique_ptr<TerminationFunction> clone() const override;
 	bool is_done(environment::State const& state) override;
 };
 

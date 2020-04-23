@@ -14,8 +14,6 @@ class None : public ObservationFunction<NoneObs> {
 public:
 	using Base = ObservationFunction<NoneObs>;
 
-	std::unique_ptr<Base> clone() const override { return std::make_unique<None>(*this); }
-
 	NoneObs get(environment::State const&) override { return {}; }
 };
 

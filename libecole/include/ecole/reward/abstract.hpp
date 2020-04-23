@@ -18,7 +18,6 @@ using Reward = double;
 class RewardFunction {
 public:
 	virtual ~RewardFunction() = default;
-	virtual std::unique_ptr<RewardFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment on the initial state

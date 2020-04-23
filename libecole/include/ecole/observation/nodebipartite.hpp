@@ -25,8 +25,6 @@ public:
 	using Observation = NodeBipartiteObs;
 	using Base = ObservationFunction<Observation>;
 
-	std::unique_ptr<Base> clone() const override;
-
 	NodeBipartiteObs get(environment::State const& state) override;
 };
 

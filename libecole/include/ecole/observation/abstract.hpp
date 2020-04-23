@@ -24,7 +24,6 @@ public:
 	using Observation = Observation_;
 
 	virtual ~ObservationFunction() = default;
-	virtual std::unique_ptr<ObservationFunction> clone() const = 0;
 
 	/**
 	 * The method called by the environment on the initial state
