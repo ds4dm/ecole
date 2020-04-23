@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/termination/constant.hpp"
-#include "ecole/termination/whensolved.hpp"
 
 #include "core.hpp"
 
@@ -22,9 +21,6 @@ void bind_submodule(py::module m) {
 
 	termination_function_class<Constant>(m, "Constant")  //
 		.def(py::init<bool>(), py::arg("constant") = false);
-
-	termination_function_class<WhenSolved>(m, "WhenSolved")  //
-		.def(py::init<>());
 }
 
 }  // namespace termination
