@@ -4,7 +4,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/configuring.hpp"
-#include "ecole/observation/none.hpp"
+#include "ecole/observation/nothing.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/termination/whensolved.hpp"
 
@@ -13,8 +13,8 @@
 using namespace ecole;
 
 TEST_CASE("Model creation") {
-	auto env =
-		environment::Configuring<observation::None, reward::IsDone, termination::WhenSolved>(
+	auto env = environment::
+		Configuring<observation::Nothing, reward::IsDone, termination::WhenSolved>(
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {

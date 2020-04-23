@@ -8,13 +8,13 @@
 namespace ecole {
 namespace observation {
 
-class NoneObs {};
+class NothingObs {};
 
-class None : public ObservationFunction<NoneObs> {
+class Nothing : public ObservationFunction<NothingObs> {
 public:
-	using Base = ObservationFunction<NoneObs>;
+	using Base = ObservationFunction<NothingObs>;
 
-	NoneObs get(environment::State const&) override { return {}; }
+	NothingObs get(environment::State const&) override { return {}; }
 };
 
 }  // namespace observation
