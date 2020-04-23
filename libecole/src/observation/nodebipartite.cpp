@@ -164,9 +164,14 @@ static utility::coo_matrix<value_type> matrix(scip::Model const& model) {
 	return {values, indices, {n_rows, n_cols}};
 }
 
-auto NodeBipartite::get(environment::State const& state) -> NodeBipartiteObs {
-	return {
-		extract_col_feat(state.model), extract_row_feat(state.model), matrix(state.model)};
+auto NodeBipartite::get(environment::State const& state)
+	-> nonstd::optional<NodeBipartiteObs> {
+	if (state.model.get_stage() == SCIP_STAGE_SOLVING) {
+		return NodeBipartiteObs{
+			extract_col_feat(state.model), extract_row_feat(state.model), matrix(state.model)};
+	} else {
+		return {};
+	}
 }
 
 }  // namespace observation

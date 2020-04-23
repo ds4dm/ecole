@@ -91,10 +91,7 @@ class EnvironmentComposer:
             self.reward_function.reset(self.state)
 
             done = done or self.termination_function.is_done(self.state)
-            if done:
-                observation = None
-            else:
-                observation = self.observation_function.get(self.state)
+            observation = self.observation_function.get(self.state)
             return observation, done
         except Exception as e:
             self.can_transition = False
@@ -108,10 +105,7 @@ class EnvironmentComposer:
             done = self.dynamics.step_dynamics(self.state, action)
             done = done or self.termination_function.is_done(self.state)
             reward = self.reward_function.get(self.state, done)
-            if done:
-                observation = None
-            else:
-                observation = self.observation_function.get(self.state)
+            observation = self.observation_function.get(self.state)
             return observation, reward, done, {}
         except Exception as e:
             self.can_transition = False

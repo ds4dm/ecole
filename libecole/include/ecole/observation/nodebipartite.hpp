@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/environment/state.hpp"
@@ -20,12 +21,12 @@ public:
 	utility::coo_matrix<value_type> matrix;
 };
 
-class NodeBipartite : public ObservationFunction<NodeBipartiteObs> {
+class NodeBipartite : public ObservationFunction<nonstd::optional<NodeBipartiteObs>> {
 public:
-	using Observation = NodeBipartiteObs;
+	using Observation = nonstd::optional<NodeBipartiteObs>;
 	using Base = ObservationFunction<Observation>;
 
-	NodeBipartiteObs get(environment::State const& state) override;
+	nonstd::optional<NodeBipartiteObs> get(environment::State const& state) override;
 };
 
 }  // namespace observation

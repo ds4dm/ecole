@@ -3,8 +3,6 @@
 #include <string>
 #include <tuple>
 
-#include <nonstd/optional.hpp>
-
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
@@ -66,9 +64,9 @@ public:
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
-	virtual std::tuple<optional<Observation>, bool> reset(scip::Model&& model) = 0;
-	virtual std::tuple<optional<Observation>, bool> reset(scip::Model const& model) = 0;
-	virtual std::tuple<optional<Observation>, bool> reset(std::string const& filename) = 0;
+	virtual std::tuple<Observation, bool> reset(scip::Model&& model) = 0;
+	virtual std::tuple<Observation, bool> reset(scip::Model const& model) = 0;
+	virtual std::tuple<Observation, bool> reset(std::string const& filename) = 0;
 
 	/**
 	 * Transition from one state to another.
@@ -84,8 +82,7 @@ public:
 	 * @pre The envrionment must not be on a terminal state, or have thrown an exception.
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
-	virtual std::tuple<optional<Observation>, Reward, bool, Info>
-	step(Action const& action) = 0;
+	virtual std::tuple<Observation, Reward, bool, Info> step(Action const& action) = 0;
 };
 
 }  // namespace environment

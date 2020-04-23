@@ -79,7 +79,7 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<nonstd::optional<Observation>, bool> reset(scip::Model&& model) override {
+	std::tuple<Observation, bool> reset(scip::Model&& model) override {
 		can_transition = true;
 		try {
 			// Create clean new state
@@ -93,10 +93,7 @@ public:
 
 			done = done || term_func().is_done(state());
 			can_transition = !done;
-			if (done)
-				return {nonstd::nullopt, done};
-			else
-				return {obs_func().get(state()), done};
+			return {obs_func().get(state()), done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -106,24 +103,21 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<nonstd::optional<Observation>, bool>
-	reset(std::string const& filename) override {
+	std::tuple<Observation, bool> reset(std::string const& filename) override {
 		return reset(scip::Model::from_file(filename));
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<nonstd::optional<Observation>, bool>
-	reset(scip::Model const& model) override {
+	std::tuple<Observation, bool> reset(scip::Model const& model) override {
 		return reset(scip::Model{model});
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::step
 	 */
-	std::tuple<nonstd::optional<Observation>, Reward, bool, Info>
-	step(Action const& action) override {
+	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
 			auto done = step_dynamics(state(), action);
@@ -131,10 +125,7 @@ public:
 			can_transition = !done;
 			auto const reward = reward_func().get(state(), done);
 
-			if (done)
-				return {{}, reward, done, Info{}};
-			else
-				return {obs_func().get(state()), reward, done, Info{}};
+			return {obs_func().get(state()), reward, done, Info{}};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;

@@ -24,8 +24,6 @@ TEST_CASE("Model creation") {
 
 		// Assert that initial state is not terminal (episode length = 1)
 		REQUIRE(!done);
-		// Assert that an initial observation is returned
-		REQUIRE(obs.has_value());
 
 		auto obs_rew_done_info = env.step({
 			{"branching/scorefunc", 's'},
@@ -40,7 +38,5 @@ TEST_CASE("Model creation") {
 
 		// Assert that the second state is terminal (episode length = 1)
 		REQUIRE(done);
-		// Assert that no observation is returned on terminal states
-		REQUIRE(!obs.has_value());
 	}
 }
