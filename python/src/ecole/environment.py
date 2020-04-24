@@ -41,7 +41,7 @@ class EnvironmentComposer:
         if termination_function == "default":
             self.termination_function = self.__DefaultTerminationFunction__()
         elif termination_function is None:
-            self.termination_function = ecole.termination.Constant(false)
+            self.termination_function = ecole.termination.Constant(False)
         else:
             self.termination_function = termination_function
 
@@ -62,8 +62,8 @@ class EnvironmentComposer:
             self.observation_function.reset(self.state)
             self.reward_function.reset(self.state)
 
-            done = done or self.termination_function.is_done(self.state)
-            observation = self.observation_function.get(self.state)
+            done = done or self.termination_function.obtain_termination(self.state)
+            observation = self.observation_function.obtain_observation(self.state)
             return observation, done
         except Exception as e:
             self.can_transition = False
@@ -75,9 +75,9 @@ class EnvironmentComposer:
 
         try:
             done = self.dynamics.step_dynamics(self.state, action)
-            done = done or self.termination_function.is_done(self.state)
-            reward = self.reward_function.get(self.state, done)
-            observation = self.observation_function.get(self.state)
+            done = done or self.termination_function.obtain_termination(self.state)
+            reward = self.reward_function.obtain_reward(self.state, done)
+            observation = self.observation_function.obtain_observation(self.state)
             return observation, reward, done, {}
         except Exception as e:
             self.can_transition = False

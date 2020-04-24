@@ -29,7 +29,7 @@ public:
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual Reward get(environment::State const& state, bool done = false) = 0;
+	virtual Reward obtain_reward(environment::State const& state, bool done = false) = 0;
 };
 
 }  // namespace reward

@@ -3,7 +3,7 @@
 namespace ecole {
 namespace reward {
 
-Reward IsDone::get(environment::State const& state, bool done) {
+Reward IsDone::obtain_reward(environment::State const& state, bool done) {
 	(void)state;
 	return done ? 1 : 0;
 }

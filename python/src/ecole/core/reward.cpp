@@ -15,7 +15,11 @@ template <typename RewardFunction>
 auto reward_function_class(py::module& m, char const* name) {
 	return py::class_<RewardFunction>(m, name)  //
 		.def("reset", &RewardFunction::reset, py::arg("state"))
-		.def("get", &RewardFunction::get, py::arg("state"), py::arg("done") = false);
+		.def(
+			"obtain_reward",
+			&RewardFunction::obtain_reward,
+			py::arg("state"),
+			py::arg("done") = false);
 }
 
 void bind_submodule(py::module m) {

@@ -20,7 +20,7 @@ void NegLPIterations::reset(environment::State const& initial_state) {
 	last_lp_iter = n_lp_iterations(initial_state.model);
 }
 
-Reward NegLPIterations::get(environment::State const& state, bool) {
+Reward NegLPIterations::obtain_reward(environment::State const& state, bool) {
 	auto lp_iter_diff = n_lp_iterations(state.model) - last_lp_iter;
 	last_lp_iter += lp_iter_diff;
 	return static_cast<double>(-lp_iter_diff);

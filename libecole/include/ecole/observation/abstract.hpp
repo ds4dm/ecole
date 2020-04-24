@@ -35,7 +35,7 @@ public:
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual Observation get(environment::State const& state) = 0;
+	virtual Observation obtain_observation(environment::State const& state) = 0;
 };
 
 }  // namespace observation

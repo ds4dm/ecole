@@ -13,11 +13,11 @@ def solving_state(model):
 
 
 def test_Nothing(state):
-    assert O.Nothing().get(state) is None
+    assert O.Nothing().obtain_observation(state) is None
 
 
 def test_NodeBipartite(solving_state):
-    obs = O.NodeBipartite().get(solving_state)
+    obs = O.NodeBipartite().obtain_observation(solving_state)
     assert isinstance(obs, O.NodeBipartiteObs)
     assert isinstance(obs.col_feat, np.ndarray)
 

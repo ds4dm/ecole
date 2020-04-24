@@ -13,7 +13,8 @@ template <typename TerminationFunction>
 auto termination_function_class(py::module& m, char const* name) {
 	return py::class_<TerminationFunction>(m, name)  //
 		.def("reset", &TerminationFunction::reset, py::arg("state"))
-		.def("is_done", &TerminationFunction::is_done, py::arg("state"));
+		.def(
+			"obtain_termination", &TerminationFunction::obtain_termination, py::arg("state"));
 }
 
 void bind_submodule(py::module m) {

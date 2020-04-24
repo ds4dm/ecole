@@ -91,9 +91,9 @@ public:
 			term_func().reset(state());
 			reward_func().reset(state());
 
-			done = done || term_func().is_done(state());
+			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
-			return {obs_func().get(state()), done};
+			return {obs_func().obtain_observation(state()), done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -121,11 +121,11 @@ public:
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
 			auto done = step_dynamics(state(), action);
-			done = done || term_func().is_done(state());
+			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
-			auto const reward = reward_func().get(state(), done);
+			auto const reward = reward_func().obtain_reward(state(), done);
 
-			return {obs_func().get(state()), reward, done, Info{}};
+			return {obs_func().obtain_observation(state()), reward, done, Info{}};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;

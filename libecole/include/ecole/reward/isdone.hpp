@@ -9,7 +9,7 @@ namespace reward {
 
 class IsDone : public RewardFunction {
 public:
-	Reward get(environment::State const& state, bool done = false) override;
+	Reward obtain_reward(environment::State const& state, bool done = false) override;
 };
 
 }  // namespace reward

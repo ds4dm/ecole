@@ -26,7 +26,8 @@ public:
 	using Observation = nonstd::optional<NodeBipartiteObs>;
 	using Base = ObservationFunction<Observation>;
 
-	nonstd::optional<NodeBipartiteObs> get(environment::State const& state) override;
+	nonstd::optional<NodeBipartiteObs>
+	obtain_observation(environment::State const& state) override;
 };
 
 }  // namespace observation

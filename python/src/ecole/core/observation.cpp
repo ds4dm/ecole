@@ -49,7 +49,8 @@ template <typename ObservationFunction>
 auto observation_function_class(py::module& m, char const* name) {
 	return py::class_<ObservationFunction>(m, name)  //
 		.def("reset", &ObservationFunction::reset, py::arg("state"))
-		.def("get", &ObservationFunction::get, py::arg("state"));
+		.def(
+			"obtain_observation", &ObservationFunction::obtain_observation, py::arg("state"));
 }
 
 void bind_submodule(py::module m) {

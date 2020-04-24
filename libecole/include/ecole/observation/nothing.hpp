@@ -14,7 +14,7 @@ class Nothing : public ObservationFunction<NothingObs> {
 public:
 	using Base = ObservationFunction<NothingObs>;
 
-	NothingObs get(environment::State const&) override { return {}; }
+	NothingObs obtain_observation(environment::State const&) override { return {}; }
 };
 
 }  // namespace observation

@@ -28,7 +28,7 @@ public:
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual bool is_done(environment::State const& state) = 0;
+	virtual bool obtain_termination(environment::State const& state) = 0;
 };
 
 }  // namespace termination
