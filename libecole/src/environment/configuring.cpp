@@ -3,17 +3,18 @@
 namespace ecole {
 namespace environment {
 
-bool ConfiguringDynamics::reset_dynamics(State&) {
-	return false;
+std::tuple<bool, NoneType> ConfiguringDynamics::reset_dynamics(State&) {
+	return {false, None};
 }
 
-bool ConfiguringDynamics::step_dynamics(State& state, ParamDict const& param_dict) {
+std::tuple<bool, NoneType>
+ConfiguringDynamics::step_dynamics(State& state, ParamDict const& param_dict) {
 	for (auto const& name_value : param_dict)
 		nonstd::visit(
 			[&](auto&& val) { state.model.set_param(name_value.first, val); },
 			name_value.second);
 	state.model.solve();
-	return true;
+	return {true, None};
 }
 
 }  // namespace environment

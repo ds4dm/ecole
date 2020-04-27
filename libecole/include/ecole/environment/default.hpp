@@ -1,9 +1,8 @@
 #pragma once
 
 #include <random>
+#include <tuple>
 #include <type_traits>
-
-#include <nonstd/optional.hpp>
 
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
@@ -23,11 +22,13 @@ namespace environment {
  * state functions.
  *
  * @tparam Action The type of action recived by the environment.
+ * @tparam ActionSet The type used to indicate what actions are accepted on the next
+ *         transtion.
  * @tparam State The state defines the state of the environment and is shared with
  *         state functions.
  *         It contains at least the SCIP @ref scip::Model
  */
-template <typename Action, typename State> class EnvironmentDynamics {
+template <typename Action, typename ActionSet, typename State> class EnvironmentDynamics {
 public:
 	virtual ~EnvironmentDynamics() = default;
 
@@ -36,14 +37,15 @@ public:
 	 *
 	 * This method called by the environment on @ref Environment::reset.
 	 */
-	virtual bool reset_dynamics(State& init_state) = 0;
+	virtual std::tuple<bool, ActionSet> reset_dynamics(State& init_state) = 0;
 
 	/**
 	 * Transition the State.
 	 *
 	 * This method called by the environment on @ref Environment::step.
 	 */
-	virtual bool step_dynamics(State& state, Action const& action) = 0;
+	virtual std::tuple<bool, ActionSet>
+	step_dynamics(State& state, Action const& action) = 0;
 };
 
 template <
@@ -86,7 +88,8 @@ public:
 			state() = State{std::move(model)};
 
 			// Bring state to initial state and reset state functions
-			auto done = reset_dynamics(state());
+			bool done;
+			std::tie(done, std::ignore) = reset_dynamics(state());
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
@@ -120,7 +123,8 @@ public:
 	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
-			auto done = step_dynamics(state(), action);
+			bool done;
+			std::tie(done, std::ignore) = step_dynamics(state(), action);
 			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(state(), done);

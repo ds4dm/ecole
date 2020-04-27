@@ -5,6 +5,7 @@
 
 #include "ecole/environment/default.hpp"
 #include "ecole/environment/state.hpp"
+#include "ecole/none.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {
@@ -15,13 +16,16 @@ namespace environment {
  */
 using ParamDict = std::map<std::string, scip::Param>;
 
-class ConfiguringDynamics : public EnvironmentDynamics<ParamDict, environment::State> {
+class ConfiguringDynamics :
+	public EnvironmentDynamics<ParamDict, NoneType, environment::State> {
 public:
 	using Action = ParamDict;
+	using ActionSet = NoneType;
 	using State = environment::State;
 
-	bool reset_dynamics(State& initial_state) override;
-	bool step_dynamics(State& state, ParamDict const& action) override;
+	std::tuple<bool, NoneType> reset_dynamics(State& initial_state) override;
+	std::tuple<bool, NoneType>
+	step_dynamics(State& state, ParamDict const& action) override;
 };
 
 template <typename... EnvTypes>

@@ -61,7 +61,8 @@ private:
  *  Definition of BranchingDynamics  *
  *************************************/
 
-bool BranchingDynamics::reset_dynamics(State& init_state) {
+std::tuple<bool, xt::xtensor<std::size_t, 1>>
+BranchingDynamics::reset_dynamics(State& init_state) {
 	auto& model = init_state.model;
 	init_state.controller = std::make_unique<utility::Controller>(
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -75,7 +76,7 @@ bool BranchingDynamics::reset_dynamics(State& init_state) {
 		});
 
 	init_state.controller->wait_thread();
-	return init_state.controller->is_done();
+	return {init_state.controller->is_done(), {}};
 }
 
 static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
@@ -93,7 +94,8 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 	return {lp_cands, n_lp_cands};
 }
 
-bool BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
+std::tuple<bool, xt::xtensor<std::size_t, 1>>
+BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto lp_cands = lp_branch_cands(scip);
 		if (action >= lp_cands.second) return SCIP_ERROR;
@@ -102,7 +104,7 @@ bool BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
 		return SCIP_OKAY;
 	});
 	state.controller->wait_thread();
-	return state.controller->is_done();
+	return {state.controller->is_done(), {}};
 }
 
 /*************************************
