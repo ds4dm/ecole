@@ -3,18 +3,17 @@
 #include <memory>
 
 #include "ecole/environment/state.hpp"
+#include "ecole/none.hpp"
 #include "ecole/observation/abstract.hpp"
 
 namespace ecole {
 namespace observation {
 
-class NothingObs {};
-
-class Nothing : public ObservationFunction<NothingObs> {
+class Nothing : public ObservationFunction<NoneType> {
 public:
-	using Base = ObservationFunction<NothingObs>;
+	using Base = ObservationFunction<NoneType>;
 
-	NothingObs obtain_observation(environment::State const&) override { return {}; }
+	NoneType obtain_observation(environment::State const&) override { return None; }
 };
 
 }  // namespace observation

@@ -12,34 +12,6 @@
 #include "core.hpp"
 #include "nonstd.hpp"
 
-namespace pybind11 {
-namespace detail {
-
-using ecole::observation::NothingObs;
-
-/**
- * Custom caster for @ref NothingObs.
- *
- * Cast to `None` in Python and daos not cast to C++.
- */
-template <> struct type_caster<NothingObs> {
-public:
-	PYBIND11_TYPE_CASTER(NothingObs, _("None"));
-
-	/**
-	 * Do not cast to C++
-	 */
-	bool load(handle, bool) { return false; }
-
-	/**
-	 * Cast to None
-	 */
-	static handle cast(NothingObs, return_value_policy, handle) { return pybind11::none(); }
-};
-
-}  // namespace detail
-}  // namespace pybind11
-
 namespace ecole {
 namespace observation {
 
