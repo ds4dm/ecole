@@ -31,7 +31,7 @@ class BranchingDynamics :
 		ReverseControlState> {
 public:
 	using Action = std::size_t;
-	using ActionSet = xt::xtensor<size_t, 1>;
+	using ActionSet = xt::xtensor<std::size_t, 1>;
 	using State = ReverseControlState;
 
 	std::tuple<bool, xt::xtensor<std::size_t, 1>>

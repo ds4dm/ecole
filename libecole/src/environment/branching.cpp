@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include <nonstd/span.hpp>
 #include <objscip/objbranchrule.h>
+#include <xtensor/xtensor.hpp>
 
 #include "ecole/environment/branching.hpp"
 #include "ecole/scip/model.hpp"
@@ -62,6 +64,34 @@ private:
  *  Definition of BranchingDynamics  *
  *************************************/
 
+static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
+	SCIP_VAR** cands = nullptr;
+	int n_cands = 0;
+	scip::call(
+		SCIPgetLPBranchCands, scip, &cands, nullptr, nullptr, &n_cands, nullptr, nullptr);
+	assert(n_cands >= 0);
+	return {cands, static_cast<std::size_t>(n_cands)};
+}
+
+static nonstd::span<SCIP_VAR*> pseudo_branch_cands(SCIP* scip) {
+	SCIP_VAR** cands = nullptr;
+	int n_cands = 0;
+	scip::call(SCIPgetPseudoBranchCands, scip, &cands, &n_cands, nullptr);
+	assert(n_cands >= 0);
+	return {cands, static_cast<std::size_t>(n_cands)};
+}
+
+static auto action_set(SCIP* scip, bool pseudo) {
+	auto const branch_cands = pseudo ? pseudo_branch_cands(scip) : lp_branch_cands(scip);
+	auto branch_cols = xt::xtensor<std::size_t, 1>::from_shape({branch_cands.size()});
+	std::transform(  //
+		branch_cands.begin(),
+		branch_cands.end(),
+		branch_cols.begin(),
+		[](auto const var) { return SCIPcolGetLPPos(SCIPvarGetCol(var)); });
+	return branch_cols;
+}
+
 std::tuple<bool, xt::xtensor<std::size_t, 1>>
 BranchingDynamics::reset_dynamics(State& init_state) {
 	auto& model = init_state.model;
@@ -77,36 +107,25 @@ BranchingDynamics::reset_dynamics(State& init_state) {
 		});
 
 	init_state.controller->wait_thread();
-	return {init_state.controller->is_done(), {}};
-}
-
-static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
-	SCIP_VAR** lp_cands = nullptr;
-	int n_lp_cands = 0;
-	scip::call(
-		SCIPgetLPBranchCands,
-		scip,
-		&lp_cands,
-		nullptr,
-		nullptr,
-		&n_lp_cands,
-		nullptr,
-		nullptr);
-	assert(n_lp_cands >= 0);
-	return {lp_cands, static_cast<std::size_t>(n_lp_cands)};
+	return {
+		init_state.controller->is_done(),
+		action_set(init_state.model.get_scip_ptr(), false),
+	};
 }
 
 std::tuple<bool, xt::xtensor<std::size_t, 1>>
 BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
-		auto const lp_cands = lp_branch_cands(scip);
-		if (action >= lp_cands.size()) return SCIP_ERROR;
-		SCIP_CALL(SCIPbranchVar(scip, lp_cands[action], nullptr, nullptr, nullptr));
+		auto* const* const cols = SCIPgetLPCols(scip);
+		auto const n_cols = SCIPgetNLPCols(scip);
+		if (action >= static_cast<std::size_t>(n_cols)) return SCIP_ERROR;
+		SCIP_CALL(
+			SCIPbranchVar(scip, SCIPcolGetVar(cols[action]), nullptr, nullptr, nullptr));
 		*result = SCIP_BRANCHED;
 		return SCIP_OKAY;
 	});
 	state.controller->wait_thread();
-	return {state.controller->is_done(), {}};
+	return {state.controller->is_done(), action_set(state.model.get_scip_ptr(), false)};
 }
 
 /*************************************
