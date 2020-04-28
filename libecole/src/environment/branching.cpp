@@ -1,6 +1,7 @@
 #include <memory>
 #include <utility>
 
+#include <nonstd/span.hpp>
 #include <objscip/objbranchrule.h>
 
 #include "ecole/environment/branching.hpp"
@@ -79,7 +80,7 @@ BranchingDynamics::reset_dynamics(State& init_state) {
 	return {init_state.controller->is_done(), {}};
 }
 
-static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
+static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
 	SCIP_VAR** lp_cands = nullptr;
 	int n_lp_cands = 0;
 	scip::call(
@@ -91,15 +92,16 @@ static std::pair<SCIP_VAR**, std::size_t> lp_branch_cands(SCIP* scip) {
 		&n_lp_cands,
 		nullptr,
 		nullptr);
-	return {lp_cands, n_lp_cands};
+	assert(n_lp_cands >= 0);
+	return {lp_cands, static_cast<std::size_t>(n_lp_cands)};
 }
 
 std::tuple<bool, xt::xtensor<std::size_t, 1>>
 BranchingDynamics::step_dynamics(State& state, std::size_t const& action) {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
-		auto lp_cands = lp_branch_cands(scip);
-		if (action >= lp_cands.second) return SCIP_ERROR;
-		SCIP_CALL(SCIPbranchVar(scip, lp_cands.first[action], nullptr, nullptr, nullptr));
+		auto const lp_cands = lp_branch_cands(scip);
+		if (action >= lp_cands.size()) return SCIP_ERROR;
+		SCIP_CALL(SCIPbranchVar(scip, lp_cands[action], nullptr, nullptr, nullptr));
 		*result = SCIP_BRANCHED;
 		return SCIP_OKAY;
 	});
