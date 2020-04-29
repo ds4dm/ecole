@@ -18,9 +18,9 @@ TEST_CASE("Model creation") {
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {
-		auto obs_done = env.reset(problem_file);
-		auto obs = std::get<0>(obs_done);
-		auto done = std::get<1>(obs_done);
+		auto obs_as_done = env.reset(problem_file);
+		auto obs = std::get<0>(std::move(obs_as_done));
+		auto done = std::get<2>(std::move(obs_as_done));
 
 		// Assert that initial state is not terminal (episode length = 1)
 		REQUIRE(!done);
@@ -34,7 +34,7 @@ TEST_CASE("Model creation") {
 			{"heuristics/undercover/fixingalts", std::string("ln")},
 		});
 		obs = std::get<0>(obs_rew_done_info);
-		done = std::get<2>(obs_rew_done_info);
+		done = std::get<3>(obs_rew_done_info);
 
 		// Assert that the second state is terminal (episode length = 1)
 		REQUIRE(done);

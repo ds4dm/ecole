@@ -25,15 +25,12 @@ using Info = int;  // FIXME dummy type while the information is not implemented
  * [OpenAi Gym](https://gym.openai.com/), with some differences nontheless due to the
  * requirements of Ecole.
  *
- * @tparam Action_ The type of the action accepted to transition from one state to
- * another.
- * @tparam Observation_ The type of the observation returned on every state.
+ * @tparam Action The type of the action used to transition from one state to another.
+ * @tparam ActionSet A subset of Actions that are accepted by the environment.
+ * @tparam Observation The type of the observation returned on every state.
  */
-template <typename Action_, typename Observation_> class Environment {
+template <typename Action, typename ActionSet, typename Observation> class Environment {
 public:
-	using Action = Action_;
-	using Observation = Observation_;
-
 	virtual ~Environment() = default;
 
 	/**
@@ -60,13 +57,14 @@ public:
 	 * Takes as input a filename or loaded model.
 	 *
 	 * @return An observation of the new state, or nothing on terminal states.
+	 * @return An subset of actions accepted on the next transition (call to @ref step).
 	 * @return A boolean flag indicating whether the state is terminal.
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
-	virtual std::tuple<Observation, bool> reset(scip::Model&& model) = 0;
-	virtual std::tuple<Observation, bool> reset(scip::Model const& model) = 0;
-	virtual std::tuple<Observation, bool> reset(std::string const& filename) = 0;
+	virtual std::tuple<Observation, ActionSet, bool> reset(scip::Model&& model) = 0;
+	virtual std::tuple<Observation, ActionSet, bool> reset(scip::Model const& model) = 0;
+	virtual std::tuple<Observation, ActionSet, bool> reset(std::string const& filename) = 0;
 
 	/**
 	 * Transition from one state to another.
@@ -75,6 +73,7 @@ public:
 	 *
 	 * @param action
 	 * @return An observation of the new state, or nothing on terminal states.
+	 * @return An subset of actions accepted on the next transition (call to @ref step).
 	 * @return A scalar reward from the signal to maximize.
 	 * @return A boolean flag indicating whether the state is terminal.
 	 * @return Any additional information about the transition.
@@ -82,7 +81,8 @@ public:
 	 * @pre The envrionment must not be on a terminal state, or have thrown an exception.
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
-	virtual std::tuple<Observation, Reward, bool, Info> step(Action const& action) = 0;
+	virtual std::tuple<Observation, ActionSet, Reward, bool, Info>
+	step(Action const& action) = 0;
 };
 
 }  // namespace environment

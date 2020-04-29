@@ -1,6 +1,7 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <tuple>
 
 #include <catch2/catch.hpp>
 
@@ -25,24 +26,26 @@ TEST_CASE("BranchEnv") {
 	}
 
 	SECTION("reset, step, and delete") {
-		env.reset(problem_file);
-		env.step(0);
+		decltype(env)::ActionSet action_set;
+		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
+		env.step(action_set[0]);
 	}
 
 	SECTION("run full trajectory") {
 		auto run_trajectory = [&env](std::string const& filename) {
-			auto obs_done = env.reset(filename);
-			auto obs = std::get<0>(obs_done);
-			auto done = std::get<1>(obs_done);
+			decltype(env)::Observation obs;
+			decltype(env)::ActionSet action_set;
+			bool done = false;
+			reward::Reward reward;
+
+			std::tie(obs, action_set, done) = env.reset(filename);
 			auto count = 0;
 
 			// Assert that the observation is none only on terminal states
 			REQUIRE(obs.has_value() != done);
 
 			while (!done) {
-				auto obs_rew_done_info = env.step(0);
-				obs = std::get<0>(obs_rew_done_info);
-				done = std::get<2>(obs_rew_done_info);
+				std::tie(obs, action_set, reward, done, std::ignore) = env.step(action_set[0]);
 				++count;
 
 				// Assert that the observation is none only on terminal states

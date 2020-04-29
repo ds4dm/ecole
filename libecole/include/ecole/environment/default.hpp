@@ -52,12 +52,19 @@ template <
 	typename Dynamics,
 	typename ObservationFunction,
 	typename RewardFunction,
-	typename TerminationFunction,
-	typename Action = typename Dynamics::Action,
-	typename Observation = typename ObservationFunction::Observation,
-	typename State = typename Dynamics::State>
-class EnvironmentComposer : public Environment<Action, Observation>, private Dynamics {
+	typename TerminationFunction>
+class EnvironmentComposer :
+	public Environment<
+		typename Dynamics::Action,
+		typename Dynamics::ActionSet,
+		typename ObservationFunction::Observation>,
+	private Dynamics {
 public:
+	using Observation = typename ObservationFunction::Observation;
+	using Action = typename Dynamics::Action;
+	using State = typename Dynamics::State;
+	using ActionSet = typename Dynamics::ActionSet;
+
 	/**
 	 * User facing constructor for the Environment.
 	 */
@@ -81,7 +88,7 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(scip::Model&& model) override {
+	std::tuple<Observation, ActionSet, bool> reset(scip::Model&& model) override {
 		can_transition = true;
 		try {
 			// Create clean new state
@@ -89,14 +96,15 @@ public:
 
 			// Bring state to initial state and reset state functions
 			bool done;
-			std::tie(done, std::ignore) = reset_dynamics(state());
+			ActionSet action_set;
+			std::tie(done, action_set) = reset_dynamics(state());
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
 
 			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
-			return {obs_func().obtain_observation(state()), done};
+			return {obs_func().obtain_observation(state()), std::move(action_set), done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -106,30 +114,38 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(std::string const& filename) override {
+	std::tuple<Observation, ActionSet, bool> reset(std::string const& filename) override {
 		return reset(scip::Model::from_file(filename));
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, bool> reset(scip::Model const& model) override {
+	std::tuple<Observation, ActionSet, bool> reset(scip::Model const& model) override {
 		return reset(scip::Model{model});
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::step
 	 */
-	std::tuple<Observation, Reward, bool, Info> step(Action const& action) override {
+	std::tuple<Observation, ActionSet, Reward, bool, Info>
+	step(Action const& action) override {
 		if (!can_transition) throw Exception("Environment need to be reset.");
 		try {
 			bool done;
-			std::tie(done, std::ignore) = step_dynamics(state(), action);
+			ActionSet action_set;
+			std::tie(done, action_set) = step_dynamics(state(), action);
 			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(state(), done);
 
-			return {obs_func().obtain_observation(state()), reward, done, Info{}};
+			return {
+				obs_func().obtain_observation(state()),
+				std::move(action_set),
+				reward,
+				done,
+				Info{},
+			};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;

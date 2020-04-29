@@ -21,8 +21,8 @@ TEST_CASE("Using the reward in a Configuring environment") {
 		env.seed(i);
 		env.reset(problem_file);
 
-		auto obs_rew_done_info = env.step({});
-		auto reward = std::get<1>(obs_rew_done_info);
+		auto obs_as_rew_done_info = env.step({});
+		auto reward = std::get<2>(obs_as_rew_done_info);
 
 		// Assert that the reward is non-positive
 		REQUIRE(reward <= 0);
@@ -32,13 +32,13 @@ TEST_CASE("Using the reward in a Configuring environment") {
 		env.seed(i);
 		env.reset(problem_file);
 
-		auto obs_rew_done_info = env.step({
+		auto obs_as_rew_done_info = env.step({
 			{"presolving/maxrounds", 0},
 			{"lp/iterlim", 0},
 			{"lp/rootiterlim", 0},
 			{"limits/totalnodes", 1},
 		});
-		auto reward = std::get<1>(obs_rew_done_info);
+		auto reward = std::get<2>(obs_as_rew_done_info);
 
 		// Assert that the reward is zero, since no LP iteration was allowed
 		REQUIRE(reward == 0);
