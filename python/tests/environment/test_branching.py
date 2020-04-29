@@ -8,9 +8,9 @@ def test_branching_environment(model):
     env = environment.Branching()
     for _ in range(2):
         count = 0
-        obs, done = env.reset(model.clone())
+        obs, action_set, done = env.reset(model.clone())
         while not done:
-            obs, reward, done, info = env.step(0)
+            obs, action_set, reward, done, info = env.step(action_set[0])
             count += 1
         assert count > 0
 

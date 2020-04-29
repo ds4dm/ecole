@@ -17,9 +17,9 @@ def test_configuring_environment(model):
     for _ in range(2):
         count = 0
 
-        obs, done = env.reset(model.clone())
+        obs, _, done = env.reset(model.clone())
         while not done:
-            obs, reward, done, info = env.step(action)
+            obs, _, reward, done, info = env.step(action)
             count += 1
 
         assert count == 1

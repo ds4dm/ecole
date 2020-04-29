@@ -57,14 +57,14 @@ class EnvironmentComposer:
             else:
                 self.state = self.__State__(core.scip.Model.from_file(instance))
 
-            done, _ = self.dynamics.reset_dynamics(self.state)
+            done, action_set = self.dynamics.reset_dynamics(self.state)
             self.termination_function.reset(self.state)
             self.observation_function.reset(self.state)
             self.reward_function.reset(self.state)
 
             done = done or self.termination_function.obtain_termination(self.state)
             observation = self.observation_function.obtain_observation(self.state)
-            return observation, done
+            return observation, action_set, done
         except Exception as e:
             self.can_transition = False
             raise e
@@ -74,11 +74,11 @@ class EnvironmentComposer:
             raise core.environment.Exception("Environment need to be reset.")
 
         try:
-            done, _ = self.dynamics.step_dynamics(self.state, action)
+            done, action_set = self.dynamics.step_dynamics(self.state, action)
             done = done or self.termination_function.obtain_termination(self.state)
             reward = self.reward_function.obtain_reward(self.state, done)
             observation = self.observation_function.obtain_observation(self.state)
-            return observation, reward, done, {}
+            return observation, action_set, reward, done, {}
         except Exception as e:
             self.can_transition = False
             raise e
