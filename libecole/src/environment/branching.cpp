@@ -120,8 +120,8 @@ auto BranchingDynamics::step_dynamics(State& state, Action const& action)
 	-> std::tuple<bool, ActionSet> {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto* const* const cols = SCIPgetLPCols(scip);
-		auto const n_cols = SCIPgetNLPCols(scip);
-		if (action >= static_cast<std::size_t>(n_cols)) return SCIP_ERROR;
+		auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip));
+		if (action >= n_cols) return SCIP_ERROR;
 		SCIP_CALL(
 			SCIPbranchVar(scip, SCIPcolGetVar(cols[action]), nullptr, nullptr, nullptr));
 		*result = SCIP_BRANCHED;
