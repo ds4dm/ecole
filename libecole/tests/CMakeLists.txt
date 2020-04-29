@@ -34,6 +34,6 @@ target_link_libraries(
 		Ecole::libecole
 		Ecole::warnings
 		Ecole::sanitizers
-		CONAN_PKG::Catch2
+		CONAN_PKG::catch2
 		libscip
 )
