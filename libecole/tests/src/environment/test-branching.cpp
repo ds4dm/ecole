@@ -28,7 +28,7 @@ TEST_CASE("BranchEnv") {
 	SECTION("reset, step, and delete") {
 		decltype(env)::ActionSet action_set;
 		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
-		env.step(action_set[0]);
+		env.step(action_set.value()[0]);
 	}
 
 	SECTION("run full trajectory") {
@@ -45,7 +45,8 @@ TEST_CASE("BranchEnv") {
 			REQUIRE(obs.has_value() != done);
 
 			while (!done) {
-				std::tie(obs, action_set, reward, done, std::ignore) = env.step(action_set[0]);
+				auto const action = action_set.value()[0];
+				std::tie(obs, action_set, reward, done, std::ignore) = env.step(action);
 				++count;
 
 				// Assert that the observation is none only on terminal states

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 
+#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/environment/default.hpp"
@@ -27,17 +28,16 @@ public:
 class BranchingDynamics :
 	public EnvironmentDynamics<
 		std::size_t,
-		xt::xtensor<std::size_t, 1>,
+		nonstd::optional<xt::xtensor<std::size_t, 1>>,
 		ReverseControlState> {
 public:
 	using Action = std::size_t;
-	using ActionSet = xt::xtensor<std::size_t, 1>;
+	using ActionSet = nonstd::optional<xt::xtensor<std::size_t, 1>>;
 	using State = ReverseControlState;
 
-	std::tuple<bool, xt::xtensor<std::size_t, 1>>
-	reset_dynamics(State& initial_state) override;
+	std::tuple<bool, ActionSet> reset_dynamics(State& initial_state) override;
 
-	std::tuple<bool, xt::xtensor<std::size_t, 1>>
+	std::tuple<bool, ActionSet>
 	step_dynamics(State& state, std::size_t const& action) override;
 };
 
