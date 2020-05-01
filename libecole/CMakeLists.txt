@@ -43,6 +43,7 @@ conan_cmake_run(
 	KEEP_RPATHS
 	BUILD missing
 	ENV CONAN_CMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}"
+	OUTPUT_QUIET
 )
 target_link_libraries(
 	libecole

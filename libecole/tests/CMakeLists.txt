@@ -25,6 +25,7 @@ conan_cmake_run(
 	NO_OUTPUT_DIRS
 	KEEP_RPATHS
 	SKIP_STD
+	OUTPUT_QUIET
 )
 find_package(SCIP REQUIRED)
 
