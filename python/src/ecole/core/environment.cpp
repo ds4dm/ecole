@@ -81,7 +81,6 @@ namespace py = pybind11;
 
 template <typename Dynamics> auto dynamics_class(py::module& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
-		.def(py::init<>())
 		.def("reset_dynamics", &Dynamics::reset_dynamics, py::arg("state"))
 		.def("step_dynamics", &Dynamics::step_dynamics, py::arg("state"), py::arg("action"));
 }
@@ -98,9 +97,11 @@ void bind_submodule(pybind11::module m) {
 	py::class_<ReverseControlState, State>(m, "ReverseControlState")  //
 		.def(py::init<scip::Model>());
 
-	dynamics_class<BranchingDynamics>(m, "BranchingDynamics");
+	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
+		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);
 
-	dynamics_class<ConfiguringDynamics>(m, "ConfiguringDynamics");
+	dynamics_class<ConfiguringDynamics>(m, "ConfiguringDynamics")  //
+		.def(py::init<>());
 }
 
 }  // namespace environment

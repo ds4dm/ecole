@@ -20,6 +20,7 @@ class EnvironmentComposer:
         observation_function="default",
         reward_function="default",
         termination_function="default",
+        **dynamics_kwargs
     ) -> None:
         #  Set observation function
         if observation_function == "default":
@@ -46,7 +47,7 @@ class EnvironmentComposer:
             self.termination_function = termination_function
 
         self.state = None
-        self.dynamics = self.__Dynamics__()
+        self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
 
     def reset(self, instance):

@@ -64,6 +64,9 @@ private:
  *  Definition of BranchingDynamics  *
  *************************************/
 
+BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept :
+	pseudo_candidates(pseudo_candidates_) {}
+
 static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
 	SCIP_VAR** cands = nullptr;
 	int n_cands = 0;
@@ -113,7 +116,8 @@ auto BranchingDynamics::reset_dynamics(State& init_state) -> std::tuple<bool, Ac
 		});
 
 	init_state.controller->wait_thread();
-	return {init_state.controller->is_done(), action_set(init_state.model, false)};
+	return {
+		init_state.controller->is_done(), action_set(init_state.model, pseudo_candidates)};
 }
 
 auto BranchingDynamics::step_dynamics(State& state, Action const& action)
@@ -128,7 +132,7 @@ auto BranchingDynamics::step_dynamics(State& state, Action const& action)
 		return SCIP_OKAY;
 	});
 	state.controller->wait_thread();
-	return {state.controller->is_done(), action_set(state.model, false)};
+	return {state.controller->is_done(), action_set(state.model, pseudo_candidates)};
 }
 
 /*************************************

@@ -35,6 +35,10 @@ public:
 	using ActionSet = nonstd::optional<xt::xtensor<std::size_t, 1>>;
 	using State = ReverseControlState;
 
+	bool pseudo_candidates;
+
+	BranchingDynamics(bool pseudo_candidates = false) noexcept;
+
 	std::tuple<bool, ActionSet> reset_dynamics(State& initial_state) override;
 
 	std::tuple<bool, ActionSet>

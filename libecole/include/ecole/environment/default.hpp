@@ -68,10 +68,13 @@ public:
 	/**
 	 * User facing constructor for the Environment.
 	 */
+	template <typename... Args>
 	EnvironmentComposer(
 		ObservationFunction obs_func,
 		RewardFunction reward_func,
-		TerminationFunction term_func) :
+		TerminationFunction term_func,
+		Args&&... args) :
+		Dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
 		m_term_func(std::move(term_func)) {}
