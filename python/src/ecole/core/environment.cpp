@@ -81,8 +81,17 @@ namespace py = pybind11;
 
 template <typename Dynamics> auto dynamics_class(py::module& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
-		.def("reset_dynamics", &Dynamics::reset_dynamics, py::arg("state"))
-		.def("step_dynamics", &Dynamics::step_dynamics, py::arg("state"), py::arg("action"));
+		.def(
+			"reset_dynamics",
+			&Dynamics::reset_dynamics,
+			py::arg("state"),
+			py::call_guard<py::gil_scoped_release>())
+		.def(
+			"step_dynamics",
+			&Dynamics::step_dynamics,
+			py::arg("state"),
+			py::arg("action"),
+			py::call_guard<py::gil_scoped_release>());
 }
 
 void bind_submodule(pybind11::module m) {

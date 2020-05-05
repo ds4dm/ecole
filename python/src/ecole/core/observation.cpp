@@ -20,9 +20,16 @@ namespace py = pybind11;
 template <typename ObservationFunction>
 auto observation_function_class(py::module& m, char const* name) {
 	return py::class_<ObservationFunction>(m, name)  //
-		.def("reset", &ObservationFunction::reset, py::arg("state"))
 		.def(
-			"obtain_observation", &ObservationFunction::obtain_observation, py::arg("state"));
+			"reset",
+			&ObservationFunction::reset,
+			py::arg("state"),
+			py::call_guard<py::gil_scoped_release>())
+		.def(
+			"obtain_observation",
+			&ObservationFunction::obtain_observation,
+			py::arg("state"),
+			py::call_guard<py::gil_scoped_release>());
 }
 
 void bind_submodule(py::module m) {

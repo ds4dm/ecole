@@ -45,7 +45,10 @@ void bind_submodule(py::module m) {
 		.def(py::self == py::self)
 		.def(py::self != py::self)
 
-		.def("clone", [](Model const& model) { return model; })
+		.def(
+			"clone",
+			[](Model const& model) { return model; },
+			py::call_guard<py::gil_scoped_release>())
 
 		.def(
 			"get_param",
