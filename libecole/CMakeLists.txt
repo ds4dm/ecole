@@ -59,11 +59,13 @@ target_link_libraries(
 		Threads::Threads
 )
 
-# Force optional-lite to not use std::optional as an implementation.
+# Force optional-lite and variant-lite to not use std:: as an implementation.
 # Required as we are using C++14, but conda export a C++17 flag.
 target_compile_definitions(
 	libecole
-	PUBLIC optional_CONFIG_SELECT_OPTIONAL=optional_OPTIONAL_NONSTD
+	PUBLIC
+		optional_CONFIG_SELECT_OPTIONAL=optional_OPTIONAL_NONSTD
+		variant_CONFIG_SELECT_VARIANT=variant_VARIANT_NONSTD
 )
 
 target_compile_features(libecole PUBLIC cxx_std_14)
