@@ -35,7 +35,7 @@ RUN for PY_VERSION in "3.6" "3.7" "3.8" ; do \
 		conda create --use-local -c conda-forge -n "ecole-py${PY_VERSION:?}" \
 			gxx_linux-64 clangxx cmake'>=3.15' make conan clang-tools \
 			python="${PY_VERSION:?}" pybind11 xtensor-python numpy \
-			pytest black \
+			pytest pytest-benchmark black \
 			doxygen sphinx'>=3.0' breathe'>=4.15' sphinx_rtd_theme ; \
 	done && \
 	conda clean --all --yes

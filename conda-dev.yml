@@ -19,6 +19,7 @@ dependencies:
   # Python dev tools
   - ipython
   - pytest
+  - pytest-benchmark
   - black
   # Documentation
   - doxygen
