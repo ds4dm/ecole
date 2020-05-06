@@ -77,7 +77,9 @@ void bind_submodule(py::module m) {
 				model.set_param(name, value);
 			})
 		.def("disable_cuts", &Model::disable_cuts)
-		.def("disable_presolve", &Model::disable_presolve);
+		.def("disable_presolve", &Model::disable_presolve)
+
+		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>());
 }
 
 }  // namespace scip
