@@ -1,6 +1,13 @@
+import importlib
+
 import pytest
 
 import ecole.scip
+
+
+requires_pyscipopt = pytest.mark.skipif(
+    importlib.find_loader("pyscipopt") is None, reason="PyScipOpt is not installed.",
+)
 
 
 def test_equality(model):
@@ -12,6 +19,28 @@ def test_clone(model):
     model_copy = model.clone()
     assert model is not model_copy
     assert model != model_copy
+
+
+@requires_pyscipopt
+def test_as_pyscipopt_shared(model):
+    """PyScipOpt share same pointer."""
+    param, value = "concurrent/paramsetprefix", "ecole_dummy"
+    model.set_param(param, value)
+    pyscipopt_model = model.as_pyscipopt()
+    assert pyscipopt_model.getParam(param) == value
+
+
+@requires_pyscipopt
+def test_as_pyscipopt_ownership(model):
+    """PyScipOpt model remains valid if Ecole model goes out of scope."""
+    # Making a copy to be sure no reference is held elsewhere
+    ecole_model = model.clone()
+    # ecole_model remains pointer owner
+    pyscipopt_model = ecole_model.as_pyscipopt()
+    assert not pyscipopt_model._freescip
+    del ecole_model
+    # Try to access some value
+    pyscipopt_model.getParams()
 
 
 def test_exception(model):

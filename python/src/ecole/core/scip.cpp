@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <memory>
 
 #include <pybind11/operators.h>
@@ -49,6 +50,17 @@ void bind_submodule(py::module m) {
 			"clone",
 			[](Model const& model) { return model; },
 			py::call_guard<py::gil_scoped_release>())
+		.def(
+			"as_pyscipopt",
+			[](scip::Model const& model) {
+				auto const pyscipopt_module = py::module::import("pyscipopt.scip");
+				auto const Model_class = pyscipopt_module.attr("Model");
+				auto const ptr = reinterpret_cast<std::uintptr_t>(model.get_scip_ptr());
+				return Model_class.attr("from_ptr")(ptr, py::arg("take_ownership") = false);
+			},
+			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
+			// is alive, as PyScipOpt is a view on the ecole Model.
+			py::keep_alive<0, 1>())
 
 		.def(
 			"get_param",
