@@ -42,6 +42,23 @@ void bind_submodule(py::module m) {
 
 	py::class_<Model, std::shared_ptr<Model>>(m, "Model")  //
 		.def_static("from_file", &Model::from_file)
+		.def_static(
+			"from_pyscipopt",
+			[](py::object pyscipopt_model) {
+				if (pyscipopt_model.attr("_freescip").cast<bool>()) {
+					auto pyptr = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
+					scip::unique_ptr<SCIP> uptr = nullptr;
+					uptr.reset(reinterpret_cast<SCIP*>(pyptr.cast<std::uintptr_t>()));
+					return Model(std::move(uptr));
+				} else {
+					throw scip::Exception(
+						"Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
+				}
+			},
+			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
+			// is alive, as PyScipOpt is now sharing a non-owning pointer.
+			py::keep_alive<1, 0>(),
+			py::arg("model"))
 
 		.def(py::self == py::self)
 		.def(py::self != py::self)

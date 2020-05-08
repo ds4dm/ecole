@@ -22,6 +22,39 @@ def test_clone(model):
 
 
 @requires_pyscipopt
+def test_from_pyscipopt_shared():
+    """Ecole share same pointer."""
+    import pyscipopt.scip
+
+    param, value = "concurrent/paramsetprefix", "ecole_dummy"
+    pyscipopt_model = pyscipopt.scip.Model()
+    pyscipopt_model.setParam(param, value)
+    ecole_model = ecole.scip.Model.from_pyscipopt(pyscipopt_model)
+    assert ecole_model.get_param(param) == value
+
+
+@requires_pyscipopt
+def test_from_pyscipopt_ownership():
+    """PyScipOpt model remains valid if Ecole model goes out of scope."""
+    import pyscipopt.scip
+
+    pyscipopt_model = pyscipopt.scip.Model()
+    # ecole_model becomes pointer owner
+    ecole_model = ecole.scip.Model.from_pyscipopt(pyscipopt_model)
+    assert not pyscipopt_model._freescip
+    del ecole_model
+    pyscipopt_model.getParams()
+
+
+@requires_pyscipopt
+def test_from_pyscipopt_no_ownership(model):
+    """Fail to convert if PyScipOpt does not have ownership."""
+    pyscipopt_model = model.as_pyscipopt()
+    with pytest.raises(ecole.scip.Exception):
+        ecole.scip.Model.from_pyscipopt(pyscipopt_model)
+
+
+@requires_pyscipopt
 def test_as_pyscipopt_shared(model):
     """PyScipOpt share same pointer."""
     param, value = "concurrent/paramsetprefix", "ecole_dummy"
