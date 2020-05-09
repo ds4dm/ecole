@@ -1,4 +1,4 @@
-import importlib
+import importlib.util
 
 import pytest
 
@@ -6,7 +6,7 @@ import ecole.scip
 
 
 requires_pyscipopt = pytest.mark.skipif(
-    importlib.find_loader("pyscipopt") is None, reason="PyScipOpt is not installed.",
+    importlib.util.find_spec("pyscipopt") is None, reason="PyScipOpt is not installed.",
 )
 
 
