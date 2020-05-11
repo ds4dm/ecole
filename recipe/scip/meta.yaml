@@ -1,0 +1,37 @@
+package:
+  name: scip
+  version: {{ SCIP_VERSION }}
+
+source:
+  path: {{ SCIP_DIR }}
+
+build:
+  number: 0
+  run_exports:
+    - {{ pin_subpackage('scip', max_pin='x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake>=3.15
+    - make
+  host:
+    - zlib
+    - readline
+
+test:
+  source_files:
+    - scip/examples/Queens
+  requires:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake>=3.15
+    - make
+
+
+about:
+  home: https://scip.zib.de/
+  license: ZIB Academic License
+  license_file: COPYING
+  summary: Mixed Integer Programming (MIP) solver.
