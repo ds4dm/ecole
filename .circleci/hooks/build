@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cat Dockerfile | docker build \
+docker build \
 	--build-arg scipoptsuite_url=${SCIPOPTSUITE_URL:?} \
-	-t ${IMAGE_NAME:?} -
+	-f Dockerfile -t ${IMAGE_NAME:?} ../recipe
