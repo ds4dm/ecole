@@ -1,4 +1,5 @@
 cmake -B build -S ${SRC_DIR} \
+	-D CMAKE_AR="${AR}" \
 	-D CMAKE_BUILD_TYPE=Release \
 	-D PARASCIP=1 \
 	-D GMP=0 \
