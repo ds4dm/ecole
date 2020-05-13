@@ -2,4 +2,4 @@
 
 docker build \
 	--build-arg scipoptsuite_url=${SCIPOPTSUITE_URL:?} \
-	-f Dockerfile -t ${IMAGE_NAME:?} ../recipe
+	-f Dockerfile -t ${IMAGE_NAME:?} .

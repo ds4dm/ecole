@@ -3,7 +3,7 @@ FROM continuumio/miniconda AS scip-builder
 WORKDIR /opt/scipoptsuite
 
 ARG scipoptsuite_url
-COPY . recipe
+COPY recipe recipe
 
 RUN conda install conda-build conda-verify
 
