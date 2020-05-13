@@ -19,6 +19,7 @@ requirements:
   host:
     - zlib
     - readline
+    - libgcc-ng  # [linux] Quadmath
     - boost-cpp
     - tbb-devel
 
