@@ -6,6 +6,8 @@ source:
   path: {{ SCIP_DIR }}
   patch:
     - libobjscip.patch
+    - librt-scip.patch
+    - librt-papilo.patch
 
 build:
   number: 0

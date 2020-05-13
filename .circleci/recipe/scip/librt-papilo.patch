@@ -1,0 +1,28 @@
+From a28bce82f398200acc8900fa7fdcbe3a46d42a08 Mon Sep 17 00:00:00 2001
+From: AntoinePrv <AntoinePrv@users.noreply.github.com>
+Date: Wed, 13 May 2020 14:47:53 -0400
+Subject: [PATCH] Add rt for Papilo
+
+---
+ papilo/CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/papilo/CMakeLists.txt b/papilo/CMakeLists.txt
+index 9b04063..33e7a27 100644
+--- a/papilo/CMakeLists.txt
++++ b/papilo/CMakeLists.txt
+@@ -243,6 +243,11 @@ include_directories(${SCIP_INCLUDE_DIRS} ${SOPLEX_INCLUDE_DIRS} ${HIGHS_INCLUDE_
+ if(Boost_IOSTREAMS_FOUND AND Boost_SERIALIZATION_FOUND AND Boost_PROGRAM_OPTIONS_FOUND)
+    add_executable(papilo-executable src/papilo.cpp)
+ 
++   find_library(LIBRT rt)
++   if(LIBRT)
++      target_link_libraries(papilo-executable ${LIBRT})
++   endif()
++
+    if(PAPILO_HAVE_SCIP)
+       list(APPEND linked_solvers "SCIP")
+    endif()
+-- 
+2.26.2
+

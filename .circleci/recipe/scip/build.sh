@@ -4,8 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-# FIXME Add patch files in meta.yaml to avoid modifying LDFLAGS
-LDFLAGS="-lrt ${LDFLAGS}" cmake -B build -S ${SRC_DIR} \
+cmake -B build -S ${SRC_DIR} \
 	-D CMAKE_AR="${AR}" \
 	-D CMAKE_BUILD_TYPE=Release \
 	-D PARASCIP=1 \

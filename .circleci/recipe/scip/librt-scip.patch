@@ -1,0 +1,29 @@
+From 49979068ccdbb8c888b3e1176e96f3e5287566f4 Mon Sep 17 00:00:00 2001
+From: AntoinePrv <AntoinePrv@users.noreply.github.com>
+Date: Wed, 13 May 2020 14:06:18 -0400
+Subject: [PATCH] Fix librt in SCIP
+
+---
+ scip/src/CMakeLists.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/scip/src/CMakeLists.txt b/scip/src/CMakeLists.txt
+index c3bec60..e0c59f3 100644
+--- a/scip/src/CMakeLists.txt
++++ b/scip/src/CMakeLists.txt
+@@ -982,6 +982,12 @@ else()
+     target_link_libraries(scip libscip)
+ endif()
+ 
++# Add missing link flag required for some GLIBC. Silently ignored on Windows.
++find_library(LIBRT rt)
++if(LIBRT)
++    target_link_libraries(scip ${LIBRT})
++endif()
++
+ include(GenerateExportHeader)
+ generate_export_header(libscip BASE_NAME scip EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/scip/scip_export.h)
+ target_compile_definitions(scip PRIVATE SCIP_STATIC_DEFINE)
+-- 
+2.26.2
+
