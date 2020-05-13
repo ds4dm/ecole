@@ -4,6 +4,8 @@ package:
 
 source:
   path: {{ SCIP_DIR }}
+  patch:
+    - libobjscip.patch
 
 build:
   number: 0
