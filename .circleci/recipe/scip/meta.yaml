@@ -19,6 +19,8 @@ requirements:
   host:
     - zlib
     - readline
+    - boost-cpp
+    - tbb-devel
 
 test:
   source_files:

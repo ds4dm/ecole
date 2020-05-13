@@ -8,8 +8,8 @@ COPY recipe recipe
 RUN conda install conda-build conda-verify
 
 RUN wget -q "${scipoptsuite_url:?}"
-RUN tar -xzf scipoptsuite-6.0.2.tgz
-RUN SCIP_DIR="${PWD}/scipoptsuite-6.0.2" SCIP_VERSION="6.0.2" conda build -c conda-forge recipe/scip
+RUN tar -xzf scipoptsuite-7.0.0.tgz
+RUN SCIP_DIR="${PWD}/scipoptsuite-7.0.0" SCIP_VERSION="7.0.0" conda build -c conda-forge recipe/scip
 RUN cp -al /opt/conda/conda-bld channel
 
 
