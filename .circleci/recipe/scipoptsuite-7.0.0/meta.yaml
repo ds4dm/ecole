@@ -26,7 +26,7 @@ requirements:
     - gmp
     - libgcc-ng  # [linux] Quadmath
     - boost-cpp
-    - tbb-devel
+    # Disable Papilo for now - tbb-devel
 
 test:
   source_files:
