@@ -47,22 +47,20 @@ instructions.
   configure, and `cmake --build build/` to compile.
   CMake is made available in the `ecole` environment created earlier.
 
-### Runtime dependencies
+### SCIP runtime dependencies
   * **SCIP** - Head to the [download page](https://scip.zib.de/index.php#download),
-    select a version greater than 6.0 and download the `scipoptsuite-x.y.z.tgz` file
-    (where `x.y.z` is to be replaced with the selected version).
+    select version 7.0.0 and download the `scipoptsuite-7.0.0.tgz` file.
     Extract it using
     ```bash
-    tar -xz -f scipoptsuite-x.y.z.tgz
+    tar -xz -f scipoptsuite-7.0.0.tgz
     ```
-    In the extracted folder, configure and build with CMake
+    Create a local conda package for SCIP using the recipe provided in this repository
     ```bash
-    cmake -B build/ -D PARASCIP=1 -D GMP=0 -D ZIMPL=0 -D GCG=0 -D READLINE=0
-    cmake --build build/ --parallel
+    SCIP_DIR="/path/to/scipoptsuite-7.0.0 conda build .circleci/recipe/scipoptsuite-7.0.0
     ```
-    Finally, install SCIP in the `ecole` conda environment
+    Instal the SCIP package in the `ecole` environment
     ```bash
-    cmake --install build/ --prefix $(conda run -n ecole echo '$CONDA_PREFIX')
+    conda install --channel "file://${CONDA_PREFIX:?}/conda-bld" scipoptsuite
     ```
 
 ### Building

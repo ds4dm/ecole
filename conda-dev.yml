@@ -6,6 +6,9 @@ dependencies:
   # General convenience
   - wget
   - git
+  # Conda build tools
+  - conda-build
+  - conda-verify
   # C++ dev tools
   - make
   - cmake>=3.15
