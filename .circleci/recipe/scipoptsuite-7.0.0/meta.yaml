@@ -1,6 +1,6 @@
 package:
-  name: scip
-  version: {{ SCIP_VERSION }}
+  name: scipoptsuite
+  version: 7.0.0
 
 source:
   path: {{ SCIP_DIR }}
@@ -12,7 +12,7 @@ source:
 build:
   number: 0
   run_exports:
-    - {{ pin_subpackage('scip', max_pin='x.x') }}
+    - {{ pin_subpackage('scipoptsuite', max_pin='x.x') }}
 
 requirements:
   build:
