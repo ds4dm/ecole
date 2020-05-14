@@ -48,6 +48,7 @@ unique_ptr<SCIP> copy(SCIP const* source) {
 		true,
 		false,
 		false,
+		false,
 		nullptr);
 	return dest;
 }
