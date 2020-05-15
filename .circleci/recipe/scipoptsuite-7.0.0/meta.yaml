@@ -16,7 +16,9 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
+    # Currenlty issue with clang 10.0.0 and "ld: unknown option: -platform_version"
+    - {{ compiler('c') }}  # [not osx]
+    - {{ compiler('c') }}  <10.0 # [osx]
     - {{ compiler('cxx') }}
     - cmake>=3.15
     - make
@@ -32,7 +34,9 @@ test:
   source_files:
     - scip/examples/Queens
   requires:
-    - {{ compiler('c') }}
+    # Currenlty issue with clang 10.0.0 and "ld: unknown option: -platform_version"
+    - {{ compiler('c') }}  # [not osx]
+    - {{ compiler('c') }}  <10.0 # [osx]
     - {{ compiler('cxx') }}
     - cmake>=3.15
     - make
