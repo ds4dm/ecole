@@ -1,0 +1,35 @@
+{% set version = "3.0.0" %}
+
+package:
+  name: pyscipopt
+  version: {{ version }}
+
+source:
+  url: https://github.com/SCIP-Interfaces/PySCIPOpt/archive/v{{ version }}.tar.gz
+  sha256: fcfb2fc6718ea624332bad3f6e5dc85f8b7b31dfdcd83f769416969f772b54c0
+
+build:
+  number: 0
+  script: python -m pip install --no-deps --ignore-installed .
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+  host:
+    - python {{ python }}
+    - pip
+    - cython
+    - scipoptsuite {{ scipoptsuite }}
+  run:
+    - python
+
+test:
+  commands:
+    - python -c 'import pyscipopt.scip; pyscipopt.scip.Model()'
+
+about:
+  home: https://github.com/SCIP-Interfaces/PySCIPOpt
+  license: MIT
+  license_file: LICENSE
+  summary: Python interface for the SCIP Optimization Suite
+  doc_url: https://scip-interfaces.github.io/PySCIPOpt/docs/html/
