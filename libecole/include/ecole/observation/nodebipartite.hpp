@@ -16,9 +16,9 @@ class NodeBipartiteObs {
 public:
 	using value_type = double;
 
-	xt::xtensor<value_type, 2> col_feat;
-	xt::xtensor<value_type, 2> row_feat;
-	utility::coo_matrix<value_type> matrix;
+	xt::xtensor<value_type, 2> column_features;
+	xt::xtensor<value_type, 2> row_features;
+	utility::coo_matrix<value_type> edge_features;
 };
 
 class NodeBipartite : public ObservationFunction<nonstd::optional<NodeBipartiteObs>> {

@@ -51,19 +51,22 @@ def test_DictFunction(state):
 def test_NodeBipartite(solving_state):
     obs = O.NodeBipartite().obtain_observation(solving_state)
     assert isinstance(obs, O.NodeBipartiteObs)
-    assert isinstance(obs.col_feat, np.ndarray)
+    assert isinstance(obs.column_features, np.ndarray)
 
-    assert obs.col_feat.size > 0
-    assert len(obs.col_feat.shape) == 2
-    assert obs.row_feat.size > 0
-    assert len(obs.row_feat.shape) == 2
-    assert obs.matrix.shape == (obs.row_feat.shape[0], obs.col_feat.shape[0])
-    assert obs.matrix.indices.shape == (2, obs.matrix.nnz)
+    assert obs.column_features.size > 0
+    assert len(obs.column_features.shape) == 2
+    assert obs.row_features.size > 0
+    assert len(obs.row_features.shape) == 2
+    assert obs.edge_features.shape == (
+        obs.row_features.shape[0],
+        obs.column_features.shape[0],
+    )
+    assert obs.edge_features.indices.shape == (2, obs.edge_features.nnz)
 
     val = np.random.rand()
-    obs.col_feat[:] = val
-    assert np.all(obs.col_feat == val)
-    obs.row_feat[:] = val
-    assert np.all(obs.row_feat == val)
-    obs.matrix.values[:] = val
-    assert np.all(obs.matrix.values == val)
+    obs.column_features[:] = val
+    assert np.all(obs.column_features == val)
+    obs.row_features[:] = val
+    assert np.all(obs.row_features == val)
+    obs.edge_features.values[:] = val
+    assert np.all(obs.edge_features.values == val)
