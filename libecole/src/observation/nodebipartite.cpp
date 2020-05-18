@@ -10,7 +10,7 @@
 namespace ecole {
 namespace observation {
 
-using tensor = decltype(NodeBipartiteObs::col_feat);
+using tensor = decltype(NodeBipartiteObs::column_features);
 using value_type = tensor::value_type;
 
 static value_type constexpr cste = 5.;
@@ -126,7 +126,7 @@ static auto matrix_nnz(scip::Model const& model) {
 	return nnz;
 }
 
-static utility::coo_matrix<value_type> matrix(scip::Model const& model) {
+static utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
 	auto const scip = model.get_scip_ptr();
 
 	using coo_matrix = utility::coo_matrix<value_type>;
@@ -168,7 +168,9 @@ auto NodeBipartite::obtain_observation(environment::State const& state)
 	-> nonstd::optional<NodeBipartiteObs> {
 	if (state.model.get_stage() == SCIP_STAGE_SOLVING) {
 		return NodeBipartiteObs{
-			extract_col_feat(state.model), extract_row_feat(state.model), matrix(state.model)};
+			extract_col_feat(state.model),
+			extract_row_feat(state.model),
+			extract_edge_feat(state.model)};
 	} else {
 		return {};
 	}

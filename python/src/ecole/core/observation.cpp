@@ -52,7 +52,7 @@ void bind_submodule(py::module m) {
 	def_reset(nothing, R"(Do nothing.)");
 	def_obtain_observation(nothing, R"(Return None.)");
 
-	using coo_matrix = decltype(NodeBipartiteObs::matrix);
+	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(
 		Sparse matrix in the coordinate format.
 		
@@ -87,18 +87,18 @@ void bind_submodule(py::module m) {
 		Each edge is associated with the coefficient of the variable in the constraint.
 	)")  //
 		.def_property_readonly(
-			"col_feat",
-			[](NodeBipartiteObs & self) -> auto& { return self.col_feat; },
+			"column_features",
+			[](NodeBipartiteObs & self) -> auto& { return self.column_features; },
 			"A matrix where each row is represents a variable, and each column a feature of "
 			"the variables.")
 		.def_property_readonly(
-			"row_feat",
-			[](NodeBipartiteObs & self) -> auto& { return self.row_feat; },
+			"row_features",
+			[](NodeBipartiteObs & self) -> auto& { return self.row_features; },
 			"A matrix where each row is represents a constraint, and each column a feature of "
 			"the constraints.")
 		.def_readwrite(
-			"matrix",
-			&NodeBipartiteObs::matrix,
+			"edge_features",
+			&NodeBipartiteObs::edge_features,
 			"The constraint matrix of the optimization problem, with rows for contraints and "
 			"columns for variables.");
 
@@ -106,7 +106,6 @@ void bind_submodule(py::module m) {
 		Bipartite graph observation function on branch-and bound node.
 
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
-
 	)");
 	node_bipartite.def(py::init<>());
 	def_reset(

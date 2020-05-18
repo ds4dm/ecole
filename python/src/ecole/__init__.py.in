@@ -1,1 +1,7 @@
 __version__ = "@Ecole_VERSION@"  # Filled by CMake
+
+import ecole.environment
+import ecole.observation
+import ecole.reward
+import ecole.scip
+import ecole.termination
