@@ -38,6 +38,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
 
    self
    installation
+   using-environments
 
 .. toctree::
    :caption: API Reference

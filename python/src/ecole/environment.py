@@ -51,6 +51,31 @@ class EnvironmentComposer:
         self.can_transition = False
 
     def reset(self, instance):
+        """Reset environment to an initial state.
+
+        This method brings the environment to a new initial state, *i.e.* starts a new
+        episode.
+        The method can be called at any point in time.
+
+        Parameters
+        ----------
+        instance:
+            The combinatorial optimization problem to tackle during the newly started
+            episode.
+
+        Returns
+        -------
+        observation:
+            The observation of extracted from the initial state.
+            Typically used to take the next action.
+        action_set:
+            An optional subset of accepted action in the next transition.
+            For some environment, this may change at every transition.
+        done:
+            A boolean flag indicating wether the current state is terminal.
+            If this is true, the episode is finished, and :meth:`step` cannot be called.
+
+        """
         self.can_transition = True
         try:
             if isinstance(instance, core.scip.Model):
@@ -71,6 +96,40 @@ class EnvironmentComposer:
             raise e
 
     def step(self, action):
+        """Transition from one state to another.
+
+        This method takes a user action to transition from the current state to the
+        next.
+        The method **cannot** be called if the environment has not been reset since its
+        instantiation or since a terminal state.
+
+        Parameters
+        ----------
+        action:
+            The action to take in as part of the Markov Decision Process.
+            If an action set has been given in the latest call (inluding calls to
+            :meth:`reset`), then the action **must** be in that set.
+
+        Returns
+        -------
+        observation:
+            The observation of extracted from the current state.
+            Typically used to take the next action.
+        action_set:
+            An optional subset of accepted action in the next transition.
+            For some environment, this may change at every transition.
+        reward:
+            A real number to use for reinforcement learning.
+        done:
+            A boolean flag indicating wether the current state is terminal.
+            If this is true, the episode is finished, and this method cannot be called
+            until :meth:`reset` has been called.
+        info:
+            A collection of environment specific information about the transition.
+            This is not necessary for the control problem, but is useful to gain
+            insights about the environment.
+
+        """
         if not self.can_transition:
             raise core.environment.Exception("Environment need to be reset.")
 
@@ -83,6 +142,10 @@ class EnvironmentComposer:
         except Exception as e:
             self.can_transition = False
             raise e
+
+    def seed(self):
+        """Set the random seed of the solver."""
+        raise NotImplementedError()
 
 
 class Branching(EnvironmentComposer):
