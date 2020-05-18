@@ -5,8 +5,12 @@ version = "@Ecole_VERSION_MAJOR@.@Ecole_VERSION_MINOR@"
 release = "@Ecole_VERSION@"
 author = "@Ecole_AUTHORS@"
 
-extensions = ["breathe", "sphinx_rtd_theme", "sphinx.ext.autodoc"]
+extensions = [
+    "sphinx.ext.autodoc",  # Read doc from Python docstrings
+]
 
+# Theme
+extensions += ["sphinx_rtd_theme"]
 html_theme = "sphinx_rtd_theme"
 html_context = {
     "display_github": True,
@@ -16,4 +20,12 @@ html_context = {
     "conf_py_path": "/docs/",  # For the edit on Github link
 }
 
+# Breathe for Doxygen import
+extensions += ["breathe"]
 breathe_default_project = "libecole"
+
+
+# Napoleon write docstrings in Numpy style
+extensions += ["sphinx.ext.napoleon"]
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
