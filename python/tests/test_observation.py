@@ -1,3 +1,5 @@
+import unittest.mock as mock
+
 import pytest
 import numpy as np
 
@@ -14,6 +16,36 @@ def solving_state(model):
 
 def test_Nothing(state):
     assert O.Nothing().obtain_observation(state) is None
+
+
+def test_TupleObservationFunction(state):
+    """Dispach calls and pack the result in a tuple."""
+    obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
+    tuple_obs_func = O.TupleObservationFunction(obs_func1, obs_func2)
+
+    tuple_obs_func.reset(state)
+    obs_func1.reset.assert_called_once_with(state)
+    obs_func2.reset.assert_called_once_with(state)
+
+    obs_func1.obtain_observation.return_value = "something"
+    obs_func2.obtain_observation.return_value = "else"
+    obs = tuple_obs_func.obtain_observation(state)
+    assert obs == ("something", "else")
+
+
+def test_DictObservationFunction(state):
+    """Dispach calls and pack the result in a dict."""
+    obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
+    dict_obs_func = O.DictObservationFunction(name1=obs_func1, name2=obs_func2)
+
+    dict_obs_func.reset(state)
+    obs_func1.reset.assert_called_once_with(state)
+    obs_func2.reset.assert_called_once_with(state)
+
+    obs_func1.obtain_observation.return_value = "something"
+    obs_func2.obtain_observation.return_value = "else"
+    obs = dict_obs_func.obtain_observation(state)
+    assert obs == {"name1": "something", "name2": "else"}
 
 
 def test_NodeBipartite(solving_state):
