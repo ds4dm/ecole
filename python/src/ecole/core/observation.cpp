@@ -17,19 +17,24 @@ namespace observation {
 
 namespace py = pybind11;
 
-template <typename ObservationFunction>
-auto observation_function_class(py::module& m, char const* name) {
-	return py::class_<ObservationFunction>(m, name)  //
-		.def(
-			"reset",
-			&ObservationFunction::reset,
-			py::arg("state"),
-			py::call_guard<py::gil_scoped_release>())
-		.def(
-			"obtain_observation",
-			&ObservationFunction::obtain_observation,
-			py::arg("state"),
-			py::call_guard<py::gil_scoped_release>());
+template <typename PyClass, typename... Args>
+auto def_reset(PyClass pyclass, Args&&... args) {
+	return pyclass.def(
+		"reset",
+		&PyClass::type::reset,
+		py::arg("state"),
+		py::call_guard<py::gil_scoped_release>(),
+		std::forward<Args>(args)...);
+}
+
+template <typename PyClass, typename... Args>
+auto def_obtain_observation(PyClass pyclass, Args&&... args) {
+	return pyclass.def(
+		"obtain_observation",
+		&PyClass::type::obtain_observation,
+		py::arg("state"),
+		py::call_guard<py::gil_scoped_release>(),
+		std::forward<Args>(args)...);
 }
 
 void bind_submodule(py::module m) {
@@ -37,29 +42,76 @@ void bind_submodule(py::module m) {
 
 	xt::import_numpy();
 
-	observation_function_class<Nothing>(m, "Nothing")  //
-		.def(py::init<>());
+	auto nothing = py::class_<Nothing>(m, "Nothing", R"(
+		No observation.
+
+		This observation function does nothing and always returns ``None`` as an observation.
+		Convenient for bandit algorithms, or when no learning is performed.
+	)");
+	nothing.def(py::init<>());
+	def_reset(nothing, R"(Do nothing.)");
+	def_obtain_observation(nothing, R"(Return None.)");
 
 	using coo_matrix = decltype(NodeBipartiteObs::matrix);
-	py::class_<coo_matrix>(m, "coo_matrix")
+	py::class_<coo_matrix>(m, "coo_matrix", R"(
+		Sparse matrix in the coordinate format.
+		
+		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
+	)")
 		.def_property_readonly(
-			"values", [](coo_matrix & self) -> auto& { return self.values; })
+			"values",
+			[](coo_matrix & self) -> auto& { return self.values; },
+			"A vector of non zero values in the matrix")
 		.def_property_readonly(
-			"indices", [](coo_matrix & self) -> auto& { return self.indices; })
+			"indices",
+			[](coo_matrix & self) -> auto& { return self.indices; },
+			"A matrix holding the indices of non zero coefficient in the sparse matrix. "
+			"There are as many columns as there are non zero coefficients, and each row is a "
+			"dimension in the sparse matrix.")
 		.def_property_readonly(
 			"shape",
-			[](coo_matrix& self) { return std::make_pair(self.shape[0], self.shape[1]); })
+			[](coo_matrix& self) { return std::make_pair(self.shape[0], self.shape[1]); },
+			"The dimension of the sparse matrix, as if it was dense.")
 		.def_property_readonly("nnz", &coo_matrix::nnz);
 
-	py::class_<NodeBipartiteObs>(m, "NodeBipartiteObs")  //
-		.def_property_readonly(
-			"col_feat", [](NodeBipartiteObs & self) -> auto& { return self.col_feat; })
-		.def_property_readonly(
-			"row_feat", [](NodeBipartiteObs & self) -> auto& { return self.row_feat; })
-		.def_readwrite("matrix", &NodeBipartiteObs::matrix);
+	py::class_<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
+		Bipartite graph observation for branch-and-bound nodes.
 
-	observation_function_class<NodeBipartite>(m, "NodeBipartite")  //
-		.def(py::init<>());
+		The optimization problem is represented as an heterogenous bipartite graph.
+		On one side, a node is associated with one variable, on the other side a node is
+		associated with one constraint.
+		There exist an edge between a variable and a constraint if the variable exists in the
+		constraint with a non-zero coefficient.
+
+		Each variable and constraint node is associated with a vector of features.
+		Each edge is associated with the coefficient of the variable in the constraint.
+	)")  //
+		.def_property_readonly(
+			"col_feat",
+			[](NodeBipartiteObs & self) -> auto& { return self.col_feat; },
+			"A matrix where each row is represents a variable, and each column a feature of "
+			"the variables.")
+		.def_property_readonly(
+			"row_feat",
+			[](NodeBipartiteObs & self) -> auto& { return self.row_feat; },
+			"A matrix where each row is represents a constraint, and each column a feature of "
+			"the constraints.")
+		.def_readwrite(
+			"matrix",
+			&NodeBipartiteObs::matrix,
+			"The constraint matrix of the optimization problem, with rows for contraints and "
+			"columns for variables.");
+
+	auto node_bipartite = py::class_<NodeBipartite>(m, "NodeBipartite", R"(
+		Bipartite graph observation function on branch-and bound node.
+
+		This observation function extract structured :py:class:`NodeBipartiteObs`.
+
+	)");
+	node_bipartite.def(py::init<>());
+	def_reset(
+		node_bipartite, "Cache some feature not expected to change during an episode.");
+	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 }
 
 }  // namespace observation
