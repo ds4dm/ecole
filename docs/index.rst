@@ -41,7 +41,16 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    using-environments
 
 .. toctree::
-   :caption: API Reference
+   :caption: Usage
    :hidden:
 
-   reference
+   customizing-environments
+   pyscipopt
+
+.. toctree::
+   :caption: Reference
+   :hidden:
+
+   reference/environments.rst
+   reference/observations.rst
+   reference/rewards.rst

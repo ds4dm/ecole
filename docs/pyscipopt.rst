@@ -1,0 +1,2 @@
+PyScipOpt Compatibility
+=======================
