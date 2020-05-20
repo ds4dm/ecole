@@ -7,6 +7,7 @@ author = "@Ecole_AUTHORS@"
 
 extensions = [
     "sphinx.ext.autodoc",  # Read doc from Python docstrings
+    "sphinx.ext.viewcode",
 ]
 
 # Theme
