@@ -56,7 +56,7 @@ instructions.
     ```
     Create a local conda package for SCIP using the recipe provided in this repository
     ```bash
-    SCIP_DIR="/path/to/scipoptsuite-7.0.0 conda build .circleci/recipe/scipoptsuite-7.0.0
+    SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build .circleci/recipe/scipoptsuite-7.0.0
     ```
     Instal the SCIP package in the `ecole` environment
     ```bash
