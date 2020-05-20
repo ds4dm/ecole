@@ -44,7 +44,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    :caption: Usage
    :hidden:
 
-   customizing-environments
+   adapting-environments
    pyscipopt
 
 .. toctree::
