@@ -64,8 +64,8 @@ void bind_submodule(py::module m) {
 		.def(py::self != py::self)
 
 		.def(
-			"clone",
-			[](Model const& model) { return model; },
+			"copy_orig",
+			[](Model const& model) { return model.copy_orig(); },
 			py::call_guard<py::gil_scoped_release>())
 		.def(
 			"as_pyscipopt",

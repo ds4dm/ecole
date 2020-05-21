@@ -19,7 +19,7 @@ def run_environment(model):
 @pytest.mark.slow
 def test_environment_mulithread(benchmark, model, n_threads):
     def setup_threads():
-        models = [model.clone() for _ in range(n_threads)]
+        models = [model.copy_orig() for _ in range(n_threads)]
         threads = [threading.Thread(target=run_environment, args=(m,)) for m in models]
         return (threads,), {}
 
@@ -40,7 +40,7 @@ def test_environment_mulithread(benchmark, model, n_threads):
 @pytest.mark.slow
 def test_solve_mulithread(benchmark, model, n_threads):
     def setup_threads():
-        models = [model.clone() for _ in range(n_threads)]
+        models = [model.copy_orig() for _ in range(n_threads)]
         threads = [threading.Thread(target=m.solve) for m in models]
         return (threads,), {}
 

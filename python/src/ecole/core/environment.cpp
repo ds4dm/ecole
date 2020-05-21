@@ -101,11 +101,11 @@ void bind_submodule(pybind11::module m) {
 	py::register_exception<Exception>(m, "Exception");
 
 	py::class_<State>(m, "State")
-		.def_readwrite("model", &State::model)  //
-		.def(py::init<scip::Model>());
+		.def_readonly("model", &State::model)  //
+		.def(py::init<scip::Model const&>());
 
 	py::class_<ReverseControlState, State>(m, "ReverseControlState")  //
-		.def(py::init<scip::Model>());
+		.def(py::init<scip::Model const&>());
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);

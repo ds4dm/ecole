@@ -17,7 +17,7 @@ def test_configuring_environment(model):
     for _ in range(2):
         count = 0
 
-        obs, _, done = env.reset(model.clone())
+        obs, _, done = env.reset(model.copy_orig())
         while not done:
             obs, _, reward, done, info = env.step(action)
             count += 1

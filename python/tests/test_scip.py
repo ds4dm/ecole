@@ -15,8 +15,8 @@ def test_equality(model):
     assert model != 33
 
 
-def test_clone(model):
-    model_copy = model.clone()
+def test_copy_orig(model):
+    model_copy = model.copy_orig()
     assert model is not model_copy
     assert model != model_copy
 
@@ -67,7 +67,7 @@ def test_as_pyscipopt_shared(model):
 def test_as_pyscipopt_ownership(model):
     """PyScipOpt model remains valid if Ecole model goes out of scope."""
     # Making a copy to be sure no reference is held elsewhere
-    ecole_model = model.clone()
+    ecole_model = model.copy_orig()
     # ecole_model remains pointer owner
     pyscipopt_model = ecole_model.as_pyscipopt()
     assert not pyscipopt_model._freescip
