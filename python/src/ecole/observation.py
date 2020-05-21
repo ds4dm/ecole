@@ -1,7 +1,7 @@
 from ecole.core.observation import *
 
 
-class TupleObservationFunction:
+class TupleFunction:
     """Pack observation functions together and return observations as tuples."""
 
     def __init__(self, *observation_functions):
@@ -21,7 +21,7 @@ class TupleObservationFunction:
         )
 
 
-class DictObservationFunction:
+class DictFunction:
     """Pack observation functions together and return observations as dicts."""
 
     def __init__(self, **observation_functions):

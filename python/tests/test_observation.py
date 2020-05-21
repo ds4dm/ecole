@@ -18,10 +18,10 @@ def test_Nothing(state):
     assert O.Nothing().obtain_observation(state) is None
 
 
-def test_TupleObservationFunction(state):
+def test_TupleFunction(state):
     """Dispach calls and pack the result in a tuple."""
     obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    tuple_obs_func = O.TupleObservationFunction(obs_func1, obs_func2)
+    tuple_obs_func = O.TupleFunction(obs_func1, obs_func2)
 
     tuple_obs_func.reset(state)
     obs_func1.reset.assert_called_once_with(state)
@@ -33,10 +33,10 @@ def test_TupleObservationFunction(state):
     assert obs == ("something", "else")
 
 
-def test_DictObservationFunction(state):
+def test_DictFunction(state):
     """Dispach calls and pack the result in a dict."""
     obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    dict_obs_func = O.DictObservationFunction(name1=obs_func1, name2=obs_func2)
+    dict_obs_func = O.DictFunction(name1=obs_func1, name2=obs_func2)
 
     dict_obs_func.reset(state)
     obs_func1.reset.assert_called_once_with(state)
