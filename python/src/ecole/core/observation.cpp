@@ -6,6 +6,7 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse_matrix.hpp"
@@ -118,6 +119,22 @@ void bind_submodule(py::module m) {
 	node_bipartite.def(py::init<>());
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
+
+	// JD
+	py::class_<StrongBranchingScoresObs>(m, "StrongBranchingScoresObs")  //
+		.def_property_readonly(
+			"candidate_scores", [](StrongBranchingScoresObs & self) -> auto& { return self.candidate_scores; })
+		.def_property_readonly(
+			"candidates", [](StrongBranchingScoresObs & self) -> auto& { return self.candidates; })
+		.def_property_readonly(
+			"num_candidates", [](StrongBranchingScoresObs & self) -> auto& { return self.num_candidates; })
+		.def_property_readonly(
+			"best_candidate", [](StrongBranchingScoresObs & self) -> auto& { return self.best_candidate; });
+
+	auto sb_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores");
+	sb_scores.def(py::init<>());
+	def_reset(sb_scores);
+	def_obtain_observation(sb_scores);
 }
 
 }  // namespace observation
