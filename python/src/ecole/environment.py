@@ -22,13 +22,9 @@ class EnvironmentComposer:
         termination_function="default",
         **dynamics_kwargs
     ) -> None:
-        #  Set observation function
-        if observation_function == "default":
-            self.observation_function = self.__DefaultObservationFunction__()
-        elif observation_function is None:
-            self.observation_function = ecole.observation.Nothing()
-        else:
-            self.observation_function = observation_function
+        self.observation_function = self.__parse_observation_function(
+            observation_function
+        )
 
         #  Set reward function
         if reward_function == "default":
@@ -49,6 +45,26 @@ class EnvironmentComposer:
         self.state = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
+
+    @classmethod
+    def __parse_observation_function(cls, observation_function):
+        if observation_function == "default":
+            return cls.__DefaultObservationFunction__()
+        elif observation_function is None:
+            return ecole.observation.Nothing()
+        elif isinstance(observation_function, tuple):
+            return ecole.observation.TupleFunction(
+                *(cls.__parse_observation_function(fun) for fun in observation_function)
+            )
+        elif isinstance(observation_function, dict):
+            return ecole.observation.DictFunction(
+                **{
+                    name: cls.__parse_observation_function(func)
+                    for name, func in observation_function.items()
+                }
+            )
+        else:
+            return observation_function
 
     def reset(self, instance):
         """Reset environment to an initial state.
