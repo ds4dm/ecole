@@ -26,7 +26,6 @@ TEST_CASE("Dealocation of ressources") {
 
 TEST_CASE("Creation of model") {
 	auto model = scip::Model{};
-	SECTION("Copy construct") { auto model_copy = model; }
 	SECTION("Move construct") { auto model_moved = std::move(model); }
 }
 
@@ -38,7 +37,7 @@ TEST_CASE("Creation of model from scip pointer") {
 TEST_CASE("Equality comparison") {
 	auto model = scip::Model{};
 	REQUIRE(model == model);
-	REQUIRE(model != scip::Model{model});
+	REQUIRE(model != model.copy_orig());
 }
 
 TEST_CASE("Create model from file") {
@@ -65,13 +64,6 @@ TEST_CASE("Model solving") {
 		auto fut2 = std::async(std::launch::async, load_solve);
 		REQUIRE((fut1.get() && fut2.get()));
 	}
-}
-
-TEST_CASE("Copy preserve the model internals") {
-	auto model = get_model();
-	auto model_copy = model;
-	model.solve();
-	model_copy.solve();
 }
 
 TEST_CASE("Get and set parameters") {

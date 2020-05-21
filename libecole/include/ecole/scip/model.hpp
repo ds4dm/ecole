@@ -43,14 +43,15 @@ public:
 	 */
 	Model();
 	Model(unique_ptr<SCIP>&& scip);
-	/**
-	 * Deep copy the model.
-	 */
-	Model(Model const& model);
-	Model& operator=(Model const&);
+
+	Model(Model const& model) = delete;
+	Model& operator=(Model const&) = delete;
+
 	Model(Model&&) noexcept = default;
 	Model& operator=(Model&&) noexcept = default;
 	~Model() = default;
+
+	Model copy_orig() const;
 
 	/**
 	 * Compare if two model share the same SCIP pointer, _i.e._ the same memory.

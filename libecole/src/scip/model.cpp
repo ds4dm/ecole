@@ -31,28 +31,6 @@ unique_ptr<SCIP> create() {
 	return scip_ptr;
 }
 
-unique_ptr<SCIP> copy(SCIP const* source) {
-	if (!source) return nullptr;
-	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) return create();
-	auto dest = create();
-	// Copy operation is not thread safe
-	static std::mutex m{};
-	std::lock_guard<std::mutex> g{m};
-	scip::call(
-		SCIPcopy,
-		const_cast<SCIP*>(source),
-		dest.get(),
-		nullptr,
-		nullptr,
-		"",
-		true,
-		false,
-		false,
-		false,
-		nullptr);
-	return dest;
-}
-
 SCIP* Model::get_scip_ptr() const noexcept {
 	return scip.get();
 }
@@ -68,11 +46,25 @@ Model::Model(unique_ptr<SCIP>&& scip_) {
 		throw Exception("Cannot create empty model");
 }
 
-Model::Model(Model const& other) : scip(copy(other.get_scip_ptr())) {}
-
-Model& Model::operator=(Model const& other) {
-	if (&other != this) scip = copy(other.get_scip_ptr());
-	return *this;
+Model Model::copy_orig() const {
+	if (!scip) return Model();
+	if (get_stage() == SCIP_STAGE_INIT) return create();
+	auto dest = create();
+	// Copy operation is not thread safe
+	static std::mutex m{};
+	std::lock_guard<std::mutex> g{m};
+	scip::call(
+		SCIPcopyOrig,
+		get_scip_ptr(),
+		dest.get(),
+		nullptr,
+		nullptr,
+		"",
+		false,
+		false,
+		false,
+		nullptr);
+	return dest;
 }
 
 bool Model::operator==(Model const& other) const noexcept {

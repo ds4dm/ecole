@@ -18,11 +18,11 @@ public:
 
 	State() = default;
 	explicit State(scip::Model&& model_) : model(std::move(model_)){};
-	explicit State(scip::Model const& model_) : model(model_){};
-	State(State const&) = default;
+	explicit State(scip::Model const& model_) : model(model_.copy_orig()) {}
+
 	State(State&&) = default;
-	State& operator=(State const&) = default;
 	State& operator=(State&&) = default;
+
 	virtual ~State() = default;
 };
 

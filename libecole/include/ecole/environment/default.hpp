@@ -88,7 +88,7 @@ public:
 	 * @copydoc ecole::environment::Environment::reset
 	 */
 	std::tuple<Observation, ActionSet, bool> reset(scip::Model const& model) override {
-		return reset(scip::Model{model});
+		return reset(model.copy_orig());
 	}
 
 	/**
