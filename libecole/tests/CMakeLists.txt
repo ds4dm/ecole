@@ -4,6 +4,7 @@ add_executable(
 	test-libecole
 	main.cpp
 	src/conftest.cpp
+	src/scip/test-scipimpl.cpp
 	src/scip/test-model.cpp
 	src/scip/test-variable.cpp
 	src/scip/test-view.cpp

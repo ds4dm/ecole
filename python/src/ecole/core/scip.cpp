@@ -5,6 +5,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/scipimpl.hpp"
 
 #include "core.hpp"
 
@@ -47,9 +48,9 @@ void bind_submodule(py::module m) {
 			[](py::object pyscipopt_model) {
 				if (pyscipopt_model.attr("_freescip").cast<bool>()) {
 					auto pyptr = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
-					scip::unique_ptr<SCIP> uptr = nullptr;
+					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;
 					uptr.reset(reinterpret_cast<SCIP*>(pyptr.cast<std::uintptr_t>()));
-					return Model(std::move(uptr));
+					return Model(std::make_unique<ScipImpl>(std::move(uptr)));
 				} else {
 					throw scip::Exception(
 						"Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
@@ -63,10 +64,7 @@ void bind_submodule(py::module m) {
 		.def(py::self == py::self)
 		.def(py::self != py::self)
 
-		.def(
-			"copy_orig",
-			[](Model const& model) { return model.copy_orig(); },
-			py::call_guard<py::gil_scoped_release>())
+		.def("copy_orig", &Model::copy_orig, py::call_guard<py::gil_scoped_release>())
 		.def(
 			"as_pyscipopt",
 			[](scip::Model const& model) {

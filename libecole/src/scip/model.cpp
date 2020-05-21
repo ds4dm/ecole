@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <mutex>
 #include <string>
 
 #include <fmt/format.h>
@@ -12,63 +11,34 @@
 
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/scipimpl.hpp"
 
 #include "scip/utils.hpp"
 
 namespace ecole {
 namespace scip {
 
-template <> void Deleter<SCIP>::operator()(SCIP* scip) {
-	scip::call(SCIPfree, &scip);
-}
+Model::Model() : scipimpl(std::make_unique<ScipImpl>()) {}
 
-unique_ptr<SCIP> create() {
-	SCIP* scip_raw;
-	scip::call(SCIPcreate, &scip_raw);
-	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), true);
-	auto scip_ptr = unique_ptr<SCIP>{};
-	scip_ptr.reset(scip_raw);
-	return scip_ptr;
-}
+Model::Model(Model&&) noexcept = default;
+
+Model::Model(std::unique_ptr<ScipImpl>&& other_scipimpl) :
+	scipimpl(std::move(other_scipimpl)) {}
+
+Model::~Model() = default;
+
+Model& Model::operator=(Model&&) noexcept = default;
 
 SCIP* Model::get_scip_ptr() const noexcept {
-	return scip.get();
-}
-
-Model::Model() : scip(create()) {
-	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
-}
-
-Model::Model(unique_ptr<SCIP>&& scip_) {
-	if (scip_)
-		this->scip = std::move(scip_);
-	else
-		throw Exception("Cannot create empty model");
+	return scipimpl->get_scip_ptr();
 }
 
 Model Model::copy_orig() const {
-	if (!scip) return Model();
-	if (get_stage() == SCIP_STAGE_INIT) return create();
-	auto dest = create();
-	// Copy operation is not thread safe
-	static std::mutex m{};
-	std::lock_guard<std::mutex> g{m};
-	scip::call(
-		SCIPcopyOrig,
-		get_scip_ptr(),
-		dest.get(),
-		nullptr,
-		nullptr,
-		"",
-		false,
-		false,
-		false,
-		nullptr);
-	return dest;
+	return std::make_unique<ScipImpl>(scipimpl->copy_orig());
 }
 
 bool Model::operator==(Model const& other) const noexcept {
-	return scip == other.scip;
+	return scipimpl == other.scipimpl;
 }
 
 bool Model::operator!=(Model const& other) const noexcept {

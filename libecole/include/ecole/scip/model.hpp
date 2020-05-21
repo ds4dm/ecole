@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
@@ -17,16 +16,8 @@
 namespace ecole {
 namespace scip {
 
-/**
- * Wrap SCIP pointer free function in a deleter for use with smart pointers.
- */
-template <typename T> struct Deleter { void operator()(T* ptr); };
-template <typename T> using unique_ptr = std::unique_ptr<T, Deleter<T>>;
-
-/**
- * Create an initialized SCIP pointer without message handler.
- */
-unique_ptr<SCIP> create();
+/* Forward declare scip holder type */
+class ScipImpl;
 
 /**
  * A stateful SCIP solver object.
@@ -42,14 +33,22 @@ public:
 	 * Construct an *initialized* model with default SCIP plugins.
 	 */
 	Model();
-	Model(unique_ptr<SCIP>&& scip);
-
+	Model(Model&&) noexcept;
 	Model(Model const& model) = delete;
+	Model(std::unique_ptr<ScipImpl>&&);
+
+	~Model();
+
+	Model& operator=(Model&&) noexcept;
 	Model& operator=(Model const&) = delete;
 
-	Model(Model&&) noexcept = default;
-	Model& operator=(Model&&) noexcept = default;
-	~Model() = default;
+	/**
+	 * Access the underlying SCIP pointer.
+	 *
+	 * Ownership of the pointer is however not released by the Model.
+	 * This function is meant to use the original C API of SCIP.
+	 */
+	SCIP* get_scip_ptr() const noexcept;
 
 	Model copy_orig() const;
 
@@ -115,16 +114,8 @@ public:
 	ColView lp_columns() const;
 	RowView lp_rows() const;
 
-	/**
-	 * Access the underlying SCIP pointer.
-	 *
-	 * Ownership of the pointer is however not released by the Model.
-	 * This function is meant to use the original C API of SCIP.
-	 */
-	SCIP* get_scip_ptr() const noexcept;
-
 private:
-	unique_ptr<SCIP> scip;
+	std::unique_ptr<ScipImpl> scipimpl;
 };
 
 /*****************************

@@ -12,26 +12,9 @@
 
 using namespace ecole;
 
-TEST_CASE("Allocation of ressources") {
-	auto&& scip = scip::create();
-	REQUIRE(SCIPgetStage(scip.get()) == SCIP_STAGE_INIT);
-}
-
-TEST_CASE("Dealocation of ressources") {
-	auto scip = scip::create();
-	scip.reset();
-	REQUIRE(scip == nullptr);
-	BMScheckEmptyMemory();
-}
-
 TEST_CASE("Creation of model") {
-	auto model = scip::Model{};
+	scip::Model model{};
 	SECTION("Move construct") { auto model_moved = std::move(model); }
-}
-
-TEST_CASE("Creation of model from scip pointer") {
-	REQUIRE_THROWS_AS(scip::Model(nullptr), scip::Exception);
-	scip::Model{scip::create()};
 }
 
 TEST_CASE("Equality comparison") {
