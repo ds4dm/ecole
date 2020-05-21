@@ -105,9 +105,12 @@ public:
 	 * Transform, presolve, and solve problem.
 	 */
 	void solve();
-	void interrupt_solve();
-
 	bool is_solved() const noexcept;
+
+	void solve_iter();
+	void solve_iter_branch(VarProxy var);
+	void solve_iter_stop();
+	bool solve_iter_is_done();
 
 	VarView variables() const noexcept;
 	VarView lp_branch_cands() const noexcept;

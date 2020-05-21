@@ -166,7 +166,7 @@ class EnvironmentComposer:
 
 class Branching(EnvironmentComposer):
     __Dynamics__ = core.environment.BranchingDynamics
-    __State__ = core.environment.ReverseControlState
+    __State__ = core.environment.State
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 

@@ -153,8 +153,18 @@ void Model::solve() {
 	scip::call(SCIPsolve, get_scip_ptr());
 }
 
-void Model::interrupt_solve() {
-	scip::call(SCIPinterruptSolve, get_scip_ptr());
+bool Model::is_solved() const noexcept {
+	return SCIPgetStage(get_scip_ptr()) == SCIP_STAGE_SOLVED;
+}
+
+void Model::solve_iter() {}
+
+void Model::solve_iter_branch(VarProxy) {}
+
+void Model::solve_iter_stop() {}
+
+bool Model::solve_iter_is_done() {
+	return true;
 }
 
 void Model::disable_presolve() {
@@ -162,10 +172,6 @@ void Model::disable_presolve() {
 }
 void Model::disable_cuts() {
 	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
-}
-
-bool Model::is_solved() const noexcept {
-	return SCIPgetStage(get_scip_ptr()) == SCIP_STAGE_SOLVED;
 }
 
 VarView Model::variables() const noexcept {
