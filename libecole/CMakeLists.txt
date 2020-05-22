@@ -29,7 +29,7 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-find_package(SCIP REQUIRED)
+find_package(SCIP 7 REQUIRED)
 find_package(Threads REQUIRED)
 target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
