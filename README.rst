@@ -81,14 +81,14 @@ Create a local conda package for SCIP using the recipe provided in this reposito
 
 .. code-block:: bash
 
-   CONDA_BLD_PATH="${CONDA_PREFIX}/conda-bld"
-   SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build .circleci/recipe/scipoptsuite-7.0.0
+   export CONDA_BLD_PATH="${CONDA_PREFIX}/conda-bld"
+   SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build -c conda-forge .circleci/recipe/scipoptsuite-7.0.0
 
 Instal the SCIP package in the ``ecole`` environment
 
 .. code-block:: bash
 
-   conda install --channel "file://${CONDA_BLD_PATH}" scipoptsuite
+   conda install -c "file://${CONDA_BLD_PATH}" -c conda-forge scipoptsuite
 
 
 Building
