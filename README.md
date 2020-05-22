@@ -30,6 +30,8 @@ instructions.
   For the following, the `ecole` environment always needs to be activated
   ```bash
   conda activate ecole
+  conda config --append channels conda-forge
+  conda config --set channel_priority strict
   ```
   *Note: this environment contains tools to build ecole and scip, format code, test,
   generate documentation etc. These are more than the dependencies to only use Ecole.*
@@ -41,27 +43,28 @@ instructions.
   A one-time configuration is necessary for CMake to find dependencies, detect system
   information, _etc_.
   This is the time to pass optional build options, such as the build type and compiler
-  choice. For instance `-D CMAKE_BUILD_TYPE=debug` can be added to compile with debug
+  choice. For instance `-D CMAKE_BUILD_TYPE=Debug` can be added to compile with debug
   information.
   Using `cmake`, we recommend building out of source using `cmake -B build/` to
   configure, and `cmake --build build/` to compile.
   CMake is made available in the `ecole` environment created earlier.
 
-### SCIP runtime dependencies
-  * **SCIP** - Head to the [download page](https://scip.zib.de/index.php#download),
-    select version 7.0.0 and download the `scipoptsuite-7.0.0.tgz` file.
-    Extract it using
-    ```bash
-    tar -xz -f scipoptsuite-7.0.0.tgz
-    ```
-    Create a local conda package for SCIP using the recipe provided in this repository
-    ```bash
-    SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build .circleci/recipe/scipoptsuite-7.0.0
-    ```
-    Instal the SCIP package in the `ecole` environment
-    ```bash
-    conda install --channel "file://${CONDA_PREFIX:?}/conda-bld" scipoptsuite
-    ```
+### SCIP runtime dependency
+  **SCIP** - Head to the [download page](https://scip.zib.de/index.php#download),
+  select version 7.0.0 and download the `scipoptsuite-7.0.0.tgz` file.
+  Extract it using
+  ```bash
+  tar -xz -f scipoptsuite-7.0.0.tgz
+  ```
+  Create a local conda package for SCIP using the recipe provided in this repository
+  ```bash
+  CONDA_BLD_PATH="${CONDA_PREFIX}/conda-bld"
+  SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build .circleci/recipe/scipoptsuite-7.0.0
+  ```
+  Instal the SCIP package in the `ecole` environment
+  ```bash
+  conda install --channel "file://${CONDA_BLD_PATH}" scipoptsuite
+  ```
 
 ### Building
   Building Ecole is very similar to building SCIP, as they both use CMake.
@@ -83,6 +86,14 @@ instructions.
   ```bash
   python -m pip install -I build/python
   ```
+
+#### Compiler issues
+  If you encounter problem with your compiler (because it is too old for instance),
+  you can use the ones from ananconda.
+  ```bash
+  conda install gxx_linux-64  # Linux
+  ```
+  And start again the configuring of Ecole.
 
 ### Running the tests
 #### C++ tests

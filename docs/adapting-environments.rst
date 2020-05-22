@@ -52,7 +52,7 @@ explanation on how to create one.
 .. TODO Fill the missing references
 
 No Observation Function
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 To not use any observation function, for instance for a learning with a bandit algorithm,
 explicitly pass ``None`` to the environment constructor.
 
@@ -67,7 +67,7 @@ explicitly pass ``None`` to the environment constructor.
 
 
 Multiple Observation Functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To use multiple observation functions, wrap them in a ``tuple`` or ``dict``.
 
 .. code-block:: python
