@@ -128,6 +128,11 @@ you can use the ones from ananconda.
    conda install gxx_linux-64  # Linux
 
 And start again the configuring of Ecole.
+
+.. code-block:: bash
+
+   rm -r build/ && cmake -B build -D ECOLE_DEVELOPER=ON
+
 .. SOURCE_INSTALL_END
 
 
