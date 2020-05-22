@@ -27,6 +27,8 @@ installation instructions.
 
 Developer Notes
 ---------------
+.. used to include portion of this file in the documentation
+.. SOURCE_INSTALL_START
 Build dependencies
 ^^^^^^^^^^^^^^^^^^
 Conda
@@ -126,6 +128,7 @@ you can use the ones from ananconda.
    conda install gxx_linux-64  # Linux
 
 And start again the configuring of Ecole.
+.. SOURCE_INSTALL_END
 
 
 Running the tests
