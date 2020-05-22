@@ -157,14 +157,20 @@ bool Model::is_solved() const noexcept {
 	return SCIPgetStage(get_scip_ptr()) == SCIP_STAGE_SOLVED;
 }
 
-void Model::solve_iter() {}
+void Model::solve_iter() {
+	scipimpl->solve_iter();
+}
 
-void Model::solve_iter_branch(VarProxy) {}
+void Model::solve_iter_branch(VarProxy var) {
+	scipimpl->solve_iter_branch(var.value);
+}
 
-void Model::solve_iter_stop() {}
+void Model::solve_iter_stop() {
+	scipimpl->solve_iter_stop();
+}
 
 bool Model::solve_iter_is_done() {
-	return true;
+	return scipimpl->solve_iter_is_done();
 }
 
 void Model::disable_presolve() {

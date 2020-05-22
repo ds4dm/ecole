@@ -63,7 +63,7 @@ auto BranchingDynamics::step_dynamics(State& state, std::size_t const& action)
 	-> std::tuple<bool, ActionSet> {
 	auto const lp_cols = state.model.lp_columns();
 	if (action >= lp_cols.size) {
-		throw Exception("");
+		throw Exception("Branching index is larger than the number of columns.");
 	}
 	state.model.solve_iter_branch(lp_cols[action].var());
 
