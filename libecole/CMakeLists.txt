@@ -33,6 +33,11 @@ find_package(SCIP 7 REQUIRED)
 find_package(Threads REQUIRED)
 target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
 
+# Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
+get_target_property(SCIP_LOCATION libscip LOCATION)
+get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
+list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
+
 conan_cmake_run(
 	CONANFILE conanfile.txt
 	BASIC_SETUP
