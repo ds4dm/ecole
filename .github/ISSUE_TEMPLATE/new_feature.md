@@ -1,5 +1,5 @@
 ---
-name: New feature
+name: 🚀 New feature
 about: Suggest a change to improve Ecole user experience
 title: ''
 labels: enhancement
