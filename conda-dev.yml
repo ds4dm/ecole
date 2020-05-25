@@ -12,7 +12,7 @@ dependencies:
   # C++ dev tools
   - make
   - cmake>=3.15
-  - clang-tools>=3.4
+  - clang-tools>=10
   - conan
   # Build time Python dependencies
   - python>=3.6
