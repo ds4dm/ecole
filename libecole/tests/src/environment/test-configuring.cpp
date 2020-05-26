@@ -12,10 +12,24 @@
 
 using namespace ecole;
 
-TEST_CASE("Model creation") {
+TEST_CASE("Configuring environment", "[env]") {
 	auto env =
 		environment::Configuring<observation::Nothing, reward::IsDone, termination::Constant>(
 			{}, {}, {});
+	auto policy = [](auto const&) {
+		return decltype(env)::Action{{"branching/scorefunc", 's'}};
+	};
+
+	SECTION("reset, reset, and delete") {
+		env.reset(problem_file);
+		env.reset(problem_file);
+	}
+
+	SECTION("reset, step, and delete") {
+		decltype(env)::ActionSet action_set;
+		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
+		env.step(policy(action_set));
+	}
 
 	for (auto i = 0; i < 2; ++i) {
 		auto obs_as_done = env.reset(problem_file);
