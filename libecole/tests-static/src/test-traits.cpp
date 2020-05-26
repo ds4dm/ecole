@@ -33,6 +33,16 @@ STATIC_ASSERT(trait::is_environment<environment::Configuring<>>::value);
 STATIC_ASSERT_NOT(trait::is_environment<environment::ConfiguringDynamics>::value);
 STATIC_ASSERT_NOT(trait::is_environment<observation::Nothing>::value);
 
+/**********************
+ *  Test is_dynamics  *
+ **********************/
+
+// Positive tests
+STATIC_ASSERT(trait::is_dynamics<environment::ConfiguringDynamics>::value);
+// Negative tests
+STATIC_ASSERT_NOT(trait::is_dynamics<environment::Configuring<>>::value);
+STATIC_ASSERT_NOT(trait::is_dynamics<observation::Nothing>::value);
+
 /*************************
  *  Test observation_of  *
  *************************/
