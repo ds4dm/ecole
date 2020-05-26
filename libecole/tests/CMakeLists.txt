@@ -10,7 +10,6 @@ add_executable(
 	src/environment/test-branching.cpp
 	src/environment/test-configuring.cpp
 	src/reward/test-neglpiterations.cpp
-	src/test-traits.cpp
 )
 
 target_compile_definitions(
