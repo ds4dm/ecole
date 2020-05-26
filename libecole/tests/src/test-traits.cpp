@@ -6,8 +6,8 @@
 
 using namespace ecole;
 
-#define STATIC_ASSERT(expr) static_assert(expr, #expr);
-#define STATIC_ASSERT_NOT(expr) static_assert(!(expr), #expr);
+#define STATIC_ASSERT(expr) static_assert(expr, #expr)
+#define STATIC_ASSERT_NOT(expr) static_assert(!(expr), #expr)
 #define STATIC_ASSERT_SAME(A, B) \
 	static_assert(std::is_same<A, B>::value, "Types are the same")
 #define STATIC_ASSERT_DIFFERENT(A, B) \
@@ -37,7 +37,25 @@ STATIC_ASSERT_NOT(trait::is_environment<observation::Nothing>::value);
  *  Test observation_of  *
  *************************/
 
-// Positive tests
 STATIC_ASSERT_SAME(trait::observation_of_t<observation::Nothing>, ecole::NoneType);
-// Negative tests
-STATIC_ASSERT_DIFFERENT(trait::observation_of_t<observation::Nothing>, int);
+STATIC_ASSERT_SAME(trait::observation_of_t<environment::Configuring<>>, ecole::NoneType);
+
+/********************
+ *  Test action_of  *
+ ********************/
+
+STATIC_ASSERT_SAME(
+	trait::action_of_t<environment::Configuring<>>,
+	environment::ParamDict);
+STATIC_ASSERT_SAME(
+	trait::action_of_t<environment::ConfiguringDynamics>,
+	environment::ParamDict);
+
+/************************
+ *  Test action_set_of  *
+ ************************/
+
+STATIC_ASSERT_SAME(trait::action_set_of_t<environment::Configuring<>>, ecole::NoneType);
+STATIC_ASSERT_SAME(
+	trait::action_set_of_t<environment::ConfiguringDynamics>,
+	ecole::NoneType);
