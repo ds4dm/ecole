@@ -21,12 +21,24 @@ execute_process(
 	RESULT_VARIABLE VENV_ERROR
 	ERROR_VARIABLE VENV_ERROR_MESSAGE
 )
-
 # Report on virtual environment creation
 if(VENV_ERROR)
 	message(SEND_ERROR "${VENV_ERROR_MESSAGE}")
 else()
 	message(STATUS "Created Python virtual environment")
+endif()
+
+# Upgrade Pip inside virtual environment to remove warning
+execute_process(
+	COMMAND "${VENV_DIR}/bin/pip" install --quiet --upgrade pip
+	RESULT_VARIABLE VENV_PIP_ERROR
+	ERROR_VARIABLE VENV_PIP_ERROR_MESSAGE
+)
+# Report on pip upgrade
+if(VENV_PIP_ERROR)
+	message(SEND_ERROR "${VENV_PIP_ERROR_MESSAGE}")
+else()
+	message(STATUS "Upgraded pip in virtual environment")
 endif()
 
 # Add a target for the Python of the virtual environment
