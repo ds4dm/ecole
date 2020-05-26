@@ -5,8 +5,9 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/environment/branching.hpp"
-#include "ecole/environment/configuring.hpp"
+#include "ecole/environment/branching-dynamics.hpp"
+#include "ecole/environment/configuring-dynamics.hpp"
+#include "ecole/environment/exception.hpp"
 
 #include "core.hpp"
 #include "nonstd.hpp"

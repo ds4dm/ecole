@@ -1,4 +1,4 @@
-#include "ecole/environment/configuring.hpp"
+#include "ecole/environment/configuring-dynamics.hpp"
 
 namespace ecole {
 namespace environment {

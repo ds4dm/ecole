@@ -12,8 +12,8 @@ add_library(
 	src/reward/isdone.cpp
 	src/reward/neglpiterations.cpp
 	src/observation/nodebipartite.cpp
-	src/environment/branching.cpp
-	src/environment/configuring.cpp
+	src/environment/branching-dynamics.cpp
+	src/environment/configuring-dynamics.cpp
 	src/environment/exception.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)

@@ -6,7 +6,7 @@
 #include <objscip/objbranchrule.h>
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/environment/branching.hpp"
+#include "ecole/environment/branching-dynamics.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
