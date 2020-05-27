@@ -69,3 +69,11 @@ STATIC_ASSERT_SAME(trait::action_set_of_t<environment::Configuring<>>, ecole::No
 STATIC_ASSERT_SAME(
 	trait::action_set_of_t<environment::ConfiguringDynamics>,
 	ecole::NoneType);
+
+/*******************
+ *  Test state_of  *
+ *******************/
+
+STATIC_ASSERT_SAME(
+	trait::state_of_t<environment::ConfiguringDynamics>,
+	environment::State);

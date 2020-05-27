@@ -82,5 +82,17 @@ template <typename T> struct action_set_of<T, std::enable_if_t<is_dynamics<T>::v
 
 template <typename T> using action_set_of_t = typename action_set_of<T>::type;
 
+/************************
+ *  Detection of state  *
+ ************************/
+
+template <typename, typename = void> struct state_of;
+
+template <typename T> struct state_of<T, std::enable_if_t<is_dynamics<T>::value>> {
+	using type = std::decay_t<utility::arg_t<1, decltype(&T::step_dynamics)>>;
+};
+
+template <typename T> using state_of_t = typename state_of<T>::type;
+
 }  // namespace trait
 }  // namespace ecole
