@@ -19,10 +19,6 @@ using ParamDict = std::map<std::string, scip::Param>;
 class ConfiguringDynamics :
 	public EnvironmentDynamics<ParamDict, NoneType, environment::State> {
 public:
-	using Action = ParamDict;
-	using ActionSet = NoneType;
-	using State = environment::State;
-
 	std::tuple<bool, NoneType> reset_dynamics(State& initial_state) override;
 	std::tuple<bool, NoneType>
 	step_dynamics(State& state, ParamDict const& action) override;

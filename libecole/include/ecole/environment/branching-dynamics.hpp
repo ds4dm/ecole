@@ -31,18 +31,16 @@ class BranchingDynamics :
 		nonstd::optional<xt::xtensor<std::size_t, 1>>,
 		ReverseControlState> {
 public:
-	using Action = std::size_t;
 	using ActionSet = nonstd::optional<xt::xtensor<std::size_t, 1>>;
-	using State = ReverseControlState;
 
 	bool pseudo_candidates;
 
 	BranchingDynamics(bool pseudo_candidates = false) noexcept;
 
-	std::tuple<bool, ActionSet> reset_dynamics(State& initial_state) override;
+	std::tuple<bool, ActionSet> reset_dynamics(ReverseControlState& initial_state) override;
 
 	std::tuple<bool, ActionSet>
-	step_dynamics(State& state, std::size_t const& action) override;
+	step_dynamics(ReverseControlState& state, std::size_t const& action) override;
 };
 
 }  // namespace environment

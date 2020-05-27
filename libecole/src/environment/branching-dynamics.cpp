@@ -102,7 +102,8 @@ action_set(scip::Model const& model, bool pseudo) {
 	return branch_cols;
 }
 
-auto BranchingDynamics::reset_dynamics(State& init_state) -> std::tuple<bool, ActionSet> {
+auto BranchingDynamics::reset_dynamics(ReverseControlState& init_state)
+	-> std::tuple<bool, ActionSet> {
 	auto& model = init_state.model;
 	init_state.controller = std::make_unique<utility::Controller>(
 		[&model](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -120,8 +121,9 @@ auto BranchingDynamics::reset_dynamics(State& init_state) -> std::tuple<bool, Ac
 		init_state.controller->is_done(), action_set(init_state.model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(State& state, Action const& action)
-	-> std::tuple<bool, ActionSet> {
+auto BranchingDynamics::step_dynamics(
+	ReverseControlState& state,
+	std::size_t const& action) -> std::tuple<bool, ActionSet> {
 	state.controller->resume_thread([action](SCIP* scip, SCIP_RESULT* result) {
 		auto* const* const cols = SCIPgetLPCols(scip);
 		auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip));

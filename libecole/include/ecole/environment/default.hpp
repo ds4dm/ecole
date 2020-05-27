@@ -7,6 +7,7 @@
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/scip/type.hpp"
+#include "ecole/traits.hpp"
 
 namespace ecole {
 namespace environment {
@@ -18,14 +19,14 @@ template <
 	typename TerminationFunction>
 class EnvironmentComposer :
 	public Environment<
-		typename Dynamics::Action,
-		typename Dynamics::ActionSet,
-		typename ObservationFunction::Observation> {
+		trait::action_of_t<Dynamics>,
+		trait::action_set_of_t<Dynamics>,
+		trait::observation_of_t<ObservationFunction>> {
 public:
-	using Observation = typename ObservationFunction::Observation;
-	using Action = typename Dynamics::Action;
-	using State = typename Dynamics::State;
-	using ActionSet = typename Dynamics::ActionSet;
+	using Observation = trait::observation_of_t<ObservationFunction>;
+	using Action = trait::action_of_t<Dynamics>;
+	using State = trait::state_of_t<Dynamics>;
+	using ActionSet = trait::action_set_of_t<Dynamics>;
 
 	/**
 	 * User facing constructor for the Environment.
