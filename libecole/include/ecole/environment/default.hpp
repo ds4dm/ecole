@@ -21,8 +21,7 @@ class EnvironmentComposer :
 	public Environment<
 		typename Dynamics::Action,
 		typename Dynamics::ActionSet,
-		typename ObservationFunction::Observation>,
-	private Dynamics {
+		typename ObservationFunction::Observation> {
 public:
 	using Observation = typename ObservationFunction::Observation;
 	using Action = typename Dynamics::Action;
@@ -38,7 +37,7 @@ public:
 		RewardFunction reward_func,
 		TerminationFunction term_func,
 		Args&&... args) :
-		Dynamics(std::forward<Args>(args)...),
+		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
 		m_term_func(std::move(term_func)) {}
@@ -64,7 +63,7 @@ public:
 			// Bring state to initial state and reset state functions
 			bool done;
 			ActionSet action_set;
-			std::tie(done, action_set) = reset_dynamics(state());
+			std::tie(done, action_set) = dynamics().reset_dynamics(state());
 			obs_func().reset(state());
 			term_func().reset(state());
 			reward_func().reset(state());
@@ -101,7 +100,7 @@ public:
 		try {
 			bool done;
 			ActionSet action_set;
-			std::tie(done, action_set) = step_dynamics(state(), action);
+			std::tie(done, action_set) = dynamics().step_dynamics(state(), action);
 			done = done || term_func().obtain_termination(state());
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(state(), done);
@@ -120,18 +119,14 @@ public:
 	}
 
 protected:
-	using Dynamics::reset_dynamics;
-	using Dynamics::step_dynamics;
-
-	/**
-	 * Getter methods to access attributes regardless of whether they are in a container.
-	 */
+	auto& dynamics() { return m_dynamics; }
 	auto& state() { return m_state; }
 	auto& obs_func() { return m_obs_func; }
 	auto& reward_func() { return m_reward_func; }
 	auto& term_func() { return m_term_func; }
 
 private:
+	Dynamics m_dynamics;
 	State m_state;
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
