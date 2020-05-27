@@ -4,7 +4,7 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
-#include "ecole/scip/scipimpl.hpp"
+#include "ecole/scip/scimpl.hpp"
 
 #include "scip/utils.hpp"
 
@@ -38,7 +38,7 @@ private:
 }  // namespace
 
 /****************************
- *  Definition of ScipImpl  *
+ *  Definition of Scimpl  *
  ****************************/
 
 void ScipDeleter::operator()(SCIP* ptr) {
@@ -75,22 +75,22 @@ static std::unique_ptr<SCIP, ScipDeleter> copy_orig(SCIP const* const source) {
 	return dest;
 }
 
-scip::ScipImpl::ScipImpl() : m_scip(create_scip()) {
+scip::Scimpl::Scimpl() : m_scip(create_scip()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
-ScipImpl::ScipImpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept :
+Scimpl::Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept :
 	m_scip(std::move(scip_ptr)) {}
 
-SCIP* scip::ScipImpl::get_scip_ptr() noexcept {
+SCIP* scip::Scimpl::get_scip_ptr() noexcept {
 	return m_scip.get();
 }
 
-scip::ScipImpl scip::ScipImpl::copy_orig() {
+scip::Scimpl scip::Scimpl::copy_orig() {
 	return ::ecole::scip::copy_orig(get_scip_ptr());
 }
 
-void ScipImpl::solve_iter() {
+void Scimpl::solve_iter() {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller = std::make_unique<utility::Controller>(
 		[scip_ptr](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -105,7 +105,7 @@ void ScipImpl::solve_iter() {
 	m_controller->wait_thread();
 }
 
-void scip::ScipImpl::solve_iter_branch(SCIP_VAR* var) {
+void scip::Scimpl::solve_iter_branch(SCIP_VAR* var) {
 	m_controller->resume_thread([var](SCIP* scip_ptr, SCIP_RESULT* result) {
 		if (var == nullptr) {
 			*result = SCIP_DIDNOTRUN;
@@ -118,11 +118,11 @@ void scip::ScipImpl::solve_iter_branch(SCIP_VAR* var) {
 	m_controller->wait_thread();
 }
 
-void scip::ScipImpl::solve_iter_stop() {
+void scip::Scimpl::solve_iter_stop() {
 	m_controller = nullptr;
 }
 
-bool scip::ScipImpl::solve_iter_is_done() {
+bool scip::Scimpl::solve_iter_is_done() {
 	return !(m_controller) || m_controller->is_done();
 }
 

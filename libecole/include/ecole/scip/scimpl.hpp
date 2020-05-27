@@ -13,14 +13,14 @@ struct ScipDeleter {
 	void operator()(SCIP* ptr);
 };
 
-class ScipImpl {
+class Scimpl {
 public:
-	ScipImpl();
-	ScipImpl(std::unique_ptr<SCIP, ScipDeleter>&&) noexcept;
+	Scimpl();
+	Scimpl(std::unique_ptr<SCIP, ScipDeleter>&&) noexcept;
 
 	SCIP* get_scip_ptr() noexcept;
 
-	ScipImpl copy_orig();
+	Scimpl copy_orig();
 
 	void solve_iter();
 	void solve_iter_branch(SCIP_VAR* var);

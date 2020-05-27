@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 add_library(
 	libecole
-	src/scip/scipimpl.cpp
+	src/scip/scimpl.cpp
 	src/scip/model.cpp
 	src/scip/utils.cpp
 	src/scip/variable.cpp

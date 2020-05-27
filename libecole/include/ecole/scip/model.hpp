@@ -17,7 +17,7 @@ namespace ecole {
 namespace scip {
 
 /* Forward declare scip holder type */
-class ScipImpl;
+class Scimpl;
 
 /**
  * A stateful SCIP solver object.
@@ -35,7 +35,7 @@ public:
 	Model();
 	Model(Model&&) noexcept;
 	Model(Model const& model) = delete;
-	Model(std::unique_ptr<ScipImpl>&&);
+	Model(std::unique_ptr<Scimpl>&&);
 
 	~Model();
 
@@ -118,7 +118,7 @@ public:
 	RowView lp_rows() const;
 
 private:
-	std::unique_ptr<ScipImpl> scipimpl;
+	std::unique_ptr<Scimpl> scimpl;
 };
 
 /*****************************

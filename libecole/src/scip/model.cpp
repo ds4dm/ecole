@@ -11,34 +11,33 @@
 
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/scipimpl.hpp"
+#include "ecole/scip/scimpl.hpp"
 
 #include "scip/utils.hpp"
 
 namespace ecole {
 namespace scip {
 
-Model::Model() : scipimpl(std::make_unique<ScipImpl>()) {}
+Model::Model() : scimpl(std::make_unique<Scimpl>()) {}
 
 Model::Model(Model&&) noexcept = default;
 
-Model::Model(std::unique_ptr<ScipImpl>&& other_scipimpl) :
-	scipimpl(std::move(other_scipimpl)) {}
+Model::Model(std::unique_ptr<Scimpl>&& other_scimpl) : scimpl(std::move(other_scimpl)) {}
 
 Model::~Model() = default;
 
 Model& Model::operator=(Model&&) noexcept = default;
 
 SCIP* Model::get_scip_ptr() const noexcept {
-	return scipimpl->get_scip_ptr();
+	return scimpl->get_scip_ptr();
 }
 
 Model Model::copy_orig() const {
-	return std::make_unique<ScipImpl>(scipimpl->copy_orig());
+	return std::make_unique<Scimpl>(scimpl->copy_orig());
 }
 
 bool Model::operator==(Model const& other) const noexcept {
-	return scipimpl == other.scipimpl;
+	return scimpl == other.scimpl;
 }
 
 bool Model::operator!=(Model const& other) const noexcept {
@@ -158,19 +157,19 @@ bool Model::is_solved() const noexcept {
 }
 
 void Model::solve_iter() {
-	scipimpl->solve_iter();
+	scimpl->solve_iter();
 }
 
 void Model::solve_iter_branch(VarProxy var) {
-	scipimpl->solve_iter_branch(var.value);
+	scimpl->solve_iter_branch(var.value);
 }
 
 void Model::solve_iter_stop() {
-	scipimpl->solve_iter_stop();
+	scimpl->solve_iter_stop();
 }
 
 bool Model::solve_iter_is_done() {
-	return scipimpl->solve_iter_is_done();
+	return scimpl->solve_iter_is_done();
 }
 
 void Model::disable_presolve() {

@@ -5,7 +5,7 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/scipimpl.hpp"
+#include "ecole/scip/scimpl.hpp"
 
 #include "core.hpp"
 
@@ -50,7 +50,7 @@ void bind_submodule(py::module m) {
 					auto pyptr = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
 					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;
 					uptr.reset(reinterpret_cast<SCIP*>(pyptr.cast<std::uintptr_t>()));
-					return Model(std::make_unique<ScipImpl>(std::move(uptr)));
+					return Model(std::make_unique<Scimpl>(std::move(uptr)));
 				} else {
 					throw scip::Exception(
 						"Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
