@@ -4,32 +4,32 @@
 #include <type_traits>
 
 #include "ecole/utility/function_traits.hpp"
-#include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
 namespace trait {
+
+template <typename...> using void_t = void;
 
 /***********************
  *  General detection  *
  ***********************/
 
-template <typename, typename = nonstd::void_t<>>
+template <typename, typename = void_t<>>
 struct is_observation_function : std::false_type {};
 
 template <typename T>
-struct is_observation_function<T, nonstd::void_t<decltype(&T::obtain_observation)>> :
+struct is_observation_function<T, void_t<decltype(&T::obtain_observation)>> :
 	std::true_type {};
 
-template <typename, typename = nonstd::void_t<>>
-struct is_environment : std::false_type {};
+template <typename, typename = void_t<>> struct is_environment : std::false_type {};
 
 template <typename T>
-struct is_environment<T, nonstd::void_t<decltype(&T::step)>> : std::true_type {};
+struct is_environment<T, void_t<decltype(&T::step)>> : std::true_type {};
 
-template <typename, typename = nonstd::void_t<>> struct is_dynamics : std::false_type {};
+template <typename, typename = void_t<>> struct is_dynamics : std::false_type {};
 
 template <typename T>
-struct is_dynamics<T, nonstd::void_t<decltype(&T::step_dynamics)>> : std::true_type {};
+struct is_dynamics<T, void_t<decltype(&T::step_dynamics)>> : std::true_type {};
 
 /***********************************
  *  Detection of observation type  *

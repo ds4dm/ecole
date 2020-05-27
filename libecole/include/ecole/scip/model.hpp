@@ -13,7 +13,6 @@
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/row.hpp"
 #include "ecole/scip/variable.hpp"
-#include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
 namespace scip {

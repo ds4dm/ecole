@@ -7,7 +7,6 @@
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/scip/type.hpp"
-#include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
 namespace environment {
