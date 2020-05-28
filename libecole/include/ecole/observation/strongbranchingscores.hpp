@@ -4,6 +4,7 @@
 
 #include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
+#include <xtensor/xview.hpp>
 
 #include "ecole/environment/state.hpp"
 #include "ecole/observation/abstract.hpp"
@@ -11,21 +12,9 @@
 namespace ecole {
 namespace observation {
 
-struct BranchingResults {
-	xt::xtensor<int, 2> candidates;
-	xt::xtensor<double, 2> candidate_scores;
-	int num_candidates;
-	int best_candidate;
-};
-
-
 class StrongBranchingScoresObs {
 public:
-
-	xt::xtensor<double, 2> candidate_scores;
-	xt::xtensor<double, 2> candidates;
-	int num_candidates;
-	int best_candidate;
+	xt::xtensor<double, 1> strong_branching_scores;
 };
 
 class StrongBranchingScores : public ObservationFunction<nonstd::optional<StrongBranchingScoresObs>> {
