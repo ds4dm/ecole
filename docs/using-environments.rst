@@ -22,6 +22,7 @@ always selecting the first fractional variable would look like:
     import ecole
 
     environment = ecole.environment.Branching()
+    environment.seed(42)
 
     for _ in range(10):
         observation, action_set, done = env.reset("path/to/problem")
@@ -109,7 +110,15 @@ The exact documentation for the method is given below.
 Seeding environments
 --------------------
 
-The exact documention for the method is given below.
+Environments can be seeded by using the
+:py:meth:`~ecole.environment.EnvironmentComposer.seed` method.
+The seed is used by the environment (and in particular the solver) for *all* the
+subsequent trajectories.
+The solver is given new seeds at the begining of every new trajectory (call to
+:py:meth:`~ecole.environment.EnvironmentComposer.reset`) in a way that preserve
+determinism, but avoids using the same seeds repeatedly.
+
+The exact documentation for the method is given below.
 
 .. automethod:: ecole.environment.EnvironmentComposer.seed
 

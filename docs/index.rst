@@ -23,7 +23,7 @@ familiar to reinforcement learning praticionners.
 The state-of-the-art Mixed Integer Linear Programming solver that acts as a controllable
 algorithm inside Ecole is `SCIP <https://scip.zib.de/>`_.
 
-The reader is referred to [Bengio2018]_ for motivating why machine learning is a promising
+The reader is referred to [Bengio2018]_ for motiation on why machine learning is a promising
 candidate to use for combinatorial optimization, as well as the methodology to do so.
 
 .. [Bengio2018]
