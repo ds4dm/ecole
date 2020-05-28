@@ -120,16 +120,9 @@ void bind_submodule(py::module m) {
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
-	// JD
 	py::class_<StrongBranchingScoresObs>(m, "StrongBranchingScoresObs")  //
 		.def_property_readonly(
-			"candidate_scores", [](StrongBranchingScoresObs & self) -> auto& { return self.candidate_scores; })
-		.def_property_readonly(
-			"candidates", [](StrongBranchingScoresObs & self) -> auto& { return self.candidates; })
-		.def_property_readonly(
-			"num_candidates", [](StrongBranchingScoresObs & self) -> auto& { return self.num_candidates; })
-		.def_property_readonly(
-			"best_candidate", [](StrongBranchingScoresObs & self) -> auto& { return self.best_candidate; });
+			"strong_branching_scores", [](StrongBranchingScoresObs & self) -> auto& { return self.strong_branching_scores; });
 
 	auto sb_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores");
 	sb_scores.def(py::init<>());
