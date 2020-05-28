@@ -1,9 +1,14 @@
 #pragma once
 
+#include <random>
 #include <tuple>
+
+#include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace environment {
+
+using RandomEngine = std::mt19937;
 
 /**
  * Abstract class for environment Dynamics.
@@ -39,6 +44,17 @@ public:
 	 */
 	virtual std::tuple<bool, ActionSet>
 	step_dynamics(State& state, Action const& action) = 0;
+
+	virtual void set_dynamics_random_state(State& state, RandomEngine& random_engine) {
+		std::uniform_int_distribution<scip::Seed> seed_distrib{
+			scip::min_seed, scip::max_seed};
+
+		state.model.set_param("randomization/permuteconss", true);
+		state.model.set_param("randomization/permutevars", true);
+		state.model.set_param("randomization/permutationseed", seed_distrib(random_engine));
+		state.model.set_param("randomization/randomseedshift", seed_distrib(random_engine));
+		state.model.set_param("randomization/lpseed", seed_distrib(random_engine));
+	}
 };
 
 }  // namespace environment

@@ -40,16 +40,13 @@ public:
 		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
-		m_term_func(std::move(term_func)) {}
+		m_term_func(std::move(term_func)),
+		random_engine(std::random_device{}()) {}
 
 	/**
 	 * @copydoc ecole::environment::Environment::seed
 	 */
-	void seed(Seed) override {}
-	Seed seed() const noexcept override {
-		assert(false);
-		return 0;
-	}
+	void seed(Seed new_seed) override { random_engine.seed(new_seed); }
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
@@ -59,6 +56,7 @@ public:
 		try {
 			// Create clean new state
 			state() = State{std::move(model)};
+			dynamics().set_dynamics_random_state(state(), random_engine);
 
 			// Bring state to initial state and reset state functions
 			bool done;
@@ -131,7 +129,8 @@ private:
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
 	TerminationFunction m_term_func;
-	std::uniform_int_distribution<Seed> seed_distrib;
+
+	RandomEngine random_engine;
 	bool can_transition = false;
 };
 

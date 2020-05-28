@@ -1,19 +1,19 @@
 #pragma once
 
+#include <random>
 #include <string>
 #include <tuple>
 
+#include "ecole/environment/dynamics.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace environment {
 
-using nonstd::optional;
+using Seed = typename RandomEngine::result_type;
 
 using ecole::reward::Reward;
-using Seed = scip::Seed;
 using Info = int;  // FIXME dummy type while the information is not implemented
 
 /**
@@ -45,11 +45,6 @@ public:
 	 * every call to reset.
 	 */
 	virtual void seed(Seed seed) = 0;
-
-	/**
-	 * Get the current random seed.
-	 */
-	virtual Seed seed() const = 0;
 
 	/**
 	 * Reset the environment to the initial state on the given problem instance.

@@ -18,7 +18,6 @@ TEST_CASE("Using the reward in a Configuring environment") {
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {
-		env.seed(i);
 		env.reset(problem_file);
 
 		auto obs_as_rew_done_info = env.step({});
@@ -29,7 +28,6 @@ TEST_CASE("Using the reward in a Configuring environment") {
 	}
 
 	for (auto i = 0; i < 2; ++i) {
-		env.seed(i);
 		env.reset(problem_file);
 
 		auto obs_as_rew_done_info = env.step({
