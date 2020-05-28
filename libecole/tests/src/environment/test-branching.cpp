@@ -32,6 +32,24 @@ TEST_CASE("Branching environment", "[env]") {
 		env.step(policy(action_set));
 	}
 
+	SECTION("seed consistency") {
+		env.seed(93);
+		env.reset(problem_file);
+		auto seed1 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		env.seed(93);
+		env.reset(problem_file);
+		auto seed2 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		REQUIRE(seed1 == seed2);
+	}
+
+	SECTION("seed permutation") {
+		env.reset(problem_file);
+		auto seed1 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		env.reset(problem_file);
+		auto seed2 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		REQUIRE(seed1 != seed2);
+	}
+
 	SECTION("run full trajectory") {
 		auto run_trajectory = [&](std::string const& filename) {
 			decltype(env)::Observation obs;

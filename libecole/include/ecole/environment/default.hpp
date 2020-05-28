@@ -116,7 +116,6 @@ public:
 		}
 	}
 
-protected:
 	auto& dynamics() { return m_dynamics; }
 	auto& state() { return m_state; }
 	auto& obs_func() { return m_obs_func; }
