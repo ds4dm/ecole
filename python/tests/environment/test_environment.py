@@ -39,3 +39,9 @@ def test_observation_function_recursive(state):
     env = MockEnvironment(observation_function=obs_func)
     obs = env.observation_function.obtain_observation(state)
     assert obs["name2"][1] is None
+
+
+def test_seed():
+    env = MockEnvironment()
+    env.seed(33)
+    assert env.random_engine == ecole.environment.RandomEngine(33)

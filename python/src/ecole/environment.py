@@ -1,5 +1,7 @@
 """Ecole collection of environments."""
 
+import random
+
 import ecole.core as core
 import ecole.observation
 import ecole.reward
@@ -45,6 +47,9 @@ class EnvironmentComposer:
         self.state = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
+        self.random_engine = RandomEngine(
+            random.randint(RandomEngine.min_seed, RandomEngine.max_seed)
+        )
 
     @classmethod
     def __parse_observation_function(cls, observation_function):
@@ -98,6 +103,8 @@ class EnvironmentComposer:
                 self.state = self.__State__(instance)
             else:
                 self.state = self.__State__(core.scip.Model.from_file(instance))
+
+            self.dynamics.set_dynamics_random_state(self.state, self.random_engine)
 
             done, action_set = self.dynamics.reset_dynamics(self.state)
             self.termination_function.reset(self.state)
@@ -159,9 +166,17 @@ class EnvironmentComposer:
             self.can_transition = False
             raise e
 
-    def seed(self):
-        """Set the random seed of the solver."""
-        raise NotImplementedError()
+    def seed(self, value: int) -> None:
+        """Set the random seed of the environment.
+
+        The the random seed is used to seed the environment :py:class:`RandomEngine`.
+        At every call to :py:meth:`reset`, the random engine is used to create new seeds
+        for the solver.
+        Setting the seed once will ensure determinism for the next trajectories.
+        By default, the random engine is initialized by the
+        `random <https://docs.python.org/library/random.html>`_ module.
+        """
+        self.random_engine.seed(value)
 
 
 class Branching(EnvironmentComposer):

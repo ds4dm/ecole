@@ -1,6 +1,8 @@
+#include <limits>
 #include <memory>
 #include <string>
 
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
@@ -92,7 +94,12 @@ template <typename Dynamics> auto dynamics_class(py::module& m, char const* name
 			&Dynamics::step_dynamics,
 			py::arg("state"),
 			py::arg("action"),
-			py::call_guard<py::gil_scoped_release>());
+			py::call_guard<py::gil_scoped_release>())
+		.def(
+			"set_dynamics_random_state",
+			&Dynamics::set_dynamics_random_state,
+			py::arg("state"),
+			py::arg("random_engine"));
 }
 
 void bind_submodule(pybind11::module m) {
@@ -103,6 +110,30 @@ void bind_submodule(pybind11::module m) {
 	py::class_<State>(m, "State")
 		.def_readonly("model", &State::model)  //
 		.def(py::init<scip::Model const&>());
+
+	py::class_<RandomEngine>(m, "RandomEngine")  //
+		.def_property_readonly_static(
+			"min_seed",
+			[](py::object /* cls */) {
+				return std::numeric_limits<RandomEngine::result_type>::min();
+			})
+		.def_property_readonly_static(
+			"max_seed",
+			[](py::object /* cls */) {
+				return std::numeric_limits<RandomEngine::result_type>::max();
+			})
+		.def(
+			py::init<RandomEngine::result_type>(),
+			py::arg("value") = RandomEngine::default_seed,
+			"Construct the pseudo-random number engine.")
+		.def(
+			"seed",
+			[](RandomEngine& self, RandomEngine::result_type value) { self.seed(value); },
+			py::arg("value") = RandomEngine::default_seed,
+			"Reinitialize the internal state of the random-number engine using new seed "
+			"value.")
+		.def(py::self == py::self)
+		.def(py::self != py::self);
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);
