@@ -95,6 +95,9 @@ void bind_submodule(py::module m) {
 		base_reward_function.def(name, arithmetic_method(math.attr(name)));
 	}
 	// clang-format on
+	base_reward_function.def("apply", [m](py::object self, py::object func) {
+		return m.attr("ArithmeticFunction")(func, py::make_tuple(self));
+	});
 
 	py::exec(
 		R"(

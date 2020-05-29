@@ -32,6 +32,11 @@ def test_recursive(state):
     assert func.obtain_reward(state) == 4
 
 
+def test_apply(state):
+    func = R.Constant(2).apply(lambda r: r + 2)
+    assert func.obtain_reward(state) == 4
+
+
 def test_IsDone(state):
     reward_func = R.IsDone()
     reward_func.reset(state)
