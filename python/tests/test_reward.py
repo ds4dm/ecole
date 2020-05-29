@@ -1,3 +1,5 @@
+import math
+
 import ecole.reward as R
 
 
@@ -18,6 +20,11 @@ def test_rsub(state):
 def test_neg(state):
     func = -R.Constant(3)
     assert func.obtain_reward(state) == -3
+
+
+def test_exp(state):
+    func = R.Constant(3).exp()
+    assert func.obtain_reward(state) == math.exp(3)
 
 
 def test_recursive(state):

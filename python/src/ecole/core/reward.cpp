@@ -86,6 +86,15 @@ void bind_submodule(py::module m) {
 		.def("__trunc__", arithmetic_method(math.attr("trunc")))
 		.def("__floor__", arithmetic_method(math.attr("floor")))
 		.def("__ceil__", arithmetic_method(math.attr("ceil")));
+	// Custom Math methods
+	// clang-format off
+	for (auto const name : {
+		"sin", "exp", "log", "log2", "log10", "sqrt", "cos", "tan", "asin", "acos", "atan",
+		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh"
+	}) {
+		base_reward_function.def(name, arithmetic_method(math.attr(name)));
+	}
+	// clang-format on
 
 	py::exec(
 		R"(
