@@ -98,7 +98,7 @@ Transitioning
 The inner ``while`` loop transitions the environment from one state to the next by giving
 an action to :py:meth:`~ecole.environment.EnvironmentComposer.step`.
 The nature of ``observation``, ``action_set``, and ``done`` is the same as in the previous
-setction :ref:`reseting-environments`.
+section :ref:`reseting-environments`.
 Furthermore a ``reward`` and ``info`` variables are given as additional information about
 the current transition.
 
