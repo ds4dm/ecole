@@ -216,8 +216,8 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	// Custom Math methods
 	// clang-format off
 	for (auto const name : {
-		"sin", "exp", "log", "log2", "log10", "sqrt", "cos", "tan", "asin", "acos", "atan",
-		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh"
+		"exp", "log", "log2", "log10", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan",
+		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "isfinite", "isinf", "isnan"
 	}) {
 		pyclass.def(name, arith_meth(math.attr(name), std::string{"{}."} + name + "()"));
 	}
