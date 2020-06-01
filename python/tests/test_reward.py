@@ -44,7 +44,7 @@ def test_IsDone(state):
     assert reward_func.obtain_reward(state, done=True) == 1
 
 
-def test_NegLPIterations(state):
-    reward_func = R.NegLPIterations()
+def test_LpIterations(state):
+    reward_func = R.LpIterations()
     reward_func.reset(state)
     assert reward_func.obtain_reward(state) <= 0

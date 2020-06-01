@@ -11,7 +11,7 @@ add_library(
 	src/scip/exception.cpp
 	src/utility/reverse-control.cpp
 	src/reward/isdone.cpp
-	src/reward/neglpiterations.cpp
+	src/reward/lpiterations.cpp
 	src/observation/nodebipartite.cpp
 	src/environment/branching-dynamics.cpp
 	src/environment/configuring-dynamics.cpp

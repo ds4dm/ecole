@@ -5,7 +5,7 @@
 
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nothing.hpp"
-#include "ecole/reward/neglpiterations.hpp"
+#include "ecole/reward/lpiterations.hpp"
 #include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
@@ -14,7 +14,7 @@ using namespace ecole;
 
 TEST_CASE("Using the reward in a Configuring environment") {
 	auto env = environment::
-		Configuring<observation::Nothing, reward::NegLPIterations, termination::Constant>(
+		Configuring<observation::Nothing, reward::LpIterations, termination::Constant>(
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {

@@ -1,4 +1,4 @@
-#include "ecole/reward/neglpiterations.hpp"
+#include "ecole/reward/lpiterations.hpp"
 
 namespace ecole {
 namespace reward {
@@ -16,11 +16,11 @@ static auto n_lp_iterations(scip::Model const& model) {
 	}
 }
 
-void NegLPIterations::reset(environment::State const& initial_state) {
+void LpIterations::reset(environment::State const& initial_state) {
 	last_lp_iter = n_lp_iterations(initial_state.model);
 }
 
-Reward NegLPIterations::obtain_reward(environment::State const& state, bool) {
+Reward LpIterations::obtain_reward(environment::State const& state, bool) {
 	auto lp_iter_diff = n_lp_iterations(state.model) - last_lp_iter;
 	last_lp_iter += lp_iter_diff;
 	return static_cast<double>(-lp_iter_diff);

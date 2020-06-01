@@ -3,7 +3,7 @@
 
 #include "ecole/reward/constant.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/reward/neglpiterations.hpp"
+#include "ecole/reward/lpiterations.hpp"
 
 #include "core.hpp"
 
@@ -127,7 +127,7 @@ void bind_submodule(py::module m) {
 	reward_function_class<IsDone>(m, "IsDone", base_reward_function)  //
 		.def(py::init<>());
 
-	reward_function_class<NegLPIterations>(m, "NegLPIterations", base_reward_function)  //
+	reward_function_class<LpIterations>(m, "LpIterations", base_reward_function)  //
 		.def(py::init<>());
 }
 

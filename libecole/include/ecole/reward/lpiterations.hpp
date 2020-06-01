@@ -7,7 +7,7 @@
 namespace ecole {
 namespace reward {
 
-class NegLPIterations : public RewardFunction {
+class LpIterations : public RewardFunction {
 public:
 	void reset(environment::State const& initial_state) override;
 	Reward obtain_reward(environment::State const& state, bool done = false) override;
