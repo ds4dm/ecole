@@ -76,7 +76,3 @@ def test_StrongBranchingScores(solving_state):
 
     assert obs.scores.size > 0
     assert len(obs.scores.shape) == 1
-
-    val = np.random.rand()
-    obs.scores[:] = val
-    assert np.all(obs.scores == val)
