@@ -18,13 +18,17 @@ namespace reward {
  * This could be a pure Python class, but it needs to be defined in this module to
  * be accessible to reward functions operators.
  */
-struct ArithmeticFunction {
+class ArithmeticFunction {
+public:
+	ArithmeticFunction(py::object operation, py::list functions, py::str repr);
+	void reset(py::object initial_state);
+	Reward obtain_reward(py::object state, bool done);
+	py::str toString() const;
+
+private:
 	py::object operation;
 	py::list functions;
-
-	ArithmeticFunction(py::object operation, py::list functions);
-	void reset(py::object initial_state);
-	Reward obtain_reward(py::object state);
+	py::str repr;
 };
 
 /**
@@ -61,7 +65,9 @@ void bind_submodule(py::module m) {
 		An object of this class is returned by reward functions operators to forward calls
 		to the reward functions parameters of the operator.
 	)");
-	arithmetic_function.def(py::init<py::object, py::list>());
+	arithmetic_function  //
+		.def(py::init<py::object, py::list, py::str>())
+		.def("__repr__", &ArithmeticFunction::toString);
 	def_operators(arithmetic_function);
 	def_reset(arithmetic_function, R"(
 		Reset the reward functions of the operator.
@@ -103,8 +109,11 @@ void bind_submodule(py::module m) {
  *  Definition of ArithmeticFunction  *
  **************************************/
 
-ArithmeticFunction::ArithmeticFunction(py::object operation_, py::list functions_) :
-	operation(std::move(operation_)) {
+ArithmeticFunction::ArithmeticFunction(
+	py::object operation_,
+	py::list functions_,
+	py::str repr_) :
+	operation(std::move(operation_)), repr(std::move(repr_)) {
 	auto const Numbers = py::module::import("numbers").attr("Number");
 	for (auto func : functions_) {
 		if (py::isinstance(func, Numbers)) {
@@ -121,12 +130,16 @@ void ArithmeticFunction::reset(py::object initial_state) {
 	}
 }
 
-Reward ArithmeticFunction::obtain_reward(py::object state) {
+Reward ArithmeticFunction::obtain_reward(py::object state, bool done) {
 	py::list rewards{};
 	for (auto obs_func : functions) {
-		rewards.append(obs_func.attr("obtain_reward")(state));
+		rewards.append(obs_func.attr("obtain_reward")(state, done));
 	}
 	return operation(*rewards).cast<Reward>();
+}
+
+py::str ArithmeticFunction::toString() const {
+	return repr.format(*functions);
 }
 
 /************************************
@@ -155,66 +168,70 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	auto const math = py::module::import("math");
 
 	// Return a function that wraps rewards functions inside an ArithmeticReward.
-	// The ArithmeticReward is a reward function class that will call the wrapped reward
+	// The ArithmeticFunction is a reward function class that will call the wrapped reward
 	// functions and merge there rewards with the relevant operation (sum, prod, ...)
-	auto const arithmetic_method = [](auto operation) {
-		return [operation](py::args args) { return ArithmeticFunction{operation, args}; };
+	auto const arith_meth = [](auto operation, auto repr) {
+		return [operation, repr](py::args args) {
+			return ArithmeticFunction{operation, args, repr};
+		};
 	};
 
 	pyclass
 		// Binary operators
-		.def("__add__", arithmetic_method(py::eval("lambda x, y: x + y")))
-		.def("__sub__", arithmetic_method(py::eval("lambda x, y: x - y")))
-		.def("__mul__", arithmetic_method(py::eval("lambda x, y: x * y")))
-		.def("__matmul__", arithmetic_method(py::eval("lambda x, y: x @ y")))
-		.def("__truediv__", arithmetic_method(py::eval("lambda x, y: x / y")))
-		.def("__floordiv__", arithmetic_method(py::eval("lambda x, y: x // y")))
-		.def("__mod__", arithmetic_method(py::eval("lambda x, y: x % y")))
-		.def("__divmod__", arithmetic_method(builtins.attr("divmod")))
-		.def("__pow__", arithmetic_method(builtins.attr("pow")))
-		.def("__lshift__", arithmetic_method(py::eval("lambda x, y: x << y")))
-		.def("__rshift__", arithmetic_method(py::eval("lambda x, y: x >> y")))
-		.def("__and__", arithmetic_method(py::eval("lambda x, y: x & y")))
-		.def("__xor__", arithmetic_method(py::eval("lambda x, y: x ^ y")))
-		.def("__or__", arithmetic_method(py::eval("lambda x, y: x | y")))
+		.def("__add__", arith_meth(py::eval("lambda x, y: x + y"), "({} + {})"))
+		.def("__sub__", arith_meth(py::eval("lambda x, y: x - y"), "({} - {})"))
+		.def("__mul__", arith_meth(py::eval("lambda x, y: x * y"), "({} * {})"))
+		.def("__matmul__", arith_meth(py::eval("lambda x, y: x @ y"), "({} @ {})"))
+		.def("__truediv__", arith_meth(py::eval("lambda x, y: x / y"), "({} / {})"))
+		.def("__floordiv__", arith_meth(py::eval("lambda x, y: x // y"), "({} // {})"))
+		.def("__mod__", arith_meth(py::eval("lambda x, y: x % y"), "({} % {})"))
+		.def("__divmod__", arith_meth(builtins.attr("divmod"), "divmod({}, {})"))
+		.def("__pow__", arith_meth(builtins.attr("pow"), "({} ** {})"))
+		.def("__lshift__", arith_meth(py::eval("lambda x, y: x << y"), "({} << {})"))
+		.def("__rshift__", arith_meth(py::eval("lambda x, y: x >> y"), "({} >> {})"))
+		.def("__and__", arith_meth(py::eval("lambda x, y: x & y"), "({} & {})"))
+		.def("__xor__", arith_meth(py::eval("lambda x, y: x ^ y"), "({} ^ {})"))
+		.def("__or__", arith_meth(py::eval("lambda x, y: x | y"), "({} | {})"))
 		// Reversed binary operators
-		.def("__radd__", arithmetic_method(py::eval("lambda x, y: y + x")))
-		.def("__rsub__", arithmetic_method(py::eval("lambda x, y: y - x")))
-		.def("__rmul__", arithmetic_method(py::eval("lambda x, y: y * x")))
-		.def("__rmatmul__", arithmetic_method(py::eval("lambda x, y: y @ x")))
-		.def("__rtruediv__", arithmetic_method(py::eval("lambda x, y: y / x")))
-		.def("__rfloordiv__", arithmetic_method(py::eval("lambda x, y: y // x")))
-		.def("__rmod__", arithmetic_method(py::eval("lambda x, y: y % x")))
-		.def("__rdivmod__", arithmetic_method(py::eval("lambda x, y: divmod(y, x)")))
-		.def("__rpow__", arithmetic_method(py::eval("lambda x, y: y ** x")))
-		.def("__rlshift__", arithmetic_method(py::eval("lambda x, y: y << x")))
-		.def("__rrshift__", arithmetic_method(py::eval("lambda x, y: y >> x")))
-		.def("__rand__", arithmetic_method(py::eval("lambda x, y: y & x")))
-		.def("__rxor__", arithmetic_method(py::eval("lambda x, y: y ^ x")))
-		.def("__ror__", arithmetic_method(py::eval("lambda x, y: y | x")))
+		.def("__radd__", arith_meth(py::eval("lambda x, y: y + x"), "({1} + {0})"))
+		.def("__rsub__", arith_meth(py::eval("lambda x, y: y - x"), "({1} - {0})"))
+		.def("__rmul__", arith_meth(py::eval("lambda x, y: y * x"), "({1} * {0})"))
+		.def("__rmatmul__", arith_meth(py::eval("lambda x, y: y @ x"), "({1} @ {0})"))
+		.def("__rtruediv__", arith_meth(py::eval("lambda x, y: y / x"), "({1} / {0})"))
+		.def("__rfloordiv__", arith_meth(py::eval("lambda x, y: y // x"), "({1} // {0})"))
+		.def("__rmod__", arith_meth(py::eval("lambda x, y: y % x"), "({1} % {0})"))
+		.def(
+			"__rdivmod__",
+			arith_meth(py::eval("lambda x, y: divmod(y, x)"), "divmod({1}, {0})"))
+		.def("__rpow__", arith_meth(py::eval("lambda x, y: y ** x"), "({1} ** {0})"))
+		.def("__rlshift__", arith_meth(py::eval("lambda x, y: y << x"), "({1} << {0})"))
+		.def("__rrshift__", arith_meth(py::eval("lambda x, y: y >> x"), "({1} >> {0})"))
+		.def("__rand__", arith_meth(py::eval("lambda x, y: y & x"), "({1} & {0})"))
+		.def("__rxor__", arith_meth(py::eval("lambda x, y: y ^ x"), "({1} ^ {0})"))
+		.def("__ror__", arith_meth(py::eval("lambda x, y: y | x"), "({1} | {0})"))
 		// Unary operator
-		.def("__neg__", arithmetic_method(py::eval("lambda x: -x")))
-		.def("__pos__", arithmetic_method(py::eval("lambda x: +x")))
-		.def("__abs__", arithmetic_method(builtins.attr("abs")))
-		.def("__invert__", arithmetic_method(py::eval("lambda x: ~x")))
-		.def("__int__", arithmetic_method(builtins.attr("int")))
-		.def("__float__", arithmetic_method(builtins.attr("float")))
-		.def("__complex__", arithmetic_method(builtins.attr("complex")))
-		.def("__round__", arithmetic_method(builtins.attr("round")))
-		.def("__trunc__", arithmetic_method(math.attr("trunc")))
-		.def("__floor__", arithmetic_method(math.attr("floor")))
-		.def("__ceil__", arithmetic_method(math.attr("ceil")));
+		.def("__neg__", arith_meth(py::eval("lambda x: -x"), "(-{})"))
+		.def("__pos__", arith_meth(py::eval("lambda x: +x"), "(+{})"))
+		.def("__abs__", arith_meth(builtins.attr("abs"), "(abs({}))"))
+		.def("__invert__", arith_meth(py::eval("lambda x: ~x"), "(~{})"))
+		.def("__int__", arith_meth(builtins.attr("int"), "int({})"))
+		.def("__float__", arith_meth(builtins.attr("float"), "float({})"))
+		.def("__complex__", arith_meth(builtins.attr("complex"), "complex({})"))
+		.def("__round__", arith_meth(builtins.attr("round"), "round({})"))
+		.def("__trunc__", arith_meth(math.attr("trunc"), "math.trunc({})"))
+		.def("__floor__", arith_meth(math.attr("floor"), "math.floor({})"))
+		.def("__ceil__", arith_meth(math.attr("ceil"), "math.ceil({})"));
 	// Custom Math methods
 	// clang-format off
 	for (auto const name : {
 		"sin", "exp", "log", "log2", "log10", "sqrt", "cos", "tan", "asin", "acos", "atan",
 		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh"
 	}) {
-		pyclass.def(name, arithmetic_method(math.attr(name)));
+		pyclass.def(name, arith_meth(math.attr(name), std::string{"{}."} + name + "()"));
 	}
 	// clang-format on
 	pyclass.def("apply", [](py::object self, py::object func) {
-		return ArithmeticFunction{func, py::make_tuple(self)};
+		return ArithmeticFunction{func, py::make_tuple(self), "lambda({})"};
 	});
 }
 
