@@ -120,14 +120,44 @@ void bind_submodule(py::module m) {
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
-	py::class_<StrongBranchingScoresObs>(m, "StrongBranchingScoresObs")  //
+	py::class_<StrongBranchingScoresObs>(m, "StrongBranchingScoresObs", R"(
+		Strong Branching Scores for each variable at a branch-and-bound node.
+
+		This observation obtains scores for all LP or pseudo candidate variables at a 
+		branch-and-bound node.
+		The strong branching score measures the quality of branching for each variable.
+		This observation can be used as an expert in reinforcement learning algorithms. 
+	)")  //
 		.def_property_readonly(
 			"strong_branching_scores", [](StrongBranchingScoresObs & self) -> auto& { return self.strong_branching_scores; });
 
-	auto sb_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores");
-	sb_scores.def(py::init<>());
-	def_reset(sb_scores);
-	def_obtain_observation(sb_scores);
+		This observation obtains scores for all LP or pseudo candidate variables at a 
+		branch-and-bound node.  The strong branching score measures the quality of branching 
+		for each variable.  This observation can be used as an expert in reinforcement
+		learning algorithms. 
+	)")  //
+		.def_property_readonly(
+			"scores",
+			[](StrongBranchingScoresObs & self) -> auto& { return self.scores; },
+			"An array containing the strong branching score for each variable in the problem "
+			"which can be indexed by the action set.  Variables for which a strong branching "
+			"score is not applicable are filled with NaN.");
+
+	auto strong_branching_scores =
+		py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
+		Strong branching score observation function on branch-and bound node.  The parameter
+		pseudo_candidates can be passed as a boolean to compute strong branching scores for 
+		pseudo-candidate variables if true and LP candidates variables if false.  By default
+		psuedo-candidates will be computed.  
+
+		This observation function extract structured :py:class:`StrongBranchingScoresObs`.
+	)");
+	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true);
+	def_reset(
+		strong_branching_scores,
+		"Cache some feature not expected to change during an episode.");
+	def_obtain_observation(
+		strong_branching_scores, "Extract a new :py:class:`StrongBranchingScoresObs`.");
 }
 
 }  // namespace observation
