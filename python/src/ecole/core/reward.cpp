@@ -45,7 +45,9 @@ void bind_submodule(py::module m) {
 
 		Always return the value passed in constructor.
 	)");
-	constant.def(py::init<Reward>(), py::arg("constant") = 0.);
+	constant  //
+		.def(py::init<Reward>(), py::arg("constant") = 0.)
+		.def_readonly("constant", &Constant::constant);
 	def_operators(constant);
 	def_reset(constant, "Do nothing.");
 	def_obtain_reward(constant, "Return the constant value.");
