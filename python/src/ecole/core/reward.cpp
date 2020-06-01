@@ -18,9 +18,9 @@ namespace reward {
  * This could be a pure Python class, but it needs to be defined in this module to
  * be accessible to reward functions operators.
  */
-class ArithmeticFunction {
+class Arithmetic {
 public:
-	ArithmeticFunction(py::object operation, py::list functions, py::str repr);
+	Arithmetic(py::object operation, py::list functions, py::str repr);
 	void reset(py::object initial_state);
 	Reward obtain_reward(py::object state, bool done);
 	py::str toString() const;
@@ -56,26 +56,23 @@ void bind_submodule(py::module m) {
 	def_reset(constant, "Do nothing.");
 	def_obtain_reward(constant, "Return the constant value.");
 
-	auto arithmetic_function = py::class_<ArithmeticFunction>(
-		m,
-		"ArithmeticFunction"
-		R"(
+	auto arithmetic = py::class_<Arithmetic>(m, "Arithmetic", R"(
 		Proxy class for doing arithmetic on reward functions.
 
 		An object of this class is returned by reward functions operators to forward calls
 		to the reward functions parameters of the operator.
 	)");
-	arithmetic_function  //
+	arithmetic  //
 		.def(py::init<py::object, py::list, py::str>())
-		.def("__repr__", &ArithmeticFunction::toString);
-	def_operators(arithmetic_function);
-	def_reset(arithmetic_function, R"(
+		.def("__repr__", &Arithmetic::toString);
+	def_operators(arithmetic);
+	def_reset(arithmetic, R"(
 		Reset the reward functions of the operator.
 
 		Call ``reset`` on all reward functions parameters that were used to create this
 		object.
 	)");
-	def_obtain_reward(arithmetic_function, R"(
+	def_obtain_reward(arithmetic, R"(
 		Obtain the reward of result of the operator.
 
 		Call ``obtain_reward`` on all reward functions parameters that were used to create
@@ -105,14 +102,11 @@ void bind_submodule(py::module m) {
 		)");
 }
 
-/**************************************
- *  Definition of ArithmeticFunction  *
- **************************************/
+/******************************
+ *  Definition of Arithmetic  *
+ ******************************/
 
-ArithmeticFunction::ArithmeticFunction(
-	py::object operation_,
-	py::list functions_,
-	py::str repr_) :
+Arithmetic::Arithmetic(py::object operation_, py::list functions_, py::str repr_) :
 	operation(std::move(operation_)), repr(std::move(repr_)) {
 	auto const Numbers = py::module::import("numbers").attr("Number");
 	for (auto func : functions_) {
@@ -124,13 +118,13 @@ ArithmeticFunction::ArithmeticFunction(
 	}
 }
 
-void ArithmeticFunction::reset(py::object initial_state) {
+void Arithmetic::reset(py::object initial_state) {
 	for (auto obs_func : functions) {
 		obs_func.attr("reset")(initial_state);
 	}
 }
 
-Reward ArithmeticFunction::obtain_reward(py::object state, bool done) {
+Reward Arithmetic::obtain_reward(py::object state, bool done) {
 	py::list rewards{};
 	for (auto obs_func : functions) {
 		rewards.append(obs_func.attr("obtain_reward")(state, done));
@@ -138,7 +132,7 @@ Reward ArithmeticFunction::obtain_reward(py::object state, bool done) {
 	return operation(*rewards).cast<Reward>();
 }
 
-py::str ArithmeticFunction::toString() const {
+py::str Arithmetic::toString() const {
 	return repr.format(*functions);
 }
 
@@ -168,12 +162,10 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	auto const math = py::module::import("math");
 
 	// Return a function that wraps rewards functions inside an ArithmeticReward.
-	// The ArithmeticFunction is a reward function class that will call the wrapped reward
-	// functions and merge there rewards with the relevant operation (sum, prod, ...)
+	// The Arithmetic reward function is a reward function class that will call the wrapped
+	// reward functions and merge there rewards with the relevant operation (sum, prod, ...)
 	auto const arith_meth = [](auto operation, auto repr) {
-		return [operation, repr](py::args args) {
-			return ArithmeticFunction{operation, args, repr};
-		};
+		return [operation, repr](py::args args) { return Arithmetic{operation, args, repr}; };
 	};
 
 	pyclass
@@ -231,7 +223,7 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	}
 	// clang-format on
 	pyclass.def("apply", [](py::object self, py::object func) {
-		return ArithmeticFunction{func, py::make_tuple(self), "lambda({})"};
+		return Arithmetic{func, py::make_tuple(self), "lambda({})"};
 	});
 }
 
