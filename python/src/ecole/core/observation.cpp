@@ -17,6 +17,9 @@ namespace observation {
 
 namespace py = pybind11;
 
+/**
+ * Helper function to bind the `reset` method of observation functions.
+ */
 template <typename PyClass, typename... Args>
 auto def_reset(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
@@ -27,6 +30,9 @@ auto def_reset(PyClass pyclass, Args&&... args) {
 		std::forward<Args>(args)...);
 }
 
+/**
+ * Helper function to bind the `obtain_observation` method of observation functions.
+ */
 template <typename PyClass, typename... Args>
 auto def_obtain_observation(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
@@ -37,6 +43,9 @@ auto def_obtain_observation(PyClass pyclass, Args&&... args) {
 		std::forward<Args>(args)...);
 }
 
+/**
+ * Observation module bindings definitions.
+ */
 void bind_submodule(py::module m) {
 	m.doc() = "Observation classes for Ecole.";
 
