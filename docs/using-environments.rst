@@ -63,11 +63,26 @@ One wants to find a policy able to genralize to new, unseen, instances.
 .. TODO add ref to theoretical setction
 
 
+Environment parameters
+----------------------
+Environment can be created with no constructor arguments, as in the previous examples.
+This will use all the defaults chosen for the environments.
+
+Each environment can have its own set of parameters to further customize the task being
+solved.
+For instance, the :py:class:`~ecole.environment.Branching` takes a ``pseudo_candidates``
+boolean parameter to decide whether branching candidates are chosen among all non fixed
+inegral variables rather than being limited to fractional ones.
+
+:ref:`Observation functions <use-observation-functions>` and
+:ref:`reward functions <use-observation-functions>` are more advanced environment
+parameters dicsussed later on.
+
+
 .. _reseting-environments:
 
 Reseting environments
 ---------------------
-
 The episode in the inner ``while`` starts with a call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset` to bring the environment to a new
 initial state.
@@ -94,7 +109,6 @@ The exact documentation for the method is given below.
 
 Transitioning
 -------------
-
 The inner ``while`` loop transitions the environment from one state to the next by giving
 an action to :py:meth:`~ecole.environment.EnvironmentComposer.step`.
 The nature of ``observation``, ``action_set``, and ``done`` is the same as in the previous
@@ -109,7 +123,6 @@ The exact documentation for the method is given below.
 
 Seeding environments
 --------------------
-
 Environments can be seeded by using the
 :py:meth:`~ecole.environment.EnvironmentComposer.seed` method.
 The seed is used by the environment (and in particular the solver) for *all* the

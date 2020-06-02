@@ -1,7 +1,9 @@
+.. _use-reward-functions:
+
 Use Reward Functions
 ====================
 
-Similarily to :ref:`observation functions <observation-functions>` the reward recieved by
+Similarily to :ref:`observation functions <use-observation-functions>` the reward recieved by
 the user for learning can be customized by changing the ``RewardFunction`` used by the
 solver.
 In fact the mechanism of reward functions is very similar to that of observation

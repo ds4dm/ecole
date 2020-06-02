@@ -1,4 +1,4 @@
-.. _observation-functions:
+.. _use-observation-functions:
 
 Use Observation Functions
 =========================
