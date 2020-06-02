@@ -60,8 +60,8 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    :caption: Tutorials
    :hidden:
 
-   Configuring the Solver with Bandits <https://doc.ecole.ai>
-   Branching with Imitation Learning  <https://doc.ecole.ai>
+   Configuring the Solver with Bandits <https://github.com/ds4dm/ecole/tree/master/examples/configuring-bandits.ipynb>
+   Branching with Imitation Learning <https://github.com/ds4dm/ecole/tree/master/examples/branching-imitation.ipynb>
 
 .. toctree::
    :caption: How to
