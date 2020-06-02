@@ -49,7 +49,7 @@ A full execution of this loop is known as an *episode*.
    :align: center
    :width: 60%
 
-   The control loop of the markov Decision Process
+   The control loop of the Markov Decision Process
 
 The outter ``for`` loop only repeats the inner one mutiple times.
 Few learning algorithms are able to learn in a single episode, so numerous ones are

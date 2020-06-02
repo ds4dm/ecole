@@ -39,3 +39,16 @@ breathe_default_project = "libecole"
 extensions += ["sphinx.ext.napoleon"]
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
+
+
+# Preprocess docstring to remove "core" from type name
+def preprocess_signature(app, what, name, obj, options, signature, return_annotation):
+    if signature is not None:
+        signature = signature.replace(".core", "")
+    if return_annotation is not None:
+        return_annotation = return_annotation.replace(".core", "")
+    return signature, return_annotation
+
+
+def setup(app):
+    app.connect("autodoc-process-signature", preprocess_signature)
