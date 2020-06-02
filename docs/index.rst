@@ -1,22 +1,38 @@
 Introduction
 ============
 
-Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
-Environments*.
-It is a library to expose and define control tasks arising in combinatorial
-optimization solvers as Markov Decision Processes (*i.e.*, `Reinforcement Learning
-<https://en.wikipedia.org/wiki/Reinforcement_learning>`_ environments).
+Ecole is a library of *Extensible Combinatorial Optimization Learning Environments*
+designed to facilitate the definition of machine learning environments problems inside
+combinatorial optimization solvers.
+
+.. code-block:: python
+
+   import ecole
+
+   env = ecole.environment.Branching(
+       reward_function=-ecole.reward.LpIterations(),
+       observation_function=ecole.observation.NodeBipartite()
+   )
+
+   for _ in range(10):
+        observation, action_set, done = env.reset("path/to/problem")
+        while not done:
+            obs, action_set, reward, done, info = env.step(action_set[0])
+
+
+Combinatorial optimization solvers rely on a variety of hand crafted heuristic that fail
+to account for similarities in between problems.
+`Machine Learning <https://en.wikipedia.org/wiki/Machine_learning>`_ algorithms are
+a promising candidate to create a new kind of highly adaptive solvers that can adapt to
+the problem data.
 
 For instance, many combinatorial optimization problems can be modeled using `Mixed Integer
 Linear Programming <https://en.wikipedia.org/wiki/Integer_programming>`_ and solved using
 the `branch-and-bound <https://en.wikipedia.org/wiki/Branch_and_bound>`_ algorithm.
 This algorithm still requires many more decisions, such as picking the variable to branch
 on.
-Ecole let the user easily explore new policies to make these decisions using information
-extracted from the solver.
-Typically the goal for the user is to use `Machine Learning
-<https://en.wikipedia.org/wiki/Machine_learning>`_ to make automated decision based on
-the solver internal state.
+Ecole let the user easily explore new policies to make these decisions using machine
+learning and information extracted from the solver.
 
 Ecole's interface is inspired from `OpenAi Gym <https://gym.openai.com/>`_ and will look
 familiar to reinforcement learning praticionners.
@@ -41,7 +57,14 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    using-environments
 
 .. toctree::
-   :caption: Usage
+   :caption: Tutorials
+   :hidden:
+
+   Configuring the Solver with Bandits <https://doc.ecole.ai>
+   Branching with Imitation Learning  <https://doc.ecole.ai>
+
+.. toctree::
+   :caption: How to
    :hidden:
 
    adapting-environments
