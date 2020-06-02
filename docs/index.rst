@@ -79,3 +79,11 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    reference/environments.rst
    reference/observations.rst
    reference/rewards.rst
+
+.. toctree::
+   :caption: Discussion
+   :hidden:
+
+   discussion/gym-differences.rst
+   discussion/seeding.rst
+   discussion/theory.rst
