@@ -67,8 +67,10 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    :caption: How to
    :hidden:
 
-   adapting-environments
-   pyscipopt
+   howto/observation-functions.rst
+   howto/reward-functions.rst
+   howto/create-functions.rst
+   howto/create-environments.rst
 
 .. toctree::
    :caption: Reference
