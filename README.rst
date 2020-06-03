@@ -47,7 +47,7 @@ For the following, the ``ecole`` environment always needs to be activated
 
    conda activate ecole
    conda config --append channels conda-forge
-   conda config --set channel_priority strict
+   conda config --set channel_priority flexible
 
 *Note: this environment contains tools to build ecole and scip, format code, test,
 generate documentation etc. These are more than the dependencies to only use Ecole.*
