@@ -4,10 +4,10 @@ package:
 
 source:
   path: {{ SCIP_DIR }}
-  patch:
-    - libobjscip.patch
+  patches:
     - librt-scip.patch
     - librt-papilo.patch
+    - libobjscip.patch
 
 build:
   number: 0
