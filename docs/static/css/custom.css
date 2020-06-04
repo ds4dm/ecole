@@ -1,0 +1,19 @@
+@import url("theme.css");
+
+/* Style the top search bar and logo */
+.wy-side-nav-search {
+	background-color: #F58A1F;
+}
+
+.wy-side-nav-search input[type="text"] {
+	border-color: #D97A1B;
+}
+
+.wy-side-nav-search > a img.logo, .wy-side-nav-search .wy-dropdown > a img.logo {
+	height: 10em;
+}
+
+/* Style the table of content */
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+	color: #77D1F6;;
+}

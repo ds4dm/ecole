@@ -20,6 +20,15 @@ html_context = {
     "github_version": "master",  # For the edit on Github link
     "conf_py_path": "/docs/",  # For the edit on Github link
 }
+html_theme_options = {
+    "logo_only": True,
+}
+html_logo = "static/images/ecole-logo.png"
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ["static"]
+html_style = "css/custom.css"
 
 # Breathe for Doxygen import
 extensions += ["breathe"]
