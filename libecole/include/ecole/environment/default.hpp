@@ -6,6 +6,7 @@
 
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/traits.hpp"
 
@@ -25,7 +26,6 @@ class EnvironmentComposer :
 public:
 	using Observation = trait::observation_of_t<ObservationFunction>;
 	using Action = trait::action_of_t<Dynamics>;
-	using State = trait::state_of_t<Dynamics>;
 	using ActionSet = trait::action_set_of_t<Dynamics>;
 
 	/**
@@ -51,24 +51,24 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, bool> reset(scip::Model&& model) override {
+	std::tuple<Observation, ActionSet, bool> reset(scip::Model&& new_model) override {
 		can_transition = true;
 		try {
-			// Create clean new state
-			state() = State{std::move(model)};
-			dynamics().set_dynamics_random_state(state(), random_engine);
+			// Create clean new Model
+			model() = std::move(new_model);
+			dynamics().set_dynamics_random_state(model(), random_engine);
 
-			// Bring state to initial state and reset state functions
+			// Bring model to initial state and reset state functions
 			bool done;
 			ActionSet action_set;
-			std::tie(done, action_set) = dynamics().reset_dynamics(state());
-			obs_func().reset(state());
-			term_func().reset(state());
-			reward_func().reset(state());
+			std::tie(done, action_set) = dynamics().reset_dynamics(model());
+			obs_func().reset(model());
+			term_func().reset(model());
+			reward_func().reset(model());
 
-			done = done || term_func().obtain_termination(state());
+			done = done || term_func().obtain_termination(model());
 			can_transition = !done;
-			return {obs_func().obtain_observation(state()), std::move(action_set), done};
+			return {obs_func().obtain_observation(model()), std::move(action_set), done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -98,13 +98,13 @@ public:
 		try {
 			bool done;
 			ActionSet action_set;
-			std::tie(done, action_set) = dynamics().step_dynamics(state(), action);
-			done = done || term_func().obtain_termination(state());
+			std::tie(done, action_set) = dynamics().step_dynamics(model(), action);
+			done = done || term_func().obtain_termination(model());
 			can_transition = !done;
-			auto const reward = reward_func().obtain_reward(state(), done);
+			auto const reward = reward_func().obtain_reward(model(), done);
 
 			return {
-				obs_func().obtain_observation(state()),
+				obs_func().obtain_observation(model()),
 				std::move(action_set),
 				reward,
 				done,
@@ -117,14 +117,14 @@ public:
 	}
 
 	auto& dynamics() { return m_dynamics; }
-	auto& state() { return m_state; }
+	auto& model() { return m_model; }
 	auto& obs_func() { return m_obs_func; }
 	auto& reward_func() { return m_reward_func; }
 	auto& term_func() { return m_term_func; }
 
 private:
 	Dynamics m_dynamics;
-	State m_state;
+	scip::Model m_model;
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
 	TerminationFunction m_term_func;

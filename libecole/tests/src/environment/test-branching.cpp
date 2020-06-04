@@ -35,18 +35,18 @@ TEST_CASE("Branching environment", "[env]") {
 	SECTION("seed consistency") {
 		env.seed(93);
 		env.reset(problem_file);
-		auto seed1 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		auto seed1 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
 		env.seed(93);
 		env.reset(problem_file);
-		auto seed2 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		auto seed2 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
 		REQUIRE(seed1 == seed2);
 	}
 
 	SECTION("seed permutation") {
 		env.reset(problem_file);
-		auto seed1 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		auto seed1 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
 		env.reset(problem_file);
-		auto seed2 = env.state().model.get_param<scip::Seed>("randomization/randomseedshift");
+		auto seed2 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
 		REQUIRE(seed1 != seed2);
 	}
 

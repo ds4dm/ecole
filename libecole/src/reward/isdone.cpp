@@ -3,8 +3,7 @@
 namespace ecole {
 namespace reward {
 
-Reward IsDone::obtain_reward(environment::State const& state, bool done) {
-	(void)state;
+Reward IsDone::obtain_reward(scip::Model const&, bool done) {
 	return done ? 1 : 0;
 }
 

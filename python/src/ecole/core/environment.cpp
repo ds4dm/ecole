@@ -87,18 +87,18 @@ template <typename Dynamics> auto dynamics_class(py::module& m, char const* name
 		.def(
 			"reset_dynamics",
 			&Dynamics::reset_dynamics,
-			py::arg("state"),
+			py::arg("model"),
 			py::call_guard<py::gil_scoped_release>())
 		.def(
 			"step_dynamics",
 			&Dynamics::step_dynamics,
-			py::arg("state"),
+			py::arg("model"),
 			py::arg("action"),
 			py::call_guard<py::gil_scoped_release>())
 		.def(
 			"set_dynamics_random_state",
 			&Dynamics::set_dynamics_random_state,
-			py::arg("state"),
+			py::arg("model"),
 			py::arg("random_engine"));
 }
 
@@ -106,10 +106,6 @@ void bind_submodule(pybind11::module m) {
 	m.doc() = "Ecole collection of environments.";
 
 	py::register_exception<Exception>(m, "Exception");
-
-	py::class_<State>(m, "State")
-		.def_readonly("model", &State::model)  //
-		.def(py::init<scip::Model const&>());
 
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(

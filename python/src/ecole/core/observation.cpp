@@ -25,7 +25,7 @@ auto def_reset(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
 		"reset",
 		&PyClass::type::reset,
-		py::arg("state"),
+		py::arg("model"),
 		py::call_guard<py::gil_scoped_release>(),
 		std::forward<Args>(args)...);
 }
@@ -38,7 +38,7 @@ auto def_obtain_observation(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
 		"obtain_observation",
 		&PyClass::type::obtain_observation,
-		py::arg("state"),
+		py::arg("model"),
 		py::call_guard<py::gil_scoped_release>(),
 		std::forward<Args>(args)...);
 }

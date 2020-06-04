@@ -21,8 +21,8 @@ namespace reward {
 class Arithmetic {
 public:
 	Arithmetic(py::object operation, py::list functions, py::str repr);
-	void reset(py::object initial_state);
-	Reward obtain_reward(py::object state, bool done);
+	void reset(py::object model);
+	Reward obtain_reward(py::object model, bool done);
 	py::str toString() const;
 
 private:
@@ -118,16 +118,16 @@ Arithmetic::Arithmetic(py::object operation_, py::list functions_, py::str repr_
 	}
 }
 
-void Arithmetic::reset(py::object initial_state) {
+void Arithmetic::reset(py::object model) {
 	for (auto obs_func : functions) {
-		obs_func.attr("reset")(initial_state);
+		obs_func.attr("reset")(model);
 	}
 }
 
-Reward Arithmetic::obtain_reward(py::object state, bool done) {
+Reward Arithmetic::obtain_reward(py::object model, bool done) {
 	py::list rewards{};
 	for (auto obs_func : functions) {
-		rewards.append(obs_func.attr("obtain_reward")(state, done));
+		rewards.append(obs_func.attr("obtain_reward")(model, done));
 	}
 	return operation(*rewards).cast<Reward>();
 }
@@ -143,7 +143,7 @@ py::str Arithmetic::toString() const {
 template <typename PyClass, typename... Args>
 void def_reset(PyClass pyclass, Args&&... args) {
 	pyclass.def(
-		"reset", &PyClass::type::reset, py::arg("state"), std::forward<Args>(args)...);
+		"reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
 }
 
 template <typename PyClass, typename... Args>
@@ -151,7 +151,7 @@ void def_obtain_reward(PyClass pyclass, Args&&... args) {
 	pyclass.def(
 		"obtain_reward",
 		&PyClass::type::obtain_reward,
-		py::arg("state"),
+		py::arg("model"),
 		py::arg("done") = false,
 		std::forward<Args>(args)...);
 }

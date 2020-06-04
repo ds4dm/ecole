@@ -12,7 +12,6 @@ from ecole.core.environment import *
 class EnvironmentComposer:
 
     __Dynamics__ = None
-    __State__ = None
     __DefaultObservationFunction__ = ecole.observation.Nothing
     __DefaultRewardFunction__ = ecole.reward.IsDone
     __DefaultTerminationFunction__ = ecole.termination.Constant
@@ -44,7 +43,7 @@ class EnvironmentComposer:
         else:
             self.termination_function = termination_function
 
-        self.state = None
+        self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
         self.random_engine = RandomEngine(
@@ -100,19 +99,19 @@ class EnvironmentComposer:
         self.can_transition = True
         try:
             if isinstance(instance, core.scip.Model):
-                self.state = self.__State__(instance)
+                self.model = instance
             else:
-                self.state = self.__State__(core.scip.Model.from_file(instance))
+                self.model = core.scip.Model.from_file(instance)
 
-            self.dynamics.set_dynamics_random_state(self.state, self.random_engine)
+            self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
-            done, action_set = self.dynamics.reset_dynamics(self.state)
-            self.termination_function.reset(self.state)
-            self.observation_function.reset(self.state)
-            self.reward_function.reset(self.state)
+            done, action_set = self.dynamics.reset_dynamics(self.model)
+            self.termination_function.reset(self.model)
+            self.observation_function.reset(self.model)
+            self.reward_function.reset(self.model)
 
-            done = done or self.termination_function.obtain_termination(self.state)
-            observation = self.observation_function.obtain_observation(self.state)
+            done = done or self.termination_function.obtain_termination(self.model)
+            observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, done
         except Exception as e:
             self.can_transition = False
@@ -157,10 +156,10 @@ class EnvironmentComposer:
             raise core.environment.Exception("Environment need to be reset.")
 
         try:
-            done, action_set = self.dynamics.step_dynamics(self.state, action)
-            done = done or self.termination_function.obtain_termination(self.state)
-            reward = self.reward_function.obtain_reward(self.state, done)
-            observation = self.observation_function.obtain_observation(self.state)
+            done, action_set = self.dynamics.step_dynamics(self.model, action)
+            done = done or self.termination_function.obtain_termination(self.model)
+            reward = self.reward_function.obtain_reward(self.model, done)
+            observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, reward, done, {}
         except Exception as e:
             self.can_transition = False
@@ -181,10 +180,8 @@ class EnvironmentComposer:
 
 class Branching(EnvironmentComposer):
     __Dynamics__ = core.environment.BranchingDynamics
-    __State__ = core.environment.State
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
 class Configuring(EnvironmentComposer):
     __Dynamics__ = core.environment.ConfiguringDynamics
-    __State__ = core.environment.State

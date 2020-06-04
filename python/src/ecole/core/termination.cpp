@@ -12,7 +12,7 @@ namespace py = pybind11;
 template <typename TerminationFunction>
 auto termination_function_class(py::module& m, char const* name) {
 	return py::class_<TerminationFunction>(m, name)  //
-		.def("reset", &TerminationFunction::reset, py::arg("state"))
+		.def("reset", &TerminationFunction::reset, py::arg("model"))
 		.def(
 			"obtain_termination", &TerminationFunction::obtain_termination, py::arg("state"));
 }

@@ -24,4 +24,4 @@ def test_configuring_environment(model):
 
         assert count == 1
         for param, value in action.items():
-            assert env.state.model.get_param(param) == value
+            assert env.model.get_param(param) == value

@@ -11,7 +11,9 @@ public:
 
 	Constant(Reward constant_ = 0.) : constant(constant_) {}
 
-	Reward obtain_reward(environment::State const&, bool) override { return constant; };
+	Reward obtain_reward(scip::Model const& /* model */, bool /* done */) override {
+		return constant;
+	};
 };
 
 }  // namespace reward

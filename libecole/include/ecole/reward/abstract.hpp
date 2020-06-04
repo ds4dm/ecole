@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ecole/environment/state.hpp"
+#include "ecole/scip/model.hpp"
 
 namespace ecole {
 namespace reward {
@@ -24,12 +24,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(environment::State const& initial_state) { (void)initial_state; }
+	virtual void reset(scip::Model const& /* model */) {}
 
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual Reward obtain_reward(environment::State const& state, bool done = false) = 0;
+	virtual Reward obtain_reward(scip::Model const& model, bool done = false) = 0;
 };
 
 }  // namespace reward

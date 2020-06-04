@@ -52,22 +52,21 @@ action_set(scip::Model const& model, bool pseudo) {
 	return branch_cols;
 }
 
-auto BranchingDynamics::reset_dynamics(State& init_state) -> std::tuple<bool, ActionSet> {
-	init_state.model.solve_iter();
-	return {
-		init_state.model.solve_iter_is_done(),
-		action_set(init_state.model, pseudo_candidates)};
+auto BranchingDynamics::reset_dynamics(scip::Model& model)
+	-> std::tuple<bool, ActionSet> {
+	model.solve_iter();
+	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(State& state, std::size_t const& action)
+auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action)
 	-> std::tuple<bool, ActionSet> {
-	auto const lp_cols = state.model.lp_columns();
+	auto const lp_cols = model.lp_columns();
 	if (action >= lp_cols.size) {
 		throw Exception("Branching index is larger than the number of columns.");
 	}
-	state.model.solve_iter_branch(lp_cols[action].var());
+	model.solve_iter_branch(lp_cols[action].var());
 
-	return {state.model.solve_iter_is_done(), action_set(state.model, pseudo_candidates)};
+	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }
 
 }  // namespace environment

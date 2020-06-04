@@ -11,7 +11,7 @@ public:
 
 	Constant(bool constant_ = false) : constant(constant_) {}
 
-	bool obtain_termination(environment::State const&) override { return constant; };
+	bool obtain_termination(scip::Model const&) override { return constant; };
 };
 
 }  // namespace termination

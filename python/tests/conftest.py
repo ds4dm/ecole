@@ -46,8 +46,3 @@ def model(problem_file):
     model_obj.disable_cuts()
     model_obj.disable_presolve()
     return model_obj
-
-
-@pytest.fixture
-def state(model):
-    return ecole.environment.State(model)

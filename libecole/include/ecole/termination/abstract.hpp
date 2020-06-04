@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ecole/environment/state.hpp"
+#include "ecole/scip/model.hpp"
 
 namespace ecole {
 namespace termination {
@@ -23,12 +23,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(environment::State const& initial_state) { (void)initial_state; }
+	virtual void reset(scip::Model const&) {}
 
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual bool obtain_termination(environment::State const& state) = 0;
+	virtual bool obtain_termination(scip::Model const&) = 0;
 };
 
 }  // namespace termination

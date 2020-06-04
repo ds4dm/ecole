@@ -1,11 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/environment/state.hpp"
 #include "ecole/observation/abstract.hpp"
 #include "ecole/utility/sparse_matrix.hpp"
 
@@ -27,7 +24,7 @@ public:
 	using Base = ObservationFunction<Observation>;
 
 	nonstd::optional<NodeBipartiteObs>
-	obtain_observation(environment::State const& state) override;
+	obtain_observation(scip::Model const& model) override;
 };
 
 }  // namespace observation

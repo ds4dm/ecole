@@ -16,12 +16,12 @@ static auto n_lp_iterations(scip::Model const& model) {
 	}
 }
 
-void LpIterations::reset(environment::State const& initial_state) {
-	last_lp_iter = n_lp_iterations(initial_state.model);
+void LpIterations::reset(scip::Model const& model) {
+	last_lp_iter = n_lp_iterations(model);
 }
 
-Reward LpIterations::obtain_reward(environment::State const& state, bool) {
-	auto lp_iter_diff = n_lp_iterations(state.model) - last_lp_iter;
+Reward LpIterations::obtain_reward(scip::Model const& model, bool /* done */) {
+	auto lp_iter_diff = n_lp_iterations(model) - last_lp_iter;
 	last_lp_iter += lp_iter_diff;
 	return static_cast<double>(-lp_iter_diff);
 }

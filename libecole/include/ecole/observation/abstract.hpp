@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
-
-#include "ecole/environment/state.hpp"
+#include "ecole/scip/model.hpp"
 
 namespace ecole {
 namespace observation {
@@ -17,12 +15,10 @@ namespace observation {
  * An observation on the contrary hand is a purely self contained data class with no
  * function.
  *
- * @tparam Observation_ the type of the observation extracted by this class.
+ * @tparam Observation the type of the observation extracted by this class.
  */
-template <typename Observation_> class ObservationFunction {
+template <typename Observation> class ObservationFunction {
 public:
-	using Observation = Observation_;
-
 	virtual ~ObservationFunction() = default;
 
 	/**
@@ -30,12 +26,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(environment::State const& initial_state) { (void)initial_state; }
+	virtual void reset(scip::Model const& /* model */) {}
 
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual Observation obtain_observation(environment::State const& state) = 0;
+	virtual Observation obtain_observation(scip::Model const& model) = 0;
 };
 
 }  // namespace observation
