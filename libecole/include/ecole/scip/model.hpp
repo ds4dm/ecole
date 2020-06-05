@@ -80,10 +80,8 @@ public:
 	 *
 	 * @see get_param, set_param to convert automatically.
 	 */
-	template <ParamType T, std::enable_if_t<T != ParamType::String, int> = 0>
+	template <ParamType T>
 	void set_param_explicit(std::string const& name, param_t<T> value);
-	template <ParamType T, std::enable_if_t<T == ParamType::String, int> = 0>
-	void set_param_explicit(std::string const& name, std::string const& value);
 	template <ParamType T> param_t<T> get_param_explicit(std::string const& name) const;
 
 	/**

@@ -108,7 +108,7 @@ void Model::set_param_explicit<ParamType::Char>(std::string const& name, char va
 template <>
 void Model::set_param_explicit<ParamType::String>(
 	std::string const& name,
-	std::string const& value) {
+	std::string value) {
 	scip::call(SCIPsetStringParam, get_scip_ptr(), name.c_str(), value.c_str());
 }
 
