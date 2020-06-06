@@ -53,29 +53,37 @@ TEST_CASE("Get and set parameters") {
 	using scip::ParamType;
 
 	auto model = scip::Model{};
-	auto constexpr param = "conflict/conflictgraphweight";
+	auto constexpr int_param = "conflict/minmaxvars";
 
 	SECTION("Get parameters explicitly") {
-		model.get_param_explicit<ParamType::Real>(param);
+		model.get_param_explicit<ParamType::Int>(int_param);
 	}
 
 	SECTION("Set parameters explicitly") {
-		model.set_param_explicit<ParamType::Real>(param, false);
+		model.set_param_explicit<ParamType::Int>(int_param, false);
 	}
 
 	SECTION("Throw on wrong parameters type") {
 		auto guard = ScipNoErrorGuard{};
-		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Int>(param), scip::Exception);
 		REQUIRE_THROWS_AS(
-			model.set_param_explicit<ParamType::Int>(param, 3), scip::Exception);
+			model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
+		REQUIRE_THROWS_AS(
+			model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
 	}
 
-	SECTION("Get parameters with automatic casting") { model.get_param<int>(param); }
+	SECTION("Get parameters with automatic casting") { model.get_param<double>(int_param); }
 
-	SECTION("Set parameters with automatic casting") { model.set_param(param, 1); }
+	SECTION("Set parameters with automatic casting") { model.set_param(int_param, 1.); }
 
 	SECTION("String parameters can be converted to chars") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
 	}
+
+	SECTION("Get parameters as variants") {
+		auto val = model.get_param<scip::Param>(int_param);
+		REQUIRE(nonstd::holds_alternative<int>(val));
+		REQUIRE(nonstd::get<int>(val) == model.get_param<int>(int_param));
+	}
+
 }

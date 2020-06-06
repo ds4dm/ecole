@@ -136,6 +136,16 @@ struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> 
 	static To cast(From val) { return static_cast<To>(val); }
 };
 
+// Visit From variants.
+// Cannot static_cast a variant into one of its held value. Other way around works though.
+template <typename To, typename... VariantFrom>
+struct Caster<To, nonstd::variant<VariantFrom...>> {
+	static To cast(nonstd::variant<VariantFrom...> variant_val) {
+		return nonstd::visit(
+			[](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
+	}
+};
+
 // Pointers must not convert to bools
 template <typename From> struct Caster<bool, std::remove_cv<From>*> {
 	static bool cast(From) { throw Exception("Cannot convert pointers to bool"); }
