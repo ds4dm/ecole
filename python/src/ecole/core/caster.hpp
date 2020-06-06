@@ -62,7 +62,7 @@ template <> struct type_caster<ecole::NoneType> : void_caster<ecole::NoneType> {
 template <> struct type_caster<ecole::scip::Param> : variant_caster<ecole::scip::Param> {
 public:
 	/**
-	 * Description and vlaue varaible.
+	 * Description and value variable.
 	 *
 	 * This macro establishes the name description in function signatures and declares a
 	 * local variable `value` of type @ref scip::Param.
@@ -82,14 +82,23 @@ public:
 	bool load(handle src, bool) {
 		using namespace ecole;
 		using ParamHelper = nonstd::variant<bool, scip::long_int, scip::real, std::string>;
+
 		try {
-			value = nonstd::visit(
-				[](auto&& val) -> scip::Param { return val; }, src.cast<ParamHelper>());
+			value = nonstd::visit(  //
+				[](auto&& val) -> scip::Param { return val; },
+				src.cast<ParamHelper>());
 			return true;
 		} catch (...) {
 			return false;
 		}
 	}
+
+	/**
+	 * Conversion from C++ to Python.
+	 *
+	 * Using the default variant caster from PyBind.
+	 */
+	using variant_caster::cast;
 };
 
 }  // namespace detail
