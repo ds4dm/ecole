@@ -86,4 +86,22 @@ TEST_CASE("Get and set parameters") {
 		REQUIRE(nonstd::get<int>(val) == model.get_param<int>(int_param));
 	}
 
+	SECTION("Set parameters as variants") {
+		scip::Param new_val = model.get_param<int>(int_param) + 1;
+		model.set_param(int_param, new_val);
+		REQUIRE(model.get_param<int>(int_param) == nonstd::get<int>(new_val));
+	}
+
+	SECTION("Extract map of parameters") {
+		auto vals = model.get_params();
+		REQUIRE(vals.size() > 0l);
+		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
+	}
+
+	SECTION("Set map of parameters") {
+		auto vals = model.get_params();
+		vals[int_param] = nonstd::get<int>(vals[int_param]) + 1;
+		model.set_params(vals);
+		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
+	}
 }

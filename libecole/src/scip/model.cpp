@@ -148,6 +148,25 @@ std::string Model::get_param_explicit<ParamType::String>(std::string const& name
 	return ptr;
 }
 
+void Model::set_params(std::map<std::string, Param> name_values) {
+	for (auto&& name_val : name_values) {
+		set_param(std::move(name_val.first), std::move(name_val.second));
+	}
+}
+
+std::map<std::string, Param> Model::get_params() const {
+	auto* const scip = get_scip_ptr();
+	auto* const* const scip_params = SCIPgetParams(scip);
+	auto const n_scip_params = SCIPgetNParams(scip);
+
+	std::map<std::string, Param> params{};
+	for (auto i = 0; i < n_scip_params; ++i) {
+		std::string name = SCIPparamGetName(scip_params[i]);
+		params.insert({std::move(name), get_param<Param>(name)});
+	}
+	return params;
+}
+
 void Model::solve() {
 	scip::call(SCIPsolve, get_scip_ptr());
 }

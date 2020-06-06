@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstring>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -95,6 +96,9 @@ public:
 	 */
 	template <typename T> void set_param(std::string const& name, T value);
 	template <typename T> T get_param(std::string const& name) const;
+
+	void set_params(std::map<std::string, Param> name_values);
+	std::map<std::string, Param> get_params() const;
 
 	void disable_presolve();
 	void disable_cuts();
