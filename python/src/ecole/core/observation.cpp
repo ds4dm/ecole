@@ -10,7 +10,6 @@
 #include "ecole/utility/sparse_matrix.hpp"
 
 #include "core.hpp"
-#include "nonstd.hpp"
 
 namespace ecole {
 namespace observation {

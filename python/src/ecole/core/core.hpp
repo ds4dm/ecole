@@ -2,7 +2,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ecole/none.hpp"
+#include "caster.hpp"
 
 namespace ecole {
 
@@ -27,16 +27,3 @@ void bind_submodule(pybind11::module);
 }
 
 }  // namespace ecole
-
-namespace pybind11 {
-namespace detail {
-
-/**
- * Custom caster for @ref ecole::NoneType.
- *
- * Cast to `None` in Python and does not cast to C++.
- */
-template <> struct type_caster<ecole::NoneType> : void_caster<ecole::NoneType> {};
-
-}  // namespace detail
-}  // namespace pybind11
