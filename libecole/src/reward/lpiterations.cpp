@@ -1,5 +1,7 @@
 #include "ecole/reward/lpiterations.hpp"
 
+#include "ecole/scip/model.hpp"
+
 namespace ecole {
 namespace reward {
 

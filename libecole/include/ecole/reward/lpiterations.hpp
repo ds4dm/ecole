@@ -1,8 +1,7 @@
 #pragma once
 
-#include <memory>
-
 #include "ecole/reward/abstract.hpp"
+#include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace reward {

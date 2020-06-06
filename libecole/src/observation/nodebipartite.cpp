@@ -5,6 +5,7 @@
 #include <xtensor/xview.hpp>
 
 #include "ecole/observation/nodebipartite.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {

@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 
+#include "ecole/scip/model.hpp"
 #include "ecole/termination/constant.hpp"
 
 #include "core.hpp"

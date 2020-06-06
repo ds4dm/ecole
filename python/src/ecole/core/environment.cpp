@@ -10,6 +10,7 @@
 #include "ecole/environment/branching-dynamics.hpp"
 #include "ecole/environment/configuring-dynamics.hpp"
 #include "ecole/environment/exception.hpp"
+#include "ecole/scip/model.hpp"
 
 #include "core.hpp"
 

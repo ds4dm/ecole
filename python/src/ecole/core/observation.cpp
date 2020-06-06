@@ -7,6 +7,7 @@
 
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse_matrix.hpp"
 
 #include "core.hpp"

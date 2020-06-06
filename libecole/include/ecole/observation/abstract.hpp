@@ -1,8 +1,11 @@
 #pragma once
 
-#include "ecole/scip/model.hpp"
-
 namespace ecole {
+
+namespace scip {
+class Model;
+}
+
 namespace observation {
 
 /**

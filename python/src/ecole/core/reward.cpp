@@ -4,6 +4,7 @@
 #include "ecole/reward/constant.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/lpiterations.hpp"
+#include "ecole/scip/model.hpp"
 
 #include "core.hpp"
 

@@ -6,9 +6,13 @@
 
 #include "ecole/environment/dynamics.hpp"
 #include "ecole/reward/abstract.hpp"
-#include "ecole/scip/model.hpp"
 
 namespace ecole {
+
+namespace scip {
+class Model;
+}
+
 namespace environment {
 
 using Seed = typename RandomEngine::result_type;
