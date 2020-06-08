@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <random>
 #include <tuple>
 #include <type_traits>
@@ -36,11 +37,13 @@ public:
 		ObservationFunction obs_func,
 		RewardFunction reward_func,
 		TerminationFunction term_func,
+		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
 		m_term_func(std::move(term_func)),
+		m_scip_params(std::move(scip_params)),
 		random_engine(std::random_device{}()) {}
 
 	/**
@@ -56,6 +59,7 @@ public:
 		try {
 			// Create clean new Model
 			model() = std::move(new_model);
+			model().set_params(scip_params());
 			dynamics().set_dynamics_random_state(model(), random_engine);
 
 			// Bring model to initial state and reset state functions
@@ -121,6 +125,7 @@ public:
 	auto& obs_func() { return m_obs_func; }
 	auto& reward_func() { return m_reward_func; }
 	auto& term_func() { return m_term_func; }
+	auto& scip_params() { return m_scip_params; }
 
 private:
 	Dynamics m_dynamics;
@@ -128,7 +133,7 @@ private:
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
 	TerminationFunction m_term_func;
-
+	std::map<std::string, scip::Param> m_scip_params;
 	RandomEngine random_engine;
 	bool can_transition = false;
 };

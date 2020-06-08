@@ -15,6 +15,17 @@
 
 using namespace ecole;
 
+TEST_CASE("Environment creation", "[env]") {
+	auto constexpr name = "concurrent/paramsetprefix";
+	auto const value = std::string("testname");
+	ecole::environment::
+		Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
+			env{{}, {}, {}, {{name, value}}};
+
+	env.reset(problem_file);
+	REQUIRE(env.model().get_param<std::string>(name) == std::string(value));
+}
+
 TEST_CASE("Branching environment", "[env]") {
 	environment::
 		Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
