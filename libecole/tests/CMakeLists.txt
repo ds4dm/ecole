@@ -8,6 +8,7 @@ add_executable(
 	src/scip/test-model.cpp
 	src/scip/test-variable.cpp
 	src/scip/test-view.cpp
+	src/environment/test-environment.cpp
 	src/environment/test-branching.cpp
 	src/environment/test-configuring.cpp
 	src/reward/test-lpiterations.cpp

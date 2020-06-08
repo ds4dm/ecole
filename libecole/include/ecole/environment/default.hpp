@@ -34,9 +34,9 @@ public:
 	 */
 	template <typename... Args>
 	EnvironmentComposer(
-		ObservationFunction obs_func,
-		RewardFunction reward_func,
-		TerminationFunction term_func,
+		ObservationFunction obs_func = {},
+		RewardFunction reward_func = {},
+		TerminationFunction term_func = {},
 		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		m_dynamics(std::forward<Args>(args)...),

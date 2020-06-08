@@ -15,16 +15,6 @@
 
 using namespace ecole;
 
-TEST_CASE("Environment creation", "[env]") {
-	auto constexpr name = "concurrent/paramsetprefix";
-	auto const value = std::string("testname");
-	ecole::environment::Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
-		env{{}, {}, {}, {{name, value}}};
-
-	env.reset(problem_file);
-	REQUIRE(env.model().get_param<std::string>(name) == std::string(value));
-}
-
 TEST_CASE("Branching environment", "[env]") {
 	environment::Branching<observation::NodeBipartite, reward::IsDone, termination::Constant> env{
 		{}, {}, {}};
@@ -39,24 +29,6 @@ TEST_CASE("Branching environment", "[env]") {
 		decltype(env)::ActionSet action_set;
 		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
 		env.step(policy(action_set));
-	}
-
-	SECTION("seed consistency") {
-		env.seed(93);
-		env.reset(problem_file);
-		auto seed1 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
-		env.seed(93);
-		env.reset(problem_file);
-		auto seed2 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
-		REQUIRE(seed1 == seed2);
-	}
-
-	SECTION("seed permutation") {
-		env.reset(problem_file);
-		auto seed1 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
-		env.reset(problem_file);
-		auto seed2 = env.model().get_param<scip::Seed>("randomization/randomseedshift");
-		REQUIRE(seed1 != seed2);
 	}
 
 	SECTION("run full trajectory") {
