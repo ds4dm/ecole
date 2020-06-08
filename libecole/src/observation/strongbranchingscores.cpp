@@ -1,9 +1,6 @@
 #include <cmath>
 #include <cstddef>
 
-#include "ecole/observation/strongbranchingscores.hpp"
-#include "ecole/scip/type.hpp"
-
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 #include <scip/struct_branch.h>
@@ -11,6 +8,9 @@
 #include <scip/struct_scip.h>
 #include <scip/struct_var.h>
 #include <scip/utils.hpp>
+
+#include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace observation {
@@ -23,7 +23,7 @@ StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates) {
 	pseudo_cands = pseudo_candidates;
 }
 
-auto StrongBranchingScores::obtain_observation(environment::State const& state)
+auto StrongBranchingScores::obtain_observation(environment::State& state)
 	-> nonstd::optional<StrongBranchingScoresObs> {
 
 	if (state.model.get_stage() == SCIP_STAGE_SOLVING) {
@@ -64,7 +64,6 @@ auto StrongBranchingScores::obtain_observation(environment::State const& state)
 		scip::call(SCIPsetBoolParam, scip, "branching/vanillafullstrong/scoreall", true);
 		scip::call(SCIPsetBoolParam, scip, "branching/vanillafullstrong/collectscores", true);
 		scip::call(SCIPsetBoolParam, scip, "branching/vanillafullstrong/donotbranch", true);
-		scip::call(SCIPsetBoolParam, scip, "branching/vanillafullstrong/idempotent", true);
 
 		/* execute vanilla full strong branching */
 		SCIP_BRANCHRULE* branchrule = SCIPfindBranchrule(scip, "vanillafullstrong");

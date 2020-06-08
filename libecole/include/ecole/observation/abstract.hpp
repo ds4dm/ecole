@@ -29,12 +29,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(scip::Model const& /* model */) {}
+	virtual void reset(scip::Model& /* model */) {}
 
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual Observation obtain_observation(scip::Model const& model) = 0;
+	virtual Observation obtain_observation(scip::Model& model) = 0;
 };
 
 }  // namespace observation

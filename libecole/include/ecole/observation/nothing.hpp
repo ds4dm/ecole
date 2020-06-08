@@ -13,7 +13,7 @@ class Nothing : public ObservationFunction<NoneType> {
 public:
 	using Base = ObservationFunction<NoneType>;
 
-	NoneType obtain_observation(scip::Model const& /* model */) override { return None; }
+	NoneType obtain_observation(scip::Model& /* model */) override { return None; }
 };
 
 }  // namespace observation

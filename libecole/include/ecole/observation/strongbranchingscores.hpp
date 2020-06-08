@@ -20,11 +20,9 @@ public:
 class StrongBranchingScores : public ObservationFunction<nonstd::optional<StrongBranchingScoresObs>> {
 public:
 	bool pseudo_cands;
-	using Observation = nonstd::optional<StrongBranchingScoresObs>;
-	using Base = ObservationFunction<Observation>;
 
 	nonstd::optional<StrongBranchingScoresObs>
-	obtain_observation(environment::State const& state) override;
+	obtain_observation(environment::State& state) override;
 	StrongBranchingScores();
 	StrongBranchingScores(bool pseudo_candidates);
 };
