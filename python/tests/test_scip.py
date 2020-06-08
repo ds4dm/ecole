@@ -115,10 +115,7 @@ def test_get_params(model):
 
 def test_set_params(model):
     # Some values to test
-    params = {
-        name: "v" if param_type is str else param_type(1)
-        for name, param_type in names_types
-    }
+    params = {name: "v" if param_type is str else param_type(1) for name, param_type in names_types}
     model.set_params(params)
 
     for name, _ in names_types:

@@ -24,9 +24,7 @@ class EnvironmentComposer:
         scip_params=None,
         **dynamics_kwargs
     ) -> None:
-        self.observation_function = self.__parse_observation_function(
-            observation_function
-        )
+        self.observation_function = self.__parse_observation_function(observation_function)
 
         #  Set reward function
         if reward_function == "default":

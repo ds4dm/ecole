@@ -15,10 +15,7 @@ class TupleFunction:
 
     def obtain_observation(self, model):
         """Return observation from all functions as a tuple."""
-        return tuple(
-            obs_func.obtain_observation(model)
-            for obs_func in self.observation_functions
-        )
+        return tuple(obs_func.obtain_observation(model) for obs_func in self.observation_functions)
 
 
 class DictFunction:

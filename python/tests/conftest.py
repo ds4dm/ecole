@@ -14,9 +14,7 @@ DATA_DIR = TEST_SOURCE_DIR / "../../libecole/tests/data"
 
 def pytest_addoption(parser):
     """Add no-slow command line argument to pytest."""
-    parser.addoption(
-        "--no-slow", action="store_true", default=False, help="do not run slow tests"
-    )
+    parser.addoption("--no-slow", action="store_true", default=False, help="do not run slow tests")
 
 
 def pytest_configure(config):

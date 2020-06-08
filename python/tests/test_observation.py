@@ -57,10 +57,7 @@ def test_NodeBipartite(solving_model):
     assert len(obs.column_features.shape) == 2
     assert obs.row_features.size > 0
     assert len(obs.row_features.shape) == 2
-    assert obs.edge_features.shape == (
-        obs.row_features.shape[0],
-        obs.column_features.shape[0],
-    )
+    assert obs.edge_features.shape == (obs.row_features.shape[0], obs.column_features.shape[0],)
     assert obs.edge_features.indices.shape == (2, obs.edge_features.nnz)
 
     val = np.random.rand()
