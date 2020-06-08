@@ -18,18 +18,16 @@ using namespace ecole;
 TEST_CASE("Environment creation", "[env]") {
 	auto constexpr name = "concurrent/paramsetprefix";
 	auto const value = std::string("testname");
-	ecole::environment::
-		Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
-			env{{}, {}, {}, {{name, value}}};
+	ecole::environment::Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
+		env{{}, {}, {}, {{name, value}}};
 
 	env.reset(problem_file);
 	REQUIRE(env.model().get_param<std::string>(name) == std::string(value));
 }
 
 TEST_CASE("Branching environment", "[env]") {
-	environment::
-		Branching<observation::NodeBipartite, reward::IsDone, termination::Constant>
-			env{{}, {}, {}};
+	environment::Branching<observation::NodeBipartite, reward::IsDone, termination::Constant> env{
+		{}, {}, {}};
 	auto policy = [](auto const& action_set_) { return action_set_.value()[0]; };
 
 	SECTION("reset, reset, and delete") {
@@ -75,8 +73,7 @@ TEST_CASE("Branching environment", "[env]") {
 			REQUIRE(obs.has_value() != done);
 
 			while (!done) {
-				std::tie(obs, action_set, reward, done, std::ignore) =
-					env.step(policy(action_set));
+				std::tie(obs, action_set, reward, done, std::ignore) = env.step(policy(action_set));
 				++count;
 
 				// Assert that the observation is none only on terminal states

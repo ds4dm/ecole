@@ -13,12 +13,9 @@
 using namespace ecole;
 
 TEST_CASE("Configuring environment", "[env]") {
-	auto env =
-		environment::Configuring<observation::Nothing, reward::IsDone, termination::Constant>(
-			{}, {}, {});
-	auto policy = [](auto const&) {
-		return decltype(env)::Action{{"branching/scorefunc", 's'}};
-	};
+	auto env = environment::Configuring<observation::Nothing, reward::IsDone, termination::Constant>(
+		{}, {}, {});
+	auto policy = [](auto const&) { return decltype(env)::Action{{"branching/scorefunc", 's'}}; };
 
 	SECTION("reset, reset, and delete") {
 		env.reset(problem_file);

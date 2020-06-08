@@ -31,10 +31,8 @@ public:
 	/**
 	 * Set random elements of the dynamics for the current episode.
 	 */
-	virtual void
-	set_dynamics_random_state(scip::Model& model, RandomEngine& random_engine) {
-		std::uniform_int_distribution<scip::Seed> seed_distrib{
-			scip::min_seed, scip::max_seed};
+	virtual void set_dynamics_random_state(scip::Model& model, RandomEngine& random_engine) {
+		std::uniform_int_distribution<scip::Seed> seed_distrib{scip::min_seed, scip::max_seed};
 
 		model.set_param("randomization/permuteconss", true);
 		model.set_param("randomization/permutevars", true);
@@ -55,8 +53,7 @@ public:
 	 *
 	 * This method called by the environment on @ref Environment::step.
 	 */
-	virtual std::tuple<bool, ActionSet>
-	step_dynamics(scip::Model& model, Action const& action) = 0;
+	virtual std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, Action const& action) = 0;
 };
 
 }  // namespace environment

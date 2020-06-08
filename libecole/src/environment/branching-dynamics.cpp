@@ -20,8 +20,7 @@ BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept :
 static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
 	SCIP_VAR** cands = nullptr;
 	int n_cands = 0;
-	scip::call(
-		SCIPgetLPBranchCands, scip, &cands, nullptr, nullptr, &n_cands, nullptr, nullptr);
+	scip::call(SCIPgetLPBranchCands, scip, &cands, nullptr, nullptr, &n_cands, nullptr, nullptr);
 	assert(n_cands >= 0);
 	return {cands, static_cast<std::size_t>(n_cands)};
 }
@@ -52,8 +51,7 @@ action_set(scip::Model const& model, bool pseudo) {
 	return branch_cols;
 }
 
-auto BranchingDynamics::reset_dynamics(scip::Model& model)
-	-> std::tuple<bool, ActionSet> {
+auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
 	model.solve_iter();
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }

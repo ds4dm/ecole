@@ -45,8 +45,7 @@ struct function_traits<R (C::*)(Args...)> : public function_traits<R(C&, Args...
  * Specialization for const member function pointer.
  */
 template <typename C, typename R, typename... Args>
-struct function_traits<R (C::*)(Args...) const> :
-	public function_traits<R(C&, Args...)> {};
+struct function_traits<R (C::*)(Args...) const> : public function_traits<R(C&, Args...)> {};
 
 /**
  * Specialization for member object pointers.

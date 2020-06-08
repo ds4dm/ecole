@@ -81,8 +81,7 @@ public:
 	 *
 	 * @see get_param, set_param to convert automatically.
 	 */
-	template <ParamType T>
-	void set_param_explicit(std::string const& name, param_t<T> value);
+	template <ParamType T> void set_param_explicit(std::string const& name, param_t<T> value);
 	template <ParamType T> param_t<T> get_param_explicit(std::string const& name) const;
 
 	/**
@@ -142,8 +141,7 @@ struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> 
 
 // Visit From variants.
 // Cannot static_cast a variant into one of its held value. Other way around works though.
-template <typename To, typename... VariantFrom>
-struct Caster<To, nonstd::variant<VariantFrom...>> {
+template <typename To, typename... VariantFrom> struct Caster<To, nonstd::variant<VariantFrom...>> {
 	static To cast(nonstd::variant<VariantFrom...> variant_val) {
 		return nonstd::visit(
 			[](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);

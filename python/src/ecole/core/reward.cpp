@@ -84,8 +84,7 @@ void bind_submodule(py::module m) {
 	isdone.def(py::init<>());
 	def_operators(isdone);
 	def_reset(isdone, "Do nothing.");
-	def_obtain_reward(
-		isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
+	def_obtain_reward(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
 		LP Iteration difference.
@@ -141,10 +140,8 @@ py::str Arithmetic::toString() const {
  *  Definition of helper functions  *
  ************************************/
 
-template <typename PyClass, typename... Args>
-void def_reset(PyClass pyclass, Args&&... args) {
-	pyclass.def(
-		"reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
+template <typename PyClass, typename... Args> void def_reset(PyClass pyclass, Args&&... args) {
+	pyclass.def("reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
 }
 
 template <typename PyClass, typename... Args>
@@ -193,9 +190,7 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 		.def("__rtruediv__", arith_meth(py::eval("lambda x, y: y / x"), "({1} / {0})"))
 		.def("__rfloordiv__", arith_meth(py::eval("lambda x, y: y // x"), "({1} // {0})"))
 		.def("__rmod__", arith_meth(py::eval("lambda x, y: y % x"), "({1} % {0})"))
-		.def(
-			"__rdivmod__",
-			arith_meth(py::eval("lambda x, y: divmod(y, x)"), "divmod({1}, {0})"))
+		.def("__rdivmod__", arith_meth(py::eval("lambda x, y: divmod(y, x)"), "divmod({1}, {0})"))
 		.def("__rpow__", arith_meth(py::eval("lambda x, y: y ** x"), "({1} ** {0})"))
 		.def("__rlshift__", arith_meth(py::eval("lambda x, y: y << x"), "({1} << {0})"))
 		.def("__rrshift__", arith_meth(py::eval("lambda x, y: y >> x"), "({1} >> {0})"))

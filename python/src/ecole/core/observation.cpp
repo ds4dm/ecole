@@ -20,8 +20,7 @@ namespace py = pybind11;
 /**
  * Helper function to bind the `reset` method of observation functions.
  */
-template <typename PyClass, typename... Args>
-auto def_reset(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> auto def_reset(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
 		"reset",
 		&PyClass::type::reset,
@@ -117,8 +116,7 @@ void bind_submodule(py::module m) {
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
 	)");
 	node_bipartite.def(py::init<>());
-	def_reset(
-		node_bipartite, "Cache some feature not expected to change during an episode.");
+	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 }
 

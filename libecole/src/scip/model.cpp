@@ -83,37 +83,28 @@ ParamType Model::get_param_type(std::string const& name) const {
 		}
 }
 
-template <>
-void Model::set_param_explicit<ParamType::Bool>(std::string const& name, bool value) {
+template <> void Model::set_param_explicit<ParamType::Bool>(std::string const& name, bool value) {
 	scip::call(SCIPsetBoolParam, get_scip_ptr(), name.c_str(), value);
 }
-template <>
-void Model::set_param_explicit<ParamType::Int>(std::string const& name, int value) {
+template <> void Model::set_param_explicit<ParamType::Int>(std::string const& name, int value) {
 	scip::call(SCIPsetIntParam, get_scip_ptr(), name.c_str(), value);
 }
 template <>
-void Model::set_param_explicit<ParamType::LongInt>(
-	std::string const& name,
-	long_int value) {
+void Model::set_param_explicit<ParamType::LongInt>(std::string const& name, long_int value) {
 	scip::call(SCIPsetLongintParam, get_scip_ptr(), name.c_str(), value);
 }
-template <>
-void Model::set_param_explicit<ParamType::Real>(std::string const& name, real value) {
+template <> void Model::set_param_explicit<ParamType::Real>(std::string const& name, real value) {
 	scip::call(SCIPsetRealParam, get_scip_ptr(), name.c_str(), value);
 }
-template <>
-void Model::set_param_explicit<ParamType::Char>(std::string const& name, char value) {
+template <> void Model::set_param_explicit<ParamType::Char>(std::string const& name, char value) {
 	scip::call(SCIPsetCharParam, get_scip_ptr(), name.c_str(), value);
 }
 template <>
-void Model::set_param_explicit<ParamType::String>(
-	std::string const& name,
-	std::string value) {
+void Model::set_param_explicit<ParamType::String>(std::string const& name, std::string value) {
 	scip::call(SCIPsetStringParam, get_scip_ptr(), name.c_str(), value.c_str());
 }
 
-template <>
-bool Model::get_param_explicit<ParamType::Bool>(std::string const& name) const {
+template <> bool Model::get_param_explicit<ParamType::Bool>(std::string const& name) const {
 	SCIP_Bool value{};
 	scip::call(SCIPgetBoolParam, get_scip_ptr(), name.c_str(), &value);
 	return value;
@@ -123,20 +114,17 @@ template <> int Model::get_param_explicit<ParamType::Int>(std::string const& nam
 	scip::call(SCIPgetIntParam, get_scip_ptr(), name.c_str(), &value);
 	return value;
 }
-template <>
-long_int Model::get_param_explicit<ParamType::LongInt>(std::string const& name) const {
+template <> long_int Model::get_param_explicit<ParamType::LongInt>(std::string const& name) const {
 	SCIP_Longint value{};
 	scip::call(SCIPgetLongintParam, get_scip_ptr(), name.c_str(), &value);
 	return value;
 }
-template <>
-real Model::get_param_explicit<ParamType::Real>(std::string const& name) const {
+template <> real Model::get_param_explicit<ParamType::Real>(std::string const& name) const {
 	SCIP_Real value{};
 	scip::call(SCIPgetRealParam, get_scip_ptr(), name.c_str(), &value);
 	return value;
 }
-template <>
-char Model::get_param_explicit<ParamType::Char>(std::string const& name) const {
+template <> char Model::get_param_explicit<ParamType::Char>(std::string const& name) const {
 	char value{};
 	scip::call(SCIPgetCharParam, get_scip_ptr(), name.c_str(), &value);
 	return value;
@@ -208,14 +196,7 @@ VarView Model::lp_branch_cands() const noexcept {
 	int n_vars{};
 	SCIP_VAR** vars{};
 	scip::call(
-		SCIPgetLPBranchCands,
-		get_scip_ptr(),
-		&vars,
-		nullptr,
-		nullptr,
-		&n_vars,
-		nullptr,
-		nullptr);
+		SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
 	return VarView(get_scip_ptr(), vars, static_cast<std::size_t>(n_vars));
 }
 

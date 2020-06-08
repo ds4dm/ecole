@@ -47,14 +47,10 @@ void bind_submodule(pybind11::module m) {
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(
 			"min_seed",
-			[](py::object /* cls */) {
-				return std::numeric_limits<RandomEngine::result_type>::min();
-			})
+			[](py::object /* cls */) { return std::numeric_limits<RandomEngine::result_type>::min(); })
 		.def_property_readonly_static(
 			"max_seed",
-			[](py::object /* cls */) {
-				return std::numeric_limits<RandomEngine::result_type>::max();
-			})
+			[](py::object /* cls */) { return std::numeric_limits<RandomEngine::result_type>::max(); })
 		.def(
 			py::init<RandomEngine::result_type>(),
 			py::arg("value") = RandomEngine::default_seed,

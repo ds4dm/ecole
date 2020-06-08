@@ -80,8 +80,7 @@ public:
 	 * @pre The envrionment must not be on a terminal state, or have thrown an exception.
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
-	virtual std::tuple<Observation, ActionSet, Reward, bool, Info>
-	step(Action const& action) = 0;
+	virtual std::tuple<Observation, ActionSet, Reward, bool, Info> step(Action const& action) = 0;
 };
 
 }  // namespace environment

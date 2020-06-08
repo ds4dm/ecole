@@ -13,11 +13,8 @@ template <
 	typename ObservationFunction = observation::NodeBipartite,
 	typename RewardFunction = reward::IsDone,
 	typename TerminationFunction = termination::Constant>
-using Branching = EnvironmentComposer<
-	BranchingDynamics,
-	ObservationFunction,
-	RewardFunction,
-	TerminationFunction>;
+using Branching =
+	EnvironmentComposer<BranchingDynamics, ObservationFunction, RewardFunction, TerminationFunction>;
 
 }  // namespace environment
 }  // namespace ecole

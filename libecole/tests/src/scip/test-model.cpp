@@ -55,9 +55,7 @@ TEST_CASE("Get and set parameters") {
 	auto model = scip::Model{};
 	auto constexpr int_param = "conflict/minmaxvars";
 
-	SECTION("Get parameters explicitly") {
-		model.get_param_explicit<ParamType::Int>(int_param);
-	}
+	SECTION("Get parameters explicitly") { model.get_param_explicit<ParamType::Int>(int_param); }
 
 	SECTION("Set parameters explicitly") {
 		model.set_param_explicit<ParamType::Int>(int_param, false);
@@ -65,10 +63,8 @@ TEST_CASE("Get and set parameters") {
 
 	SECTION("Throw on wrong parameters type") {
 		auto guard = ScipNoErrorGuard{};
-		REQUIRE_THROWS_AS(
-			model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
-		REQUIRE_THROWS_AS(
-			model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
+		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
 	}
 
 	SECTION("Get parameters with automatic casting") { model.get_param<double>(int_param); }

@@ -25,11 +25,9 @@ public:
 
 	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor>);
 
-	auto scip_execlp(
-		SCIP* scip,
-		SCIP_BRANCHRULE* branchrule,
-		SCIP_Bool allowaddcons,
-		SCIP_RESULT* result) -> SCIP_RETCODE;
+	auto
+	scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
+		-> SCIP_RETCODE;
 
 private:
 	std::weak_ptr<utility::Controller::Executor> weak_executor;
@@ -144,11 +142,8 @@ scip::ReverseBranchrule::ReverseBranchrule(
 		no_maxbounddist),
 	weak_executor(weak_executor_) {}
 
-auto ReverseBranchrule::scip_execlp(
-	SCIP* scip,
-	SCIP_BRANCHRULE*,
-	SCIP_Bool,
-	SCIP_RESULT* result) -> SCIP_RETCODE {
+auto ReverseBranchrule::scip_execlp(SCIP* scip, SCIP_BRANCHRULE*, SCIP_Bool, SCIP_RESULT* result)
+	-> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;

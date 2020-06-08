@@ -13,8 +13,8 @@
 using namespace ecole;
 
 TEST_CASE("Using the reward in a Configuring environment") {
-	auto env = environment::
-		Configuring<observation::Nothing, reward::LpIterations, termination::Constant>(
+	auto env =
+		environment::Configuring<observation::Nothing, reward::LpIterations, termination::Constant>(
 			{}, {}, {});
 
 	for (auto i = 0; i < 2; ++i) {
