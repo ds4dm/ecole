@@ -12,8 +12,9 @@ When the episode is finished, *i.e* when the combinatorial optimization algorith
 terminates, a new one can be started with another call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
 
-For instance, using the :py:class:`~ecole.environment.Branching` environment for branch-and-bound variable selection,
-always selecting the first fractional variable would look like:
+For instance, using the :py:class:`~ecole.environment.Branching` environment for
+branch-and-bound variable selection, always selecting the first fractional variable would
+look like:
 
 .. TODO verify proper link of branching
 
@@ -60,7 +61,7 @@ This is because an there is no practical interest in solving again an instance a
 solved.
 One wants to find a policy able to genralize to new, unseen, instances.
 
-.. TODO add ref to theoretical setction
+.. TODO add ref to theoretical section
 
 
 Environment parameters
@@ -73,6 +74,32 @@ solved.
 For instance, the :py:class:`~ecole.environment.Branching` takes a ``pseudo_candidates``
 boolean parameter to decide whether branching candidates are chosen among all non fixed
 inegral variables rather than being limited to fractional ones.
+
+The constructor can optionally take a dictionnary of default
+`SCIP parameters <https://scip.zib.de/doc/html/PARAMETERS.php>`_ that will be used to
+initialize the solver at every episode.
+For instance, to customize the clique inequalities generated, one could set:
+
+.. code-block:: python
+
+   env = ecole.environment.Branching(
+       scip_params={"separating/clique/freq": 0.5, "separating/clique/maxsepacuts": 5}
+   )
+
+
+.. warning::
+
+   Depending on the nature of the environment, some user given parameters can be overriden
+   or ignored (*e.g.* branching parameters in the :py:class:`~ecole.environment.Branching`
+   environment).
+   It is the responsability of the user to understand the envrionment they are using.
+
+.. note::
+
+   For out-out-the-box strategies on presolving, heurisitcs, and cutting planes, consider
+   using the dedicated
+   `SCIP methods <https://scip.zib.de/doc/html/group__ParameterMethods.php>`_
+   (``SCIPsetHeuristics`` *etc.*).
 
 :ref:`Observation functions <use-observation-functions>` and
 :ref:`reward functions <use-observation-functions>` are more advanced environment
