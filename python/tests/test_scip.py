@@ -93,7 +93,7 @@ names_types = (
 
 @pytest.mark.parametrize("name,param_type", names_types)
 def test_get_param(model, name, param_type):
-    assert type(model.get_param(name)) == param_type
+    assert isinstance(model.get_param(name), param_type)
 
 
 @pytest.mark.parametrize("name,param_type", names_types)
@@ -104,3 +104,22 @@ def test_set_param(model, name, param_type):
         value = param_type(1)  # Cast one to the required type
     model.set_param(name, value)
     assert model.get_param(name) == value
+
+
+def test_get_params(model):
+    params = model.get_params()
+    assert len(params) > 0
+    for name, param_type in names_types:
+        assert isinstance(params[name], param_type)
+
+
+def test_set_params(model):
+    # Some values to test
+    params = {
+        name: "v" if param_type is str else param_type(1)
+        for name, param_type in names_types
+    }
+    model.set_params(params)
+
+    for name, _ in names_types:
+        assert model.get_param(name) == params[name]
