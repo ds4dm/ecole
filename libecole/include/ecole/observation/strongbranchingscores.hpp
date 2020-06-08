@@ -12,16 +12,12 @@
 namespace ecole {
 namespace observation {
 
-class StrongBranchingScoresObs {
-public:
-	xt::xtensor<double, 1> strong_branching_scores;
-};
-
-class StrongBranchingScores : public ObservationFunction<nonstd::optional<StrongBranchingScoresObs>> {
+class StrongBranchingScores :
+	public ObservationFunction<nonstd::optional<xt::xtensor<double, 1>>> {
 public:
 	bool pseudo_cands;
 
-	nonstd::optional<StrongBranchingScoresObs>
+	nonstd::optional<xt::xtensor<double, 1>>
 	obtain_observation(environment::State& state) override;
 	StrongBranchingScores();
 	StrongBranchingScores(bool pseudo_candidates);
