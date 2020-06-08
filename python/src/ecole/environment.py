@@ -21,6 +21,7 @@ class EnvironmentComposer:
         observation_function="default",
         reward_function="default",
         termination_function="default",
+        scip_params=None,
         **dynamics_kwargs
     ) -> None:
         self.observation_function = self.__parse_observation_function(
@@ -42,6 +43,8 @@ class EnvironmentComposer:
             self.termination_function = ecole.termination.Constant(False)
         else:
             self.termination_function = termination_function
+
+        self.scip_params = scip_params if scip_params is not None else {}
 
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
@@ -102,6 +105,7 @@ class EnvironmentComposer:
                 self.model = instance
             else:
                 self.model = core.scip.Model.from_file(instance)
+            self.model.set_params(self.scip_params)
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 

@@ -3,8 +3,13 @@ import unittest.mock as mock
 import ecole
 
 
+class MockDynamics(mock.MagicMock):
+    def reset_dynamics(self, *args, **kwargs):
+        return mock.MagicMock(), mock.MagicMock()
+
+
 class MockEnvironment(ecole.environment.EnvironmentComposer):
-    __Dynamics__ = mock.MagicMock
+    __Dynamics__ = MockDynamics
 
 
 def test_observation_function_none(model):
@@ -44,3 +49,10 @@ def test_seed():
     env = MockEnvironment()
     env.seed(33)
     assert env.random_engine == ecole.environment.RandomEngine(33)
+
+
+def test_scip_params(model):
+    """Reset sets parameters on the model."""
+    env = MockEnvironment(scip_params={"concurrent/paramsetprefix": "testname"})
+    env.reset(model)
+    assert model.get_param("concurrent/paramsetprefix") == "testname"
