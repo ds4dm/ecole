@@ -23,7 +23,7 @@ public:
 	using Observation = nonstd::optional<NodeBipartiteObs>;
 	using Base = ObservationFunction<Observation>;
 
-	nonstd::optional<NodeBipartiteObs> obtain_observation(scip::Model const& model) override;
+	nonstd::optional<NodeBipartiteObs> obtain_observation(scip::Model& model) override;
 };
 
 }  // namespace observation
