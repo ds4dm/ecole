@@ -140,6 +140,9 @@ void bind_submodule(py::module m) {
 		This observation function extracts an array containing the strong branching score for 
 		each variable in the problem which can be indexed by the action set.  Variables for which 
 		a strong branching score is not applicable are filled with NaN.
+	)");
+	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true, R"(
+		Constructor for StrongBranchingScores.
 
 		Parameters
 		----------
@@ -148,7 +151,6 @@ void bind_submodule(py::module m) {
 		    psuedo-candidate variables if true or LP canidate variables if false.
 		    By default psuedo-candidates will be computed. 
 	)");
-	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true);
 	def_reset(
 		strong_branching_scores,
 		"Cache some feature not expected to change during an episode.");

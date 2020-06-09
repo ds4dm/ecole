@@ -71,8 +71,6 @@ def test_NodeBipartite(solving_model):
 
 def test_StrongBranchingScores(solving_state):
     obs = O.StrongBranchingScores().obtain_observation(solving_state)
-    assert isinstance(obs, O.StrongBranchingScoresObs)
-    assert isinstance(obs.scores, np.ndarray)
-
-    assert obs.scores.size > 0
-    assert len(obs.scores.shape) == 1
+    assert isinstance(obs, np.ndarray)
+    assert obs.size > 0
+    assert len(obs.shape) == 1
