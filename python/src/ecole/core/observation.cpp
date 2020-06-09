@@ -63,7 +63,7 @@ void bind_submodule(py::module m) {
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(
 		Sparse matrix in the coordinate format.
-		
+
 		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
 	)")
 		.def_property_readonly(

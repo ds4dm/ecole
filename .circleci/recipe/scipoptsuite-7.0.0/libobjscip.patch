@@ -13,15 +13,15 @@ index e0c59f3..5542a0b 100644
 +++ b/scip/src/CMakeLists.txt
 @@ -933,6 +933,7 @@ if(CXXONLY)
  endif()
- 
+
  add_library(libobjscip EXCLUDE_FROM_ALL ${objscipsources})
 +target_link_libraries(libobjscip PUBLIC libscip)
  setLibProperties(libobjscip "objscip")
- 
+
  add_library(libnlpi EXCLUDE_FROM_ALL
 @@ -1027,14 +1028,14 @@ install(FILES ${symheaders} DESTINATION include/symmetry)
  install(FILES ${blockmemshellheader} DESTINATION include/blockmemshell)
- 
+
  # install the binary and the library to appropriate lcoations and add them to an export group
 -install(TARGETS scip libscip EXPORT scip-targets
 +install(TARGETS scip libscip libobjscip EXPORT scip-targets
@@ -29,13 +29,12 @@ index e0c59f3..5542a0b 100644
          ARCHIVE DESTINATION lib
          RUNTIME DESTINATION bin
          INCLUDES DESTINATION include)
- 
+
  # Add all targets to the build-tree export set
 -export(TARGETS scip libscip
 +export(TARGETS scip libscip libobjscip
    FILE "${CMAKE_BINARY_DIR}/scip-targets.cmake")
- 
- #make soplex and zimpl dir absolute for the config file
--- 
-2.26.2
 
+ #make soplex and zimpl dir absolute for the config file
+--
+2.26.2

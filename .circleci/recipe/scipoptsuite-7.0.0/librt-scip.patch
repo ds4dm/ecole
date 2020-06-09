@@ -14,7 +14,7 @@ index c3bec60..e0c59f3 100644
 @@ -982,6 +982,12 @@ else()
      target_link_libraries(scip libscip)
  endif()
- 
+
 +# Add missing link flag required for some GLIBC. Silently ignored on Windows.
 +find_library(LIBRT rt)
 +if(LIBRT)
@@ -24,6 +24,5 @@ index c3bec60..e0c59f3 100644
  include(GenerateExportHeader)
  generate_export_header(libscip BASE_NAME scip EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/scip/scip_export.h)
  target_compile_definitions(scip PRIVATE SCIP_STATIC_DEFINE)
--- 
+--
 2.26.2
-
