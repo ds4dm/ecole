@@ -21,9 +21,6 @@ include(cmake/Sanitizers.cmake)
 # Activate the Conan CMake wrapper (download if necessary).
 include(cmake/Conan.cmake)
 
-# Enable tools for checking the code at compile time.
-include(cmake/StaticAnalysis.cmake)
-
 # Find Python and create virtual environment for Ecole
 include(cmake/Python.cmake)
 

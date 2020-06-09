@@ -33,8 +33,6 @@ macro(set_developer_defaults)
 	# Generate compile_commands.json to make it easier to work with clang based tools
 	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-	option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
-
 	# Enable compiler cache if found
 	find_program(CCACHE ccache)
 	if(CCACHE)
