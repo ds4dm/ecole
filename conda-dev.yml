@@ -9,6 +9,8 @@ dependencies:
   # Conda build tools
   - conda-build
   - conda-verify
+  # General dev tools
+  - pre-commit
   # C++ dev tools
   - make
   - cmake>=3.15
