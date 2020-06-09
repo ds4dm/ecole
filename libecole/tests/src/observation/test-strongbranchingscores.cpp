@@ -15,10 +15,9 @@
 
 using namespace ecole;
 
-TEST_CASE("StrongBranchEnv") {
-	environment::
-		Branching<observation::StrongBranchingScores, reward::IsDone, termination::Constant>
-			env{{}, {}, {}};
+TEST_CASE("StrongBranching") {
+	environment::Branching<observation::StrongBranchingScores, reward::IsDone, termination::Constant>
+		env{{}, {}, {}};
 
 	SECTION("reset, reset, and delete") {
 		env.reset(problem_file);
@@ -58,12 +57,5 @@ TEST_CASE("StrongBranchEnv") {
 		run_trajectory(problem_file);
 
 		SECTION("Run another trajectory") { run_trajectory(problem_file); }
-	}
-
-	SECTION("manage errors") {
-		auto guard = ScipNoErrorGuard{};
-		env.reset(problem_file);
-		auto const branch_var_too_large = std::numeric_limits<std::size_t>::max();
-		REQUIRE_THROWS_AS(env.step(branch_var_too_large), scip::Exception);
 	}
 }

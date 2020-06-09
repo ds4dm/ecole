@@ -6,8 +6,8 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/observation/nodebipartite.hpp"
-#include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/observation/nothing.hpp"
+#include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse_matrix.hpp"
 
@@ -120,25 +120,16 @@ void bind_submodule(py::module m) {
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
-	auto strong_branching_scores =
-		py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
-		Strong branching score observation function on branch-and bound node.   
+	auto strong_branching_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
+		Strong branching score observation function on branch-and bound node.
 
-		This observation obtains scores for all LP or pseudo candidate variables at a 
-		branch-and-bound node.
-		The strong branching score measures the quality of branching for each variable.
-		This observation can be used as an expert in reinforcement learning algorithms. 
-	)")  //
-		.def_property_readonly(
-			"strong_branching_scores", [](StrongBranchingScoresObs & self) -> auto& { return self.strong_branching_scores; });
-
-		This observation obtains scores for all LP or pseudo candidate variables at a 
-		branch-and-bound node.  The strong branching score measures the quality of branching 
+		This observation obtains scores for all LP or pseudo candidate variables at a
+		branch-and-bound node.  The strong branching score measures the quality of branching
 		for each variable.  This observation can be used as an expert for imitation
-		learning algorithms. 
+		learning algorithms.
 
-		This observation function extracts an array containing the strong branching score for 
-		each variable in the problem which can be indexed by the action set.  Variables for which 
+		This observation function extracts an array containing the strong branching score for
+		each variable in the problem which can be indexed by the action set.  Variables for which
 		a strong branching score is not applicable are filled with NaN.
 	)");
 	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true, R"(
@@ -147,13 +138,12 @@ void bind_submodule(py::module m) {
 		Parameters
 		----------
 		pseudo_candidates : bool
-		    The parameter determines if strong branching scores are computed for 
-		    psuedo-candidate variables if true or LP canidate variables if false.
-		    By default psuedo-candidates will be computed. 
+			The parameter determines if strong branching scores are computed for
+			psuedo-candidate variables if true or LP canidate variables if false.
+			By default psuedo-candidates will be computed.
 	)");
 	def_reset(
-		strong_branching_scores,
-		"Cache some feature not expected to change during an episode.");
+		strong_branching_scores, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(
 		strong_branching_scores, "Extract an array containing strong branching scores.");
 }
