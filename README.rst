@@ -182,49 +182,49 @@ visualize the documentation.
 
 Coding standards
 ^^^^^^^^^^^^^^^^
-The quality and conventions of the code are enforced automatically with various tools
-detailed here.
+The quality and conventions of the code are enforced automatically with various tools, for instance
+to format the layout of the code and fix some C++ error-prone patterns.
 
-C++ toolset
-~~~~~~~~~~~
-Visual layout of the code is formated using
-`clang-format <https://clang.llvm.org/docs/ClangFormat.html>`_.
-All files can be formatted at once using
-
-.. code-block:: bash
-
-   find libecole python -name '*.[hc]pp' -exec clang-format --style=file -i {} \;
-
-Additional coding best practices are enforced through
-`clang-tidy <https://clang.llvm.org/extra/clang-tidy/>`_.
-``clang-tidy`` is run automatically in CMake when using ``-D ECOLE_DEVELOPER=ON`` to
-ensure that the guidelines are respected.
-The tool also has the ability to fix (some) errors automatically, but this is not done
-in CMake (which does not modify the source code).
-To run, the tool needs access to a *compilation database*.
-The database is also created automatically when using ``-D ECOLE_DEVELOPER=ON``, but the
-file need to be accessible at the root directory of the project.
-One can create a symbolic link (assuming the build dircetory is named ``build``) using
+Compilation database
+~~~~~~~~~~~~~~~~~~~~
+Some C++ tools need access to a *compilation database*.
+This is a file called ``compile_commands.json`` that is created automatically by CMake when using
+``-D ECOLE_DEVELOPER=ON``.
+The file needs to be accessible at the root directory of the project, so you should symlink it like
+so (assuming you set CMake to configure in directory named ``build`` as shown before).
 
 .. code-block:: bash
 
    ln -s build/compile_commands.json
 
-Then, ``clang-tidy`` can be run on all files for fixing with
+Pre-commit
+~~~~~~~~~~
+The tools are configured to run with `pre-commit <https://pre-commit.com/>`_, that is they can be
+added to run automatically when making a commit, pushing, or on demand.
+To have the tools run automatically, install the pre-commit hooks using
 
 .. code-block:: bash
 
-   find libecole python -name '*.[hc]pp' -exec clang-tidy --fix --fix-errors {} \;
+   pre-commit install
 
-Both these tools are available in the conda environment.
-They also integrate seamlessly with most editors and IDE to avoid running these
-commands manually.
+The tools are configure to run light tests only on the files that were changed during the commit,
+so they should not run for long.
+Installing the pre-commit hooks to run the tools is recommended.
+Similar tests will be run online and pull requests *will* fail if the tools have not been run.
 
-Python toolset
-~~~~~~~~~~~~~~
-Python code is formatted using `Black <https://black.readthedocs.io>`_.
-``black`` is available in the conda environment, and all files can be formatted using
+With ``pre-commit`` hooks, commits will be rejected by ``git`` if the tests run by the tools fail.
+If the tools can fix the issue for you, you will find the some modifications that you can add to
+your commit.
+
+Sometimes when working locally, it can be useful not to run the tools.
+You can tell ``git`` to ignore the ``pre-commit`` hooks by passing the ``--no-verify`` to any
+``git`` command making commit, including ``commit``, ``merge``, ``rebase``, ``push``...
+But again, there is little interest to push commit for which the tests the tools run fail, as they
+will fail the same online.
+
+Other times you may wish to run the tools on all files unconditionally.
+This can be done using
 
 .. code-block:: bash
 
-   python -m black python/
+   pre-commit run --all-files
