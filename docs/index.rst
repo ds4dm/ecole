@@ -57,13 +57,6 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    using-environments
 
 .. toctree::
-   :caption: Tutorials
-   :hidden:
-
-   Configuring the Solver with Bandits <https://github.com/ds4dm/ecole/tree/master/examples/configuring-bandits.ipynb>
-   Branching with Imitation Learning <https://github.com/ds4dm/ecole/tree/master/examples/branching-imitation.ipynb>
-
-.. toctree::
    :caption: How to
    :hidden:
 
@@ -71,6 +64,13 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    howto/reward-functions.rst
    howto/create-functions.rst
    howto/create-environments.rst
+
+.. toctree::
+   :caption: Tutorials
+   :hidden:
+
+   Configuring the Solver with Bandits <https://github.com/ds4dm/ecole/tree/master/examples/configuring-bandits.ipynb>
+   Branching with Imitation Learning <https://github.com/ds4dm/ecole/tree/master/examples/branching-imitation.ipynb>
 
 .. toctree::
    :caption: Reference
