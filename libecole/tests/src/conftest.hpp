@@ -13,11 +13,3 @@ const auto problem_file = static_cast<std::string>(TEST_DATA_DIR "/bppc8-02.mps"
  * Return a Model that is not trivially solved.
  */
 ecole::scip::Model get_model();
-
-/**
- * A RAII object to desactivate scip errors (when we are testing errors behaviour).
- */
-struct ScipNoErrorGuard {
-	ScipNoErrorGuard();
-	~ScipNoErrorGuard();
-};

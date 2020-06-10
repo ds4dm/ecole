@@ -91,12 +91,10 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	}
 
 	SECTION("Cannot transition without reseting") {
-		auto const guard = ScipNoErrorGuard{};
 		REQUIRE_THROWS_AS(env.step(3.), environment::Exception);
 	}
 
 	SECTION("Cannot transition past termination") {
-		auto const guard = ScipNoErrorGuard{};
 		std::tie(std::ignore, std::ignore, done) = env.reset(problem_file);
 		while (!done) {
 			std::tie(std::ignore, std::ignore, std::ignore, done, std::ignore) = env.step(3.0);

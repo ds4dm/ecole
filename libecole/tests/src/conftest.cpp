@@ -8,10 +8,3 @@ ecole::scip::Model get_model() {
 	model.disable_presolve();
 	return model;
 }
-
-ScipNoErrorGuard::ScipNoErrorGuard() {
-	SCIPmessageSetErrorPrinting(nullptr, nullptr);
-}
-ScipNoErrorGuard::~ScipNoErrorGuard() {
-	SCIPmessageSetErrorPrintingDefault();
-}

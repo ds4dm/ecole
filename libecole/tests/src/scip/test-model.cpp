@@ -28,7 +28,6 @@ TEST_CASE("Create model from file") {
 }
 
 TEST_CASE("Raise if file does not exist") {
-	auto guard = ScipNoErrorGuard{};
 	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
 }
 
@@ -62,7 +61,6 @@ TEST_CASE("Get and set parameters") {
 	}
 
 	SECTION("Throw on wrong parameters type") {
-		auto guard = ScipNoErrorGuard{};
 		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
 		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
 	}

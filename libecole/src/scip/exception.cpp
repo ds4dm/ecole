@@ -1,54 +1,105 @@
+#include <cstddef>
+#include <mutex>
+#include <string>
+#include <utility>
+
+#include <objscip/objmessagehdlr.h>
+
 #include "ecole/scip/exception.hpp"
+
+#include "scip/utils.hpp"
 
 namespace ecole {
 namespace scip {
 
+/***********************************
+ *  Declaration of ErrorCollector  *
+ ***********************************/
+
+/**
+ * SCIP message handler to collect error messages.
+ *
+ * This message handler stores error message rather than printing them to standard error.
+ * The messages can then me collected by the exception maker to craft the messsage of the exception.
+ *
+ * Given that the SCIP error message handler is global, so is this message handler.
+ * It implements the singleton pattern that lazily created and register with SCIP on first access.
+ * However, because it needs to be registered with SCIP before the first exception is thrown,
+ * a function in this file for instanciation when loading the library.
+ * Using the message handler thread safe.
+ */
+class ErrorCollector : public ::scip::ObjMessagehdlr {
+public:
+	static ErrorCollector& get_handler();
+
+	ErrorCollector(ErrorCollector const&) = delete;
+	ErrorCollector(ErrorCollector&&) = delete;
+	ErrorCollector& operator=(ErrorCollector const&) = delete;
+	ErrorCollector& operator=(ErrorCollector&&) = delete;
+
+	virtual void scip_error(SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) override;
+	std::string clear();
+
+private:
+	static constexpr std::size_t buffer_size = 1000;
+	std::mutex mut;
+	std::string errors;
+
+	ErrorCollector();
+};
+
+/*****************************
+ *  Definition of Exception  *
+ *****************************/
+
 Exception Exception::from_retcode(SCIP_RETCODE retcode) {
-	auto message = [retcode]() -> std::string {
+	auto message = ErrorCollector::get_handler().clear();
+	if (message.size() > 0) {
+		return Exception(std::move(message));
+	} else {
 		switch (retcode) {
 		case SCIP_OKAY:
 			throw Exception("Normal termination must not raise exception");
 		case SCIP_ERROR:
-			return "Unspecified error";
+			return Exception("Unspecified error");
 		case SCIP_NOMEMORY:
-			return "Insufficient memory error";
+			return Exception("Insufficient memory error");
 		case SCIP_READERROR:
-			return "File read error";
+			return Exception("File read error");
 		case SCIP_WRITEERROR:
-			return "File write error";
+			return Exception("File write error");
 		case SCIP_BRANCHERROR:
-			return "Branch error";
+			return Exception("Branch error");
 		case SCIP_NOFILE:
-			return "File not found error";
+			return Exception("File not found error");
 		case SCIP_FILECREATEERROR:
-			return "Cannot create file";
+			return Exception("Cannot create file");
 		case SCIP_LPERROR:
-			return "Error in LP solver";
+			return Exception("Error in LP solver");
 		case SCIP_NOPROBLEM:
-			return "No problem exists";
+			return Exception("No problem exists");
 		case SCIP_INVALIDCALL:
-			return "Method cannot be called at this time in solution process";
+			return Exception("Method cannot be called at tException(his time in solution process");
 		case SCIP_INVALIDDATA:
-			return "Method cannot be called with this type of data";
+			return Exception("Method cannot be called with this type of data");
 		case SCIP_INVALIDRESULT:
-			return "Method returned an invalid result code";
+			return Exception("Method returned an invalid result code");
 		case SCIP_PLUGINNOTFOUND:
-			return "A required plugin was not found";
+			return Exception("A required plugin was not found");
 		case SCIP_PARAMETERUNKNOWN:
-			return "The parameter with the given name was not found";
+			return Exception("The parameter with the given name was not found");
 		case SCIP_PARAMETERWRONGTYPE:
-			return "The parameter is not of the expected type";
+			return Exception("The parameter is not of the expected type");
 		case SCIP_PARAMETERWRONGVAL:
-			return "The value is invalid for the given parameter";
+			return Exception("The value is invalid for the given parameter");
 		case SCIP_KEYALREADYEXISTING:
-			return "The given key is already existing in table";
+			return Exception("The given key is already existing in table");
 		case SCIP_MAXDEPTHLEVEL:
-			return "Maximal branching depth level exceeded";
+			return Exception("Maximal branching depth level exceeded");
 		default:
-			return "Invalid return code";
+			return Exception("Invalid return code");
 		}
-	}();
-	return Exception(std::move(message) + " (Scip error " + std::to_string(retcode) + ").");
+	}
 }
 
 Exception::Exception(std::string const& message_) : message(message_) {}
@@ -58,6 +109,44 @@ Exception::Exception(std::string&& message_) : message(std::move(message_)) {}
 const char* Exception::what() const noexcept {
 	return message.c_str();
 }
+
+/**************************************
+ *  Implementation of ErrorCollector  *
+ **************************************/
+
+ErrorCollector& ErrorCollector::get_handler() {
+	// Guaranteed to be destroyed and instantiated on first use.
+	static ErrorCollector handler{};
+	return handler;
+}
+
+void ErrorCollector::scip_error(SCIP_MESSAGEHDLR*, FILE*, const char* message) {
+	std::lock_guard<std::mutex> lk(mut);
+	errors += message;
+}
+
+std::string ErrorCollector::clear() {
+	std::string message{};
+	message.reserve(buffer_size);
+	std::lock_guard<std::mutex> lk(mut);
+	std::swap(message, errors);
+	return message;
+}
+
+ErrorCollector::ErrorCollector() : ObjMessagehdlr(false) {
+	SCIP_MESSAGEHDLR* scip_handler = nullptr;
+	scip::call(SCIPcreateObjMessagehdlr, &scip_handler, this, false);
+	SCIPsetStaticErrorPrintingMessagehdlr(scip_handler);
+	errors.reserve(buffer_size);
+}
+
+/**
+ * A dummy global varaible to force registering the handler with SCIP at laoding time.
+ */
+static auto const force = [] {
+	ErrorCollector::get_handler();
+	return 0;
+}();
 
 }  // namespace scip
 }  // namespace ecole
