@@ -61,7 +61,7 @@ Stage Model::get_stage() const noexcept {
 ParamType Model::get_param_type(std::string const& name) const {
 	auto* scip_param = SCIPgetParam(get_scip_ptr(), name.c_str());
 	if (!scip_param)
-		throw make_exception(SCIP_PARAMETERUNKNOWN);
+		throw scip::Exception::from_retcode(SCIP_PARAMETERUNKNOWN);
 	else
 		switch (SCIPparamGetType(scip_param)) {
 		case SCIP_PARAMTYPE_BOOL:

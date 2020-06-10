@@ -4,7 +4,6 @@ add_library(
 	libecole
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
-	src/scip/utils.cpp
 	src/scip/variable.cpp
 	src/scip/column.cpp
 	src/scip/row.cpp

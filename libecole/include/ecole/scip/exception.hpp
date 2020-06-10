@@ -3,11 +3,15 @@
 #include <exception>
 #include <string>
 
+#include <scip/scip.h>
+
 namespace ecole {
 namespace scip {
 
 class Exception : public std::exception {
 public:
+	static Exception from_retcode(SCIP_RETCODE retcode);
+
 	Exception(std::string const& message);
 	Exception(std::string&& message);
 
