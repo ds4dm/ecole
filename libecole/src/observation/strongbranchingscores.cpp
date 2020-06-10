@@ -1,70 +1,50 @@
 #include <cmath>
 #include <cstddef>
 
-//#include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 #include <scip/struct_branch.h>
-//#include <scip/struct_lp.h>
-//#include <scip/struct_scip.h>
-//#include <scip/struct_var.h>
 #include <scip/utils.hpp>
 
 #include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole {
 namespace observation {
 
-StrongBranchingScores::StrongBranchingScores() {
-	pseudo_cands = true;
-}
-
-StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates) {
-	pseudo_cands = pseudo_candidates;
-}
+StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) :
+	pseudo_candidates(pseudo_candidates_) {}
 
 nonstd::optional<xt::xtensor<double, 1>>
-StrongBranchingScores::obtain_observation(environment::State& state) {
+StrongBranchingScores::obtain_observation(scip::Model& model) {
 
-	if (state.model.get_stage() == SCIP_STAGE_SOLVING) {
+	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 
-		SCIP* scip = state.model.get_scip_ptr();
+		SCIP* scip = model.get_scip_ptr();
 
 		/* store original SCIP parameters */
-		bool integralcands = state.model.get_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/integralcands");
-		bool scoreall = state.model.get_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/scoreall");
-		bool collectscores = state.model.get_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/collectscores");
-		bool donotbranch = state.model.get_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/donotbranch");
-		bool idempotent = state.model.get_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/idempotent");
+		auto const integralcands = model.get_param<bool>("branching/vanillafullstrong/integralcands");
+		auto const scoreall = model.get_param<bool>("branching/vanillafullstrong/scoreall");
+		auto const collectscores = model.get_param<bool>("branching/vanillafullstrong/collectscores");
+		auto const donotbranch = model.get_param<bool>("branching/vanillafullstrong/donotbranch");
+		auto const idempotent = model.get_param<bool>("branching/vanillafullstrong/idempotent");
 
 		/* set parameters for vanilla full strong branching  */
-		if (pseudo_cands) {
-			state.model.set_param_explicit<scip::ParamType::Bool>(
-				"branching/vanillafullstrong/integralcands", true);
+		if (pseudo_candidates) {
+			model.set_param("branching/vanillafullstrong/integralcands", true);
 		} else {
-			state.model.set_param_explicit<scip::ParamType::Bool>(
-				"branching/vanillafullstrong/integralcands", false);
+			model.set_param("branching/vanillafullstrong/integralcands", false);
 		}
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/scoreall", true);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/collectscores", true);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/donotbranch", true);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/idempotent", true);
+		model.set_param("branching/vanillafullstrong/scoreall", true);
+		model.set_param("branching/vanillafullstrong/collectscores", true);
+		model.set_param("branching/vanillafullstrong/donotbranch", true);
+		model.set_param("branching/vanillafullstrong/idempotent", true);
 
 		/* execute vanilla full strong branching */
 		SCIP_BRANCHRULE* branchrule = SCIPfindBranchrule(scip, "vanillafullstrong");
-		SCIP_Bool allowaddcons = FALSE;
 		SCIP_RESULT result;
-
-		scip::call(branchrule->branchexeclp, scip, branchrule, allowaddcons, &result);
+		scip::call(branchrule->branchexeclp, scip, branchrule, false, &result);
+		assert(result == SCIP_DIDNOTRUN);
 
 		/* get vanilla full strong branching scores */
 		SCIP_VAR** cands;
@@ -76,21 +56,15 @@ StrongBranchingScores::obtain_observation(environment::State& state) {
 		assert(ncands >= 0);
 
 		/* restore model parameters */
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/integralcands", integralcands);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/scoreall", scoreall);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/collectscores", collectscores);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/donotbranch", donotbranch);
-		state.model.set_param_explicit<scip::ParamType::Bool>(
-			"branching/vanillafullstrong/idempotent", idempotent);
+		model.set_param("branching/vanillafullstrong/integralcands", integralcands);
+		model.set_param("branching/vanillafullstrong/scoreall", scoreall);
+		model.set_param("branching/vanillafullstrong/collectscores", collectscores);
+		model.set_param("branching/vanillafullstrong/donotbranch", donotbranch);
+		model.set_param("branching/vanillafullstrong/idempotent", idempotent);
 
 		/* Store strong branching scores in tensor */
-		int num_lp_columns = SCIPgetNLPCols(scip);
-		auto strong_branching_scores =
-			xt::xarray<double>::from_shape({static_cast<std::size_t>(num_lp_columns)});
+		auto const num_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
+		auto strong_branching_scores = xt::xarray<double>::from_shape({num_lp_columns});
 		strong_branching_scores.fill(std::nan(""));
 
 		SCIP_COL* col;

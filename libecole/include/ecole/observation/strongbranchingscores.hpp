@@ -6,21 +6,18 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
-#include "ecole/environment/state.hpp"
 #include "ecole/observation/abstract.hpp"
 
 namespace ecole {
 namespace observation {
 
-class StrongBranchingScores :
-	public ObservationFunction<nonstd::optional<xt::xtensor<double, 1>>> {
+class StrongBranchingScores : public ObservationFunction<nonstd::optional<xt::xtensor<double, 1>>> {
 public:
-	bool pseudo_cands;
+	bool pseudo_candidates;
 
-	nonstd::optional<xt::xtensor<double, 1>>
-	obtain_observation(environment::State& state) override;
-	StrongBranchingScores();
-	StrongBranchingScores(bool pseudo_candidates);
+	StrongBranchingScores(bool pseudo_candidates = true);
+
+	nonstd::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& state) override;
 };
 
 }  // namespace observation
