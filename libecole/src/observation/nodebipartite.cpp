@@ -165,8 +165,7 @@ static utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& mode
 	return {values, indices, {n_rows, n_cols}};
 }
 
-auto NodeBipartite::obtain_observation(scip::Model& model)
-	-> nonstd::optional<NodeBipartiteObs> {
+auto NodeBipartite::obtain_observation(scip::Model& model) -> nonstd::optional<NodeBipartiteObs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		return NodeBipartiteObs{
 			extract_col_feat(model), extract_row_feat(model), extract_edge_feat(model)};
