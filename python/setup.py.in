@@ -67,6 +67,7 @@ setup(
     license="BSD-3-Clause",
     packages=find_packages(CURRENT_SRC_DIR / "src"),
     package_dir={"": str(CURRENT_SRC_DIR / "src")},
+    package_data={"ecole": ["py.typed"]},
     ext_modules=extensions,
     cmdclass=dict(build_ext=CopyBuild),
     zip_safe=False,
