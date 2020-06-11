@@ -18,8 +18,8 @@ static auto n_lp_iterations(scip::Model const& model) {
 	}
 }
 
-void LpIterations::reset(scip::Model const& model) {
-	last_lp_iter = n_lp_iterations(model);
+void LpIterations::reset(scip::Model const&) {
+	last_lp_iter = 0;
 }
 
 Reward LpIterations::obtain_reward(scip::Model const& model, bool /* done */) {
