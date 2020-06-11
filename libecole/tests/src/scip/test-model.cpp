@@ -61,8 +61,15 @@ TEST_CASE("Get and set parameters") {
 	}
 
 	SECTION("Throw on wrong parameters type") {
+		using Catch::Contains;
 		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
+		REQUIRE_THROWS_WITH(
+			model.get_param_explicit<ParamType::Real>(int_param),
+			Contains(int_param) && Contains("int") && Contains("Real"));
 		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
+		REQUIRE_THROWS_WITH(
+			model.set_param_explicit<ParamType::Real>(int_param, 3.0),
+			Contains(int_param) && Contains("int") && Contains("Real"));
 	}
 
 	SECTION("Get parameters with automatic casting") { model.get_param<double>(int_param); }
@@ -72,6 +79,15 @@ TEST_CASE("Get and set parameters") {
 	SECTION("String parameters can be converted to chars") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+	}
+
+	SECTION("Throw on unknown parameters") {
+		using Catch::Contains;
+		auto constexpr not_a_param = "not a parameter";
+		REQUIRE_THROWS_AS(model.get_param<int>(not_a_param), scip::Exception);
+		REQUIRE_THROWS_WITH(model.get_param<double>(not_a_param), Contains(not_a_param));
+		REQUIRE_THROWS_AS(model.set_param(not_a_param, 'a'), scip::Exception);
+		REQUIRE_THROWS_WITH(model.set_param(not_a_param, "not a val"), Contains(not_a_param));
 	}
 
 	SECTION("Get parameters as variants") {
