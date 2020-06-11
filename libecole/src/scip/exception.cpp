@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <mutex>
 #include <string>
 #include <utility>
 
@@ -20,40 +19,35 @@ namespace scip {
  * SCIP message handler to collect error messages.
  *
  * This message handler stores error message rather than printing them to standard error.
- * The messages can then me collected by the exception maker to craft the messsage of the exception.
+ * The messages can then be collected by the exception maker to craft the messsage of the exception.
  *
- * Given that the SCIP error message handler is global, so is this message handler.
- * It implements the singleton pattern that lazily created and register with SCIP on first access.
- * However, because it needs to be registered with SCIP before the first exception is thrown,
- * a function in this file for instanciation when loading the library.
- * Using the message handler thread safe.
+ * The class stores the messages in a thread local variable.
  */
 class ErrorCollector : public ::scip::ObjMessagehdlr {
 public:
-	static ErrorCollector& get_handler();
-
-	ErrorCollector(ErrorCollector const&) = delete;
-	ErrorCollector(ErrorCollector&&) = delete;
-	ErrorCollector& operator=(ErrorCollector const&) = delete;
-	ErrorCollector& operator=(ErrorCollector&&) = delete;
+	ErrorCollector();
 
 	virtual void scip_error(SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) override;
 	std::string clear();
 
 private:
-	static constexpr std::size_t buffer_size = 1000;
-	std::mutex mut;
-	std::string errors;
-
-	ErrorCollector();
+	thread_local static std::string errors;
+	constexpr static std::size_t buffer_size = 1000;
 };
+
+/**
+ * Initialize the handler and register it with SCIP.
+ */
+namespace {
+extern ErrorCollector error_collector;
+}
 
 /*****************************
  *  Definition of Exception  *
  *****************************/
 
 Exception Exception::from_retcode(SCIP_RETCODE retcode) {
-	auto message = ErrorCollector::get_handler().clear();
+	auto message = error_collector.clear();
 	if (message.size() > 0) {
 		return Exception(std::move(message));
 	} else {
@@ -114,39 +108,34 @@ const char* Exception::what() const noexcept {
  *  Implementation of ErrorCollector  *
  **************************************/
 
-ErrorCollector& ErrorCollector::get_handler() {
-	// Guaranteed to be destroyed and instantiated on first use.
-	static ErrorCollector handler{};
-	return handler;
-}
+thread_local std::string ErrorCollector::errors{};
 
 void ErrorCollector::scip_error(SCIP_MESSAGEHDLR*, FILE*, const char* message) {
-	std::lock_guard<std::mutex> lk(mut);
 	errors += message;
 }
 
 std::string ErrorCollector::clear() {
 	std::string message{};
 	message.reserve(buffer_size);
-	std::lock_guard<std::mutex> lk(mut);
 	std::swap(message, errors);
 	return message;
 }
 
 ErrorCollector::ErrorCollector() : ObjMessagehdlr(false) {
-	SCIP_MESSAGEHDLR* scip_handler = nullptr;
-	scip::call(SCIPcreateObjMessagehdlr, &scip_handler, this, false);
-	SCIPsetStaticErrorPrintingMessagehdlr(scip_handler);
 	errors.reserve(buffer_size);
 }
 
-/**
- * A dummy global varaible to force registering the handler with SCIP at laoding time.
- */
-static auto const force = [] {
-	ErrorCollector::get_handler();
-	return 0;
+namespace {
+
+ErrorCollector error_collector = [] {
+	SCIP_MESSAGEHDLR* scip_handler = nullptr;
+	ErrorCollector error_handler{};
+	scip::call(SCIPcreateObjMessagehdlr, &scip_handler, &error_handler, false);
+	SCIPsetStaticErrorPrintingMessagehdlr(scip_handler);
+	return error_handler;
 }();
+
+}
 
 }  // namespace scip
 }  // namespace ecole
