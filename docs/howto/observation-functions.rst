@@ -20,7 +20,7 @@ For instance with the :py:class:`~ecole.environment.Branching` environment:
    >>> env = ecole.environment.Branching(observation_function=ecole.observation.Nothing())
    >>> env.observation_function
    ecole.observation.Nothing()
-   >>> obs, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs
    None
 
@@ -31,7 +31,7 @@ Environments have an observation function set as default parameter for convenien
    >>> env = ecole.environment.Branching()
    >>> env.observation_function
    ecole.observation.NodeBipartite()
-   >>> obs, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs
    NodeBipartiteObs(...)
 
@@ -53,7 +53,7 @@ explicitly pass ``None`` to the environment constructor.
    >>> env = ecole.environment.branching(observation_function=None)
    >>> env.observation_function
    ecole.observation.nothing()
-   >>> obs, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs is None
    True
 
@@ -67,7 +67,7 @@ To use multiple observation functions, wrap them in a ``tuple`` or ``dict``.
    ...    ecole.observation.NodeBipartite(), ecole.observation.Nothing()
    ... )
    >>> env = ecole.environment.branching(observation_function=obs_func)
-   >>> obs, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs
    (ecole.observation.NodeBipartiteObs(), None)
 
@@ -80,7 +80,7 @@ Similarily with a tuple
    ...    "other_name": ecole.observation.Nothing(),
    ... }
    >>> env = ecole.environment.branching(observation_function=obs_func)
-   >>> obs, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs
    {'some_name': ecole.observation.NodeBipartiteObs(), 'other_name': None}
 

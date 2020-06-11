@@ -26,7 +26,7 @@ look like:
     environment.seed(42)
 
     for _ in range(10):
-        observation, action_set, done = env.reset("path/to/problem")
+        observation, action_set, reward_offset, done = env.reset("path/to/problem")
         while not done:
             obs, action_set, reward, done, info = env.step(action_set[0])
 
@@ -117,17 +117,23 @@ The problem instance is given to parametrize the episode: it is that combinatori
 optimization problem that will be solved by the `SCIP <https://scip.zib.de/>`_ solver
 during the next episode.
 
-The ``observation`` is for the user to decide what the next action will be (typically
-using a machine learning algorithm).
-The boolean flag ``done`` indicates wether the state is terminal.
-This can hapen in :py:class:`~ecole.environment.Branching` where the problem instance
-can be resolved though presolving only (never reaching branch-and-bound).
-Moreover an ``action_set`` is sometimes given to further reduce the set of candidate
-actions to deal with highly dynamic actions sets.
-It is valid for the next transition only.
-For instance in :py:class:`~ecole.environment.Branching` the set of variable the algorithm
-can branch on changes at very node (*i.e.* state).
-Therefore the user needs to be constantly given the set of fractional variables.
+* The ``observation`` is for the user to decide what the next action will be (typically
+  using a machine learning algorithm).
+* An ``action_set`` is sometimes given to further reduce the set of candidate
+  actions to deal with highly dynamic actions sets.
+  It is valid for the next transition only.
+  For instance in :py:class:`~ecole.environment.Branching` the set of variable the algorithm
+  can branch on changes at very node (*i.e.* state).
+  Therefore the user needs to be constantly given the set of fractional variables.
+* A ``reward_offset`` is given even though no action has been taken.
+  It has not purpose for learning algorithms, rather it is meant for evaluating the complete solving
+  procedure.
+  When a reward is designed so that its cumulative sum match a metric, such as solving time or number
+  of LP iterations, then it is useful to be able to include the computation done during
+  :py:meth:`~ecole.environment.EnvironmentComposer.reset`, which are returned in ``reward_offset``.
+* The boolean flag ``done`` indicates wether the state is terminal.
+  This can hapen in :py:class:`~ecole.environment.Branching` where the problem instance
+  can be resolved though presolving only (never reaching branch-and-bound).
 
 The exact documentation for the method is given below.
 
