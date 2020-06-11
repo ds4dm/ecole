@@ -17,6 +17,5 @@ PYBIND11_MODULE(core, m) {
 	ecole::scip::bind_submodule(m.def_submodule("scip"));
 	ecole::observation::bind_submodule(m.def_submodule("observation"));
 	ecole::reward::bind_submodule(m.def_submodule("reward"));
-	ecole::termination::bind_submodule(m.def_submodule("termination"));
 	ecole::environment::bind_submodule(m.def_submodule("environment"));
 }

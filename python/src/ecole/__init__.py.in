@@ -4,4 +4,3 @@ import ecole.environment
 import ecole.observation
 import ecole.reward
 import ecole.scip
-import ecole.termination

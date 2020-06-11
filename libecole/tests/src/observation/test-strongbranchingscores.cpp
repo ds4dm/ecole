@@ -9,15 +9,13 @@
 #include "ecole/environment/exception.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("StrongBranching") {
-	environment::Branching<observation::StrongBranchingScores, reward::IsDone, termination::Constant>
-		env{{}, {}, {}};
+	environment::Branching<observation::StrongBranchingScores, reward::IsDone> env{};
 
 	SECTION("reset, reset, and delete") {
 		env.reset(problem_file);

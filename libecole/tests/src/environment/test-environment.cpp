@@ -8,7 +8,6 @@
 #include "ecole/none.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/constant.hpp"
-#include "ecole/termination/constant.hpp"
 #include "ecole/traits.hpp"
 
 #include "conftest.hpp"
@@ -40,8 +39,8 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 	}
 };
 
-using TestEnv = environment::
-	EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant, termination::Constant>;
+using TestEnv =
+	environment::EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant>;
 
 }  // namespace environment
 }  // namespace ecole
@@ -55,7 +54,7 @@ using namespace ecole;
 TEST_CASE("Environments accept SCIP parameters", "[env]") {
 	auto constexpr name = "concurrent/paramsetprefix";
 	auto const value = std::string("testname");
-	environment::TestEnv env{{}, {}, {}, {{name, value}}};
+	environment::TestEnv env{{}, {}, {{name, value}}};
 
 	env.reset(problem_file);
 	REQUIRE(env.model().get_param<std::string>(name) == std::string(value));

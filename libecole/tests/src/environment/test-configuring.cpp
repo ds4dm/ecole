@@ -6,15 +6,13 @@
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("Configuring environment", "[env]") {
-	auto env = environment::Configuring<observation::Nothing, reward::IsDone, termination::Constant>(
-		{}, {}, {});
+	auto env = environment::Configuring<observation::Nothing, reward::IsDone>{};
 	auto policy = [](auto const&) { return decltype(env)::Action{{"branching/scorefunc", 's'}}; };
 
 	SECTION("reset, reset, and delete") {

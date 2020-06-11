@@ -18,10 +18,6 @@ namespace reward {
 void bind_submodule(pybind11::module);
 }
 
-namespace termination {
-void bind_submodule(pybind11::module);
-}
-
 namespace environment {
 void bind_submodule(pybind11::module);
 }

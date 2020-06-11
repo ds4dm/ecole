@@ -9,15 +9,13 @@
 #include "ecole/environment/exception.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/reward/isdone.hpp"
-#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("Branching environment", "[env]") {
-	environment::Branching<observation::NodeBipartite, reward::IsDone, termination::Constant> env{
-		{}, {}, {}};
+	environment::Branching<observation::NodeBipartite, reward::IsDone> env{};
 	auto policy = [](auto const& action_set_) { return action_set_.value()[0]; };
 
 	SECTION("reset, reset, and delete") {

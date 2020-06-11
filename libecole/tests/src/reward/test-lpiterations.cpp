@@ -6,16 +6,13 @@
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/lpiterations.hpp"
-#include "ecole/termination/constant.hpp"
 
 #include "conftest.hpp"
 
 using namespace ecole;
 
 TEST_CASE("Using the reward in a Configuring environment") {
-	auto env =
-		environment::Configuring<observation::Nothing, reward::LpIterations, termination::Constant>(
-			{}, {}, {});
+	auto env = environment::Configuring<observation::Nothing, reward::LpIterations>{};
 
 	for (auto i = 0; i < 2; ++i) {
 		env.reset(problem_file);

@@ -14,11 +14,7 @@
 namespace ecole {
 namespace environment {
 
-template <
-	typename Dynamics,
-	typename ObservationFunction,
-	typename RewardFunction,
-	typename TerminationFunction>
+template <typename Dynamics, typename ObservationFunction, typename RewardFunction>
 class EnvironmentComposer :
 	public Environment<
 		trait::action_of_t<Dynamics>,
@@ -36,13 +32,11 @@ public:
 	EnvironmentComposer(
 		ObservationFunction obs_func = {},
 		RewardFunction reward_func = {},
-		TerminationFunction term_func = {},
 		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
-		m_term_func(std::move(term_func)),
 		m_scip_params(std::move(scip_params)),
 		random_engine(std::random_device{}()) {}
 
@@ -67,10 +61,8 @@ public:
 			ActionSet action_set;
 			std::tie(done, action_set) = dynamics().reset_dynamics(model());
 			obs_func().reset(model());
-			term_func().reset(model());
 			reward_func().reset(model());
 
-			done = done || term_func().obtain_termination(model());
 			can_transition = !done;
 			auto const reward_offset = reward_func().obtain_reward(model(), done);
 			return {obs_func().obtain_observation(model()), std::move(action_set), reward_offset, done};
@@ -103,7 +95,6 @@ public:
 			bool done;
 			ActionSet action_set;
 			std::tie(done, action_set) = dynamics().step_dynamics(model(), action);
-			done = done || term_func().obtain_termination(model());
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(model(), done);
 
@@ -124,7 +115,6 @@ public:
 	auto& model() { return m_model; }
 	auto& obs_func() { return m_obs_func; }
 	auto& reward_func() { return m_reward_func; }
-	auto& term_func() { return m_term_func; }
 	auto& scip_params() { return m_scip_params; }
 
 private:
@@ -132,7 +122,6 @@ private:
 	scip::Model m_model;
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
-	TerminationFunction m_term_func;
 	std::map<std::string, scip::Param> m_scip_params;
 	RandomEngine random_engine;
 	bool can_transition = false;

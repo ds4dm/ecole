@@ -20,7 +20,6 @@ pybind11_add_module(
 	src/ecole/core/scip.cpp
 	src/ecole/core/observation.cpp
 	src/ecole/core/reward.cpp
-	src/ecole/core/termination.cpp
 	src/ecole/core/environment.cpp
 )
 
@@ -59,7 +58,7 @@ else()
 endif()
 
 
-set(PYTHON_FILES "observation.py" "termination.py" "reward.py" "scip.py" "environment.py")
+set(PYTHON_FILES "observation.py" "reward.py" "scip.py" "environment.py")
 set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
 list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
 set(PYTHON_COPIED_FILES ${PYTHON_FILES})
