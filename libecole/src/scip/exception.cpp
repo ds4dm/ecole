@@ -28,7 +28,8 @@ public:
 	ErrorCollector();
 
 	virtual void scip_error(SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) override;
-	std::string clear();
+	std::string collect();
+	void clear();
 
 private:
 	thread_local static std::string errors;
@@ -47,7 +48,7 @@ extern ErrorCollector error_collector;
  *****************************/
 
 Exception Exception::from_retcode(SCIP_RETCODE retcode) {
-	auto message = error_collector.clear();
+	auto message = error_collector.collect();
 	if (message.size() > 0) {
 		return Exception(std::move(message));
 	} else {
@@ -96,6 +97,10 @@ Exception Exception::from_retcode(SCIP_RETCODE retcode) {
 	}
 }
 
+void Exception::reset_message_capture() {
+	error_collector.clear();
+}
+
 Exception::Exception(std::string const& message_) : message(message_) {}
 
 Exception::Exception(std::string&& message_) : message(std::move(message_)) {}
@@ -114,7 +119,11 @@ void ErrorCollector::scip_error(SCIP_MESSAGEHDLR*, FILE*, const char* message) {
 	errors += message;
 }
 
-std::string ErrorCollector::clear() {
+void ErrorCollector::clear() {
+	errors.clear();
+}
+
+std::string ErrorCollector::collect() {
 	std::string message{};
 	message.reserve(buffer_size);
 	std::swap(message, errors);
