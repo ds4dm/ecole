@@ -1,12 +1,11 @@
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <objscip/objmessagehdlr.h>
 
 #include "ecole/scip/exception.hpp"
-
-#include "scip/utils.hpp"
 
 namespace ecole {
 namespace scip {
@@ -15,13 +14,15 @@ namespace scip {
  *  Declaration of ErrorCollector  *
  ***********************************/
 
+namespace {
+
 /**
  * SCIP message handler to collect error messages.
  *
  * This message handler stores error message rather than printing them to standard error.
  * The messages can then be collected by the exception maker to craft the messsage of the exception.
  *
- * The class stores the messages in a thread local variable.
+ * The class stores the messages in a thread local static variable.
  */
 class ErrorCollector : public ::scip::ObjMessagehdlr {
 public:
@@ -37,18 +38,33 @@ private:
 };
 
 /**
- * Initialize the handler and register it with SCIP.
+ * Deleter type for SCIP_MESSAHEHDLR to use with unique_ptr.
  */
-namespace {
-extern ErrorCollector error_collector;
-}
+struct MessageHandlerDeleter {
+	void operator()(SCIP_MESSAGEHDLR* ptr);
+};
+
+/**
+ * The SCIP_MESSAGE_HANDLER that wraps the Error Collector.
+ *
+ * SCIP takes a ObjMessage and allocate a SCIP_MESSAGE_HANDLER that contains it.
+ * We are responsible for dealocating it, hence the unique_ptr.
+ */
+extern std::unique_ptr<SCIP_MESSAGEHDLR, MessageHandlerDeleter> message_handler;
+
+/**
+ * Access the ErrorCollector from the global SCIP_MESSAGEHDLR.
+ */
+ErrorCollector& get_collector();
+
+}  // namespace
 
 /*****************************
  *  Definition of Exception  *
  *****************************/
 
 Exception Exception::from_retcode(SCIP_RETCODE retcode) {
-	auto message = error_collector.collect();
+	auto message = get_collector().collect();
 	if (message.size() > 0) {
 		return Exception(std::move(message));
 	} else {
@@ -97,15 +113,15 @@ Exception Exception::from_retcode(SCIP_RETCODE retcode) {
 	}
 }
 
-void Exception::reset_message_capture() {
-	error_collector.clear();
+void scip::Exception::reset_message_capture() {
+	get_collector().clear();
 }
 
-Exception::Exception(std::string const& message_) : message(message_) {}
+scip::Exception::Exception(std::string const& message_) : message(message_) {}
 
-Exception::Exception(std::string&& message_) : message(std::move(message_)) {}
+scip::Exception::Exception(std::string&& message_) : message(std::move(message_)) {}
 
-const char* Exception::what() const noexcept {
+const char* scip::Exception::what() const noexcept {
 	return message.c_str();
 }
 
@@ -113,38 +129,59 @@ const char* Exception::what() const noexcept {
  *  Implementation of ErrorCollector  *
  **************************************/
 
-thread_local std::string ErrorCollector::errors{};
+namespace {
 
-void ErrorCollector::scip_error(SCIP_MESSAGEHDLR*, FILE*, const char* message) {
+thread_local std::string scip::ErrorCollector::errors{};
+
+void scip::ErrorCollector::scip_error(SCIP_MESSAGEHDLR*, FILE*, const char* message) {
 	errors += message;
 }
 
-void ErrorCollector::clear() {
+void scip::ErrorCollector::clear() {
 	errors.clear();
 }
 
-std::string ErrorCollector::collect() {
+std::string scip::ErrorCollector::collect() {
 	std::string message{};
 	message.reserve(buffer_size);
 	std::swap(message, errors);
 	return message;
 }
 
-ErrorCollector::ErrorCollector() : ObjMessagehdlr(false) {
+scip::ErrorCollector::ErrorCollector() : ObjMessagehdlr(false) {
 	errors.reserve(buffer_size);
 }
 
-namespace {
-
-ErrorCollector error_collector = [] {
-	SCIP_MESSAGEHDLR* scip_handler = nullptr;
-	ErrorCollector error_handler{};
-	scip::call(SCIPcreateObjMessagehdlr, &scip_handler, &error_handler, false);
-	SCIPsetStaticErrorPrintingMessagehdlr(scip_handler);
-	return error_handler;
-}();
-
+void scip::MessageHandlerDeleter::operator()(SCIP_MESSAGEHDLR* ptr) {
+	// Cannot use scip::call because it accesses the collector which no longer exists.
+	auto retcode = SCIPmessagehdlrRelease(&ptr);
+	assert(retcode == SCIP_OKAY);
+	(void)retcode;
 }
 
+auto create_hander() {
+	SCIP_MESSAGEHDLR* raw_handler = nullptr;
+	// Cannot use scip::call because it accesses the collector which does not exist yet.
+	auto retcode = SCIPcreateObjMessagehdlr(&raw_handler, new ErrorCollector{}, true);  // NOLINT
+	assert(raw_handler != nullptr);                                                     // NOLINT
+	assert(retcode == SCIP_OKAY);
+	(void)retcode;
+
+	decltype(scip::message_handler) unique_handler;
+	unique_handler.reset(raw_handler);
+	return unique_handler;
+}
+
+decltype(scip::message_handler) message_handler = [] {
+	auto handler = create_hander();
+	SCIPsetStaticErrorPrintingMessagehdlr(handler.get());
+	return handler;
+}();
+
+scip::ErrorCollector& get_collector() {
+	return dynamic_cast<scip::ErrorCollector&>(*SCIPgetObjMessagehdlr(message_handler.get()));
+}
+
+}  // namespace
 }  // namespace scip
 }  // namespace ecole
