@@ -24,14 +24,14 @@ TEST_CASE("Configuring environment", "[env]") {
 
 	SECTION("reset, step, and delete") {
 		decltype(env)::ActionSet action_set;
-		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
+		std::tie(std::ignore, action_set, std::ignore, std::ignore) = env.reset(problem_file);
 		env.step(policy(action_set));
 	}
 
 	for (auto i = 0; i < 2; ++i) {
-		auto obs_as_done = env.reset(problem_file);
-		auto obs = std::get<0>(std::move(obs_as_done));
-		auto done = std::get<2>(std::move(obs_as_done));
+		auto obs_as_reward_done = env.reset(problem_file);
+		auto obs = std::get<0>(std::move(obs_as_reward_done));
+		auto done = std::get<3>(std::move(obs_as_reward_done));
 
 		// Assert that initial state is not terminal (episode length = 1)
 		REQUIRE(!done);

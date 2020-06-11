@@ -9,7 +9,7 @@ import ecole.observation
 # FIXME set seed.
 def run_environment(model):
     env = ecole.environment.Branching(observation_function=ecole.observation.Nothing())
-    _, action_set, done = env.reset(model)
+    _, action_set, _, done = env.reset(model)
     while not done:
         _, action_set, _, done, _ = env.step(action_set[0])
 

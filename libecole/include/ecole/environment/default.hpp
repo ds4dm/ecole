@@ -54,7 +54,7 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, bool> reset(scip::Model&& new_model) override {
+	std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model&& new_model) override {
 		can_transition = true;
 		try {
 			// Create clean new Model
@@ -72,7 +72,8 @@ public:
 
 			done = done || term_func().obtain_termination(model());
 			can_transition = !done;
-			return {obs_func().obtain_observation(model()), std::move(action_set), done};
+			auto const reward_offset = reward_func().obtain_reward(model(), done);
+			return {obs_func().obtain_observation(model()), std::move(action_set), reward_offset, done};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -82,14 +83,14 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, bool> reset(std::string const& filename) override {
+	std::tuple<Observation, ActionSet, Reward, bool> reset(std::string const& filename) override {
 		return reset(scip::Model::from_file(filename));
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, bool> reset(scip::Model const& model) override {
+	std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model const& model) override {
 		return reset(model.copy_orig());
 	}
 

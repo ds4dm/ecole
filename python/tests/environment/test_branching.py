@@ -17,7 +17,7 @@ def test_branching_environment_truncated(model, pseudo: bool, candidate: int):
     env = environment.Branching(pseudo_candidates=pseudo)
     for _ in range(2):
         count = 0
-        obs, action_set, done = env.reset(model.copy_orig())
+        obs, action_set, reward_offset, done = env.reset(model.copy_orig())
         while not done:
             assert len(action_set) > 0
             obs, action_set, reward, done, info = env.step(action_set[candidate])
@@ -30,7 +30,7 @@ def test_branching_environment_full(model):
     env = environment.Branching()
     for _ in range(2):
         count = 0
-        obs, action_set, done = env.reset(model.copy_orig())
+        obs, action_set, reward_offset, done = env.reset(model.copy_orig())
         while not done:
             assert len(action_set) > 0
             obs, action_set, reward, done, info = env.step(action_set[0])

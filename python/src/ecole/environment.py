@@ -92,6 +92,12 @@ class EnvironmentComposer:
         action_set:
             An optional subset of accepted action in the next transition.
             For some environment, this may change at every transition.
+        reward_offset:
+            An offset on the initial state.
+            This reward is not used for learning (as no action has yet been taken) but is used in
+            evaluation for the sum of rewards when one needs to account for computations that
+            happened during :py:meth:`reset` (*e.g.* computation time, number of LP iteration in
+            presolving...).
         done:
             A boolean flag indicating wether the current state is terminal.
             If this is true, the episode is finished, and :meth:`step` cannot be called.
@@ -113,8 +119,9 @@ class EnvironmentComposer:
             self.reward_function.reset(self.model)
 
             done = done or self.termination_function.obtain_termination(self.model)
+            reward_offset = self.reward_function.obtain_reward(self.model)
             observation = self.observation_function.obtain_observation(self.model)
-            return observation, action_set, done
+            return observation, action_set, reward_offset, done
         except Exception as e:
             self.can_transition = False
             raise e

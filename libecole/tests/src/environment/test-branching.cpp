@@ -27,7 +27,7 @@ TEST_CASE("Branching environment", "[env]") {
 
 	SECTION("reset, step, and delete") {
 		decltype(env)::ActionSet action_set;
-		std::tie(std::ignore, action_set, std::ignore) = env.reset(problem_file);
+		std::tie(std::ignore, action_set, std::ignore, std::ignore) = env.reset(problem_file);
 		env.step(policy(action_set));
 	}
 
@@ -38,7 +38,7 @@ TEST_CASE("Branching environment", "[env]") {
 			bool done = false;
 			reward::Reward reward;
 
-			std::tie(obs, action_set, done) = env.reset(filename);
+			std::tie(obs, action_set, reward, done) = env.reset(filename);
 			auto count = 0;
 
 			// Assert that the observation is none only on terminal states

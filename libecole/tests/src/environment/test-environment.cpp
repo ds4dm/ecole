@@ -69,19 +69,19 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	auto done = false;
 
 	SECTION("Call reset, reset, and delete") {
-		std::tie(obs, action_set, done) = env.reset(problem_file);
-		std::tie(obs, action_set, done) = env.reset(problem_file);
+		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
+		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
 	}
 
 	SECTION("Call reset, step, and delete") {
-		std::tie(obs, action_set, done) = env.reset(problem_file);
+		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
 		std::tie(obs, action_set, reward, done, std::ignore) = env.step(3.0);
 		REQUIRE(env.dynamics().last_action == 3.0);
 	}
 
 	SECTION("Run full episodes") {
 		for (auto i = 0ul; i < 2; ++i) {
-			std::tie(obs, action_set, done) = env.reset(problem_file);
+			std::tie(obs, action_set, reward, done) = env.reset(problem_file);
 			REQUIRE(env.dynamics().counter == 0ul);
 			while (!done) {
 				std::tie(obs, action_set, reward, done, std::ignore) = env.step(3.0);
@@ -95,7 +95,7 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	}
 
 	SECTION("Cannot transition past termination") {
-		std::tie(std::ignore, std::ignore, done) = env.reset(problem_file);
+		std::tie(std::ignore, std::ignore, std::ignore, done) = env.reset(problem_file);
 		while (!done) {
 			std::tie(std::ignore, std::ignore, std::ignore, done, std::ignore) = env.step(3.0);
 		}

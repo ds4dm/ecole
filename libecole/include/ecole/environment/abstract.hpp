@@ -61,9 +61,9 @@ public:
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
-	virtual std::tuple<Observation, ActionSet, bool> reset(scip::Model&& model) = 0;
-	virtual std::tuple<Observation, ActionSet, bool> reset(scip::Model const& model) = 0;
-	virtual std::tuple<Observation, ActionSet, bool> reset(std::string const& filename) = 0;
+	virtual std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model&& model) = 0;
+	virtual std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model const& model) = 0;
+	virtual std::tuple<Observation, ActionSet, Reward, bool> reset(std::string const& filename) = 0;
 
 	/**
 	 * Transition from one state to another.
