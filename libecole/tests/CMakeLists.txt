@@ -19,6 +19,7 @@ add_executable(
 	src/observation/test-nodebipartite.cpp
 	src/reward/test-nnodes.cpp
 	src/observation/test-strongbranchingscores.cpp
+	src/observation/test-pseudocosts.cpp
 )
 
 target_compile_definitions(

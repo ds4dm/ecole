@@ -7,6 +7,7 @@
 
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
+#include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
@@ -146,6 +147,24 @@ void bind_submodule(py::module m) {
 		strong_branching_scores, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(
 		strong_branching_scores, "Extract an array containing strong branching scores.");
+
+	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
+		Pseudocosts observation function on branch-and bound node.
+
+		This observation obtains pseudocosts for all LP fractional candidate variables at a
+		branch-and-bound node.  The pseudocost is a cheap approximation to the strong branching
+        score and measures the quality of branching for each variable.  This observation can be used
+        as a practical branching strategy by always branching on the variable with the highest
+        pseudocost, although in practice is it not as efficient as SCIP's default strategy, reliability
+        pseudocost branching (also known as hybrid branching).
+
+		This observation function extracts an array containing the pseudocost for
+		each variable in the problem which can be indexed by the action set.  Variables for which
+		a pseudocost is not applicable are filled with NaN.
+	)");
+	pseudocosts.def(py::init<>());
+	def_reset(pseudocosts, "Cache some feature not expected to change during an episode.");
+	def_obtain_observation(pseudocosts, "Extract an array containing pseudocosts.");
 }
 
 }  // namespace observation

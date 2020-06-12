@@ -108,3 +108,10 @@ def test_StrongBranchingScores_observation(solving_model):
     """Observation of StrongBranchingScores is a numpy array."""
     obs = make_obs(O.StrongBranchingScores(), solving_model)
     assert_array(obs)
+
+
+def test_Pseudocosts(solving_model):
+    obs = O.Pseudocosts().obtain_observation(solving_model)
+    assert isinstance(obs, np.ndarray)
+    assert obs.size > 0
+    assert len(obs.shape) == 1
