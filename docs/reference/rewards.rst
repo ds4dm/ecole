@@ -1,12 +1,17 @@
 Rewards
 =======
 
-Interface
----------
+Protocol
+--------
+The protocol expected to define a valid reward function is given below.
 
+.. autoclass:: ecole.typing.RewardFunction
+   :members:
 
 Listing
 -------
+The list of reward functions relevant to users is given below.
+
 Is Done
 ^^^^^^^
 .. autoclass:: ecole.reward.IsDone
@@ -20,6 +25,8 @@ LP Iterations
 
 Utilities
 ---------
+The following reward functions are used internally by Ecole.
+
 Constant
 ^^^^^^^^
 .. autoclass:: ecole.reward.Constant

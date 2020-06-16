@@ -1,12 +1,18 @@
 Observations
 ============
 
-Interface
----------
+Protocol
+--------
+The protocol expected to define a valid observation function is given below.
+
+.. autoclass:: ecole.typing.ObservationFunction
+   :members:
 
 
 Listing
 -------
+The list of observation functions relevant to users is given below.
+
 Node Bipartite
 ^^^^^^^^^^^^^^
 .. autoclass:: ecole.observation.NodeBipartite
@@ -17,6 +23,8 @@ Node Bipartite
 
 Utilities
 ---------
+The following observation functions are used internally by Ecole.
+
 Nothing
 ^^^^^^^
 .. autoclass:: ecole.observation.Nothing
