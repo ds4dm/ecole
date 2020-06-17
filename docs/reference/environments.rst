@@ -1,6 +1,10 @@
 Environments
 ============
 
+Interface
+---------
+.. autoclass:: ecole.environment.EnvironmentComposer
+
 Protocol
 --------
 .. autoclass:: ecole.typing.Dynamics

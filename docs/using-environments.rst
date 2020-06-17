@@ -135,9 +135,8 @@ during the next episode.
   This can hapen in :py:class:`~ecole.environment.Branching` where the problem instance
   can be resolved though presolving only (never reaching branch-and-bound).
 
-The exact documentation for the method is given below.
-
-.. automethod:: ecole.environment.EnvironmentComposer.reset
+See the reference section for the exact documentation of
+:py:meth:`~ecole.environment.EnvironmentComposer.reset`.
 
 
 Transitioning
@@ -149,9 +148,8 @@ section :ref:`reseting-environments`.
 Furthermore a ``reward`` and ``info`` variables are given as additional information about
 the current transition.
 
-The exact documentation for the method is given below.
-
-.. automethod:: ecole.environment.EnvironmentComposer.step
+See the reference section for the exact documentation of
+:py:meth:`~ecole.environment.EnvironmentComposer.step`.
 
 
 Seeding environments
@@ -164,8 +162,7 @@ The solver is given new seeds at the begining of every new trajectory (call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`) in a way that preserve
 determinism, but avoids using the same seeds repeatedly.
 
-The exact documentation for the method is given below.
-
-.. automethod:: ecole.environment.EnvironmentComposer.seed
+See the reference section for the exact documentation of
+:py:meth:`~ecole.environment.EnvironmentComposer.seed`.
 
 .. TODO document this and explain the seeding behaviour
