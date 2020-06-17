@@ -61,7 +61,7 @@ class EnvironmentComposer:
             return observation_function
 
     def reset(self, instance):
-        """Reset environment to an initial state.
+        """Start a new episode.
 
         This method brings the environment to a new initial state, *i.e.* starts a new
         episode.

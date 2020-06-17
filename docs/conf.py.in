@@ -34,6 +34,7 @@ html_style = "css/custom.css"
 extensions += ["sphinx.ext.autodoc"]
 autodoc_default_options = {
     "members": True,  # Document all members
+    "undoc-members": True,
 }
 
 # Breathe for Doxygen import

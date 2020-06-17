@@ -3,7 +3,7 @@ Environments
 
 Protocol
 --------
-
+.. autoclass:: ecole.typing.Dynamics
 
 Listing
 -------

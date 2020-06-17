@@ -1,7 +1,7 @@
 Create New Functions
 ====================
 
-::ref:`Observation <use-observation-functions>` and ::ref:`reward <use-reward-functions>` functions
+:ref:`Observation <use-observation-functions>` and :ref:`reward <use-reward-functions>` functions
 can be adapted and created from Python.
 
 .. TODO add ref to Model

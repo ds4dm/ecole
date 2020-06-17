@@ -5,9 +5,94 @@ Ecole flexibility relies on
 and therefore requires to explicit the structures at hand.
 """
 
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, Tuple
 
-import ecole.scip
+import ecole
+
+
+Action = TypeVar("Action")
+ActionSet = TypeVar("ActionSet")
+
+
+class Dynamics(Protocol[Action, ActionSet]):
+    """Dynamics are raw environments.
+
+    The class is a bare :py:class::`ecole.environment.EnvironmentComposer` without rewards,
+    observations, and other utlilities.
+    It defines the state transitions of a Markov Decision Process, that is the series of steps and
+    possible actions of the environment.
+    """
+
+    def set_dynamics_random_state(
+        self, model: ecole.scip.Model, random_engine: ecole.environment.RandomEngine
+    ) -> None:
+        """Set the random state of the episode.
+
+        This method is called by :py:meth::`~ecole.environment.EnvironmentComposer.reset` to
+        set all the random elements of the dynamics for the upcoming episode.
+        The random engine is kept between episodes in order to sample different episodes.
+
+        Parameters
+        ----------
+        model:
+            The SCIP model that will be used through the episode.
+        random_engine:
+            The random engine used by the environment from which random numbers can be extracted.
+
+        """
+        ...
+
+    def reset_dynamics(self, model: ecole.scip.Model) -> Tuple[bool, ActionSet]:
+        """Start a new episode.
+
+        This method brings the environment to a new initial state, *i.e.* starts a new
+        episode.
+        The method can be called at any point in time.
+
+        Parameters
+        ----------
+        model:
+            The SCIP model that will be used through the episode.
+
+        Returns
+        -------
+        done:
+            A boolean flag indicating wether the current state is terminal.
+            If this is true, the episode is finished, and :meth:`step_dynamics` cannot be called.
+        action_set:
+            An optional subset of accepted action in the next transition.
+            For some environment, this may change at every transition.
+
+        """
+        ...
+
+    def step_dynamics(self, model: ecole.scip.Model, action: Action) -> Tuple[bool, ActionSet]:
+        """Transition from one state to another.
+
+        This method takes the user action to transition from the current state to the
+        next.
+        The method **cannot** be called if the dynamics has not been reset since its
+        instantiation or is in a terminal state.
+
+        Parameters
+        ----------
+        action:
+            The action to take in as part of the Markov Decision Process.
+            If an action set has been given in the latest call (inluding calls to
+            :meth:`reset_dynamics`), then the action **must** be in that set.
+
+        Returns
+        -------
+        done:
+            A boolean flag indicating wether the current state is terminal.
+            If this is true, the episode is finished, and this method cannot be called
+            until :meth:`reset_dynamics` has been called.
+        action_set:
+            An optional subset of accepted action in the next transition.
+            For some environment, this may change at every transition.
+
+        """
+        ...
 
 
 class RewardFunction(Protocol):
