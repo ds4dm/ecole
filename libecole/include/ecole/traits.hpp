@@ -3,7 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "ecole/utility/function_traits.hpp"
+#include "ecole/utility/function-traits.hpp"
 
 namespace ecole {
 namespace trait {

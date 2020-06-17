@@ -9,7 +9,7 @@
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/utility/sparse_matrix.hpp"
+#include "ecole/utility/sparse-matrix.hpp"
 
 #include "core.hpp"
 

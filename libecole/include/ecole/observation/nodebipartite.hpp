@@ -4,7 +4,7 @@
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/observation/abstract.hpp"
-#include "ecole/utility/sparse_matrix.hpp"
+#include "ecole/utility/sparse-matrix.hpp"
 
 namespace ecole {
 namespace observation {
