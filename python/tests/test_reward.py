@@ -37,6 +37,15 @@ def test_apply(model):
     assert func.obtain_reward(model) == 4
 
 
+def test_cumsum(model):
+    func = R.Constant(1).cumsum()
+    func.reset(model)
+    assert func.obtain_reward(model) == 1
+    assert func.obtain_reward(model) == 2
+    func.reset(model)
+    assert func.obtain_reward(model) == 1
+
+
 def test_IsDone(model):
     reward_func = R.IsDone()
     reward_func.reset(model)

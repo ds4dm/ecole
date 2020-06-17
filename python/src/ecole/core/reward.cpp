@@ -32,6 +32,21 @@ private:
 	py::str repr;
 };
 
+class Cumulative {
+public:
+	Cumulative(py::object function, py::object reduce_func, Reward inti_cumul, py::str repr);
+	void reset(py::object model);
+	Reward obtain_reward(py::object model, bool done);
+	py::str toString() const;
+
+private:
+	py::object reduce_func;
+	py::object function;
+	Reward init_cumul;
+	Reward cumul;
+	py::str repr;
+};
+
 /**
  * Helper function to bind common methods.
  */
@@ -79,6 +94,19 @@ void bind_submodule(py::module m) {
 		Call ``obtain_reward`` on all reward functions parameters that were used to create
 		this object and compute the operation on the results.
 	)");
+
+	auto cumulative = py::class_<Cumulative>(m, "Cumulative", R"(
+		Proxy class for doing cumulating reward throughout an episode.
+
+		An object of this class is returned by reward functions cumulative operations to forward call
+		to the reward function and apply a reduce function.
+	)");
+	cumulative  //
+		.def(py::init<py::object, py::object, Reward, py::str>())
+		.def("__repr__", &Cumulative::toString);
+	def_operators(cumulative);
+	def_reset(cumulative, "Reset the wrapped reward function and reset current cumulation.");
+	def_obtain_reward(cumulative, "Obtain the cumulative reward of result of wrapped function.");
 
 	auto isdone = py::class_<IsDone>(m, "IsDone", "Single reward on terminal states.");
 	isdone.def(py::init<>());
@@ -134,6 +162,36 @@ Reward Arithmetic::obtain_reward(py::object model, bool done) {
 
 py::str Arithmetic::toString() const {
 	return repr.format(*functions);
+}
+
+/******************************
+ *  Definition of Cumulative  *
+ ******************************/
+
+Cumulative::Cumulative(
+	py::object function_,
+	py::object reduce_func_,
+	Reward init_cumul_,
+	py::str repr_) :
+	reduce_func(std::move(reduce_func_)),
+	function(std::move(function_)),
+	init_cumul(init_cumul_),
+	cumul(init_cumul_),
+	repr(std::move(repr_)) {}
+
+void Cumulative::reset(py::object model) {
+	cumul = init_cumul;
+	function.attr("reset")(std::move(model));
+}
+
+Reward Cumulative::obtain_reward(py::object model, bool done) {
+	auto reward = function.attr("obtain_reward")(std::move(model), done);
+	cumul = reduce_func(py::cast(cumul), reward).cast<Reward>();
+	return cumul;
+}
+
+py::str Cumulative::toString() const {
+	return repr.format(function);
 }
 
 /************************************
@@ -220,6 +278,10 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	// clang-format on
 	pyclass.def("apply", [](py::object self, py::object func) {
 		return Arithmetic{func, py::make_tuple(self), "lambda({})"};
+	});
+	// Cumulative methods
+	pyclass.def("cumsum", [](py::object self) {
+		return Cumulative{self, py::eval("lambda x, y: x + y"), 0., "{}.cumsum()"};
 	});
 }
 
