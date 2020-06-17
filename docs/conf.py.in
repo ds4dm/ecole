@@ -30,6 +30,12 @@ html_logo = "static/images/ecole-logo.png"
 html_static_path = ["static"]
 html_style = "css/custom.css"
 
+# Autodoc to read Python docstrings
+extensions += ["sphinx.ext.autodoc"]
+autodoc_default_options = {
+    "members": True,  # Document all members
+}
+
 # Breathe for Doxygen import
 extensions += ["breathe"]
 breathe_default_project = "libecole"

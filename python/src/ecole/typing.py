@@ -13,7 +13,7 @@ import ecole.scip
 class RewardFunction(Protocol):
     """Class repsonsible for extracting rewards.
 
-    Reward functions are objects given to the :py:class::`ecole.environment.EnvironmentComposer`
+    Reward functions are objects given to the :py:class:`~ecole.environment.EnvironmentComposer`
     to extract the reward used for learning.
     """
 
@@ -21,7 +21,7 @@ class RewardFunction(Protocol):
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes
-        :py:meth:`ecole.environment.EnvironmentComposer.reset` on the initial state.
+        :py:meth:`~ecole.environment.EnvironmentComposer.reset` on the initial state.
         It can is usually used to reset the observation function internal data.
 
         Parameters
@@ -44,7 +44,7 @@ class RewardFunction(Protocol):
         *i.e.*, this method is not a getter and can have side effects.
 
         Note that the method is also called on
-        :py:meth:`ecole.environment.EnvironmentComposer.reset`, after :py:meth:`reset`, to obtain\
+        :py:meth:`~ecole.environment.EnvironmentComposer.reset`, after :py:meth:`reset`, to obtain
         the ``reward_offset``.
 
         Parameters
@@ -70,7 +70,7 @@ class ObservationFunction(Protocol[Observation]):
     """Class repsonsible for extracting observations.
 
     Observation functions are objects given to the
-    :py:class::`ecole.environment.EnvironmentComposer` to extract the observations used to take the
+    :py:class:`~ecole.environment.EnvironmentComposer` to extract the observations used to take the
     next action.
     """
 
@@ -78,7 +78,7 @@ class ObservationFunction(Protocol[Observation]):
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes
-        :py:meth:`ecole.environment.EnvironmentComposer.reset` on the initial state.
+        :py:meth:`~ecole.environment.EnvironmentComposer.reset` on the initial state.
         It can is usually used to reset the observation function internal data.
 
         Parameters
