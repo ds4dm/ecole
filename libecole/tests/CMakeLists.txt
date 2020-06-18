@@ -12,6 +12,7 @@ add_executable(
 	src/environment/test-branching.cpp
 	src/environment/test-configuring.cpp
 	src/reward/test-lpiterations.cpp
+	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 )
 
