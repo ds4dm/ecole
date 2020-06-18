@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ecole/environment/branching-dynamics.hpp"
-#include "ecole/environment/default.hpp"
+#include "ecole/environment/environment-composer.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/reward/isdone.hpp"
 

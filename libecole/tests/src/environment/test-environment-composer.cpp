@@ -2,8 +2,8 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/default.hpp"
 #include "ecole/environment/dynamics.hpp"
+#include "ecole/environment/environment-composer.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/none.hpp"
 #include "ecole/observation/nothing.hpp"
