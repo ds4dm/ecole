@@ -88,5 +88,4 @@ set_target_properties(libecole PROPERTIES
 # Add test if this is the main project and testing is enabled
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
 	add_subdirectory(tests)
-	add_subdirectory(tests-static)
 endif()
