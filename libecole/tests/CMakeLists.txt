@@ -10,7 +10,7 @@ add_executable(
 	src/scip/test-variable.cpp
 	src/scip/test-view.cpp
 	src/environment/test-environment-composer.cpp
-	src/environment/test-branching.cpp
+	src/environment/test-branching-dynamics.cpp
 	src/environment/test-configuring-dynamics.cpp
 	src/reward/test-lpiterations.cpp
 	src/observation/test-nodebipartite.cpp
