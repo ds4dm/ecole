@@ -11,7 +11,7 @@ add_executable(
 	src/scip/test-view.cpp
 	src/environment/test-environment-composer.cpp
 	src/environment/test-branching.cpp
-	src/environment/test-configuring.cpp
+	src/environment/test-configuring-dynamics.cpp
 	src/reward/test-lpiterations.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
