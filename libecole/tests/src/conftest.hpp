@@ -13,3 +13,8 @@ const auto problem_file = static_cast<std::string>(TEST_DATA_DIR "/bppc8-02.mps"
  * Return a Model that is not trivially solved.
  */
 ecole::scip::Model get_model();
+
+/**
+ * Return a Model that is in stage solving.
+ */
+ecole::scip::Model get_solving_model();

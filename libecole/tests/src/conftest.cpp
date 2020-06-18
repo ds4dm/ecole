@@ -8,3 +8,9 @@ ecole::scip::Model get_model() {
 	model.disable_presolve();
 	return model;
 }
+
+ecole::scip::Model get_solving_model() {
+	auto model = get_model();
+	model.solve_iter();
+	return model;
+}
