@@ -25,7 +25,7 @@ void LpIterations::reset(scip::Model const&) {
 Reward LpIterations::obtain_reward(scip::Model const& model, bool /* done */) {
 	auto lp_iter_diff = n_lp_iterations(model) - last_lp_iter;
 	last_lp_iter += lp_iter_diff;
-	return static_cast<double>(-lp_iter_diff);
+	return static_cast<double>(lp_iter_diff);
 }
 
 }  // namespace reward
