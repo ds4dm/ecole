@@ -7,12 +7,12 @@
 #include "ecole/observation/nodebipartite.hpp"
 
 #include "conftest.hpp"
-#include "observation/unit-test.hpp"
+#include "observation/unit-tests.hpp"
 
 using namespace ecole;
 
 TEST_CASE("NodeBipartite unit tests", "[unit][obs]") {
-	unit_test(observation::NodeBipartite{});
+	unit_tests(observation::NodeBipartite{});
 }
 
 TEST_CASE("NodeBipartite return correct observation", "[obs]") {

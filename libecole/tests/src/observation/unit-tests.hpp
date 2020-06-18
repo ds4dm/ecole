@@ -4,7 +4,7 @@
 
 #include "conftest.hpp"
 
-template <typename ObsFunc> void unit_test(ObsFunc&& obs_func) {
+template <typename ObsFunc> void unit_tests(ObsFunc&& obs_func) {
 	auto solving_model = get_solving_model();
 
 	SECTION("has default constructor") { ObsFunc{}; }

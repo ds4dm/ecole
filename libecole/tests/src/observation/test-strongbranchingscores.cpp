@@ -5,16 +5,16 @@
 #include "ecole/observation/strongbranchingscores.hpp"
 
 #include "conftest.hpp"
-#include "observation/unit-test.hpp"
+#include "observation/unit-tests.hpp"
 
 using namespace ecole;
 
 TEST_CASE("StrongBranchingScores unit tests", "[unit][obs]") {
-	unit_test(observation::StrongBranchingScores{false});
+	unit_tests(observation::StrongBranchingScores{false});
 }
 
 TEST_CASE("StrongBranchingScores with pseudo candidates unit tests", "[unit][obs]") {
-	unit_test(observation::StrongBranchingScores{true});
+	unit_tests(observation::StrongBranchingScores{true});
 }
 
 TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
