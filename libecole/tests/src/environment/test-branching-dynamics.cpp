@@ -14,17 +14,14 @@
 using namespace ecole;
 
 TEST_CASE("BranchingDynamics unit tests", "[unit][dyn]") {
+	bool pseudo_candidates = GENERATE(true, false);
 	auto const policy = [](auto const& action_set) { return action_set.value()[0]; };
-	environment::unit_tests(environment::BranchingDynamics{false}, policy);
-}
-
-TEST_CASE("BranchingDynamics with pseudo candidates unit tests", "[unit][dyn]") {
-	auto const policy = [](auto const& action_set) { return action_set.value()[0]; };
-	environment::unit_tests(environment::BranchingDynamics{true}, policy);
+	environment::unit_tests(environment::BranchingDynamics{pseudo_candidates}, policy);
 }
 
 TEST_CASE("BranchingDynamics functional tests", "[dyn]") {
-	environment::BranchingDynamics dyn{};
+	bool pseudo_candidates = GENERATE(true, false);
+	environment::BranchingDynamics dyn{pseudo_candidates};
 	auto model = get_model();
 	bool done = false;
 	trait::action_set_of_t<environment::BranchingDynamics> action_set;

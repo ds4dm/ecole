@@ -10,15 +10,13 @@
 using namespace ecole;
 
 TEST_CASE("StrongBranchingScores unit tests", "[unit][obs]") {
-	observation::unit_tests(observation::StrongBranchingScores{false});
-}
-
-TEST_CASE("StrongBranchingScores with pseudo candidates unit tests", "[unit][obs]") {
-	observation::unit_tests(observation::StrongBranchingScores{true});
+	bool pseudo_candidates = GENERATE(true, false);
+	observation::unit_tests(observation::StrongBranchingScores{pseudo_candidates});
 }
 
 TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
-	auto obs_func = observation::StrongBranchingScores{};
+	bool pseudo_candidates = GENERATE(true, false);
+	auto obs_func = observation::StrongBranchingScores{pseudo_candidates};
 	auto model = get_solving_model();
 	obs_func.reset(model);
 	auto const obs = obs_func.obtain_observation(model);
