@@ -4,6 +4,7 @@
 #include "ecole/reward/constant.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/lpiterations.hpp"
+#include "ecole/reward/nnodes.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -127,6 +128,20 @@ void bind_submodule(py::module m) {
 		Update the internal LP iteration count and return the difference.
 
 		The difference in LP iterations is computed in between calls.
+		)");
+
+	auto nnodes = py::class_<NNodes>(m, "NNodes", R"(
+		Number of nodes difference.
+
+		The reward is defined as the total number of nodes processed since the previous state.
+	)");
+	nnodes.def(py::init<>());
+	def_operators(nnodes);
+	def_reset(nnodes, "Resets the internal node count.");
+	def_obtain_reward(nnodes, R"(
+		Updates the internal node count and returns the difference.
+
+		The difference in number of nodes is computed in between calls.
 		)");
 }
 

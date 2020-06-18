@@ -17,6 +17,7 @@ add_executable(
 	src/reward/test-isdone.cpp
 	src/observation/test-nothing.cpp
 	src/observation/test-nodebipartite.cpp
+	src/reward/test-nnodes.cpp
 	src/observation/test-strongbranchingscores.cpp
 )
 
