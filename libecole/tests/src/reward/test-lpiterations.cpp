@@ -11,7 +11,7 @@
 using namespace ecole;
 
 TEST_CASE("LpIterations unit tests", "[unit][reward]") {
-	unit_tests(reward::LpIterations{});
+	reward::unit_tests(reward::LpIterations{});
 }
 
 TEST_CASE("LpIterations return the difference in LP iterations between two states", "[reward]") {

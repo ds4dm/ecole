@@ -12,7 +12,7 @@
 using namespace ecole;
 
 TEST_CASE("NodeBipartite unit tests", "[unit][obs]") {
-	unit_tests(observation::NodeBipartite{});
+	observation::unit_tests(observation::NodeBipartite{});
 }
 
 TEST_CASE("NodeBipartite return correct observation", "[obs]") {

@@ -4,6 +4,9 @@
 
 #include "conftest.hpp"
 
+namespace ecole {
+namespace observation {
+
 template <typename ObsFunc> void unit_tests(ObsFunc&& obs_func) {
 	auto solving_model = get_solving_model();
 
@@ -19,3 +22,6 @@ template <typename ObsFunc> void unit_tests(ObsFunc&& obs_func) {
 		obs_func.obtain_observation(solving_model);
 	}
 }
+
+}  // namespace observation
+}  // namespace ecole

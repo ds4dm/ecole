@@ -4,6 +4,9 @@
 
 #include "conftest.hpp"
 
+namespace ecole {
+namespace reward {
+
 template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 	auto solving_model = get_solving_model();
 
@@ -19,3 +22,6 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 		reward_func.obtain_reward(solving_model);
 	}
 }
+
+}  // namespace reward
+}  // namespace ecole

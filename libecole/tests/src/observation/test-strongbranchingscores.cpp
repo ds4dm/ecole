@@ -10,11 +10,11 @@
 using namespace ecole;
 
 TEST_CASE("StrongBranchingScores unit tests", "[unit][obs]") {
-	unit_tests(observation::StrongBranchingScores{false});
+	observation::unit_tests(observation::StrongBranchingScores{false});
 }
 
 TEST_CASE("StrongBranchingScores with pseudo candidates unit tests", "[unit][obs]") {
-	unit_tests(observation::StrongBranchingScores{true});
+	observation::unit_tests(observation::StrongBranchingScores{true});
 }
 
 TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
