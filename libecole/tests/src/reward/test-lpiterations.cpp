@@ -3,39 +3,46 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/configuring.hpp"
-#include "ecole/observation/nothing.hpp"
 #include "ecole/reward/lpiterations.hpp"
 
 #include "conftest.hpp"
+#include "reward/unit-test.hpp"
 
 using namespace ecole;
 
-TEST_CASE("Using the reward in a Configuring environment") {
-	auto env = environment::Configuring<observation::Nothing, reward::LpIterations>{};
+TEST_CASE("LpIterations unit tests", "[unit][reward]") {
+	unit_test(reward::LpIterations{});
+}
 
-	for (auto i = 0; i < 2; ++i) {
-		env.reset(problem_file);
+TEST_CASE("LpIterations return the difference in LP iterations between two states", "[reward]") {
+	auto reward_func = reward::LpIterations{};
+	auto model = get_solving_model();
+	reward_func.reset(model);
 
-		auto obs_as_rew_done_info = env.step({});
-		auto reward = std::get<2>(obs_as_rew_done_info);
+	SECTION("LP iterations are positive") { REQUIRE(reward_func.obtain_reward(model) > 0); }
 
-		// Assert that the reward is non-positive
-		REQUIRE(reward <= 0);
+	SECTION("LP iterations is zero if no solving happended between two states") {
+		reward_func.obtain_reward(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
 	}
 
-	for (auto i = 0; i < 2; ++i) {
-		env.reset(problem_file);
+	SECTION("Reset LP iterations coutner") {
+		reward_func.obtain_reward(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
+		reward_func.reset(model);
+		REQUIRE(reward_func.obtain_reward(model) > 0);
+	}
 
-		auto obs_as_rew_done_info = env.step({
+	SECTION("No iterations if SCIP is not solving LPs") {
+		model = get_model();
+		model.set_params({
 			{"presolving/maxrounds", 0},
 			{"lp/iterlim", 0},
 			{"lp/rootiterlim", 0},
 			{"limits/totalnodes", 1},
 		});
-		auto reward = std::get<2>(obs_as_rew_done_info);
-
-		// Assert that the reward is zero, since no LP iteration was allowed
-		REQUIRE(reward == 0);
+		model.solve_iter();
+		reward_func.reset(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
 	}
 }
