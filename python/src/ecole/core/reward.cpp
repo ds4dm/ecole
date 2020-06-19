@@ -69,8 +69,8 @@ void bind_submodule(py::module m) {
 		.def(py::init<Reward>(), py::arg("constant") = 0.)
 		.def_readonly("constant", &Constant::constant);
 	def_operators(constant);
-	def_reset(constant, "Does nothing.");
-	def_obtain_reward(constant, "Returns the constant value.");
+	def_reset(constant, "Do nothing.");
+	def_obtain_reward(constant, "Return the constant value.");
 
 	auto arithmetic = py::class_<Arithmetic>(m, "Arithmetic", R"(
 		Proxy class for doing arithmetic on reward functions.
@@ -83,13 +83,13 @@ void bind_submodule(py::module m) {
 		.def("__repr__", &Arithmetic::toString);
 	def_operators(arithmetic);
 	def_reset(arithmetic, R"(
-		Resets the reward functions of the operator.
+		Reset the reward functions of the operator.
 
 		Calls ``reset`` on all reward functions parameters that were used to create this
 		object.
 	)");
 	def_obtain_reward(arithmetic, R"(
-		Obtains the reward of result of the operator.
+		Obtain the reward of result of the operator.
 
 		Calls ``obtain_reward`` on all reward function parameters that were used to create
 		this object and compute the operation on the results.
@@ -111,8 +111,8 @@ void bind_submodule(py::module m) {
 	auto isdone = py::class_<IsDone>(m, "IsDone", "Single reward on terminal states.");
 	isdone.def(py::init<>());
 	def_operators(isdone);
-	def_reset(isdone, "Does nothing.");
-	def_obtain_reward(isdone, "Returns 1 if the episode is on a terminal state, 0 otherwise.");
+	def_reset(isdone, "Do nothing.");
+	def_obtain_reward(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
 		LP Iteration difference.
