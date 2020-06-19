@@ -101,4 +101,4 @@ def test_LpIterations(model):
 def test_NNodes(model):
     reward_func = R.NNodes()
     reward_func.reset(model)
-    assert reward_func.obtain_reward(model) <= 0
+    assert reward_func.obtain_reward(model) >= 0

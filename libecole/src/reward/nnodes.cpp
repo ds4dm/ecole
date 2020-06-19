@@ -12,7 +12,7 @@ void NNodes::reset(scip::Model const&) {
 Reward NNodes::obtain_reward(scip::Model const& model, bool /* done */) {
 	auto n_nodes_diff = SCIPgetNTotalNodes(model.get_scip_ptr()) - last_n_nodes;
 	last_n_nodes += n_nodes_diff;
-	return static_cast<double>(-n_nodes_diff);
+	return static_cast<double>(n_nodes_diff);
 }
 
 }  // namespace reward

@@ -32,11 +32,11 @@ TEST_CASE("Using the NNodes reward in a Branching environment") {
 		auto cum_reward = reward;
 		int n_steps = 0;
 
-		// Assert that the reward is non-positive
-		REQUIRE(reward <= 0);
-		// Assert that the cumulated reward (negative total number of nodes) is smaller than the
-		// negative number of branching steps
-		REQUIRE(cum_reward <= n_steps);
+		// Assert that the number of nodes is non-negative
+		REQUIRE(reward >= 0);
+		// Assert that the cumulated reward (total number of nodes) is greater than the number of
+		// branching steps
+		REQUIRE(cum_reward >= n_steps);
 
 		while (!done) {
 			std::tie(std::ignore, action_set, reward, done, std::ignore) =
@@ -45,11 +45,11 @@ TEST_CASE("Using the NNodes reward in a Branching environment") {
 			cum_reward += reward;
 			n_steps += 1;
 
-			// Assert that the reward is non-positive
-			REQUIRE(reward <= 0);
-			// Assert that the cumulated reward (negative total number of nodes) is smaller than the
-			// negative number of branching steps
-			REQUIRE(cum_reward <= n_steps);
+			// Assert that the number of nodes is non-negative
+			REQUIRE(reward >= 0);
+			// Assert that the cumulated reward (total number of nodes) is greater than the number of
+			// branching steps
+			REQUIRE(cum_reward >= n_steps);
 		}
 	}
 }
