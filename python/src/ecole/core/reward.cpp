@@ -63,35 +63,35 @@ void bind_submodule(py::module m) {
 	auto constant = py::class_<Constant>(m, "Constant", R"(
 		Constant Reward.
 
-		Always return the value passed in constructor.
+		Always returns the value passed in constructor.
 	)");
 	constant  //
 		.def(py::init<Reward>(), py::arg("constant") = 0.)
 		.def_readonly("constant", &Constant::constant);
 	def_operators(constant);
-	def_reset(constant, "Do nothing.");
-	def_obtain_reward(constant, "Return the constant value.");
+	def_reset(constant, "Does nothing.");
+	def_obtain_reward(constant, "Returns the constant value.");
 
 	auto arithmetic = py::class_<Arithmetic>(m, "Arithmetic", R"(
 		Proxy class for doing arithmetic on reward functions.
 
-		An object of this class is returned by reward functions operators to forward calls
-		to the reward functions parameters of the operator.
+		An object of this class is returned by reward function operators to forward calls
+		to the reward function parameters of the operator.
 	)");
 	arithmetic  //
 		.def(py::init<py::object, py::list, py::str>())
 		.def("__repr__", &Arithmetic::toString);
 	def_operators(arithmetic);
 	def_reset(arithmetic, R"(
-		Reset the reward functions of the operator.
+		Resets the reward functions of the operator.
 
-		Call ``reset`` on all reward functions parameters that were used to create this
+		Calls ``reset`` on all reward functions parameters that were used to create this
 		object.
 	)");
 	def_obtain_reward(arithmetic, R"(
-		Obtain the reward of result of the operator.
+		Obtains the reward of result of the operator.
 
-		Call ``obtain_reward`` on all reward functions parameters that were used to create
+		Calls ``obtain_reward`` on all reward function parameters that were used to create
 		this object and compute the operation on the results.
 	)");
 
@@ -111,22 +111,22 @@ void bind_submodule(py::module m) {
 	auto isdone = py::class_<IsDone>(m, "IsDone", "Single reward on terminal states.");
 	isdone.def(py::init<>());
 	def_operators(isdone);
-	def_reset(isdone, "Do nothing.");
-	def_obtain_reward(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
+	def_reset(isdone, "Does nothing.");
+	def_obtain_reward(isdone, "Returns 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
 		LP Iteration difference.
 
-		The reward is defined as the number of iterations done solving the Linear Program
+		The reward is defined as the number of iterations spent in solving the Linear Programs
 		associated with the problem since the previous state.
 	)");
 	lpiterations.def(py::init<>());
 	def_operators(lpiterations);
-	def_reset(lpiterations, "Reset the internal LP iterations count.");
+	def_reset(lpiterations, "Resets the internal LP iterations count.");
 	def_obtain_reward(lpiterations, R"(
-		Update the internal LP iteration count and return the difference.
+		Updates the internal LP iteration count and return the difference.
 
-		The difference in LP iteration is computed in between calls.
+		The difference in LP iterations is computed in between calls.
 		)");
 }
 
