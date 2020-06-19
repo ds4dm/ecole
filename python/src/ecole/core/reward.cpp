@@ -137,9 +137,9 @@ void bind_submodule(py::module m) {
 	)");
 	nnodes.def(py::init<>());
 	def_operators(nnodes);
-	def_reset(nnodes, "Resets the internal node count.");
+	def_reset(nnodes, "Reset the internal node count.");
 	def_obtain_reward(nnodes, R"(
-		Updates the internal node count and returns the difference.
+		Update the internal node count and return the difference.
 
 		The difference in number of nodes is computed in between calls.
 		)");
