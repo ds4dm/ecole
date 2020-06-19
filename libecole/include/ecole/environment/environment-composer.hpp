@@ -26,13 +26,18 @@ public:
 	using ActionSet = trait::action_set_of_t<Dynamics>;
 
 	/**
-	 * User facing constructor for the Environment.
+	 * Default construct everything and seed environment with random value.
+	 */
+	EnvironmentComposer() : random_engine(std::random_device{}()) {}
+
+	/**
+	 * Fully customize environment and seed environment with random value.
 	 */
 	template <typename... Args>
 	EnvironmentComposer(
-		ObservationFunction obs_func = {},
-		RewardFunction reward_func = {},
-		std::map<std::string, scip::Param> scip_params = {},
+		ObservationFunction obs_func,
+		RewardFunction reward_func,
+		std::map<std::string, scip::Param> scip_params,
 		Args&&... args) :
 		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
