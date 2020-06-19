@@ -14,7 +14,7 @@ TEST_CASE("LpIterations unit tests", "[unit][reward]") {
 	reward::unit_tests(reward::LpIterations{});
 }
 
-TEST_CASE("LpIterations return the difference in LP iterations between two states", "[reward]") {
+TEST_CASE("LpIterations returns the difference in LP iterations between two states", "[reward]") {
 	auto reward_func = reward::LpIterations{};
 	auto model = get_solving_model();
 	reward_func.reset(model);
@@ -26,14 +26,14 @@ TEST_CASE("LpIterations return the difference in LP iterations between two state
 		REQUIRE(reward_func.obtain_reward(model) == 0);
 	}
 
-	SECTION("Reset LP iterations coutner") {
+	SECTION("Reset LP iteration counter") {
 		reward_func.obtain_reward(model);
 		REQUIRE(reward_func.obtain_reward(model) == 0);
 		reward_func.reset(model);
 		REQUIRE(reward_func.obtain_reward(model) > 0);
 	}
 
-	SECTION("No iterations if SCIP is not solving LPs") {
+	SECTION("No LP iterations if SCIP is not solving LPs") {
 		model = get_model();
 		model.set_params({
 			{"presolving/maxrounds", 0},
