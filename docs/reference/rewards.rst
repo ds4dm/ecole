@@ -23,6 +23,12 @@ LP Iterations
    :no-members:
    :members: reset, obtain_reward
 
+NNodes
+^^^^^^^^^^^^^
+.. autoclass:: ecole.reward.NNodes
+   :no-members:
+   :members: reset, obtain_reward
+
 
 Utilities
 ---------
