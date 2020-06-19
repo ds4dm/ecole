@@ -106,7 +106,7 @@ TEST_CASE("Environments have MDP API", "[env]") {
  *  Test default Dynamics  *
  ***************************/
 
-TEST_CASE("Default Dynamics seed the Model", "[dynamics]") {
+TEST_CASE("Default Dynamics seed the Model", "[dyn]") {
 	environment::TestEnv env{};
 	env.seed(93);
 	env.reset(problem_file);
@@ -117,7 +117,7 @@ TEST_CASE("Default Dynamics seed the Model", "[dynamics]") {
 	REQUIRE(seed1 == seed2);
 }
 
-TEST_CASE("Defaut Dynamics change seed every episode", "[dynamics]") {
+TEST_CASE("Defaut Dynamics change seed every episode", "[dyn]") {
 	environment::TestEnv env{};
 	env.reset(problem_file);
 	auto seed1 = env.model().get_param<scip::Seed>("randomization/randomseedshift");

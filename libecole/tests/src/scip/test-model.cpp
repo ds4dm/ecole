@@ -12,26 +12,26 @@
 
 using namespace ecole;
 
-TEST_CASE("Creation of model") {
+TEST_CASE("Creation of model", "[scip]") {
 	scip::Model model{};
 	SECTION("Move construct") { auto model_moved = std::move(model); }
 }
 
-TEST_CASE("Equality comparison") {
+TEST_CASE("Equality comparison", "[scip]") {
 	auto model = scip::Model{};
 	REQUIRE(model == model);
 	REQUIRE(model != model.copy_orig());
 }
 
-TEST_CASE("Create model from file") {
+TEST_CASE("Create model from file", "[scip]") {
 	auto model = scip::Model::from_file(problem_file);
 }
 
-TEST_CASE("Raise if file does not exist") {
+TEST_CASE("Raise if file does not exist", "[scip]") {
 	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
 }
 
-TEST_CASE("Model solving") {
+TEST_CASE("Model solving", "[scip]") {
 	SECTION("Synchronously") {
 		auto model = get_model();
 		model.solve();
@@ -48,7 +48,7 @@ TEST_CASE("Model solving") {
 	}
 }
 
-TEST_CASE("Get and set parameters") {
+TEST_CASE("Get and set parameters", "[scip]") {
 	using scip::ParamType;
 
 	auto model = scip::Model{};
