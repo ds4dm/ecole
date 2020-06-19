@@ -56,4 +56,4 @@ def test_IsDone(model):
 def test_LpIterations(model):
     reward_func = R.LpIterations()
     reward_func.reset(model)
-    assert reward_func.obtain_reward(model) <= 0
+    assert reward_func.obtain_reward(model) >= 0
