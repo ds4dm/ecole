@@ -122,9 +122,9 @@ void bind_submodule(py::module m) {
 	)");
 	lpiterations.def(py::init<>());
 	def_operators(lpiterations);
-	def_reset(lpiterations, "Resets the internal LP iterations count.");
+	def_reset(lpiterations, "Reset the internal LP iterations count.");
 	def_obtain_reward(lpiterations, R"(
-		Updates the internal LP iteration count and return the difference.
+		Update the internal LP iteration count and return the difference.
 
 		The difference in LP iterations is computed in between calls.
 		)");
