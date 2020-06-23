@@ -1,9 +1,9 @@
 #include <cmath>
 #include <cstddef>
 
-#include <scip/scip_var.h>
-#include <scip/scipdefplugins.h>
-#include <scip/utils.hpp>
+#include <nonstd/optional.hpp>
+#include <xtensor/xtensor.hpp>
+#include <xtensor/xview.hpp>
 
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/scip/model.hpp"
