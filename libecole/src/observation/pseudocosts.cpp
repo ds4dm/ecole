@@ -28,8 +28,7 @@ nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::M
 
 		/* Store pseudocosts in tensor */
 		auto const nb_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
-		auto pseudocosts = xt::xarray<double>::from_shape({nb_lp_columns});
-		pseudocosts.fill(std::nan(""));
+		xt::xtensor<double, 1> pseudocosts({nb_lp_columns}, std::nan(""));
 
 		SCIP_COL* col;
 		SCIP_Real score;

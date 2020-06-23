@@ -64,8 +64,7 @@ StrongBranchingScores::obtain_observation(scip::Model& model) {
 
 		/* Store strong branching scores in tensor */
 		auto const num_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
-		auto strong_branching_scores = xt::xarray<double>::from_shape({num_lp_columns});
-		strong_branching_scores.fill(std::nan(""));
+		xt::xtensor<double, 1> strong_branching_scores({num_lp_columns}, std::nan(""));
 
 		SCIP_COL* col;
 		int lp_index;

@@ -143,8 +143,7 @@ void bind_submodule(py::module m) {
 			psuedo-candidate variables if true or LP canidate variables if false.
 			By default psuedo-candidates will be computed.
 	)");
-	def_reset(
-		strong_branching_scores, "Cache some feature not expected to change during an episode.");
+	def_reset(strong_branching_scores, "(Do nothing.)");
 	def_obtain_observation(
 		strong_branching_scores, "Extract an array containing strong branching scores.");
 
@@ -163,7 +162,7 @@ void bind_submodule(py::module m) {
 		a pseudocost is not applicable are filled with NaN.
 	)");
 	pseudocosts.def(py::init<>());
-	def_reset(pseudocosts, "Cache some feature not expected to change during an episode.");
+	def_reset(pseudocosts, "(Do nothing.)");
 	def_obtain_observation(pseudocosts, "Extract an array containing pseudocosts.");
 }
 
