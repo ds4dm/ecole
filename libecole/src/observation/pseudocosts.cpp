@@ -30,14 +30,10 @@ nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::M
 		auto const nb_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
 		xt::xtensor<double, 1> pseudocosts({nb_lp_columns}, std::nan(""));
 
-		SCIP_COL* col;
-		SCIP_Real score;
-		int lp_index;
 		for (int i = 0; i < nb_cands; i++) {
-			col = SCIPvarGetCol(cands[i]);
-			lp_index = SCIPcolGetLPPos(col);
-			score = SCIPgetVarPseudocostScore(scip, cands[i], cands_lp_values[i]);
-
+			auto* const col = SCIPvarGetCol(cands[i]);
+			auto const lp_index = SCIPcolGetLPPos(col);
+			auto const score = SCIPgetVarPseudocostScore(scip, cands[i], cands_lp_values[i]);
 			pseudocosts(lp_index) = static_cast<double>(score);
 		}
 		return pseudocosts;
