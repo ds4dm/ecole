@@ -13,6 +13,7 @@ add_executable(
 	src/environment/test-branching-dynamics.cpp
 	src/environment/test-configuring-dynamics.cpp
 	src/reward/test-lpiterations.cpp
+	src/reward/test-constant.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 )

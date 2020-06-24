@@ -1,6 +1,3 @@
-#include <memory>
-#include <string>
-
 #include <catch2/catch.hpp>
 
 #include "ecole/reward/lpiterations.hpp"
