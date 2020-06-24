@@ -1,17 +1,9 @@
 import unittest.mock as mock
 
-import pytest
 import numpy as np
 
 import ecole.observation as O
 from ecole.environment import Branching
-
-
-@pytest.fixture
-def solving_model(model):
-    env = Branching()
-    env.reset(model)
-    return env.model
 
 
 def test_Nothing(model):
