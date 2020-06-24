@@ -9,7 +9,10 @@ namespace ecole {
  * For instance, when not needing an observation function, this is used as the type
  * of the observation.
  */
-class NoneType {};
+struct NoneType {
+	constexpr bool operator==(NoneType const&) const { return true; }
+	constexpr bool operator!=(NoneType const&) const { return false; }
+};
 
 /**
  * A constant expression representing no value.

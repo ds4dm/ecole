@@ -15,6 +15,7 @@ add_executable(
 	src/reward/test-lpiterations.cpp
 	src/reward/test-constant.cpp
 	src/reward/test-isdone.cpp
+	src/observation/test-nothing.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 )
