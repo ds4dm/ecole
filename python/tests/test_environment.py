@@ -1,11 +1,15 @@
+"""Unit tests for Ecole EnvironmentComposer."""
+
 import unittest.mock as mock
 
 import ecole
 
 
 class MockDynamics(mock.MagicMock):
-    def reset_dynamics(self, *args, **kwargs):
-        return mock.MagicMock(), mock.MagicMock()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reset_dynamics = mock.MagicMock(return_value=(False, "some_action_set"))
+        self.step_dynamics = mock.MagicMock(return_value=(True, "other_action_set"))
 
 
 class MockEnvironment(ecole.environment.EnvironmentComposer):
@@ -13,7 +17,7 @@ class MockEnvironment(ecole.environment.EnvironmentComposer):
 
 
 def test_observation_function_none(model):
-    """None is parsed as no obseration."""
+    """None is parsed as no observation."""
     env = MockEnvironment(observation_function=None)
     obs = env.observation_function.obtain_observation(model)
     assert obs is None
@@ -45,7 +49,24 @@ def test_observation_function_recursive(model):
     assert obs["name2"][1] is None
 
 
+def test_reset(model):
+    """Reset with a model."""
+    env = MockEnvironment()
+    _, _, _, _ = env.reset(model)
+    env.dynamics.reset_dynamics.assert_called_with(model)
+    env.dynamics.set_dynamics_random_state.assert_called()
+
+
+def test_step(model):
+    """Stepmwith some action."""
+    env = MockEnvironment()
+    env.reset(model)
+    _, _, _, _, _ = env.step("some action")
+    env.dynamics.step_dynamics.assert_called_with(model, "some action")
+
+
 def test_seed():
+    """Random engine is consumed."""
     env = MockEnvironment()
     env.seed(33)
     assert env.random_engine == ecole.environment.RandomEngine(33)
