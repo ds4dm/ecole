@@ -48,20 +48,20 @@ TEST_CASE("Model solving", "[scip]") {
 	}
 }
 
-TEST_CASE("Get and set parameters", "[scip]") {
+TEST_CASE("Explicit parameter management", "[scip]") {
+	using Catch::Contains;
 	using scip::ParamType;
-
 	auto model = scip::Model{};
 	auto constexpr int_param = "conflict/minmaxvars";
 
-	SECTION("Get parameters explicitly") { model.get_param_explicit<ParamType::Int>(int_param); }
+	SECTION("Get parameters") { model.get_param_explicit<ParamType::Int>(int_param); }
 
-	SECTION("Set parameters explicitly") {
-		model.set_param_explicit<ParamType::Int>(int_param, false);
+	SECTION("Set parameters") {
+		model.set_param_explicit<ParamType::Int>(int_param, 3);
+		REQUIRE(model.get_param_explicit<ParamType::Int>(int_param) == 3);
 	}
 
 	SECTION("Throw on wrong parameters type") {
-		using Catch::Contains;
 		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
 		REQUIRE_THROWS_WITH(
 			model.get_param_explicit<ParamType::Real>(int_param),
@@ -72,23 +72,44 @@ TEST_CASE("Get and set parameters", "[scip]") {
 			Contains(int_param) && Contains("int") && Contains("Real"));
 	}
 
+	SECTION("Throw on wrong parameter value") {
+		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Int>(int_param, -3), scip::Exception);
+		REQUIRE_THROWS_WITH(
+			model.set_param_explicit<ParamType::Int>(int_param, -3),
+			Contains(int_param) && Contains("-3"));
+	}
+
+	SECTION("Throw on unknown parameters") {
+		auto constexpr not_a_param = "not a parameter";
+		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Int>(not_a_param), scip::Exception);
+		REQUIRE_THROWS_WITH(
+			model.get_param_explicit<ParamType::Int>(not_a_param), Contains(not_a_param));
+		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Int>(not_a_param, 3), scip::Exception);
+		REQUIRE_THROWS_WITH(
+			model.set_param_explicit<ParamType::Int>(not_a_param, 3), Contains(not_a_param));
+	}
+}
+
+TEST_CASE("Automatic parameter management", "[scip]") {
+	auto model = scip::Model{};
+	auto constexpr int_param = "conflict/minmaxvars";
+
 	SECTION("Get parameters with automatic casting") { model.get_param<double>(int_param); }
 
-	SECTION("Set parameters with automatic casting") { model.set_param(int_param, 1.); }
+	SECTION("Set parameters with automatic casting") {
+		model.set_param(int_param, 1.);
+		REQUIRE(model.get_param<int>(int_param) == 1);
+	}
 
 	SECTION("String parameters can be converted to chars") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
 	}
+}
 
-	SECTION("Throw on unknown parameters") {
-		using Catch::Contains;
-		auto constexpr not_a_param = "not a parameter";
-		REQUIRE_THROWS_AS(model.get_param<int>(not_a_param), scip::Exception);
-		REQUIRE_THROWS_WITH(model.get_param<double>(not_a_param), Contains(not_a_param));
-		REQUIRE_THROWS_AS(model.set_param(not_a_param, 'a'), scip::Exception);
-		REQUIRE_THROWS_WITH(model.set_param(not_a_param, "not a val"), Contains(not_a_param));
-	}
+TEST_CASE("Variant parameter management", "[scip]") {
+	auto model = scip::Model{};
+	auto constexpr int_param = "conflict/minmaxvars";
 
 	SECTION("Get parameters as variants") {
 		auto val = model.get_param<scip::Param>(int_param);
@@ -101,6 +122,11 @@ TEST_CASE("Get and set parameters", "[scip]") {
 		model.set_param(int_param, new_val);
 		REQUIRE(model.get_param<int>(int_param) == nonstd::get<int>(new_val));
 	}
+}
+
+TEST_CASE("Map parameter management", "[scip]") {
+	auto model = scip::Model{};
+	auto constexpr int_param = "conflict/minmaxvars";
 
 	SECTION("Extract map of parameters") {
 		auto vals = model.get_params();
