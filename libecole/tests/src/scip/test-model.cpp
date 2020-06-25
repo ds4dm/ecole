@@ -54,39 +54,36 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 	auto model = scip::Model{};
 	auto constexpr int_param = "conflict/minmaxvars";
 
-	SECTION("Get parameters") { model.get_param_explicit<ParamType::Int>(int_param); }
+	SECTION("Get parameters") { model.get_param<ParamType::Int>(int_param); }
 
 	SECTION("Set parameters") {
-		model.set_param_explicit<ParamType::Int>(int_param, 3);
-		REQUIRE(model.get_param_explicit<ParamType::Int>(int_param) == 3);
+		model.set_param<ParamType::Int>(int_param, 3);
+		REQUIRE(model.get_param<ParamType::Int>(int_param) == 3);
 	}
 
 	SECTION("Throw on wrong parameters type") {
-		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Real>(int_param), scip::Exception);
+		REQUIRE_THROWS_AS(model.get_param<ParamType::Real>(int_param), scip::Exception);
 		REQUIRE_THROWS_WITH(
-			model.get_param_explicit<ParamType::Real>(int_param),
+			model.get_param<ParamType::Real>(int_param),
 			Contains(int_param) && Contains("int") && Contains("Real"));
-		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Real>(int_param, 3.), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, 3.), scip::Exception);
 		REQUIRE_THROWS_WITH(
-			model.set_param_explicit<ParamType::Real>(int_param, 3.0),
+			model.set_param<ParamType::Real>(int_param, 3.0),
 			Contains(int_param) && Contains("int") && Contains("Real"));
 	}
 
 	SECTION("Throw on wrong parameter value") {
-		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Int>(int_param, -3), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(int_param, -3), scip::Exception);
 		REQUIRE_THROWS_WITH(
-			model.set_param_explicit<ParamType::Int>(int_param, -3),
-			Contains(int_param) && Contains("-3"));
+			model.set_param<ParamType::Int>(int_param, -3), Contains(int_param) && Contains("-3"));
 	}
 
 	SECTION("Throw on unknown parameters") {
 		auto constexpr not_a_param = "not a parameter";
-		REQUIRE_THROWS_AS(model.get_param_explicit<ParamType::Int>(not_a_param), scip::Exception);
-		REQUIRE_THROWS_WITH(
-			model.get_param_explicit<ParamType::Int>(not_a_param), Contains(not_a_param));
-		REQUIRE_THROWS_AS(model.set_param_explicit<ParamType::Int>(not_a_param, 3), scip::Exception);
-		REQUIRE_THROWS_WITH(
-			model.set_param_explicit<ParamType::Int>(not_a_param, 3), Contains(not_a_param));
+		REQUIRE_THROWS_AS(model.get_param<ParamType::Int>(not_a_param), scip::Exception);
+		REQUIRE_THROWS_WITH(model.get_param<ParamType::Int>(not_a_param), Contains(not_a_param));
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(not_a_param, 3), scip::Exception);
+		REQUIRE_THROWS_WITH(model.set_param<ParamType::Int>(not_a_param, 3), Contains(not_a_param));
 	}
 }
 

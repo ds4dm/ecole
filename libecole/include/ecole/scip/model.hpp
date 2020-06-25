@@ -79,11 +79,9 @@ public:
 	 *
 	 * The method will throw an exception if the type is not *exactly* the one used
 	 * by SCIP.
-	 *
-	 * @see get_param, set_param to convert automatically.
 	 */
-	template <ParamType T> void set_param_explicit(std::string const& name, param_t<T> value);
-	template <ParamType T> param_t<T> get_param_explicit(std::string const& name) const;
+	template <ParamType T> void set_param(std::string const& name, param_t<T> value);
+	template <ParamType T> param_t<T> get_param(std::string const& name) const;
 
 	/**
 	 * Get and set parameters with automatic casting.
@@ -91,8 +89,6 @@ public:
 	 * Often, it is not required to know the exact type of a parameters to set its value
 	 * (for instance when setting to zero).
 	 * These methods do their best to convert to and from the required type.
-	 *
-	 * @see get_param_explicit, set_param_explicit to avoid any conversions.
 	 */
 	template <typename T> void set_param(std::string const& name, T value);
 	template <typename T> T get_param(std::string const& name) const;
@@ -182,17 +178,17 @@ template <typename T> void Model::set_param(std::string const& name, T value) {
 	using internal::cast;
 	switch (get_param_type(name)) {
 	case ParamType::Bool:
-		return set_param_explicit<ParamType::Bool>(name, cast<bool>(value));
+		return set_param<ParamType::Bool>(name, cast<bool>(value));
 	case ParamType::Int:
-		return set_param_explicit<ParamType::Int>(name, cast<int>(value));
+		return set_param<ParamType::Int>(name, cast<int>(value));
 	case ParamType::LongInt:
-		return set_param_explicit<ParamType::LongInt>(name, cast<long_int>(value));
+		return set_param<ParamType::LongInt>(name, cast<long_int>(value));
 	case ParamType::Real:
-		return set_param_explicit<ParamType::Real>(name, cast<real>(value));
+		return set_param<ParamType::Real>(name, cast<real>(value));
 	case ParamType::Char:
-		return set_param_explicit<ParamType::Char>(name, cast<char>(value));
+		return set_param<ParamType::Char>(name, cast<char>(value));
 	case ParamType::String:
-		return set_param_explicit<ParamType::String>(name, cast<std::string>(value));
+		return set_param<ParamType::String>(name, cast<std::string>(value));
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build
@@ -204,17 +200,17 @@ template <typename T> T Model::get_param(std::string const& name) const {
 	using namespace internal;
 	switch (get_param_type(name)) {
 	case ParamType::Bool:
-		return cast<T>(get_param_explicit<ParamType::Bool>(name));
+		return cast<T>(get_param<ParamType::Bool>(name));
 	case ParamType::Int:
-		return cast<T>(get_param_explicit<ParamType::Int>(name));
+		return cast<T>(get_param<ParamType::Int>(name));
 	case ParamType::LongInt:
-		return cast<T>(get_param_explicit<ParamType::LongInt>(name));
+		return cast<T>(get_param<ParamType::LongInt>(name));
 	case ParamType::Real:
-		return cast<T>(get_param_explicit<ParamType::Real>(name));
+		return cast<T>(get_param<ParamType::Real>(name));
 	case ParamType::Char:
-		return cast<T>(get_param_explicit<ParamType::Char>(name));
+		return cast<T>(get_param<ParamType::Char>(name));
 	case ParamType::String:
-		return cast<T>(get_param_explicit<ParamType::String>(name));
+		return cast<T>(get_param<ParamType::String>(name));
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build
