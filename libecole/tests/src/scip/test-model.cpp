@@ -105,6 +105,15 @@ TEST_CASE("Automatic parameter management", "[scip]") {
 		model.set_param("branching/scorefunc", "s");
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
 	}
+
+	SECTION("Throw on numerical rounding") {
+		REQUIRE_THROWS_AS(model.set_param(int_param, 3.1), std::runtime_error);
+	}
+
+	SECTION("Throw on overflow") {
+		auto const value = static_cast<double>(std::numeric_limits<int>::max()) * 2.;
+		REQUIRE_THROWS_AS(model.set_param(int_param, value), std::runtime_error);
+	}
 }
 
 TEST_CASE("Variant parameter management", "[scip]") {

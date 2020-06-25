@@ -13,6 +13,7 @@
 #include "ecole/scip/column.hpp"
 #include "ecole/scip/row.hpp"
 #include "ecole/scip/variable.hpp"
+#include "ecole/utility/numeric.hpp"
 
 namespace ecole {
 namespace scip {
@@ -133,9 +134,19 @@ template <typename To, typename From, typename = void> struct Caster {
 	static To cast(From) { throw Exception("Cannot convert to the desired type"); }
 };
 
-// SFINAE class for available cast
+// SFINAE class for narrow cast
 template <typename To, typename From>
-struct Caster<To, From, std::enable_if_t<std::is_convertible<From, To>::value>> {
+struct Caster<To, From, std::enable_if_t<utility::is_narrow_castable<From, To>::value>> {
+	static To cast(From val) { return utility::narrow_cast<To>(val); }
+};
+
+// SFINAE class for convertible but not narrowablecast
+template <typename To, typename From>
+struct Caster<
+	To,
+	From,
+	std::enable_if_t<
+		!utility::is_narrow_castable<From, To>::value && std::is_convertible<From, To>::value>> {
 	static To cast(From val) { return static_cast<To>(val); }
 };
 
@@ -153,7 +164,7 @@ template <typename From> struct Caster<bool, std::remove_cv<From>*> {
 	static bool cast(From) { throw Exception("Cannot convert pointers to bool"); }
 };
 
-// Convert charachter to string
+// Convert character to string
 template <> std::string Caster<std::string, char>::cast(char);
 
 // Convert string to character
