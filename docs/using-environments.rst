@@ -64,6 +64,8 @@ One wants to find a policy able to genralize to new, unseen, instances.
 .. TODO add ref to theoretical section
 
 
+.. _environment-parameters:
+
 Environment parameters
 ----------------------
 Environment can be created with no constructor arguments, as in the previous examples.

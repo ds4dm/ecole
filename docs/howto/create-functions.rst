@@ -1,3 +1,5 @@
+.. _create-new-functions:
+
 Create New Functions
 ====================
 
