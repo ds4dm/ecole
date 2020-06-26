@@ -17,7 +17,7 @@ ActionSet = TypeVar("ActionSet")
 class Dynamics(Protocol[Action, ActionSet]):
     """Dynamics are raw environments.
 
-    The class is a bare :py:class::`ecole.environment.EnvironmentComposer` without rewards,
+    The class is a bare :py:class:`ecole.environment.EnvironmentComposer` without rewards,
     observations, and other utlilities.
     It defines the state transitions of a Markov Decision Process, that is the series of steps and
     possible actions of the environment.
@@ -28,7 +28,7 @@ class Dynamics(Protocol[Action, ActionSet]):
     ) -> None:
         """Set the random state of the episode.
 
-        This method is called by :py:meth::`~ecole.environment.EnvironmentComposer.reset` to
+        This method is called by :py:meth:`~ecole.environment.EnvironmentComposer.reset` to
         set all the random elements of the dynamics for the upcoming episode.
         The random engine is kept between episodes in order to sample different episodes.
 
