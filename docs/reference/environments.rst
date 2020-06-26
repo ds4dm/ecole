@@ -20,3 +20,7 @@ Configuring
 ^^^^^^^^^^^
 .. autoclass:: ecole.environment.Configuring
 .. autoclass:: ecole.environment.ConfiguringDynamics
+
+Utilities
+---------
+.. autoclass:: ecole.environment.RandomEngine
