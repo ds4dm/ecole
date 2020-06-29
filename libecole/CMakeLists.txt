@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 add_library(
 	libecole
+	src/version.cpp
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
 	src/scip/variable.cpp
@@ -21,11 +22,26 @@ set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 
 add_library(Ecole::libecole ALIAS libecole)
 
+# Unconditionally generate version file at build time
+add_custom_target(
+	ecole-version
+	COMMAND ${CMAKE_COMMAND}
+		-D SOURCE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/include/ecole/version.hpp.in"
+		-D TARGET_FILE="${CMAKE_CURRENT_BINARY_DIR}/include/ecole/version.hpp"
+		-D Ecole_VERSION_MAJOR="${Ecole_VERSION_MAJOR}"
+		-D Ecole_VERSION_MINOR="${Ecole_VERSION_MINOR}"
+		-D Ecole_VERSION_PATCH="${Ecole_VERSION_PATCH}"
+		-P "${CMAKE_SOURCE_DIR}/cmake/VersionScript.cmake" > /dev/null
+)
+add_dependencies(libecole ecole-version)
+
+
 target_include_directories(
 	libecole
 	PUBLIC
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 )

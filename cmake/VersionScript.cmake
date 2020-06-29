@@ -14,6 +14,16 @@ if(NOT WORKING_DIR)
 	get_filename_component(WORKING_DIR "${SOURCE_FILE}" DIRECTORY)
 endif()
 
+if(NOT Ecole_VERSION_MAJOR)
+	set(Ecole_VERSION_MAJOR 0)
+endif()
+if(NOT Ecole_VERSION_MINOR)
+	set(Ecole_VERSION_MINOR 0)
+endif()
+if(NOT Ecole_VERSION_PATCH)
+	set(Ecole_VERSION_PATCH 0)
+endif()
+
 message(STATUS "Resolving Git Version")
 
 set(GIT_REVISION "unknown")
