@@ -23,6 +23,7 @@ PYBIND11_MODULE(core, m) {
 		.def_readwrite("git_revision", &ecole::VersionInfo::git_revision);
 
 	m.def("get_build_version", &ecole::get_build_version);
+	m.def("get_build_scip_version", &ecole::get_build_scip_version);
 
 	ecole::scip::bind_submodule(m.def_submodule("scip"));
 	ecole::observation::bind_submodule(m.def_submodule("observation"));
