@@ -2,7 +2,7 @@
 
 namespace ecole {
 
-constexpr VersionInfo get_lib_version() noexcept {
+VersionInfo get_build_version() noexcept {
 	return get_version();
 }
 

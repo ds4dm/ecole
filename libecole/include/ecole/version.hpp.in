@@ -24,6 +24,6 @@ inline constexpr VersionInfo get_version() noexcept {
  * This is the version of Ecole when compiling it as a library.
  * This is useful for detecting incompatibilities when loading as a dynamic library.
  */
-constexpr VersionInfo get_lib_version() noexcept;
+VersionInfo get_build_version() noexcept;
 
 }  // namespace ecole
