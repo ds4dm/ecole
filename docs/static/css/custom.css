@@ -17,3 +17,13 @@
 .wy-menu-vertical header, .wy-menu-vertical p.caption {
 	color: #77D1F6;;
 }
+
+/* Override Pygment style */
+.highlight {  /* Match side bar */
+	background: rgb(52, 49, 49) !important;
+	color: rgb(217, 217, 217) !important;
+}
+
+.highlight .k {
+	color: #77D1F6 !important;
+}
