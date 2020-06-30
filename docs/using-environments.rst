@@ -20,15 +20,15 @@ look like:
 
 .. code-block:: python
 
-    import ecole
+   import ecole
 
-    environment = ecole.environment.Branching()
-    environment.seed(42)
+   env = ecole.environment.Branching()
+   env.seed(42)
 
-    for _ in range(10):
-        observation, action_set, reward_offset, done = env.reset("path/to/problem")
-        while not done:
-            obs, action_set, reward, done, info = env.step(action_set[0])
+   for _ in range(10):
+       observation, action_set, reward_offset, done = env.reset("path/to/problem")
+       while not done:
+           obs, action_set, reward, done, info = env.step(action_set[0])
 
 
 There are few things to note in this example, let us break it down below.
