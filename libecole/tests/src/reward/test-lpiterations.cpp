@@ -19,7 +19,7 @@ TEST_CASE("LpIterations return the difference in LP iterations between two state
 	auto model = get_solving_model();
 	reward_func.reset(model);
 
-	SECTION("LP iterations are positive") { REQUIRE(reward_func.obtain_reward(model) >= 0); }
+	SECTION("LP iterations are positive") { REQUIRE(reward_func.obtain_reward(model) > 0); }
 
 	SECTION("LP iterations is zero if no solving happended between two states") {
 		reward_func.obtain_reward(model);
@@ -27,11 +27,13 @@ TEST_CASE("LpIterations return the difference in LP iterations between two state
 	}
 
 	SECTION("Reset LP iterations coutner") {
+		reward_func.obtain_reward(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
 		reward_func.reset(model);
-		REQUIRE(reward_func.obtain_reward(model) >= 0);
+		REQUIRE(reward_func.obtain_reward(model) > 0);
 	}
 
-	SECTION("No iterations if SCIP is not solving LPs") {
+	SECTION("No LP iterations if SCIP is not solving LPs") {
 		model = get_model();
 		model.set_params({
 			{"presolving/maxrounds", 0},
