@@ -7,8 +7,6 @@ add_executable(
 	src/test-traits.cpp
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
-	src/scip/test-variable.cpp
-	src/scip/test-view.cpp
 	src/environment/test-environment-composer.cpp
 	src/environment/test-branching-dynamics.cpp
 	src/environment/test-configuring-dynamics.cpp

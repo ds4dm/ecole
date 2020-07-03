@@ -5,9 +5,6 @@ add_library(
 	src/version.cpp
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
-	src/scip/variable.cpp
-	src/scip/column.cpp
-	src/scip/row.cpp
 	src/scip/exception.cpp
 	src/utility/reverse-control.cpp
 	src/reward/isdone.cpp
