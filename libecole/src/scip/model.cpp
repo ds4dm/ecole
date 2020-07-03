@@ -189,10 +189,17 @@ nonstd::span<Var*> Model::variables() const noexcept {
 }
 
 nonstd::span<Var*> Model::lp_branch_cands() const {
-	int n_vars{};
-	SCIP_VAR** vars{};
+	int n_vars = 0;
+	SCIP_VAR** vars = nullptr;
 	scip::call(
 		SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
+	return {vars, static_cast<std::size_t>(n_vars)};
+}
+
+nonstd::span<Var*> Model::pseudo_branch_cands() const {
+	int n_vars = 0;
+	SCIP_VAR** vars = nullptr;
+	scip::call(SCIPgetPseudoBranchCands, get_scip_ptr(), &vars, &n_vars, nullptr);
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 

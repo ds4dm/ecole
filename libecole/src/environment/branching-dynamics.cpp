@@ -2,7 +2,6 @@
 #include <memory>
 #include <utility>
 
-#include <nonstd/span.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/environment/branching-dynamics.hpp"
@@ -17,29 +16,13 @@ namespace environment {
 BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept :
 	pseudo_candidates(pseudo_candidates_) {}
 
-static nonstd::span<SCIP_VAR*> lp_branch_cands(SCIP* scip) {
-	SCIP_VAR** cands = nullptr;
-	int n_cands = 0;
-	scip::call(SCIPgetLPBranchCands, scip, &cands, nullptr, nullptr, &n_cands, nullptr, nullptr);
-	assert(n_cands >= 0);
-	return {cands, static_cast<std::size_t>(n_cands)};
-}
+namespace {
 
-static nonstd::span<SCIP_VAR*> pseudo_branch_cands(SCIP* scip) {
-	SCIP_VAR** cands = nullptr;
-	int n_cands = 0;
-	scip::call(SCIPgetPseudoBranchCands, scip, &cands, &n_cands, nullptr);
-	assert(n_cands >= 0);
-	return {cands, static_cast<std::size_t>(n_cands)};
-}
-
-static nonstd::optional<xt::xtensor<std::size_t, 1>>
-action_set(scip::Model const& model, bool pseudo) {
+nonstd::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, bool pseudo) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
-	auto const scip = model.get_scip_ptr();
-	auto const branch_cands = pseudo ? pseudo_branch_cands(scip) : lp_branch_cands(scip);
+	auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
 	auto branch_cols = xt::xtensor<std::size_t, 1>::from_shape({branch_cands.size()});
 	std::transform(  //
 		branch_cands.begin(),
@@ -51,6 +34,8 @@ action_set(scip::Model const& model, bool pseudo) {
 	return branch_cols;
 }
 
+}  // namespace
+
 auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
 	model.solve_iter();
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
@@ -59,10 +44,10 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action)
 	-> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
-	if (action >= lp_cols.size) {
+	if (action >= lp_cols.size()) {
 		throw Exception("Branching index is larger than the number of columns.");
 	}
-	model.solve_iter_branch(lp_cols[action].var());
+	model.solve_iter_branch(SCIPcolGetVar(lp_cols[action]));
 
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }

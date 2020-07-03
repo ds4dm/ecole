@@ -112,6 +112,7 @@ public:
 
 	nonstd::span<Var*> variables() const noexcept;
 	nonstd::span<Var*> lp_branch_cands() const;
+	nonstd::span<Var*> pseudo_branch_cands() const;
 	nonstd::span<Col*> lp_columns() const;
 	nonstd::span<Row*> lp_rows() const;
 
