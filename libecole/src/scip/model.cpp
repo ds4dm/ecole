@@ -164,8 +164,8 @@ void Model::solve_iter() {
 	scimpl->solve_iter();
 }
 
-void Model::solve_iter_branch(VarProxy var) {
-	scimpl->solve_iter_branch(var.value);
+void Model::solve_iter_branch(Var* var) {
+	scimpl->solve_iter_branch(var);
 }
 
 void Model::solve_iter_stop() {
@@ -183,34 +183,33 @@ void Model::disable_cuts() {
 	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
-VarView Model::variables() const noexcept {
+nonstd::span<Var*> Model::variables() const noexcept {
 	auto const scip_ptr = get_scip_ptr();
-	auto const n_vars = static_cast<std::size_t>(SCIPgetNVars(scip_ptr));
-	return VarView(scip_ptr, SCIPgetVars(scip_ptr), n_vars);
+	return {SCIPgetVars(scip_ptr), static_cast<std::size_t>(SCIPgetNVars(scip_ptr))};
 }
 
-VarView Model::lp_branch_cands() const noexcept {
+nonstd::span<Var*> Model::lp_branch_cands() const {
 	int n_vars{};
 	SCIP_VAR** vars{};
 	scip::call(
 		SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
-	return VarView(get_scip_ptr(), vars, static_cast<std::size_t>(n_vars));
+	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
-ColView Model::lp_columns() const {
+nonstd::span<Col*> Model::lp_columns() const {
 	auto const scip_ptr = get_scip_ptr();
-	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING)
+	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP columns are only available during solving");
-	auto const n_cols = static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr));
-	return ColView(scip_ptr, SCIPgetLPCols(scip_ptr), n_cols);
+	}
+	return {SCIPgetLPCols(scip_ptr), static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr))};
 }
 
-RowView Model::lp_rows() const {
+nonstd::span<Row*> Model::lp_rows() const {
 	auto const scip_ptr = get_scip_ptr();
-	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING)
+	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP rows are only available during solving");
-	auto const n_rows = static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr));
-	return RowView(scip_ptr, SCIPgetLPRows(scip_ptr), n_rows);
+	}
+	return {SCIPgetLPRows(scip_ptr), static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr))};
 }
 
 namespace internal {

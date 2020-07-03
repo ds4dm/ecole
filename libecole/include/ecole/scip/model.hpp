@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
+#include <nonstd/span.hpp>
 #include <scip/scip.h>
 
-#include "ecole/scip/column.hpp"
-#include "ecole/scip/row.hpp"
-#include "ecole/scip/variable.hpp"
+#include "ecole/scip/exception.hpp"
+#include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
 
 namespace ecole {
@@ -106,14 +106,14 @@ public:
 	bool is_solved() const noexcept;
 
 	void solve_iter();
-	void solve_iter_branch(VarProxy var);
+	void solve_iter_branch(Var* var);
 	void solve_iter_stop();
 	bool solve_iter_is_done();
 
-	VarView variables() const noexcept;
-	VarView lp_branch_cands() const noexcept;
-	ColView lp_columns() const;
-	RowView lp_rows() const;
+	nonstd::span<Var*> variables() const noexcept;
+	nonstd::span<Var*> lp_branch_cands() const;
+	nonstd::span<Col*> lp_columns() const;
+	nonstd::span<Row*> lp_rows() const;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;

@@ -47,6 +47,9 @@ constexpr Seed min_seed = 0;
 constexpr Seed max_seed = 2147483647;
 
 using Stage = SCIP_STAGE;
+using Var = SCIP_VAR;
+using Col = SCIP_COL;
+using Row = SCIP_ROW;
 
 /**
  * Class template to store the number of elements in Scip enums.
