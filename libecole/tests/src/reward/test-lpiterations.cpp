@@ -13,21 +13,34 @@ TEST_CASE("LpIterations unit tests", "[unit][reward]") {
 
 TEST_CASE("LpIterations returns the difference in LP iterations between two states", "[reward]") {
 	auto reward_func = reward::LpIterations{};
-	auto model = get_solving_model();
-	reward_func.reset(model);
+	auto model = get_model();  // a non-trivial instance is loaded
 
-	SECTION("LP iterations are positive") { REQUIRE(reward_func.obtain_reward(model) > 0); }
+	SECTION("LP iterations is zero before presolving") {
+		reward_func.reset(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
+	}
 
-	SECTION("LP iterations is zero if no solving happended between two states") {
+	SECTION("LP iterations is stricly positive after root node processing") {
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		REQUIRE(reward_func.obtain_reward(model) > 0);
+	}
+
+	SECTION("LP iterations is zero if the model state has not changed") {
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
 		reward_func.obtain_reward(model);
 		REQUIRE(reward_func.obtain_reward(model) == 0);
 	}
 
 	SECTION("Reset LP iteration counter") {
-		reward_func.obtain_reward(model);
-		REQUIRE(reward_func.obtain_reward(model) == 0);
 		reward_func.reset(model);
-		REQUIRE(reward_func.obtain_reward(model) > 0);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		auto reward = reward_func.obtain_reward(model);
+		model = get_model();
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		REQUIRE(reward_func.obtain_reward(model) == reward);
 	}
 
 	SECTION("No LP iterations if SCIP is not solving LPs") {

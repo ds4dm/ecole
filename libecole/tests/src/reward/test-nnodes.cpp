@@ -22,64 +22,80 @@ TEST_CASE(
 	"[reward]") {
 
 	auto reward_func = reward::NNodes{};
-	auto model = get_solving_model();
-	reward_func.reset(model);
+	auto model = get_model();  // a non-trivial instance is loaded
 
-	SECTION("NNodes is positive") { REQUIRE(reward_func.obtain_reward(model) >= 0); }
+	SECTION("NNodes is zero before presolving") {
+		reward_func.reset(model);
+		REQUIRE(reward_func.obtain_reward(model) == 0);
+	}
 
-	SECTION("NNodes is zero if nothing happended between two states") {
-		reward_func.obtain_reward(model);
+	SECTION("NNodes is one after root node processing") {
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		REQUIRE(reward_func.obtain_reward(model) == 1);
+	}
+
+	SECTION("NNodes is zero if the model state has not changed") {
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		REQUIRE(reward_func.obtain_reward(model) >= 0);
 		REQUIRE(reward_func.obtain_reward(model) == 0);
 	}
 
 	SECTION("Reset NNodes counter") {
 		reward_func.reset(model);
-		REQUIRE(reward_func.obtain_reward(model) >= 0);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		auto reward = reward_func.obtain_reward(model);
+		model = get_model();
+		reward_func.reset(model);
+		model.solve_iter();  // presolve and stop at the root node before branching
+		REQUIRE(reward_func.obtain_reward(model) == reward);
 	}
+}
 
-	SECTION("NNodes is consistent when used in a Branching environment") {
-		int max_nnodes = 20;
-		auto env = environment::Branching<observation::Nothing, reward::NNodes>{
-			{},
-			{},
-			{
-				{"presolving/maxrounds", 0},  // just to save time here
-				{"limits/totalnodes", max_nnodes},
-			},
-			true};
+TEST_CASE("NNodes rewards are consistent when used in a Branching environment", "[reward]") {
 
-		decltype(env)::ActionSet action_set;
-		reward::Reward reward;
-		bool done;
+	int max_nnodes = 20;
+	auto env = environment::Branching<observation::Nothing, reward::NNodes>{
+		{},
+		{},
+		{
+			{"presolving/maxrounds", 0},  // just to save time here
+			{"limits/totalnodes", max_nnodes},
+		},
+		true};
 
-		for (auto i = 0; i < 2; ++i) {
-			std::tie(std::ignore, action_set, reward, done) = env.reset(problem_file);
+	decltype(env)::ActionSet action_set;
+	reward::Reward reward;
+	bool done;
 
-			auto cum_reward = reward;
-			int n_steps = 0;
+	for (auto i = 0; i < 2; ++i) {
+		std::tie(std::ignore, action_set, reward, done) = env.reset(problem_file);
+
+		auto cum_reward = reward;
+		int n_steps = 0;
+
+		// Assert that the number of nodes is non-negative
+		REQUIRE(reward >= 0);
+		// Assert that the cumulated reward (total number of nodes) is greater than the number of
+		// branching steps
+		REQUIRE(cum_reward >= n_steps);
+
+		while (!done) {
+			std::tie(std::ignore, action_set, reward, done, std::ignore) =
+				env.step(action_set.value()[0]);  // dumb action
+
+			cum_reward += reward;
+			n_steps += 1;
 
 			// Assert that the number of nodes is non-negative
 			REQUIRE(reward >= 0);
 			// Assert that the cumulated reward (total number of nodes) is greater than the number of
 			// branching steps
 			REQUIRE(cum_reward >= n_steps);
-
-			while (!done) {
-				std::tie(std::ignore, action_set, reward, done, std::ignore) =
-					env.step(action_set.value()[0]);  // dumb action
-
-				cum_reward += reward;
-				n_steps += 1;
-
-				// Assert that the number of nodes is non-negative
-				REQUIRE(reward >= 0);
-				// Assert that the cumulated reward (total number of nodes) is greater than the number of
-				// branching steps
-				REQUIRE(cum_reward >= n_steps);
-			}
-			// Assert that the cumulated reward (total number of nodes) is not higher than the masimum
-			// number of nodes authorized in the environment
-			REQUIRE(cum_reward <= max_nnodes);
 		}
+		// Assert that the cumulated reward (total number of nodes) is not higher than the maximum
+		// number of nodes authorized in the environment
+		REQUIRE(cum_reward <= max_nnodes);
 	}
 }
