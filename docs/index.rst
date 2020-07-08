@@ -2,8 +2,11 @@ Introduction
 ============
 
 Ecole is a library of *Extensible Combinatorial Optimization Learning Environments*
-designed to facilitate the definition of machine learning environments problems inside
-combinatorial optimization solvers.
+designed to ease the development of machine learning approaches for
+combinatorial optimization. More precisely, the goal of Ecole is to allow for a fast
+and safe prototyping of any ML for CO approach that can be formulated as a control
+problem (i.e., a Markov Decision Problem), as well as providing reproducible benchmarking protocols
+for comparison to existing approaches.
 
 .. code-block:: python
 
@@ -20,26 +23,26 @@ combinatorial optimization solvers.
             obs, action_set, reward, done, info = env.step(action_set[0])
 
 
-Combinatorial optimization solvers rely on a variety of hand crafted heuristic that fail
-to account for similarities in between problems.
-`Machine Learning <https://en.wikipedia.org/wiki/Machine_learning>`_ algorithms are
-a promising candidate to create a new kind of highly adaptive solvers that can adapt to
-the problem data.
+Combinatorial optimization solvers typically rely on a plethora of handcrafted expert heuristics,
+which can fail to exploit subtle statistical similarities between problem intances.
+`Machine Learning <https://en.wikipedia.org/wiki/Machine_learning>`_ algorithms offer
+a promising candidate for replacing those heuristics, by learning data-driven policies that automatically
+account for such statistical relationships, and thereby creating a new kind of highly adaptive solvers [Bengio2018,]_.
 
 For instance, many combinatorial optimization problems can be modeled using `Mixed Integer
 Linear Programming <https://en.wikipedia.org/wiki/Integer_programming>`_ and solved using
 the `branch-and-bound <https://en.wikipedia.org/wiki/Branch_and_bound>`_ algorithm.
-This algorithm still requires many more decisions, such as picking the variable to branch
-on.
-Ecole let the user easily explore new policies to make these decisions using machine
-learning and information extracted from the solver.
+Despite its simplicity, the algorithm requires many non-trivial decisions, such as iteratively
+picking the next variable to branch on. Ecole aims at exposing these algorithmic control problems with a
+standard reinforcement learning API (agent / environment loop), in order to ease the exploration
+of new machine learning models and algorithms for learning data-driven policies.
 
 Ecole's interface is inspired from `OpenAi Gym <https://gym.openai.com/>`_ and will look
 familiar to reinforcement learning praticionners.
 The state-of-the-art Mixed Integer Linear Programming solver that acts as a controllable
 algorithm inside Ecole is `SCIP <https://scip.zib.de/>`_.
 
-The reader is referred to [Bengio2018]_ for motiation on why machine learning is a promising
+The reader is referred to [Bengio2018]_ for motivation on why machine learning is a promising
 candidate to use for combinatorial optimization, as well as the methodology to do so.
 
 .. [Bengio2018]
