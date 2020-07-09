@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -o errexit   # Fail script on errors
+set -o nounset   # Fail on empty variables
+set -o pipefail  # Error if error in pipe
+
+
+function build-image {
+	local -r target="$1"
+	local -r compiler="${2:-clang9}"
+	local -r python_version="${3:-3.6}"
+
+	cat "${DOCKERFILE_PATH}" | docker build \
+		--build-arg compiler="${compiler}" \
+		--build-arg python_version="${python_version}" \
+		--target "${target}" \
+		--tag "${DOCKER_REPO}-${target}-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" -
+}
+
+for compiler in "gcc9" "clang9" ; do
+	for python_version in "3.6" "3.7" "3.8" ; do
+		build-image builder "${compiler}" "${python_version}"
+	done
+done
+build-image checker clang9 3.6
+build-image documenter clang9 3.6

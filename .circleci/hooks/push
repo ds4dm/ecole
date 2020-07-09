@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -o errexit   # Fail script on errors
+set -o nounset   # Fail on empty variables
+set -o pipefail  # Error if error in pipe
+
+
+for image_name in $(docker images "${DOCKER_REPO}-*" --format "{{.Repository}}"); do
+	docker push "${image_name}"
+done
