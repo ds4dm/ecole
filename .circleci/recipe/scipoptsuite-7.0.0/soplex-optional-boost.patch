@@ -1,0 +1,39 @@
+From ba6bfc7211ac3ce2a751820fd3dc906acbacd678 Mon Sep 17 00:00:00 2001
+From: AntoinePrv <AntoinePrv@users.noreply.github.com>
+Date: Fri, 10 Jul 2020 10:24:12 -0400
+Subject: [PATCH] Fix optional Boost
+
+---
+ soplex/check/CMakeLists.txt | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/soplex/check/CMakeLists.txt b/soplex/check/CMakeLists.txt
+index 9aad663..b1c3599 100644
+--- a/soplex/check/CMakeLists.txt
++++ b/soplex/check/CMakeLists.txt
+@@ -63,10 +63,12 @@ set(settings
+     polish2
+     )
+
+-if(${Boost_VERSION_MACRO} GREATER_EQUAL "107000")
+-    set(settings
+-        ${settings}
+-        mpf)
++if(DEFINED Boost_VERSION_MACRO)
++    if(${Boost_VERSION_MACRO} GREATER_EQUAL "107000")
++        set(settings
++            ${settings}
++            mpf)
++    endif()
+ endif()
+ if(SOPLEX_HAVE_FLOAT128)
+     set(settings
+@@ -120,4 +122,4 @@ endmacro(add_instancetests)
+ #
+ add_instancetests( successInstances "Success" )
+ add_instancetests( failInstances "Fail" )
+-endif()
+\ No newline at end of file
++endif()
+--
+2.26.0
