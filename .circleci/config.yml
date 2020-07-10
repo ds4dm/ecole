@@ -4,36 +4,33 @@ version: 2.1
 workflows:
   continuous_testing:
     jobs:
-      - check_format
+      - code_checker
+      - build_test:
+          name: build_py36
+          python: "3.6"
       - build_test:
           name: build_py38
           python: "3.8"
+          requires:
+            - build_py36
       - build_test:
           name: build_py37
           python: "3.7"
           requires:
-            - build_py38
-      - build_test:
-          name: build_py36
-          python: "3.6"
-          requires:
-            - build_py38
+            - build_py36
       - build_test:
           name: build_clang
-          compiler: clang
+          compiler: clang9
           requires:
-            - build_py38
+            - build_py36
       - sanitize:
           name: build_asan
           sanitizer: "ADDRESS"
           requires:
-            - build_py38
-      - static_analysis:
-          requires:
-            - build_py38
+            - build_py36
       - build_doc:
           requires:
-            - build_py38
+            - build_py36
       - deploy_doc:
           requires:
             - build_doc
@@ -44,42 +41,25 @@ workflows:
                 - '/^v\d+\.\d+\.x/'
 
 
-# Environments where jobs are executed
-executors:
-
-  # Run inside a conda environment in our custom Docker image
-  ecole_conda:
-    docker:
-      - image: ecoleai/ci
-    parameters:
-      environment:
-        type: string
-        default: ecole-py3.8
-    shell: conda run -n <<parameters.environment>> /bin/bash -c
-
-
-# Execute a set of commands in a clean executor
+# Execute a set of commands in a clean image
 jobs:
 
   build_test:
     parameters:
       python:
         type: string
-        default: "3.8"
+        default: "3.6"
       compiler:
-        type: enum
-        enum: ["gcc", "clang"]
-        default: "gcc"
+        type: string
+        default: "gcc9"
       cmake_options:
         type: string
         default: ""
-    executor:
-      name: ecole_conda
-      environment: "ecole-py<<parameters.python>>"
+    docker:
+      - image: "ecoleai/ci-builder-<<parameters.compiler>>-py<<parameters.python>>"
     steps:
       - checkout
       - build_ecole:
-          compiler: "<<parameters.compiler>>"
           cmake_options: "<<parameters.cmake_options>>"
       - run:
           name: "Test libecole"
@@ -93,7 +73,8 @@ jobs:
       sanitizer:
         type: enum
         enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
-    executor: ecole_conda
+    docker:
+      - image: "ecoleai/ci-builder-clang9-py3.6"
     steps:
       - checkout
       - build_ecole:
@@ -103,30 +84,18 @@ jobs:
           command: ./build/libecole/tests/test-libecole
         # Python library cannot be sanitized so far
 
-  static_analysis:
-    executor:
-      name: ecole_conda
+  code_checker:
+    docker:
+      - image: "ecoleai/ci-checker-clang9-py3.6"
     steps:
       - checkout
       - build_ecole:
-          cmake_options: "-D ENABLE_CLANG_TIDY=ON"
-
-  check_format:
-    executor: ecole_conda
-    steps:
-      - checkout
-      - run:
-          name: "Check C++ formatting"
-          command: |
-            for file in $(find libecole python -name '*.[hc]pp'); do
-              [ $? -eq 0 ] && clang-format --style=file "$file" | diff - "$file"
-            done
-      - run:
-          name: "Check Python formatting"
-          command: python3 -m black --check python/
+          target: libecole
+      - run_pre_commit
 
   build_doc:
-    executor: ecole_conda
+    docker:
+      - image: "ecoleai/ci-documenter-clang9-py3.6"
     steps:
       - checkout
       - build_ecole:
@@ -134,11 +103,12 @@ jobs:
           target: "ecole-sphinx"
 
   deploy_doc:
-    executor: ecole_conda
     parameters:
       deploy_version:
         type: string
         default: "${CIRCLE_BRANCH}"
+    docker:
+      - image: "ecoleai/ci-documenter-clang9-py3.6"
     steps:
       - checkout
       # Easier/faster to rebuild than to share a workspace
@@ -167,10 +137,6 @@ commands:
       build_dir:
         type: string
         default: build
-      compiler:
-        type: enum
-        enum: ["gcc", "clang"]
-        default: "gcc"
       cmake_options:
         type: string
         default: ""
@@ -188,21 +154,17 @@ commands:
               checksum "libecole/tests/conanfile.txt" }}
             - conan-v1.1-{{ arch }}-
       - run:
-          name: "Set compiler"
-          command: |
-            if [[ <<parameters.compiler>> == "clang" ]]; then
-              echo "export CC=$(which clang)" >> $BASH_ENV
-              echo "export CXX=$(which clang++)" >> $BASH_ENV
-            fi
-      - run:
           name: "CMake configure"
           environment:
             CONAN_USER_HOME: &conan_cache_dir /cache/conan
           command: >
             cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
-            -D CMAKE_TOOLCHAIN_FILE="${PWD}/.circleci/conda.cmake"
-            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON -D ENABLE_PYTHON_VENV=ON
+            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+            -D ENABLE_PYTHON_VENV=ON
             <<parameters.cmake_options>>
+      - run:
+          name: "Symlink compilation database"
+          command: ln -s "<<parameters.build_dir>>/compile_commands.json"
       - save_cache:
           key: *conan_cache_key
           paths:
@@ -210,6 +172,25 @@ commands:
       - run:
           name: "CMake build"
           command: "cmake --build build --target <<parameters.target>>"
+
+  run_pre_commit:
+    description: "Run pre-commit checks"
+    steps:
+      - restore_cache:
+          keys:
+            - &pre_commit_cache_key >-
+              precommit-v1.1-{{ arch }}-{{ checksum ".pre-commit-config.yaml" }}
+            - precommit-v1.1-{{ arch }}-
+      - run:
+          environment:
+            PRE_COMMIT_HOME: &pre_commit_cache_dir /cache/precommit
+          name: "Run pre-commit checks"
+          command: python -m pre_commit run --all-files
+      - save_cache:
+          key: *pre_commit_cache_key
+          paths:
+            - *pre_commit_cache_dir
+
 
   # Deploy files to a Github repository
   deploy_github:
