@@ -5,6 +5,7 @@ available with the source code.
 """
 
 import shutil
+import sys
 from pathlib import Path
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -58,6 +59,10 @@ class CopyBuild(build_ext):
 # ecole.core serves for localizing that library.
 extensions = [ExternExtension(f"ecole.core", where=CURRENT_SRC_DIR / "src/ecole")]
 
+install_requires = ["numpy>=1.4"]
+if sys.version_info.minor <= 6:
+    install_requires += ["typing_extensions"]
+
 setup(
     name="ecole",
     author="Antoine Prouvost",
@@ -72,5 +77,5 @@ setup(
     cmdclass=dict(build_ext=CopyBuild),
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires="numpy>=1.4",
+    install_requires=install_requires,
 )
