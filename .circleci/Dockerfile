@@ -21,7 +21,7 @@ RUN apt-get update && \
 RUN conda install --channel scipopt --channel conda-forge \
         cmake make conan \
         scip pyscipopt python="${python_version}" pybind11 numpy xtensor-python \
-        pytest && \
+        pytest pytest-cov && \
     conda clean --all --yes
 WORKDIR /app
 
