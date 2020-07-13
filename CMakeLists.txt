@@ -18,6 +18,9 @@ include(cmake/CompilerWarnings.cmake)
 # Define a target Ecole::sanitizers with enabled sanitizers.
 include(cmake/Sanitizers.cmake)
 
+# Define a target Ecole::coverage with coverage options.
+include(cmake/Coverage.cmake)
+
 # Activate the Conan CMake wrapper (download if necessary).
 include(cmake/Conan.cmake)
 

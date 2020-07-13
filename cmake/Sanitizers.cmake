@@ -8,13 +8,6 @@ function(enable_sanitizers project_name)
 
 	set(SUPPORTED_COMPILERS "GNU" "Clang" "AppleClang")
 	if(CMAKE_CXX_COMPILER_ID IN_LIST SUPPORTED_COMPILERS)
-		option(COVERAGE "Enable coverage reporting for gcc/clang" FALSE)
-
-		if(ENABLE_COVERAGE)
-			target_compile_options(project_options INTERFACE --coverage -O0 -g)
-			target_link_libraries(project_options INTERFACE --coverage)
-		endif()
-
 		set(SANITIZERS "")
 
 		option(SANITIZE_ADDRESS "Enable address sanitizer" FALSE)

@@ -77,6 +77,7 @@ target_link_libraries(
 	PRIVATE
 		Ecole::warnings
 		Ecole::sanitizers
+		Ecole::coverage
 		Threads::Threads
 )
 
