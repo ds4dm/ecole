@@ -1,20 +1,11 @@
 Using Environments
 ==================
 
-Environments are stateful classes representing a control task (or Markov Decision
-Process).
-After instantiation of an environment, a call to
-:py:meth:`~ecole.environment.EnvironmentComposer.reset` will bring the process to its
-initial state, then successive calls to
-:py:meth:`~ecole.environment.EnvironmentComposer.step` will take an action from the
-user and transition to the next state.
-When the episode is finished, *i.e.*, when the combinatorial optimization algorithm
-terminates, a new one can be started with another call to
-:py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+The goal of Ecole is to provide Markov decision process abstractions of common sequential decision making tasks that appear when solving combinatorial optimization problems using a solver. These control tasks are represented by stateful classes called environments.
 
-For instance, using the :py:class:`~ecole.environment.Branching` environment for
-branch-and-bound variable selection, always selecting the first fractional variable would
-look like:
+In this formulation, each solving of an instance is an episode. The environment class must first be instantiated, and then a specific instance must be loaded by a call to :py:meth:`~ecole.environment.EnvironmentComposer.reset`, which will bring the process to its initial state. Afterwards, successive calls to :py:meth:`~ecole.environment.EnvironmentComposer.step` will take an action from the user and transition to the next state. Finally, when the episode is finished, that is when the instance has been fully solved, a new solving episode can be started with another call to :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+
+For instance, using the :py:class:`~ecole.environment.Branching` environment for branch-and-bound variable selection, solving a specific instance once by always selecting the first fractional variable would look as follows.
 
 .. TODO verify proper link of branching
 
@@ -26,12 +17,12 @@ look like:
    env.seed(42)
 
    for _ in range(10):
-       observation, action_set, reward_offset, done = env.reset("path/to/problem")
+       observation, action_set, reward_offset, done = env.reset("path/to/instance")
        while not done:
            obs, action_set, reward, done, info = env.step(action_set[0])
 
 
-There are few things to note in this example, let us break it down below.
+Let us analyze this example in more detail.
 
 
 General structure
@@ -39,18 +30,16 @@ General structure
 The example is driven by two loops.
 The inner ``while`` loop, the so-called *control loop*, transitions from an initial state until a
 terminal state is reached, which is signaled with the boolean flag ``done == True``.
-In Ecole, the termination of the environment typically coincides with the termination of the
-underlying combinatorial optimization algorithm.
+In Ecole, the termination of the environment coincides with the termination of the underlying combinatorial optimization algorithm.
 A full execution of this loop is known as an *episode*.
-The control loop matches the following representation usually found in the reinforcement learning
-litterature:
+The control loop matches a Markov decision process formulation, as used in control theory, dynamic programming and reinforcement learning.
 
 .. figure:: images/mdp.png
-   :alt: Markov Decision Process interaction loop
+   :alt: Markov Decision Process interaction loop.
    :align: center
    :width: 60%
 
-   The control loop of a Markov Decision Process
+   The control loop of a Markov decision process.
 
 .. note::
 
@@ -59,7 +48,7 @@ litterature:
    only a subset of the MDP state is extracted from the environment in the form of an *observation*. We omit
    this detail here for simplicity.
 
-The outter ``for`` loop in the example simply repeats the control loop several times, and is in
+The outer ``for`` loop in the example simply repeats the control loop several times, and is in
 charge of generating the initial state of each episode.
 In order to obtain a sufficient statistical signal for learning the control policy, numerous episodes are usually required for learning.
 Also, although not showcased here, there is usually little practical interest in using the same combinatorial problem
@@ -76,9 +65,9 @@ Each environment can be given a set of parameters at construction, in order to f
 solved.
 For instance, the :py:class:`~ecole.environment.Branching` environment takes a ``pseudo_candidates``
 boolean parameter, to decide whether branching candidates should include all non fixed integral variables, or only the fractional ones.
-Environments can be instanciated with no constructor arguments, as in the previous example, in which case a set of default parameters will be used.
+Environments can be instantiated with no constructor arguments, as in the previous example, in which case a set of default parameters will be used.
 
-Every environment can optionally take a dictionnary of
+Every environment can optionally take a dictionary of
 `SCIP parameters <https://scip.zib.de/doc/html/PARAMETERS.php>`_ that will be used to
 initialize the solver at every episode.
 For instance, to customize the clique inequalities generated, one could set:
@@ -92,10 +81,10 @@ For instance, to customize the clique inequalities generated, one could set:
 
 .. warning::
 
-   Depending on the nature of the environment, some user given parameters can be overriden
+   Depending on the nature of the environment, some user-given parameters can be overriden
    or ignored (*e.g.*, branching parameters in the :py:class:`~ecole.environment.Branching`
    environment).
-   It is the responsability of the user to understand the environment they are using.
+   It is the responsibility of the user to understand the environment they are using.
 
 .. note::
 
@@ -109,9 +98,9 @@ For instance, to customize the clique inequalities generated, one could set:
 parameters, which we will discuss later on.
 
 
-.. _reseting-environments:
+.. _resetting-environments:
 
-Reseting environments
+Resetting environments
 ---------------------
 Each episode in the inner ``while`` starts with a call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset` in order to bring the environment into a new
@@ -120,25 +109,20 @@ The method is parameterized with a problem instance file: the combinatorial
 optimization problem that will be loaded and solved by the `SCIP <https://scip.zib.de/>`_ solver
 during the episode.
 
-* The ``observation`` consists in relevant information extracted from the solver,
-  for the user to decide what the next action will be (typically
-  using a machine learning algorithm).
-* The ``action_set``, if present, describes the set of candidate
-  actions which are valid for the next transition. This allows us to deal with highly dynamic
-  actions sets in a simple way.
+* The ``observation`` consists of information about the state of the solver that should be used to select the next action 
+  to perform (for example, using a machine learning algorithm.)
+* The ``action_set``, when non-null, describes the set of candidate actions which are valid for the next transition. 
+  This is necessary for environments where the action set varies from state to state.
   For instance, in the :py:class:`~ecole.environment.Branching` environment the set of candidate variables
   for branching depends on the value of the current LP solution, which changes at every iteration of the algorithm.
-* The ``reward_offset`` accounts for any computation happening in
+* The ``reward_offset`` is an offset to the reward function that accounts for any computation happening in
   :py:meth:`~ecole.environment.EnvironmentComposer.reset` when generating the initial state.
-  It has no effect on the control problem, and is only given for convenience when the cumulative reward
-  of an episode is supposed to match a meaningful combinatorial optimization metric, such as the cumulated running time,
-  the number of nodes, the number of LP iterations etc. For example, in :py:class:`~ecole.environment.Branching`
-  a substantial computational effort can be spent in :py:meth:`~ecole.environment.EnvironmentComposer.reset`,
-  which includes the presolving operation of the solver. That initial reward is not the result of an action though, and therefore
-  has no purpose for learning algorithms.
-* The boolean flag ``done`` indicates whether the environment immediately reached a terminal state.
-  This can happen in :py:class:`~ecole.environment.Branching`, where the problem instance
-  can be resolved though presolving only (never actually starting the branch-and-bound algorithm).
+  For example, if clock time is selected as a reward function in a :py:class:`~ecole.environment.Branching` environment, this would account for 
+  time spent in the preprocessing phase before any branching is performed. This offset is thus important for benchmarking, but has no effect 
+  on the control problem, and can be ignored when training a machine learning agent.
+* The boolean flag ``done`` indicates whether the initial state is also a terminal state.
+  This can happen in some environments, such as :py:class:`~ecole.environment.Branching`, where the problem instance
+  could be solved though presolving only (never actually getting to branching).
 
 See the reference section for the exact documentation of
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
@@ -149,7 +133,7 @@ Transitioning
 The inner ``while`` loop transitions the environment from one state to the next by giving
 an action to :py:meth:`~ecole.environment.EnvironmentComposer.step`.
 The nature of ``observation``, ``action_set``, and ``done`` is the same as in the previous
-section :ref:`reseting-environments`.
+section :ref:`resetting-environments`.
 The ``reward`` and ``info`` variables provide additional information about
 the current transition.
 
@@ -161,13 +145,13 @@ Seeding environments
 --------------------
 Environments can be seeded by using the
 :py:meth:`~ecole.environment.EnvironmentComposer.seed` method.
-The seed is used by the environment (and in particular the solver) for *all* the
+The seed is used by the environment (and in particular the solver) for all the
 subsequent episode trajectories.
-The solver is given a new seed at the begining of every new trajectory (call to
+The solver is given a new seed at the beginning of every new trajectory (call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`), in a way that preserves
 determinism, without re-using the same seed repeatedly.
 
 See the reference section for the exact documentation of
 :py:meth:`~ecole.environment.EnvironmentComposer.seed`.
 
-.. TODO document this and explain the seeding behaviour
+.. TODO document this and explain the seeding behavior
