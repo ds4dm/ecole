@@ -44,3 +44,10 @@ def model(problem_file):
     model_obj.disable_cuts()
     model_obj.disable_presolve()
     return model_obj
+
+
+@pytest.fixture
+def solving_model(model):
+    env = ecole.environment.Branching()
+    env.reset(model)
+    return env.model

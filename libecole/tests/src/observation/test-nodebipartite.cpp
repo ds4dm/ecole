@@ -34,6 +34,8 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 		auto const obs = optional_obs.value();
 		REQUIRE(obs.row_features.shape()[0] == obs.edge_features.shape[0]);
 		REQUIRE(obs.column_features.shape()[0] == obs.edge_features.shape[1]);
+		REQUIRE(obs.edge_features.indices.shape()[0] == 2);
+		REQUIRE(obs.edge_features.indices.shape()[1] == obs.edge_features.nnz());
 	}
 
 	SECTION("Columns features are not all nan") {

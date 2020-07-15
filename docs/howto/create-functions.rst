@@ -1,22 +1,20 @@
+.. _create-new-functions:
+
 Create New Functions
 ====================
 
-:ref:`Observation <use-observation-functions>` and :ref:`reward <use-reward-functions>` functions
+:py:class:`~ecole.typing.ObservationFunction` and :py:class:`~ecole.typing.RewardFunction` functions
 can be adapted and created from Python.
 
-.. TODO add ref to Model
-
-At the core of the environment, a SCIP ``Model`` (equivalent to a ``pyscipopt.Model`` or a
-``SCIP*`` in ``C``), describe the state of the environment.
+At the core of the environment, a SCIP :py:class:`~ecole.scip.Model` (equivalent abstraction to a
+``pyscipopt.Model`` or a ``SCIP*`` in ``C``), describe the state of the environment.
 The idea of observation and reward functions is to have a function that takes as input that
-``Model``, and return the desired value (an observation, or a reward).
+:py:class:`~ecole.scip.Model`, and return the desired value (an observation, or a reward).
 The environment itself does nothing more than calling the function and forward its output to the
 user.
 
 Pratically speaking, it is more convenient to implement such functions as a class that a function,
 as it makes it easier to keep information between states.
-
-.. TODO protocol reference
 
 From an Exsiting One
 --------------------
@@ -24,9 +22,8 @@ To reuse a function, Python inheritance can be use.
 In the following, we will adapt :py:class:`~ecole.observation.NodeBipartite` to apply some scaling
 to the observation features.
 
-.. TODO reference obtain_observation protocol
-
-The method that will be called to return an observation is called ``obtain_observation``.
+The method that will be called to return an observation is called
+:py:meth:`~ecole.typing.ObservationFunction.obtain_observation`.
 Here is how we can create a new observation function that scale the features their maximum absolute
 value.
 
@@ -98,15 +95,14 @@ This example shows how the scaling vector can be stored between states.
            obs.row_features[:] /= self.row_ema
            return obs
 
-.. TODO reference reset protocol
-
 Here, you can notice how we used the constructor to be able to customize the coefficient of the
 exponential moving average.
-We also inherited the ``reset`` method which does not return anything.
+We also inherited the :py:meth:`~ecole.typing.ObservationFunction.reset` method which does not
+return anything.
 This method is called at the begining of the episode by
 :py:meth:`~ecole.environment.EnvironmentComposer.reset` and is used to reintialize the class
 internal attribute on new episodes.
-The ``obtain_observation`` is also called during during
+The :py:meth:`~ecole.typing.ObservationFunction.obtain_observation` is also called during during
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`, hence the ``if`` else ``else`` condition.
 Both these methods call the parent method to let it do its own initialization/reseting.
 
@@ -118,6 +114,61 @@ Both these methods call the parent method to let it do its own initialization/re
    <https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing>`_
 
 
-
 From Scratch
 ------------
+:py:class:`~ecole.typing.ObservationFunction` and :py:class:`~ecole.typing.RewardFunction` do not
+anything more than what is explained in the previous section.
+This means that to create new function form Python, one can simply create a class with the previous
+methods.
+
+For instance, we can create a ``StochasticReward`` function that will wrap any given
+:py:class:`~ecole.typing.RewardFunction` and with some probability return either the given reward or
+0.
+
+.. code-block:: python
+
+   import random
+
+
+   class StochasticReward:
+
+       def __init__(self, reward_function, probability = 0.05):
+           self.reward_function = reward_function
+           self.probability = probability
+
+       def reset(self, model):
+           self.reward_function.reset(model)
+
+       def obtain_reward(self, model, done):
+           # Unconditionally getting reward as reward_funcition.obtain_reward may have side effects
+           reward = self.reward_function.obtain_reward(model, done)
+           if random.random() < probability:
+               return 0.
+           else:
+               return reward
+
+It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations` in a
+:py:class:`~ecole.environment.Branching` environment.
+
+.. code-block:: python
+
+   >> stochastic_lpiterations = StochaticReward(-ecole.reward.LpIteration, probability=0.1)
+   >> env = ecole.environment.Branching(reward_function=stochastic_lpiterations)
+
+
+Using PyScipOpt
+---------------
+When creating new function, it is common to need to extract information from the solver.
+`PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is the official Python interface to
+SCIP.
+The ``pyscipopt.Model`` holds a stateful SCIP problem instance and solver.
+For a number of reasons (such as avaibility in C++) Ecole defines its own
+:py:class:`~ecole.scip.Model` class that represent a very similar concept.
+It does not aim to be a replacement to PyScipOpt, rather it is possible to convert back and forth
+without any copy.
+
+Using :py:meth:`ecole.scip.Model.as_pyscipopt`, one can get a ``pyscipopt.Model`` that shares its
+internal data with :py:class:`ecole.scip.Model`.
+
+Conversely, given a ``pyscipopt.Model``, it is possible to to create a :py:class:`ecole.scip.Model`
+using the static method :py:meth:`ecole.scip.Model.from_pyscipopt`.

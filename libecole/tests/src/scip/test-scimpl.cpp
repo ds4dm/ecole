@@ -5,12 +5,12 @@
 
 using namespace ecole;
 
-TEST_CASE("Allocation of ressources") {
+TEST_CASE("Allocation of ressources", "[scip]") {
 	scip::Scimpl scimpl{};
 	REQUIRE(SCIPgetStage(scimpl.get_scip_ptr()) == SCIP_STAGE_INIT);
 }
 
-TEST_CASE("Dealocation of ressources") {
+TEST_CASE("Dealocation of ressources", "[scip]") {
 	{ scip::Scimpl scimpl{}; }
 	BMScheckEmptyMemory();
 }

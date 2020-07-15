@@ -1,21 +1,17 @@
+"""Test Ecole observation functions in Python.
+
+Most observation functions are written in Ecole C++ library.
+This is where the logic should be tested.
+Here,
+  - Some tests automatically run the same assertions on all functions;
+  - Other tests that observation returned form observation functions are bound to the correct types.
+"""
+
 import unittest.mock as mock
 
-import pytest
 import numpy as np
 
 import ecole.observation as O
-from ecole.environment import Branching
-
-
-@pytest.fixture
-def solving_model(model):
-    env = Branching()
-    env.reset(model)
-    return env.model
-
-
-def test_Nothing(model):
-    assert O.Nothing().obtain_observation(model) is None
 
 
 def test_TupleFunction(model):
@@ -48,29 +44,67 @@ def test_DictFunction(model):
     assert obs == {"name1": "something", "name2": "else"}
 
 
-def test_NodeBipartite(solving_model):
-    obs = O.NodeBipartite().obtain_observation(solving_model)
+def pytest_generate_tests(metafunc):
+    """Parametrize the `observation_function` fixture.
+
+    Add observation functions here to have them automatically run all the tests that take
+    `observation_function` as input.
+    """
+    if "observation_function" in metafunc.fixturenames:
+        all_observation_functions = (
+            O.Nothing(),
+            O.NodeBipartite(),
+            O.StrongBranchingScores(True),
+            O.StrongBranchingScores(False),
+        )
+        metafunc.parametrize("observation_function", all_observation_functions)
+
+
+def test_default_init(observation_function):
+    """Construct with default arguments."""
+    type(observation_function)()
+
+
+def test_reset(observation_function, solving_model):
+    """Successive calls to reset."""
+    observation_function.reset(solving_model)
+    observation_function.reset(solving_model)
+
+
+def test_obtain_observation(observation_function, solving_model):
+    """Obtain observation."""
+    observation_function.reset(solving_model)
+    observation_function.obtain_observation(solving_model)
+
+
+def make_obs(obs_func, model):
+    obs_func.reset(model)
+    return obs_func.obtain_observation(model)
+
+
+def assert_array(arr, ndim=1, non_empty=True, dtype=np.double):
+    assert isinstance(arr, np.ndarray)
+    assert arr.ndim == ndim
+    assert (not non_empty) or (arr.size > 0)
+    assert arr.dtype == dtype
+
+
+def test_Nothing_observation(model):
+    """Observation of Nothing is None."""
+    assert make_obs(O.Nothing(), model) is None
+
+
+def test_NodeBipartite_observation(solving_model):
+    """Observation of NodeBipartite is a type with array attributes."""
+    obs = make_obs(O.NodeBipartite(), solving_model)
     assert isinstance(obs, O.NodeBipartiteObs)
-    assert isinstance(obs.column_features, np.ndarray)
-
-    assert obs.column_features.size > 0
-    assert len(obs.column_features.shape) == 2
-    assert obs.row_features.size > 0
-    assert len(obs.row_features.shape) == 2
-    assert obs.edge_features.shape == (obs.row_features.shape[0], obs.column_features.shape[0],)
-    assert obs.edge_features.indices.shape == (2, obs.edge_features.nnz)
-
-    val = np.random.rand()
-    obs.column_features[:] = val
-    assert np.all(obs.column_features == val)
-    obs.row_features[:] = val
-    assert np.all(obs.row_features == val)
-    obs.edge_features.values[:] = val
-    assert np.all(obs.edge_features.values == val)
+    assert_array(obs.column_features, ndim=2)
+    assert_array(obs.row_features, ndim=2)
+    assert_array(obs.edge_features.values)
+    assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
 
 
-def test_StrongBranchingScores(solving_model):
-    obs = O.StrongBranchingScores().obtain_observation(solving_model)
-    assert isinstance(obs, np.ndarray)
-    assert obs.size > 0
-    assert len(obs.shape) == 1
+def test_StrongBranchingScores_observation(solving_model):
+    """Observation of StrongBranchingScores is a numpy array."""
+    obs = make_obs(O.StrongBranchingScores(), solving_model)
+    assert_array(obs)

@@ -6,7 +6,7 @@
 
 using namespace ecole;
 
-TEST_CASE("Model has variable view iterator") {
+TEST_CASE("Model has variable view iterator", "[scip]") {
 	auto model = get_model();
 	std::size_t count = 0;
 	for (auto var : model.variables()) {

@@ -1,0 +1,43 @@
+#pragma once
+
+#include <scip/config.h>
+
+namespace ecole {
+
+struct VersionInfo {
+	unsigned int major;
+	unsigned int minor;
+	unsigned int patch;
+	const char* git_revision;
+};
+
+/**
+ * Ecole version, as per header files.
+ */
+inline constexpr VersionInfo get_version() noexcept {
+	return {
+		@Ecole_VERSION_MAJOR@, @Ecole_VERSION_MINOR@, @Ecole_VERSION_PATCH@, "@GIT_REVISION@"
+	};
+}
+
+/**
+ * Ecole version of the library.
+ *
+ * This is the version of Ecole when compiling it as a library.
+ * This is useful for detecting incompatibilities when loading as a dynamic library.
+ */
+VersionInfo get_build_version() noexcept;
+
+/**
+ * SCIP version, as per heder files.
+ */
+inline constexpr VersionInfo get_scip_version() noexcept {
+	return {SCIP_VERSION_MAJOR, SCIP_VERSION_MINOR, SCIP_VERSION_PATCH, ""};
+}
+
+/**
+ * SCIP version used to compile Ecole library.
+ */
+VersionInfo get_build_scip_version() noexcept;
+
+}  // namespace ecole
