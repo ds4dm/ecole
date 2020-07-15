@@ -60,7 +60,7 @@ class EnvironmentComposer:
         else:
             return observation_function
 
-    def reset(self, instance):
+    def reset(self, instance, *args, **kwargs):
         """Start a new episode.
 
         This method brings the environment to a new initial state, *i.e.* starts a new
@@ -102,7 +102,7 @@ class EnvironmentComposer:
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
-            done, action_set = self.dynamics.reset_dynamics(self.model)
+            done, action_set = self.dynamics.reset_dynamics(self.model, *args, **kwargs)
             self.observation_function.reset(self.model)
             self.reward_function.reset(self.model)
 
