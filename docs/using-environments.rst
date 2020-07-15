@@ -101,7 +101,7 @@ parameters, which we will discuss later on.
 .. _resetting-environments:
 
 Resetting environments
----------------------
+----------------------
 Each episode in the inner ``while`` starts with a call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset` in order to bring the environment into a new
 initial state.
@@ -109,16 +109,16 @@ The method is parameterized with a problem instance file: the combinatorial
 optimization problem that will be loaded and solved by the `SCIP <https://scip.zib.de/>`_ solver
 during the episode.
 
-* The ``observation`` consists of information about the state of the solver that should be used to select the next action 
+* The ``observation`` consists of information about the state of the solver that should be used to select the next action
   to perform (for example, using a machine learning algorithm.)
-* The ``action_set``, when non-null, describes the set of candidate actions which are valid for the next transition. 
+* The ``action_set``, when not ``None``, describes the set of candidate actions which are valid for the next transition.
   This is necessary for environments where the action set varies from state to state.
   For instance, in the :py:class:`~ecole.environment.Branching` environment the set of candidate variables
   for branching depends on the value of the current LP solution, which changes at every iteration of the algorithm.
 * The ``reward_offset`` is an offset to the reward function that accounts for any computation happening in
   :py:meth:`~ecole.environment.EnvironmentComposer.reset` when generating the initial state.
-  For example, if clock time is selected as a reward function in a :py:class:`~ecole.environment.Branching` environment, this would account for 
-  time spent in the preprocessing phase before any branching is performed. This offset is thus important for benchmarking, but has no effect 
+  For example, if clock time is selected as a reward function in a :py:class:`~ecole.environment.Branching` environment, this would account for
+  time spent in the preprocessing phase before any branching is performed. This offset is thus important for benchmarking, but has no effect
   on the control problem, and can be ignored when training a machine learning agent.
 * The boolean flag ``done`` indicates whether the initial state is also a terminal state.
   This can happen in some environments, such as :py:class:`~ecole.environment.Branching`, where the problem instance
