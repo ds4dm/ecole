@@ -48,6 +48,24 @@ TEST_CASE("Pseudocosts") {
 
 				// Assert that the observation is none only on terminal states
 				REQUIRE(obs.has_value() != done);
+				if (obs.has_value()) {
+					auto const scip = env.model().get_scip_ptr();
+
+					auto const nb_observations = static_cast<int>(obs.value().shape()[0]);
+					REQUIRE(nb_observations == SCIPgetNVars(scip));
+
+					SCIP_VAR** cands;
+					int nb_cands;
+					SCIPgetLPBranchCands(scip, &cands, NULL, NULL, NULL, &nb_cands, NULL);
+
+					for (int i = 0; i < nb_cands; i++) {
+						auto const lp_index = SCIPcolGetLPPos(SCIPvarGetCol(cands[i]));
+						auto pseudocost = obs.value()(lp_index);
+
+						REQUIRE(pseudocost != std::nan(""));
+						REQUIRE(pseudocost > 0);
+					}
+				}
 			}
 
 			REQUIRE(count > 0);
