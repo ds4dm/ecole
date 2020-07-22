@@ -28,6 +28,7 @@ endmacro()
 macro(set_developer_defaults)
 	set_default_build_type(Debug)
 
+	option(ENABLE_PYTHON_VENV "Install Ecole Python library in a virtual environment" ON)
 	option(BUILD_TESTING "Build tests in Ecole" ON)
 
 	# Generate compile_commands.json to make it easier to work with clang based tools
