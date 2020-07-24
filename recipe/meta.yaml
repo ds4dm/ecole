@@ -1,0 +1,49 @@
+{% set version = "0.2.0" %}
+
+package:
+  name: ecole
+  version: {{ version }}a
+
+source:
+  path: ..
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake >=3.14
+    - make
+  host:
+    - scip
+    - conan
+    - python {{ python }}
+    - pybind11
+    - numpy >=1.11
+    - xtensor-python
+  run:
+    - python
+    - numpy
+  run_constrained:
+    - pyscipopt 3.0.0
+
+test:
+  imports:
+    - ecole
+    - ecole.core
+    - ecole.environment
+  source_files:
+    - libecole/tests/data/
+    - python/tests
+  requires:
+    - pytest
+    - pyscipopt
+  commands:
+    - python -m pytest --no-slow python/tests
+
+about:
+  home: https://www.ecole.ai/
+  license: BSD-3-Clause License
+  license_file: LICENSE
+  summary: Extensible Combinatorial Optimization Learning Environments
