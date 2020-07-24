@@ -15,7 +15,7 @@ find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
 
 pybind11_add_module(
-	ecole-python
+	ecole-python SYSTEM
 	src/ecole/core/core.cpp
 	src/ecole/core/scip.cpp
 	src/ecole/core/observation.cpp
@@ -34,7 +34,7 @@ target_link_libraries(
 		xtensor
 		xtensor-python
 )
-if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+if(CMAKE_BUILD_TYPE MATCHES Release)
 	target_link_libraries(ecole-python PRIVATE xtensor::optimize)
 endif()
 
