@@ -16,6 +16,7 @@ dependencies:
   - cmake>=3.15
   - clang-tools>=10
   - conan
+  - ccache
   # Build time Python dependencies
   - python>=3.6
   - pybind11
