@@ -22,11 +22,11 @@ TEST_CASE("Pseudocosts return pseudo costs array", "[obs]") {
 
 	REQUIRE(obs.has_value());
 	auto const costs = obs.value();
-	REQUIRE(costs.size() == model.lp_columns().size);
+	REQUIRE(costs.size() == model.lp_columns().size());
 
 	// All branching candidates have a positive pseudocost
 	for (auto const var : model.lp_branch_cands()) {
-		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(SCIPvarGetCol(var.value)));
+		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(SCIPvarGetCol(var)));
 		auto const pseudocost = costs[lp_index];
 		REQUIRE(!std::isnan(pseudocost));
 		REQUIRE(pseudocost > 0);
