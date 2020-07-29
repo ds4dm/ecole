@@ -201,7 +201,7 @@ commands:
           command: >
             cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
             -D CMAKE_TOOLCHAIN_FILE="${PWD}/.circleci/conda.cmake"
-            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON
+            -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON -D ENABLE_PYTHON_VENV=ON
             <<parameters.cmake_options>>
       - save_cache:
           key: *conan_cache_key
