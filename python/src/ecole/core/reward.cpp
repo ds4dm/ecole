@@ -35,7 +35,7 @@ private:
 
 class Cumulative {
 public:
-	Cumulative(py::object function, py::object reduce_func, Reward inti_cumul, py::str repr);
+	Cumulative(py::object function, py::object reduce_func, Reward init_cumul_, py::str repr);
 	void reset(py::object model);
 	Reward obtain_reward(py::object model, bool done);
 	py::str toString() const;
@@ -51,9 +51,11 @@ private:
 /**
  * Helper function to bind common methods.
  */
-template <typename PyClass, typename... Args> void def_reset(PyClass, Args&&...);
-template <typename PyClass, typename... Args> void def_obtain_reward(PyClass, Args&&...);
-template <typename PyClass> void def_operators(PyClass);
+template <typename PyClass, typename... Args>
+void def_reset(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass, typename... Args>
+void def_obtain_reward(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 
 /**
  * Reward module bindings definitions.
@@ -284,7 +286,7 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 		.def("__ceil__", arith_meth(math.attr("ceil"), "math.ceil({})"));
 	// Custom Math methods
 	// clang-format off
-	for (auto const name : {
+	for (const auto *const name : {
 		"exp", "log", "log2", "log10", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan",
 		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "isfinite", "isinf", "isnan"
 	}) {

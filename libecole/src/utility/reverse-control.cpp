@@ -88,8 +88,8 @@ auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
 	if (e_ptr) {
 		assert(thread_finished);
 		std::rethrow_exception(std::move(e_ptr));
-	} else
-		return std::move(lk);
+	}
+	return std::move(lk);
 }
 
 /********************************************
@@ -146,7 +146,9 @@ auto Controller::is_done() const noexcept -> bool {
 }
 
 auto Controller::stop_thread() -> void {
-	if (!model_lock.owns_lock()) model_lock = synchronizer->env_wait_thread();
+	if (!model_lock.owns_lock()) {
+		model_lock = synchronizer->env_wait_thread();
+	}
 	synchronizer->env_stop_thread(std::move(model_lock));
 }
 

@@ -23,7 +23,7 @@ public:
 	static constexpr int no_maxdepth = -1;
 	static constexpr double no_maxbounddist = 1.0;
 
-	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor>);
+	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor_*/);
 
 	auto
 	scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
@@ -46,15 +46,19 @@ void ScipDeleter::operator()(SCIP* ptr) {
 static std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 	SCIP* scip_raw;
 	scip::call(SCIPcreate, &scip_raw);
-	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), true);
+	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), 1U);
 	std::unique_ptr<SCIP, ScipDeleter> scip_ptr = nullptr;
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
 }
 
 static std::unique_ptr<SCIP, ScipDeleter> copy_orig(SCIP const* const source) {
-	if (!source) return nullptr;
-	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) return create_scip();
+	if (source == nullptr) {
+		return nullptr;
+	}
+	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) {
+		return create_scip();
+	}
 	auto dest = create_scip();
 	// Copy operation is not thread safe
 	static std::mutex m{};
@@ -142,15 +146,17 @@ scip::ReverseBranchrule::ReverseBranchrule(
 		no_maxbounddist),
 	weak_executor(weak_executor_) {}
 
-auto ReverseBranchrule::scip_execlp(SCIP* scip, SCIP_BRANCHRULE*, SCIP_Bool, SCIP_RESULT* result)
-	-> SCIP_RETCODE {
+auto ReverseBranchrule::scip_execlp(
+	SCIP* scip,
+	SCIP_BRANCHRULE* /*branchrule*/,
+	SCIP_Bool,
+	SCIP_RESULT* result) -> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;
-	} else {
-		auto action_func = weak_executor.lock()->hold_env();
-		return action_func(scip, result);
 	}
+	auto action_func = weak_executor.lock()->hold_env();
+	return action_func(scip, result);
 }
 
 }  // namespace

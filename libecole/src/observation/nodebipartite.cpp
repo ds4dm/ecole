@@ -68,7 +68,7 @@ bool is_prim_sol_at_ub(Scip* const scip, scip::Col* const col) noexcept {
 }
 
 nonstd::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
-	auto const sol = SCIPgetBestSol(scip);
+	auto* const sol = SCIPgetBestSol(scip);
 	if (sol != nullptr) {
 		return SCIPgetSolVal(scip, sol, var);
 	}
@@ -93,15 +93,15 @@ feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept
 auto extract_col_feat(scip::Model const& model) {
 	auto constexpr n_col_feat =
 		11 + scip::enum_size<scip::var_type>::value + scip::enum_size<scip::base_stat>::value;
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	tensor col_feat{{model.lp_columns().size(), n_col_feat}, 0.};
 
 	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
 	value_type const obj_norm = obj_l2_norm(scip);
 
-	auto iter = col_feat.begin();
-	for (auto const col : model.lp_columns()) {
-		auto const var = SCIPcolGetVar(col);
+	auto* iter = col_feat.begin();
+	for (auto* const col : model.lp_columns()) {
+		auto* const var = SCIPcolGetVar(col);
 		*(iter++) = static_cast<value_type>(lower_bound(scip, col).has_value());
 		*(iter++) = static_cast<value_type>(upper_bound(scip, col).has_value());
 		*(iter++) = SCIPgetColRedcost(scip, col) / obj_norm;
@@ -176,9 +176,9 @@ scip::real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
  * Row are counted once per right hand side and once per left hand side.
  */
 std::size_t n_ineq_rows(scip::Model const& model) {
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	std::size_t count = 0;
-	for (auto row : model.lp_rows()) {
+	for (auto* row : model.lp_rows()) {
 		count += static_cast<std::size_t>(left_hand_side(scip, row).has_value());
 		count += static_cast<std::size_t>(right_hand_side(scip, row).has_value());
 	}
@@ -187,7 +187,7 @@ std::size_t n_ineq_rows(scip::Model const& model) {
 
 auto extract_row_feat(scip::Model const& model) {
 	auto constexpr n_row_feat = 5;
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	tensor row_feat{{n_ineq_rows(model), n_row_feat}, 0.};
 
 	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
@@ -208,11 +208,15 @@ auto extract_row_feat(scip::Model const& model) {
 		*(iter++) = sign * SCIProwGetDualsol(row) / (row_norm * obj_norm);
 	};
 
-	auto iter_ = row_feat.begin();
-	for (auto const row_ : model.lp_rows()) {
+	auto* iter_ = row_feat.begin();
+	for (auto* const row_ : model.lp_rows()) {
 		// Rows are counted once per rhs and once per lhs
-		if (left_hand_side(scip, row_).has_value()) extract_row(iter_, row_, true);
-		if (right_hand_side(scip, row_).has_value()) extract_row(iter_, row_, false);
+		if (left_hand_side(scip, row_).has_value()) {
+			extract_row(iter_, row_, true);
+		}
+		if (right_hand_side(scip, row_).has_value()) {
+			extract_row(iter_, row_, false);
+		}
 	}
 
 	// Make sure we iterated over as many element as there are in the tensor
@@ -233,27 +237,32 @@ auto extract_row_feat(scip::Model const& model) {
  * Row are counted once per right hand side and once per left hand side.
  */
 auto matrix_nnz(scip::Model const& model) {
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	std::size_t nnz = 0;
-	for (auto row : model.lp_rows()) {
+	for (auto* row : model.lp_rows()) {
 		auto const row_size = static_cast<std::size_t>(SCIProwGetNLPNonz(row));
-		if (left_hand_side(scip, row).has_value()) nnz += row_size;
-		if (right_hand_side(scip, row).has_value()) nnz += row_size;
+		if (left_hand_side(scip, row).has_value()) {
+			nnz += row_size;
+		}
+		if (right_hand_side(scip, row).has_value()) {
+			nnz += row_size;
+		}
 	}
 	return nnz;
 }
 
 utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 
 	using coo_matrix = utility::coo_matrix<value_type>;
 	auto const nnz = matrix_nnz(model);
 	auto values = decltype(coo_matrix::values)::from_shape({nnz});
 	auto indices = decltype(coo_matrix::indices)::from_shape({2, nnz});
 
-	std::size_t i = 0, j = 0;
-	for (auto const row : model.lp_rows()) {
-		auto const row_cols = SCIProwGetCols(row);
+	std::size_t i = 0;
+	std::size_t j = 0;
+	for (auto* const row : model.lp_rows()) {
+		auto* const row_cols = SCIProwGetCols(row);
 		auto const* const row_vals = SCIProwGetVals(row);
 		auto const row_nnz = static_cast<std::size_t>(SCIProwGetNLPNonz(row));
 		if (left_hand_side(scip, row).has_value()) {

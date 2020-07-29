@@ -10,8 +10,8 @@ namespace ecole {
  * of the observation.
  */
 struct NoneType {
-	constexpr bool operator==(NoneType const&) const { return true; }
-	constexpr bool operator!=(NoneType const&) const { return false; }
+	constexpr bool operator==(NoneType const& /*unused*/) const { return true; }
+	constexpr bool operator!=(NoneType const& /*unused*/) const { return false; }
 };
 
 /**

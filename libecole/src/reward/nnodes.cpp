@@ -5,7 +5,7 @@
 namespace ecole {
 namespace reward {
 
-void NNodes::reset(scip::Model const&) {
+void NNodes::reset(scip::Model const& /*unused*/) {
 	last_n_nodes = 0;
 }
 

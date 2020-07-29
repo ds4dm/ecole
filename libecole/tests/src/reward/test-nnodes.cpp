@@ -54,8 +54,7 @@ TEST_CASE(
 }
 
 TEST_CASE("NNodes rewards are consistent when used in a Branching environment", "[reward]") {
-
-	int max_nnodes = 20;
+	constexpr int max_nnodes = 20;
 	auto env = environment::Branching<observation::Nothing, reward::NNodes>{
 		{},
 		{},

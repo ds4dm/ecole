@@ -60,7 +60,7 @@ void Model::write_problem(const std::string& filename) {
 	scip::call(SCIPwriteOrigProblem, get_scip_ptr(), filename.c_str(), nullptr, true);
 }
 
-void Model::read_prob(std::string const& filename) {
+void Model::read_prob(std::string const& filename) const {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
@@ -70,27 +70,27 @@ Stage Model::get_stage() const noexcept {
 
 ParamType Model::get_param_type(std::string const& name) const {
 	auto* scip_param = SCIPgetParam(get_scip_ptr(), name.c_str());
-	if (!scip_param)
+	if (scip_param == nullptr) {
 		throw scip::Exception(fmt::format("parameter <{}> unknown", name));
-	else
-		switch (SCIPparamGetType(scip_param)) {
-		case SCIP_PARAMTYPE_BOOL:
-			return ParamType::Bool;
-		case SCIP_PARAMTYPE_INT:
-			return ParamType::Int;
-		case SCIP_PARAMTYPE_LONGINT:
-			return ParamType::LongInt;
-		case SCIP_PARAMTYPE_REAL:
-			return ParamType::Real;
-		case SCIP_PARAMTYPE_CHAR:
-			return ParamType::Char;
-		case SCIP_PARAMTYPE_STRING:
-			return ParamType::String;
-		default:
-			assert(false);  // All enum value should be handled
-			// Non void return for optimized build
-			throw Exception(fmt::format("Could not find type for parameter '{}'", name));
-		}
+	}
+	switch (SCIPparamGetType(scip_param)) {
+	case SCIP_PARAMTYPE_BOOL:
+		return ParamType::Bool;
+	case SCIP_PARAMTYPE_INT:
+		return ParamType::Int;
+	case SCIP_PARAMTYPE_LONGINT:
+		return ParamType::LongInt;
+	case SCIP_PARAMTYPE_REAL:
+		return ParamType::Real;
+	case SCIP_PARAMTYPE_CHAR:
+		return ParamType::Char;
+	case SCIP_PARAMTYPE_STRING:
+		return ParamType::String;
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception(fmt::format("Could not find type for parameter '{}'", name));
+	}
 }
 
 template <> void Model::set_param<ParamType::Bool>(std::string const& name, bool value) {
@@ -116,7 +116,7 @@ void Model::set_param<ParamType::String>(std::string const& name, std::string co
 template <> bool Model::get_param<ParamType::Bool>(std::string const& name) const {
 	SCIP_Bool value{};
 	scip::call(SCIPgetBoolParam, get_scip_ptr(), name.c_str(), &value);
-	return value;
+	return static_cast<bool>(value);
 }
 template <> int Model::get_param<ParamType::Int>(std::string const& name) const {
 	int value{};
@@ -163,7 +163,7 @@ std::map<std::string, Param> Model::get_params() const {
 	return params;
 }
 
-void Model::solve() {
+void Model::solve() const {
 	scip::call(SCIPsolve, get_scip_ptr());
 }
 
@@ -187,15 +187,15 @@ bool Model::solve_iter_is_done() {
 	return scimpl->solve_iter_is_done();
 }
 
-void Model::disable_presolve() {
+void Model::disable_presolve() const {
 	scip::call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
-void Model::disable_cuts() {
+void Model::disable_cuts() const {
 	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
 nonstd::span<Var*> Model::variables() const noexcept {
-	auto const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = get_scip_ptr();
 	return {SCIPgetVars(scip_ptr), static_cast<std::size_t>(SCIPgetNVars(scip_ptr))};
 }
 
@@ -215,7 +215,7 @@ nonstd::span<Var*> Model::pseudo_branch_cands() const {
 }
 
 nonstd::span<Col*> Model::lp_columns() const {
-	auto const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = get_scip_ptr();
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP columns are only available during solving");
 	}
@@ -223,7 +223,7 @@ nonstd::span<Col*> Model::lp_columns() const {
 }
 
 nonstd::span<Row*> Model::lp_rows() const {
-	auto const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = get_scip_ptr();
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP rows are only available during solving");
 	}
@@ -237,16 +237,17 @@ template <> std::string Caster<std::string, char>::cast(char val) {
 }
 
 template <> char Caster<char, char const*>::cast(char const* val) {
-	if (strlen(val) == 1)
+	if (strlen(val) == 1) {
 		return val[0];
-	else
-		throw scip::Exception("Can only convert a string with a single character to a char");
+	}
+	throw scip::Exception("Can only convert a string with a single character to a char");
 }
+
 template <> char Caster<char, std::string>::cast(std::string val) {
-	if (val.length() == 1)
+	if (val.length() == 1) {
 		return val[0];
-	else
-		throw scip::Exception("Can only convert a string with a single character to a char");
+	}
+	throw scip::Exception("Can only convert a string with a single character to a char");
 }
 
 }  // namespace internal

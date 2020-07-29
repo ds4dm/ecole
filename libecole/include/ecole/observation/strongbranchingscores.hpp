@@ -17,7 +17,7 @@ public:
 
 	StrongBranchingScores(bool pseudo_candidates = true);
 
-	nonstd::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& state) override;
+	nonstd::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model) override;
 };
 
 }  // namespace observation

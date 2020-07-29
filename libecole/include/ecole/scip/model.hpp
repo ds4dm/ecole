@@ -37,13 +37,13 @@ public:
 	 * Construct an *initialized* model with default SCIP plugins.
 	 */
 	Model();
-	Model(Model&&) noexcept;
+	Model(Model&& /*other*/) noexcept;
 	Model(Model const& model) = delete;
-	Model(std::unique_ptr<Scimpl>&&);
+	Model(std::unique_ptr<Scimpl>&& /*other_scimpl*/);
 
 	~Model();
 
-	Model& operator=(Model&&) noexcept;
+	Model& operator=(Model&& /*other*/) noexcept;
 	Model& operator=(Model const&) = delete;
 
 	/**
@@ -80,7 +80,7 @@ public:
 	/**
 	 * Read a problem file into the Model.
 	 */
-	void read_prob(std::string const& filename);
+	void read_prob(std::string const& filename) const;
 
 	Stage get_stage() const noexcept;
 
@@ -109,13 +109,13 @@ public:
 	void set_params(std::map<std::string, Param> name_values);
 	std::map<std::string, Param> get_params() const;
 
-	void disable_presolve();
-	void disable_cuts();
+	void disable_presolve() const;
+	void disable_cuts() const;
 
 	/**
 	 * Transform, presolve, and solve problem.
 	 */
-	void solve();
+	void solve() const;
 	bool is_solved() const noexcept;
 
 	void solve_iter();
@@ -141,7 +141,7 @@ namespace internal {
 
 // SFINAE default class for no available cast
 template <typename To, typename From, typename = void> struct Caster {
-	static To cast(From) { throw Exception("Cannot convert to the desired type"); }
+	static To cast(From /*unused*/) { throw Exception("Cannot convert to the desired type"); }
 };
 
 // SFINAE class for narrow cast
@@ -171,15 +171,15 @@ template <typename To, typename... VariantFrom> struct Caster<To, nonstd::varian
 
 // Pointers must not convert to bools
 template <typename From> struct Caster<bool, std::remove_cv<From>*> {
-	static bool cast(From) { throw Exception("Cannot convert pointers to bool"); }
+	static bool cast(From /*unused*/) { throw Exception("Cannot convert pointers to bool"); }
 };
 
 // Convert character to string
-template <> std::string Caster<std::string, char>::cast(char);
+template <> std::string Caster<std::string, char>::cast(char /*val*/);
 
 // Convert string to character
-template <> char Caster<char, char const*>::cast(char const*);
-template <> char Caster<char, std::string>::cast(std::string);
+template <> char Caster<char, char const*>::cast(char const* /*val*/);
+template <> char Caster<char, std::string>::cast(std::string /*val*/);
 
 // Helper func to deduce From type automatically
 template <typename To, typename From> To cast(From val) {

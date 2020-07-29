@@ -3,7 +3,7 @@
 namespace ecole {
 namespace reward {
 
-Reward IsDone::obtain_reward(scip::Model const&, bool done) {
+Reward IsDone::obtain_reward(scip::Model const& /*model*/, bool done) {
 	return done ? 1 : 0;
 }
 

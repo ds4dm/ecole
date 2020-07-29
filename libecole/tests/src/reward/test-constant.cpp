@@ -8,7 +8,8 @@
 using namespace ecole;
 
 TEST_CASE("Constant reward unit tests", "[unit][reward]") {
-	reward::unit_tests(reward::Constant{3.});
+	constexpr auto some_constant = 3.0;
+	reward::unit_tests(reward::Constant{some_constant});
 }
 
 TEST_CASE("Constant reward always return the same value", "[reward]") {

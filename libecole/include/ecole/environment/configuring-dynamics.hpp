@@ -18,7 +18,8 @@ using ParamDict = std::map<std::string, scip::Param>;
 class ConfiguringDynamics : public EnvironmentDynamics<ParamDict, NoneType> {
 public:
 	std::tuple<bool, NoneType> reset_dynamics(scip::Model& model) override;
-	std::tuple<bool, NoneType> step_dynamics(scip::Model& model, ParamDict const& action) override;
+	std::tuple<bool, NoneType>
+	step_dynamics(scip::Model& model, ParamDict const& param_dict) override;
 };
 
 }  // namespace environment

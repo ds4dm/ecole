@@ -66,9 +66,11 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 		REQUIRE_THROWS_WITH(
 			model.get_param<ParamType::Real>(int_param),
 			Contains(int_param) && Contains("int") && Contains("Real"));
-		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, 3.), scip::Exception);
+
+		constexpr auto some_real_val = 3.0;
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, some_real_val), scip::Exception);
 		REQUIRE_THROWS_WITH(
-			model.set_param<ParamType::Real>(int_param, 3.0),
+			model.set_param<ParamType::Real>(int_param, some_real_val),
 			Contains(int_param) && Contains("int") && Contains("Real"));
 	}
 
@@ -104,7 +106,8 @@ TEST_CASE("Automatic parameter management", "[scip]") {
 	}
 
 	SECTION("Throw on numerical rounding") {
-		REQUIRE_THROWS_AS(model.set_param(int_param, 3.1), std::runtime_error);
+		constexpr auto double_not_int = 3.1;
+		REQUIRE_THROWS_AS(model.set_param(int_param, double_not_int), std::runtime_error);
 	}
 
 	SECTION("Throw on overflow") {
@@ -136,7 +139,7 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 	SECTION("Extract map of parameters") {
 		auto vals = model.get_params();
-		REQUIRE(vals.size() > 0l);
+		REQUIRE(!vals.empty());
 		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
 	}
 

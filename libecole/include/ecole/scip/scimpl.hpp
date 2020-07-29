@@ -16,7 +16,7 @@ struct ScipDeleter {
 class Scimpl {
 public:
 	Scimpl();
-	Scimpl(std::unique_ptr<SCIP, ScipDeleter>&&) noexcept;
+	Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& /*scip_ptr*/) noexcept;
 
 	SCIP* get_scip_ptr() noexcept;
 

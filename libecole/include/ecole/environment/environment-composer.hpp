@@ -95,7 +95,9 @@ public:
 	 * @copydoc ecole::environment::Environment::step
 	 */
 	std::tuple<Observation, ActionSet, Reward, bool, Info> step(Action const& action) override {
-		if (!can_transition) throw Exception("Environment need to be reset.");
+		if (!can_transition) {
+			throw Exception("Environment need to be reset.");
+		}
 		try {
 			bool done;
 			ActionSet action_set;

@@ -29,10 +29,8 @@ void bind_submodule(py::module m) {
 					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;
 					uptr.reset(reinterpret_cast<SCIP*>(py::cast<void*>(cap)));
 					return Model(std::make_unique<Scimpl>(std::move(uptr)));
-				} else {
-					throw scip::Exception(
-						"Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
 				}
+				throw scip::Exception("Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
 			},
 			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
 			// is alive, as PyScipOpt is now sharing a non-owning pointer.

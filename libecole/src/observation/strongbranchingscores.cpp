@@ -21,7 +21,7 @@ StrongBranchingScores::obtain_observation(scip::Model& model) {
 		return {};
 	}
 
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 
 	/* store original SCIP parameters */
 	auto const integralcands = model.get_param<bool>("branching/vanillafullstrong/integralcands");
@@ -38,7 +38,7 @@ StrongBranchingScores::obtain_observation(scip::Model& model) {
 	model.set_param("branching/vanillafullstrong/idempotent", true);
 
 	/* execute vanilla full strong branching */
-	auto branchrule = SCIPfindBranchrule(scip, "vanillafullstrong");
+	auto* branchrule = SCIPfindBranchrule(scip, "vanillafullstrong");
 	SCIP_RESULT result;
 	scip::call(branchrule->branchexeclp, scip, branchrule, false, &result);
 	assert(result == SCIP_DIDNOTRUN);
@@ -64,7 +64,7 @@ StrongBranchingScores::obtain_observation(scip::Model& model) {
 	auto strong_branching_scores = xt::xtensor<double, 1>({num_lp_columns}, std::nan(""));
 
 	for (std::size_t i = 0; i < static_cast<std::size_t>(ncands); i++) {
-		auto const col = SCIPvarGetCol(cands[i]);
+		auto* const col = SCIPvarGetCol(cands[i]);
 		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(col));
 		strong_branching_scores[lp_index] = static_cast<double>(candscores[i]);
 	}

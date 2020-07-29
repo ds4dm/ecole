@@ -42,7 +42,7 @@ private:
 		auto thread_action_function(lock_t const& lk) const noexcept -> action_func_t;
 
 	private:
-		std::exception_ptr except_ptr = nullptr;
+		std::exception_ptr except_ptr = nullptr;  // NOLINT(bugprone-throw-keyword-missing)
 		std::mutex model_mutex;
 		std::condition_variable model_avail_cv;
 		bool thread_owns_model = true;

@@ -1,7 +1,10 @@
+# readability-implicit-bool-conversion decrease readability due to SCIP_Bool being an unsigned int
 Checks: >-
   clang-diagnostic-*,
-  clang-analyzer-*
+  clang-analyzer-*,
+  readability-*,
+  -readability-implicit-bool-conversion
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
-FormatStyle: none
+FormatStyle: file

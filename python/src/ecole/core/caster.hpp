@@ -66,7 +66,7 @@ public:
 	 * This macro establishes the name description in function signatures and declares a
 	 * local variable `value` of type @ref scip::Param.
 	 */
-	PYBIND11_TYPE_CASTER(ecole::scip::Param, _("Union[bool, int, float, str]"));
+	PYBIND11_TYPE_CASTER(ecole::scip::Param, _("Union[bool, int, float, str]"));  // NOLINT
 
 	/**
 	 * Conversion from Python to C++.
@@ -78,7 +78,7 @@ public:
 	 *
 	 * @param src The PyObject to convert from.
 	 */
-	bool load(handle src, bool) {
+	bool load(handle src, bool /*implicit_conversion*/) {
 		using namespace ecole;
 		using ParamHelper = nonstd::variant<bool, scip::long_int, scip::real, std::string>;
 
