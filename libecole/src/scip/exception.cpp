@@ -1,4 +1,7 @@
 #include <cstddef>
+#include <exception>
+#include <iostream>
+#include <memory.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -29,7 +32,7 @@ public:
 	static std::string collect();
 	static void clear();
 
-	ErrorCollector();
+	ErrorCollector() noexcept;
 
 	virtual void scip_error(SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* message) override;
 
@@ -146,8 +149,12 @@ std::string scip::ErrorCollector::collect() {
 	return message;
 }
 
-scip::ErrorCollector::ErrorCollector() : ObjMessagehdlr(0U) {
-	errors.reserve(buffer_size);
+scip::ErrorCollector::ErrorCollector() noexcept : ObjMessagehdlr(false) {
+	try {
+		errors.reserve(buffer_size);
+	} catch (std::exception const&) {
+		// Cannot reserve space for error string but it can be done (or fail) later
+	}
 }
 
 void scip::MessageHandlerDeleter::operator()(SCIP_MESSAGEHDLR* ptr) {
@@ -157,24 +164,37 @@ void scip::MessageHandlerDeleter::operator()(SCIP_MESSAGEHDLR* ptr) {
 	(void)retcode;
 }
 
-auto create_hander() {
+auto make_unique_hander() {
 	SCIP_MESSAGEHDLR* raw_handler = nullptr;
-	// Cannot use scip::call because it accesses the collector which does not exist yet.
-	auto retcode = SCIPcreateObjMessagehdlr(&raw_handler, new ErrorCollector{}, true);  // NOLINT
-	assert(raw_handler != nullptr);                                                     // NOLINT
-	assert(retcode == SCIP_OKAY);
-	(void)retcode;
+	{
+		auto error_collector = std::make_unique<ErrorCollector>();
+		// Cannot use scip::call because it accesses the collector which does not exist yet.
+		// NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) Give ownership of raw pointer to SCIP
+		auto const retcode = SCIPcreateObjMessagehdlr(&raw_handler, error_collector.release(), true);
+		assert(raw_handler != nullptr);
+		if (retcode != SCIP_OKAY) {
+			throw scip::Exception::from_retcode(retcode);
+		}
+	}
 
 	decltype(scip::message_handler) unique_handler;
 	unique_handler.reset(raw_handler);
 	return unique_handler;
 }
 
-decltype(scip::message_handler) message_handler = [] {
-	auto handler = create_hander();
-	SCIPsetStaticErrorPrintingMessagehdlr(handler.get());
-	return handler;
-}();
+auto registered_handler() noexcept -> decltype(scip::message_handler) {
+	try {
+		auto handler = make_unique_hander();
+		SCIPsetStaticErrorPrintingMessagehdlr(handler.get());
+		return handler;
+	} catch (std::exception const& e) {
+		std::cerr << "Warning: initialization of SCIP error collector failed with exception\n";
+		std::cerr << e.what() << '\n';
+		return nullptr;
+	}
+}
+
+decltype(scip::message_handler) message_handler = registered_handler();
 
 }  // namespace
 }  // namespace scip
