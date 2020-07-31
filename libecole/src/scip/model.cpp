@@ -108,7 +108,8 @@ template <> void Model::set_param<ParamType::Real>(std::string const& name, real
 template <> void Model::set_param<ParamType::Char>(std::string const& name, char value) {
 	scip::call(SCIPsetCharParam, get_scip_ptr(), name.c_str(), value);
 }
-template <> void Model::set_param<ParamType::String>(std::string const& name, std::string value) {
+template <>
+void Model::set_param<ParamType::String>(std::string const& name, std::string const& value) {
 	scip::call(SCIPsetStringParam, get_scip_ptr(), name.c_str(), value.c_str());
 }
 

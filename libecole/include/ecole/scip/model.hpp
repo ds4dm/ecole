@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include <nonstd/span.hpp>
 #include <scip/scip.h>
@@ -14,6 +15,7 @@
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
+#include "ecole/utility/type_traits.hpp"
 
 namespace ecole {
 namespace scip {
@@ -90,7 +92,8 @@ public:
 	 * The method will throw an exception if the type is not *exactly* the one used
 	 * by SCIP.
 	 */
-	template <ParamType T> void set_param(std::string const& name, param_t<T> value);
+	template <ParamType T>
+	void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
 	template <ParamType T> param_t<T> get_param(std::string const& name) const;
 
 	/**
