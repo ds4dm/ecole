@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <memory>
 
 #include <pybind11/operators.h>
@@ -25,9 +24,9 @@ void bind_submodule(py::module m) {
 			"from_pyscipopt",
 			[](py::object pyscipopt_model) {
 				if (pyscipopt_model.attr("_freescip").cast<bool>()) {
-					auto pyptr = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
+					py::capsule cap = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
 					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;
-					uptr.reset(reinterpret_cast<SCIP*>(pyptr.cast<std::uintptr_t>()));
+					uptr.reset(reinterpret_cast<SCIP*>(py::cast<void*>(cap)));
 					return Model(std::make_unique<Scimpl>(std::move(uptr)));
 				} else {
 					throw scip::Exception(
@@ -46,10 +45,9 @@ void bind_submodule(py::module m) {
 		.def(
 			"as_pyscipopt",
 			[](scip::Model const& model) {
-				auto const pyscipopt_module = py::module::import("pyscipopt.scip");
-				auto const Model_class = pyscipopt_module.attr("Model");
-				auto const ptr = reinterpret_cast<std::uintptr_t>(model.get_scip_ptr());
-				return Model_class.attr("from_ptr")(ptr, py::arg("take_ownership") = false);
+				auto const Model_class = py::module::import("pyscipopt.scip").attr("Model");
+				auto const cap = py::capsule{reinterpret_cast<void*>(model.get_scip_ptr()), "scip"};
+				return Model_class.attr("from_ptr")(cap, py::arg("take_ownership") = false);
 			},
 			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
 			// is alive, as PyScipOpt is a view on the ecole Model.
