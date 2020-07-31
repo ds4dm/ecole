@@ -66,29 +66,8 @@ CMake is made available in the ``ecole`` environment created earlier.
 
 SCIP runtime dependency
 ^^^^^^^^^^^^^^^^^^^^^^^
-Head to the `download page <https://scip.zib.de/index.php#download>`_, select version
-7.0.0 and download the ``scipoptsuite-7.0.0.tgz`` file.
-Extract it using
-
-.. code-block:: bash
-
-   tar -xz -f scipoptsuite-7.0.0.tgz
-
-Create a local conda package for SCIP using the recipe provided in this repository.
-
-*Note: "/path/to/scipoptsuite-7.0.0" has to be an absolute path here.*
-
-.. code-block:: bash
-
-   export CONDA_BLD_PATH="${CONDA_PREFIX}/conda-bld"
-   SCIP_DIR="/path/to/scipoptsuite-7.0.0" conda build -c conda-forge .circleci/recipe/scipoptsuite-7.0.0
-
-Install the SCIP package in the ``ecole`` environment
-
-.. code-block:: bash
-
-   conda install -c "file://${CONDA_BLD_PATH}" -c conda-forge scipoptsuite
-
+Scip dependency is resolved from `conda` inside `conda-dev.yaml`.
+No other action are necessary :)
 
 Building
 ^^^^^^^^

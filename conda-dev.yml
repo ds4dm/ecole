@@ -1,6 +1,7 @@
 channels:
-  - defaults
+  - scipopt
   - conda-forge
+  - defaults
 
 dependencies:
   # General convenience
@@ -17,11 +18,15 @@ dependencies:
   - clang-tools>=10
   - conan
   - ccache
+  # C++ runtime dependency
+  - scip
   # Build time Python dependencies
   - python>=3.6
   - pybind11
   - numpy>=1.4
   - xtensor-python
+  # Python runtime dependency
+  - pyscipopt >= 3.0.1  # optional
   # Python dev tools
   - ipython
   - pytest
