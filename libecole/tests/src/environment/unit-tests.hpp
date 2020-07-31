@@ -20,7 +20,7 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	SECTION("Has default constructor") { Dynamics{}; }
 
 	SECTION("Perfom seeding") {
-		RandomEngine random_engine{};
+		RandomEngine random_engine{std::random_device{}()};
 		RandomEngine random_engine_copy = random_engine;
 		dyn.set_dynamics_random_state(model, random_engine);
 		REQUIRE(random_engine != random_engine_copy);
