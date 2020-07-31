@@ -21,7 +21,7 @@ TEST_CASE("Pseudocosts return pseudo costs array", "[obs]") {
 	auto const obs = obs_func.obtain_observation(model);
 
 	REQUIRE(obs.has_value());
-	auto const costs = obs.value();
+	auto const& costs = obs.value();
 	REQUIRE(costs.size() == model.lp_columns().size());
 
 	// All branching candidates have a positive pseudocost

@@ -2,6 +2,7 @@
 Checks: >-
   clang-diagnostic-*,
   clang-analyzer-*,
+  performance-*,
   readability-*,
   -readability-implicit-bool-conversion
 WarningsAsErrors: '*'

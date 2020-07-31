@@ -19,7 +19,7 @@ namespace environment {
 
 namespace py = pybind11;
 
-template <typename Dynamics> auto dynamics_class(py::module& m, char const* name) {
+template <typename Dynamics> auto dynamics_class(py::module const& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
 		.def(
 			"reset_dynamics",
@@ -39,7 +39,7 @@ template <typename Dynamics> auto dynamics_class(py::module& m, char const* name
 			py::arg("random_engine"));
 }
 
-void bind_submodule(pybind11::module m) {
+void bind_submodule(pybind11::module const& m) {
 	m.doc() = "Ecole collection of environments.";
 
 	py::register_exception<Exception>(m, "Exception");
@@ -47,10 +47,14 @@ void bind_submodule(pybind11::module m) {
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(
 			"min_seed",
-			[](py::object /* cls */) { return std::numeric_limits<RandomEngine::result_type>::min(); })
+			[](py::object const& /* cls */) {
+				return std::numeric_limits<RandomEngine::result_type>::min();
+			})
 		.def_property_readonly_static(
 			"max_seed",
-			[](py::object /* cls */) { return std::numeric_limits<RandomEngine::result_type>::max(); })
+			[](py::object const& /* cls */) {
+				return std::numeric_limits<RandomEngine::result_type>::max();
+			})
 		.def(
 			py::init<RandomEngine::result_type>(),
 			py::arg("value") = RandomEngine::default_seed,

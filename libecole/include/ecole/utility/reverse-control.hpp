@@ -38,7 +38,7 @@ private:
 		auto thread_start() -> lock_t;
 		auto thread_hold_env(lock_t&& lk) -> lock_t;
 		auto thread_terminate(lock_t&& lk) -> void;
-		auto thread_terminate(lock_t&& lk, std::exception_ptr&& e) -> void;
+		auto thread_terminate(lock_t&& lk, std::exception_ptr const& e) -> void;
 		auto thread_action_function(lock_t const& lk) const noexcept -> action_func_t;
 
 	private:

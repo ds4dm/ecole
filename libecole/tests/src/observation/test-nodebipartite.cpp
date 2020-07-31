@@ -24,14 +24,14 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 	SECTION("Observation is not empty on non terminal state") { REQUIRE(optional_obs.has_value()); }
 
 	SECTION("Observation features are not empty") {
-		auto const obs = optional_obs.value();
+		auto const& obs = optional_obs.value();
 		REQUIRE(obs.column_features.size() > 0);
 		REQUIRE(obs.row_features.size() > 0);
 		REQUIRE(obs.edge_features.nnz() > 0);
 	}
 
 	SECTION("Observation features have matching shape") {
-		auto const obs = optional_obs.value();
+		auto const& obs = optional_obs.value();
 		REQUIRE(obs.row_features.shape()[0] == obs.edge_features.shape[0]);
 		REQUIRE(obs.column_features.shape()[0] == obs.edge_features.shape[1]);
 		REQUIRE(obs.edge_features.indices.shape()[0] == 2);

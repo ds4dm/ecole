@@ -144,7 +144,7 @@ scip::ReverseBranchrule::ReverseBranchrule(
 		scip::ReverseBranchrule::max_priority,
 		scip::ReverseBranchrule::no_maxdepth,
 		no_maxbounddist),
-	weak_executor(weak_executor_) {}
+	weak_executor(std::move(weak_executor_)) {}
 
 auto ReverseBranchrule::scip_execlp(
 	SCIP* scip,

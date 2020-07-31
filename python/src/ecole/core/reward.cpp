@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <pybind11/eval.h>
 #include <pybind11/pybind11.h>
 
@@ -22,9 +24,9 @@ namespace reward {
  */
 class Arithmetic {
 public:
-	Arithmetic(py::object operation, py::list functions, py::str repr);
-	void reset(py::object model);
-	Reward obtain_reward(py::object model, bool done);
+	Arithmetic(py::object operation, py::list const& functions, py::str repr);
+	void reset(py::object const& model);
+	Reward obtain_reward(py::object const& model, bool done);
 	py::str toString() const;
 
 private:
@@ -36,8 +38,8 @@ private:
 class Cumulative {
 public:
 	Cumulative(py::object function, py::object reduce_func, Reward init_cumul_, py::str repr);
-	void reset(py::object model);
-	Reward obtain_reward(py::object model, bool done);
+	void reset(py::object const& model);
+	Reward obtain_reward(py::object const& model, bool done);
 	py::str toString() const;
 
 private:
@@ -60,7 +62,7 @@ template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 /**
  * Reward module bindings definitions.
  */
-void bind_submodule(py::module m) {
+void bind_submodule(py::module const& m) {
 	m.doc() = "Reward classes for Ecole.";
 
 	auto constant = py::class_<Constant>(m, "Constant", R"(
@@ -151,7 +153,7 @@ void bind_submodule(py::module m) {
  *  Definition of Arithmetic  *
  ******************************/
 
-Arithmetic::Arithmetic(py::object operation_, py::list functions_, py::str repr_) :
+Arithmetic::Arithmetic(py::object operation_, py::list const& functions_, py::str repr_) :
 	operation(std::move(operation_)), repr(std::move(repr_)) {
 	auto const Numbers = py::module::import("numbers").attr("Number");
 	for (auto func : functions_) {
@@ -163,13 +165,13 @@ Arithmetic::Arithmetic(py::object operation_, py::list functions_, py::str repr_
 	}
 }
 
-void Arithmetic::reset(py::object model) {
+void Arithmetic::reset(py::object const& model) {
 	for (auto obs_func : functions) {
 		obs_func.attr("reset")(model);
 	}
 }
 
-Reward Arithmetic::obtain_reward(py::object model, bool done) {
+Reward Arithmetic::obtain_reward(py::object const& model, bool done) {
 	py::list rewards{};
 	for (auto obs_func : functions) {
 		rewards.append(obs_func.attr("obtain_reward")(model, done));
@@ -196,13 +198,13 @@ Cumulative::Cumulative(
 	cumul(init_cumul_),
 	repr(std::move(repr_)) {}
 
-void Cumulative::reset(py::object model) {
+void Cumulative::reset(py::object const& model) {
 	cumul = init_cumul;
-	function.attr("reset")(std::move(model));
+	function.attr("reset")(model);
 }
 
-Reward Cumulative::obtain_reward(py::object model, bool done) {
-	auto reward = function.attr("obtain_reward")(std::move(model), done);
+Reward Cumulative::obtain_reward(py::object const& model, bool done) {
+	auto reward = function.attr("obtain_reward")(model, done);
 	cumul = reduce_func(py::cast(cumul), reward).cast<Reward>();
 	return cumul;
 }
@@ -238,7 +240,7 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	// The Arithmetic reward function is a reward function class that will call the wrapped
 	// reward functions and merge there rewards with the relevant operation (sum, prod, ...)
 	auto const arith_meth = [](auto operation, auto repr) {
-		return [operation, repr](py::args args) { return Arithmetic{operation, args, repr}; };
+		return [operation, repr](py::args const& args) { return Arithmetic{operation, args, repr}; };
 	};
 
 	pyclass
@@ -293,12 +295,12 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 		pyclass.def(name, arith_meth(math.attr(name), std::string{"{}."} + name + "()"));
 	}
 	// clang-format on
-	pyclass.def("apply", [](py::object self, py::object func) {
-		return Arithmetic{func, py::make_tuple(self), "lambda({})"};
+	pyclass.def("apply", [](py::object const& self, py::object func) {
+		return Arithmetic{std::move(func), py::make_tuple(self), "lambda({})"};
 	});
 	// Cumulative methods
 	pyclass.def("cumsum", [](py::object self) {
-		return Cumulative{self, py::eval("lambda x, y: x + y"), 0., "{}.cumsum()"};
+		return Cumulative{std::move(self), py::eval("lambda x, y: x + y"), 0., "{}.cumsum()"};
 	});
 }
 

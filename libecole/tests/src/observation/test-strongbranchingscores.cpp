@@ -22,7 +22,7 @@ TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
 	auto const obs = obs_func.obtain_observation(model);
 
 	REQUIRE(obs.has_value());
-	auto const scores = obs.value();
+	auto const& scores = obs.value();
 	REQUIRE(scores.size() == model.lp_columns().size());
 	auto const not_nan_scores = xt::filter(scores, !xt::isnan(scores));
 	REQUIRE(not_nan_scores.size() > 0);

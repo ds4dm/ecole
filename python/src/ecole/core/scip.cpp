@@ -13,7 +13,7 @@ namespace scip {
 
 namespace py = pybind11;
 
-void bind_submodule(py::module m) {
+void bind_submodule(py::module const& m) {
 	m.doc() = "Scip wrappers for ecole.";
 
 	py::register_exception<scip::Exception>(m, "Exception");
@@ -23,7 +23,7 @@ void bind_submodule(py::module m) {
 		.def_static("prob_basic", &Model::prob_basic)
 		.def_static(
 			"from_pyscipopt",
-			[](py::object pyscipopt_model) {
+			[](py::object const& pyscipopt_model) {
 				if (pyscipopt_model.attr("_freescip").cast<bool>()) {
 					py::capsule cap = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
 					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;

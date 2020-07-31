@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "ecole/utility/reverse-control.hpp"
 
 namespace ecole {
@@ -64,16 +66,16 @@ auto Controller::Synchronizer::thread_terminate(lock_t&& lk) -> void {
 	model_avail_cv.notify_one();
 }
 
-auto Controller::Synchronizer::thread_terminate(lock_t&& lk, std::exception_ptr&& e) -> void {
+auto Controller::Synchronizer::thread_terminate(lock_t&& lk, std::exception_ptr const& e) -> void {
 	validate_lock(lk);
-	except_ptr = std::move(e);
+	except_ptr = e;
 	thread_terminate(std::move(lk));
 }
 
 auto Controller::Synchronizer::thread_action_function(lock_t const& lk) const noexcept
 	-> action_func_t {
 	validate_lock(lk);
-	return std::move(action_func);
+	return action_func;
 }
 
 auto Controller::Synchronizer::validate_lock(lock_t const& lk) const noexcept -> void {
@@ -83,11 +85,11 @@ auto Controller::Synchronizer::validate_lock(lock_t const& lk) const noexcept ->
 
 auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
 	validate_lock(lk);
-	auto e_ptr = std::move(except_ptr);
+	auto e_ptr = except_ptr;
 	except_ptr = nullptr;
 	if (e_ptr) {
 		assert(thread_finished);
-		std::rethrow_exception(std::move(e_ptr));
+		std::rethrow_exception(e_ptr);
 	}
 	return std::move(lk);
 }
@@ -97,7 +99,7 @@ auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
  ********************************************/
 
 Controller::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer_) noexcept :
-	synchronizer(synchronizer_) {}
+	synchronizer(std::move(synchronizer_)) {}
 
 auto Controller::Executor::start() -> void {
 	model_lock = synchronizer->thread_start();
@@ -113,7 +115,7 @@ auto Controller::Executor::terminate() -> void {
 }
 
 auto Controller::Executor::terminate(std::exception_ptr&& except) -> void {
-	synchronizer->thread_terminate(std::move(model_lock), std::move(except));
+	synchronizer->thread_terminate(std::move(model_lock), except);
 }
 
 /**********************************

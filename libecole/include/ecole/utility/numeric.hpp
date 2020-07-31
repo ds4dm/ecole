@@ -25,9 +25,8 @@ using is_narrow_castable = std::integral_constant<
  * A narrow cast raises if any numerical loss is detected.
  */
 template <typename To, typename From> To narrow_cast(From val) {
-	auto const val_to = static_cast<To>(val);
-	auto const val_back = static_cast<From>(val_to);
-	if (val_back != val) {
+	auto val_to = static_cast<To>(val);
+	if (static_cast<From>(val_to) != val) {
 		throw std::runtime_error("Numerical loss converting.");
 	}
 	return val_to;

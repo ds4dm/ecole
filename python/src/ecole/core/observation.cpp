@@ -47,7 +47,7 @@ auto def_obtain_observation(PyClass pyclass, Args&&... args) {
 /**
  * Observation module bindings definitions.
  */
-void bind_submodule(py::module m) {
+void bind_submodule(py::module const& m) {
 	m.doc() = "Observation classes for Ecole.";
 
 	xt::import_numpy();
