@@ -1,3 +1,9 @@
+.. image:: docs/static/images/ecole-logo.svg
+   :target: https://www.ecole.ai
+   :alt: Ecole logo
+   :width: 40 %
+   :align: right
+
 Ecole
 =====
 
