@@ -3,6 +3,7 @@ Checks: >-
   cert-*,
   clang-diagnostic-*,
   clang-analyzer-*,
+  misc-*,
   performance-*,
   readability-*,
   -readability-implicit-bool-conversion
@@ -10,3 +11,6 @@ WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: file
+CheckOptions:
+  - key: "misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic"
+    value: 1

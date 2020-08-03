@@ -37,8 +37,8 @@ void bind_submodule(py::module const& m) {
 			py::keep_alive<1, 0>(),
 			py::arg("model"))
 
-		.def(py::self == py::self)
-		.def(py::self != py::self)
+		.def(py::self == py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(py::self != py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
 
 		.def("copy_orig", &Model::copy_orig, py::call_guard<py::gil_scoped_release>())
 		.def(

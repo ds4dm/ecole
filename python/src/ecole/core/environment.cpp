@@ -65,8 +65,8 @@ void bind_submodule(pybind11::module const& m) {
 			py::arg("value") = RandomEngine::default_seed,
 			"Reinitialize the internal state of the random-number engine using new seed "
 			"value.")
-		.def(py::self == py::self)
-		.def(py::self != py::self);
+		.def(py::self == py::self)   // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(py::self != py::self);  // NOLINT(misc-redundant-expression)  pybind specific syntax
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);

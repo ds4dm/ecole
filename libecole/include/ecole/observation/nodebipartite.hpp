@@ -20,9 +20,6 @@ public:
 
 class NodeBipartite : public ObservationFunction<nonstd::optional<NodeBipartiteObs>> {
 public:
-	using Observation = nonstd::optional<NodeBipartiteObs>;
-	using Base = ObservationFunction<Observation>;
-
 	nonstd::optional<NodeBipartiteObs> obtain_observation(scip::Model& model) override;
 };
 
