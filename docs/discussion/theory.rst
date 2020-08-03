@@ -1,7 +1,7 @@
 Ecole Theoretical Model
 =======================
 
-The ECOLE API and classes directly relate to the different components of
+The Ecole API and classes directly relate to the different components of
 an episodic `partially-observable Markov decision process <https://en.wikipedia.org/wiki/Partially_observable_Markov_decision_process>`_
 (PO-MDP).
 
@@ -20,7 +20,7 @@ Consider a regular Markov decision process
 .. note::
 
     The choice of having deterministic rewards :math:`r_t = R(s_t)` is
-    arbitrary here, in order to best fit the ECOLE API. Note that it is
+    arbitrary here, in order to best fit the Ecole API. Note that it is
     not a restrictive choice though, as any MDP with stochastic rewards
     :math:`r_t \sim p_{reward}(r_t|s_{t-1},a_{t-1},s_{t})`
     can be converted into an equivalent MDP with deterministic ones,
@@ -56,8 +56,8 @@ reward,
 .. math::
    :label: mdp_control
 
-   \pi^\star = \argmax_{\pi} \lim_{T \to \infty}
-   \mathbb{E}_\tau\left[\sum_{t=0}^{T} r_t\right]
+   \pi^\star = \underset{\pi}{\operatorname{arg\,max}}
+   \lim_{T \to \infty} \mathbb{E}_\tau\left[\sum_{t=0}^{T} r_t\right]
    \text{,}
 
 where :math:`r_t := R(s_t)`.
@@ -65,7 +65,7 @@ where :math:`r_t := R(s_t)`.
 .. note::
 
     In the general case this quantity may not be bounded, for example for MDPs
-    that correspond to continuing tasks. In ECOLE we garantee that all
+    that correspond to continuing tasks. In Ecole we garantee that all
     environments correspond to **episodic** tasks, that is, each episode is
     garanteed to start from an initial state :math:`s_0`, and end in a
     terminal state :math:`s_{final}`. For convenience this terminal state can
@@ -95,7 +95,7 @@ non-Markovian nature of those trajectories, that is,
 
 .. math::
 
-    o_{t+1},r_{t+1} \nindep o_0,r_0,a_0,\dots,o_{t-1},r_{t-1},a_{t-1} \mid o_t,r_t,a_t
+    o_{t+1},r_{t+1} \mathop{\rlap{\perp}\mkern2mu{\not\perp}} o_0,r_0,a_0,\dots,o_{t-1},r_{t-1},a_{t-1} \mid o_t,r_t,a_t
     \text{,}
 
 the decision-maker must take into account the whole history of past
@@ -117,14 +117,14 @@ The PO-MDP control problem can then be written identically to the MDP one,
 .. math::
    :label: pomdp_control
 
-   \pi^\star = \argmax_{\pi} \lim_{T \to \infty}
+   \pi^\star = \underset{\pi}{\operatorname{arg\,max}} \lim_{T \to \infty}
    \mathbb{E}_\tau\left[\sum_{t=0}^{T} r_t\right]
    \text{.}
 
-ECOLE as PO-MDP components
+Ecole as PO-MDP components
 --------------------------
 
-The following ECOLE components can be directly translated into PO-MDP
+The following Ecole components can be directly translated into PO-MDP
 components from the above formulation:
 
 * :py:class:`~ecole.typing.RewardFunction` <=> :math:`R`
@@ -160,6 +160,6 @@ environment.
 
    As can be seen from :eq:`pomdp_control`, the initial reward :math:`r_0`
    returned by :py:meth:`~ecole.environment.EnvironmentComposer.reset`
-   does not affect the control problem. In ECOLE we
+   does not affect the control problem. In Ecole we
    nevertheless chose to preserve this initial reward, in order to obtain
    meaningfull cumulated episode rewards (e.g., total running time).

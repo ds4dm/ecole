@@ -53,20 +53,6 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 
-# LaTex configuration (for math)
-extensions += ["sphinx.ext.imgmath"]
-imgmath_image_format = "svg"
-imgmath_latex_preamble = r'''
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\newcommand\indep{\protect\mathpalette{\protect\independenT}{\perp}}
-\def\independenT#1#2{\mathop{\rlap{$#1#2$}\mkern2mu{#1#2}}}
-\newcommand\nindep{\protect\mathpalette{\protect\nindependenT}{\perp}}
-\def\nindependenT#1#2{\mathop{\rlap{$#1#2$}\mkern2mu{\not#1#2}}}
-\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
-'''
-
-
 # Preprocess docstring to remove "core" from type name
 def preprocess_signature(app, what, name, obj, options, signature, return_annotation):
     if signature is not None:
