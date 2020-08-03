@@ -11,6 +11,9 @@ extensions = [
     "sphinx.ext.viewcode",
 ]
 
+# Math setting
+extensions += ["sphinx.ext.mathjax"]
+
 # Code style
 pygments_style = "monokai"
 
