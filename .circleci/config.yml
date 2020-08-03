@@ -63,10 +63,10 @@ jobs:
           cmake_options: "<<parameters.cmake_options>>"
       - run:
           name: "Test libecole"
-          command: ./build/libecole/tests/test-libecole
+          command: ./build/libecole/tests/test-libecole --abort
       - run:
           name: "Test Python ecole"
-          command: build/venv/bin/python -m pytest python/tests
+          command: build/venv/bin/python -m pytest --exitfirst python/tests
 
   sanitize:
     parameters:
@@ -158,9 +158,9 @@ commands:
           environment:
             CONAN_USER_HOME: &conan_cache_dir /cache/conan
           command: >
-            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
+            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>> -Wdev -Werror=dev
             -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=ON -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-            -D ENABLE_PYTHON_VENV=ON
+            -D ENABLE_PYTHON_VENV=ON -D WARNINGS_AS_ERRORS=ON
             <<parameters.cmake_options>>
       - run:
           name: "Symlink compilation database"
