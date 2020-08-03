@@ -5,7 +5,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.2.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -13,13 +13,13 @@ repos:
         exclude: ^(.circleci/recipe|recipe)  # conda build recipes are templated
       - id: check-added-large-files
   - repo: https://github.com/pocc/pre-commit-hooks
-    rev: python
+    rev: v1.1.1
     hooks:
       - id: clang-format
         args: [--style=file, -i]
       - id: clang-tidy
         args: [--fix, --fix-errors]
   - repo: https://github.com/psf/black
-    rev: stable
+    rev: 19.10b0
     hooks:
       - id: black
