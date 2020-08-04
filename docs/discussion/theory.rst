@@ -16,7 +16,7 @@ Consider a regular Markov decision process
 * a state transition distribution
   :math:`p_\textit{trans}: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{\geq 0}`
 * a reward function :math:`R: \mathcal{S} \to \mathbb{R}`.
- 
+
 .. note::
 
     The choice of having deterministic rewards :math:`r_t = R(s_t)` is
@@ -26,7 +26,7 @@ Consider a regular Markov decision process
     can be converted into an equivalent MDP with deterministic ones,
     by considering the reward as part of the state.
 
-Together with an action policy 
+Together with an action policy
 
 .. math::
 
