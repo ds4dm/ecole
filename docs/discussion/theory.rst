@@ -8,13 +8,13 @@ an episodic `partially-observable Markov decision process <https://en.wikipedia.
 Markov decision process
 -----------------------
 Consider a regular Markov decision process
-:math:`(\mathcal{S}, \mathcal{A}, p_{init}, p_{trans}, R)`, whose components are
+:math:`(\mathcal{S}, \mathcal{A}, p_\textit{init}, p_\textit{trans}, R)`, whose components are
 
 * a state space :math:`\mathcal{S}`
 * an action space :math:`\mathcal{A}`
-* an initial state distribution :math:`p_{init}: \mathcal{S} \to \mathbb{R}_{\geq 0}`
+* an initial state distribution :math:`p_\textit{init}: \mathcal{S} \to \mathbb{R}_{\geq 0}`
 * a state transition distribution
-  :math:`p_{trans}: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{\geq 0}`
+  :math:`p_\textit{trans}: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{\geq 0}`
 * a reward function :math:`R: \mathcal{S} \to \mathbb{R}`.
  
 .. note::
@@ -22,7 +22,7 @@ Consider a regular Markov decision process
     The choice of having deterministic rewards :math:`r_t = R(s_t)` is
     arbitrary here, in order to best fit the Ecole API. Note that it is
     not a restrictive choice though, as any MDP with stochastic rewards
-    :math:`r_t \sim p_{reward}(r_t|s_{t-1},a_{t-1},s_{t})`
+    :math:`r_t \sim p_\textit{reward}(r_t|s_{t-1},a_{t-1},s_{t})`
     can be converted into an equivalent MDP with deterministic ones,
     by considering the reward as part of the state.
 
@@ -42,9 +42,9 @@ that obey the following joint distribution
 
 .. math::
 
-    \tau \sim \underbrace{p_{init}(s_0)}_{\text{initial state}}
+    \tau \sim \underbrace{p_\textit{init}(s_0)}_{\text{initial state}}
     \prod_{t=0}^\infty \underbrace{\pi(a_t | s_t)}_{\text{next action}}
-    \underbrace{p_{trans}(s_{t+1} | a_t, s_t)}_{\text{next state}}
+    \underbrace{p_\textit{trans}(s_{t+1} | a_t, s_t)}_{\text{next state}}
     \text{.}
 
 MDP control problem
@@ -68,11 +68,11 @@ where :math:`r_t := R(s_t)`.
     that correspond to continuing tasks. In Ecole we garantee that all
     environments correspond to **episodic** tasks, that is, each episode is
     garanteed to start from an initial state :math:`s_0`, and end in a
-    terminal state :math:`s_{final}`. For convenience this terminal state can
+    terminal state :math:`s_\textit{final}`. For convenience this terminal state can
     be considered as absorbing, i.e.,
-    :math:`p_{dyn}(s_{t+1}|a_t,s_t=s_{final}) := \delta_{s_{final}}(s_{t+1})`,
-    and associated to a null reward, :math:`R(s_{final}) := 0`, so that all
-    future states encountered after :math:`s_{final}` can be safely ignored in
+    :math:`p_\textit{trans}(s_{t+1}|a_t,s_t=s_\textit{final}) := \delta_{s_\textit{final}}(s_{t+1})`,
+    and associated to a null reward, :math:`R(s_\textit{final}) := 0`, so that all
+    future states encountered after :math:`s_\textit{final}` can be safely ignored in
     the MDP control problem.
 
 Partially-observable Markov decision process
@@ -129,19 +129,19 @@ components from the above formulation:
 
 * :py:class:`~ecole.typing.RewardFunction` <=> :math:`R`
 * :py:class:`~ecole.typing.ObservationFunction` <=> :math:`O`
-* :py:meth:`~ecole.typing.Dynamics.reset_dynamics` <=> :math:`p_{init}(s_0)`
-* :py:meth:`~ecole.typing.Dynamics.step_dynamics` <=> :math:`p_{trans}(s_{t+1}|s_t,a_t)`
+* :py:meth:`~ecole.typing.Dynamics.reset_dynamics` <=> :math:`p_\textit{init}(s_0)`
+* :py:meth:`~ecole.typing.Dynamics.step_dynamics` <=> :math:`p_\textit{trans}(s_{t+1}|s_t,a_t)`
 
 The :py:class:`~ecole.environment.EnvironmentComposer` class wraps all of
 those components together to form the PO-MDP. Its API can be interpreted as
 follows:
 
 * :py:meth:`~ecole.environment.EnvironmentComposer.reset` <=>
-  :math:`s_0 \sim p_{init}(s_0), r_0=R(s_0), o_0=O(s_0)`
+  :math:`s_0 \sim p_\textit{init}(s_0), r_0=R(s_0), o_0=O(s_0)`
 * :py:meth:`~ecole.environment.EnvironmentComposer.step` <=>
-  :math:`s_{t+1} \sim p_{trans}(s_{t+1}|a_s,s_t), r_t=R(s_t), o_t=O(s_t)`
+  :math:`s_{t+1} \sim p_\textit{trans}(s_{t+1}|a_s,s_t), r_t=R(s_t), o_t=O(s_t)`
 * ``done == True`` <=> the PO-MDP will now enter the terminal state,
-  :math:`s_{t+1}==s_{final}`. As such, the current episode ends now.
+  :math:`s_{t+1}==s_\textit{final}`. As such, the current episode ends now.
 
 The state space :math:`\mathcal{S}` can be considered to be the whole computer
 memory occupied by the environment, which includes the state of the underlying
