@@ -9,7 +9,7 @@ endif()
 # Create a virtual environment (at configure time) where Ecole can safely be installed
 set(VENV_DIR "${CMAKE_CURRENT_BINARY_DIR}/venv")
 execute_process(
-	COMMAND "${Python_EXECUTABLE}" -m venv --system-site-package "${VENV_DIR}"
+	COMMAND "${PYTHON_EXECUTABLE}" -m venv --system-site-package "${VENV_DIR}"
 	RESULT_VARIABLE VENV_ERROR
 	ERROR_VARIABLE VENV_ERROR_MESSAGE
 )

@@ -9,7 +9,6 @@ foreach(py_file "setup.py" "src/ecole/__init__.py")
 endforeach(py_file)
 
 
-find_package(Python COMPONENTS NumPy REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
@@ -27,7 +26,7 @@ target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 # Include the headers directly instead of using the CMake target due to it wrongly linking against
 # libpython
-target_include_directories(ecole-python SYSTEM PRIVATE "${Python_NumPy_INCLUDE_DIRS}")
+target_include_directories(ecole-python SYSTEM PRIVATE "${NUMPY_INCLUDE_DIRS}")
 
 target_link_libraries(
 	ecole-python

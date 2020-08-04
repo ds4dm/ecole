@@ -26,6 +26,7 @@ include(cmake/Conan.cmake)
 
 # Find Python and create virtual environment for Ecole
 include(cmake/Python.cmake)
+include(cmake/FindNumPy.cmake)
 include(cmake/PythonVenv.cmake)
 
 # Ecole libraries
