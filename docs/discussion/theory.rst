@@ -8,7 +8,8 @@ an episodic `partially-observable Markov decision process <https://en.wikipedia.
 Markov decision process
 -----------------------
 Consider a regular Markov decision process
-:math:`(\mathcal{S}, \mathcal{A}, p_\textit{init}, p_\textit{trans}, R)`, whose components are
+:math:`(\mathcal{S}, \mathcal{A}, p_\textit{init}, p_\textit{trans}, R)`,
+whose components are
 
 * a state space :math:`\mathcal{S}`
 * an action space :math:`\mathcal{A}`
@@ -31,9 +32,8 @@ Together with an action policy
 .. math::
 
     \pi: \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{\geq 0}
-    \text{,}
 
-so that :math:`a_t \sim \pi(a_t|s_t)`, an MDP can be unrolled to produce
+such that :math:`a_t \sim \pi(a_t|s_t)`, an MDP can be unrolled to produce
 state-action trajectories
 
 .. math::
@@ -67,7 +67,7 @@ where :math:`r_t := R(s_t)`.
 .. note::
 
     In the general case this quantity may not be bounded, for example for MDPs
-    corresponding to *continuing* tasks, where episode length may be infinite.
+    corresponding to *continuing* tasks where episode length may be infinite.
     In Ecole, we garantee that all environments correspond to *episodic*
     tasks, that is, each episode is garanteed to end in a terminal state.
     This can be modeled by introducing a null state :math:`s_\textit{null}`,
@@ -87,14 +87,16 @@ In the PO-MDP setting, complete information about the current MDP state
 is not necessarily available to the decision-maker. Instead,
 at each step only a partial observation :math:`o \in \Omega`
 is made available, which can be seen as the result of applying an observation
-function :math:`O: \mathcal{S} \to \Omega` to the current state.
+function :math:`O: \mathcal{S} \to \Omega` to the current state. As such, a
+PO-MDP consists of a tuple
+:math:`(\mathcal{S}, \mathcal{A}, p_\textit{init}, p_\textit{trans}, R, O)`.
 
 .. note::
 
     Similarly to having deterministic rewards, having deterministic
     observations is an arbitrary choice here, but is not restrictive.
 
-Then, PO-MDP trajectories take the form
+As a result, PO-MDP trajectories take the form
 
 .. math::
 
@@ -102,27 +104,27 @@ Then, PO-MDP trajectories take the form
    \text{,}
 
 where :math:`o_t:= O(s_t)` and :math:`r_t:=R(s_t)` are respectively the
-observation and the reward collected at time step :math:`t`. Let us now
-introduce a convenient variable
-:math:`h_t:=(o_0,r_0,a_0,\dots,o_t,r_t)\in\mathcal{H}`, which represents the
+observation and the reward collected at time step :math:`t`.
+
+Let us now introduce a convenience variable
+:math:`h_t:=(o_0,r_0,a_0,\dots,o_t,r_t)\in\mathcal{H}` that represents the
 PO-MDP history at time step :math:`t`. Due to the non-Markovian nature of
-PO-MDP trajectories, that is,
+the trajectories, that is,
 
 .. math::
 
     o_{t+1},r_{t+1} \mathop{\rlap{\perp}\mkern2mu{\not\perp}} h_{t-1} \mid o_t,r_t,a_t
     \text{,}
 
-the decision-maker must take into account all those past observations, rewards
-and actions in order to decide on an optimal action at current time step
-:math:`t`. As a result, PO-MDP policies take the form
+the decision-maker must take into account the whole history of observations,
+rewards and actions in order to decide on an optimal action at current time
+step :math:`t`. PO-MDP policies then take the form
 
 .. math::
 
    \pi:\mathcal{A} \times \mathcal{H} \to \mathbb{R}_{\geq 0}
-   \text{,}
 
-so that :math:`a_t \sim \pi(a_t|h_t)`.
+such that :math:`a_t \sim \pi(a_t|h_t)`.
 
 PO-MDP control problem
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -138,24 +140,15 @@ The PO-MDP control problem can then be written identically to the MDP one,
 Ecole as PO-MDP components
 --------------------------
 
-The following Ecole components can be directly translated into PO-MDP
-components from the above formulation:
+The following Ecole components directly translate into PO-MDP components from
+the aforementioned formulation:
 
 * :py:class:`~ecole.typing.RewardFunction` <=> :math:`R`
 * :py:class:`~ecole.typing.ObservationFunction` <=> :math:`O`
-* :py:meth:`~ecole.typing.Dynamics.reset_dynamics` <=> :math:`p_\textit{init}(s_0)`
-* :py:meth:`~ecole.typing.Dynamics.step_dynamics` <=> :math:`p_\textit{trans}(s_{t+1}|s_t,a_t)`
-
-The :py:class:`~ecole.environment.EnvironmentComposer` class wraps all of
-those components together to form the PO-MDP. Its API can be interpreted as
-follows:
-
-* :py:meth:`~ecole.environment.EnvironmentComposer.reset` <=>
-  :math:`s_0 \sim p_\textit{init}(s_0), r_0=R(s_0), o_0=O(s_0)`
-* :py:meth:`~ecole.environment.EnvironmentComposer.step` <=>
-  :math:`s_{t+1} \sim p_\textit{trans}(s_{t+1}|a_s,s_t), r_t=R(s_t), o_t=O(s_t)`
-* ``done == True`` <=> the current state :math:`s_{t}` is terminal. As such,
-  the episode ends now.
+* :py:meth:`~ecole.typing.Dynamics.reset_dynamics` <=>
+  :math:`p_\textit{init}(s_0)`
+* :py:meth:`~ecole.typing.Dynamics.step_dynamics` <=>
+  :math:`p_\textit{trans}(s_{t+1}|s_t,a_t)`
 
 The state space :math:`\mathcal{S}` can be considered to be the whole computer
 memory occupied by the environment, which includes the state of the underlying
@@ -163,6 +156,28 @@ SCIP solver instance. The action space :math:`\mathcal{A}` is specific to each
 environment.
 
 .. note::
+
+   In practice, both :py:class:`~ecole.typing.RewardFunction` and
+   :py:class:`~ecole.typing.ObservationFunction` are implemented as stateful
+   classes, and therefore should be considered as part of the MDP state
+   :math:`s`. This *extended* state is not meant to take part in the MDP
+   dynamics per se, but nonetheless it has to be considered as the actual
+   PO-MDP state, in order to allow for a strict interpretation of Ecole
+   environments as PO-MDPs.
+
+The :py:class:`~ecole.environment.EnvironmentComposer` class wraps all of
+those components together to form the actual PO-MDP. Its API can be
+interpreted as follows:
+
+* :py:meth:`~ecole.environment.EnvironmentComposer.reset` <=>
+  :math:`s_0 \sim p_\textit{init}(s_0), r_0=R(s_0), o_0=O(s_0)`
+* :py:meth:`~ecole.environment.EnvironmentComposer.step` <=>
+  :math:`s_{t+1} \sim p_\textit{trans}(s_{t+1}|a_t,s_t), r_t=R(s_t), o_t=O(s_t)`
+* ``done == True`` <=> the current state :math:`s_{t}` is terminal. As such,
+  the episode ends now.
+
+.. note::
+
    In Ecole we allow environments to optionally specify a set of valid
    actions at each time step :math:`t`. To this end, both the
    :py:meth:`~ecole.environment.EnvironmentComposer.reset` and
@@ -170,7 +185,11 @@ environment.
    the valid ``action_set`` for the next transition, in addition to the
    current observation and reward. This action set is optional, and
    environments in which the action set is implicit may simply return
-   ``action_set==None``.
+   ``action_set == None``.
+
+Implementation of both the PO-MDP policy :math:`\pi(a_t|h_t)` and a method
+to solve the resulting control problem :eq:`pomdp_control` is left to the
+user.
 
 .. note::
 
@@ -179,4 +198,9 @@ environment.
    :py:meth:`~ecole.environment.EnvironmentComposer.reset`
    does not affect the control problem. In Ecole we
    nevertheless chose to preserve this initial reward, in order to obtain
-   meaningfull cumulated episode rewards (e.g., total running time).
+   meaningfull cumulated episode rewards, such as the total running time
+   (which must include the time spend in
+   :py:meth:`~ecole.environment.EnvironmentComposer.reset`), or the total
+   number of branch-and-bound nodes in a
+   :py:class:`~ecole.environment.Branching` environment (which must include
+   the root node).
