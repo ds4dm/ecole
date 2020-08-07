@@ -25,10 +25,37 @@ The underlying solver used is `SCIP <https://scip.zib.de/>`_, and the user facin
 meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possible).
 
 
+Installation
+------------
+Conda
+^^^^^
+.. used to include portion of this file in the documentation
+.. CONDA_INSTALL_START
+.. code-block:: bash
+
+   conda install -c scipopt -c conda-forge ecole
+
+`PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is not required but is the main SCIP
+interface to develop new Ecole components from Python
+
+.. code-block:: bash
+
+   conda install -c scipopt -c conda-forge ecole pyscipopt
+
+Currenlty, conda packages are only available for Linux and MacOS.
+
+.. CONDA_INSTALL_END
+
+Pip
+^^^
+Unavailable
+
+
 User Documentation
 ------------------
-Please refer to the `documentation <https://doc.ecole.ai>`_ for tutorials, examples, and
-installation instructions.
+Please refer to the `documentation <https://doc.ecole.ai>`_ for tutorials, examples, and reference.
+
+----------
 
 
 Developer Notes

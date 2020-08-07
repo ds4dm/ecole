@@ -1,13 +1,16 @@
 Installation
 ============
 
-PyPI
-----
-We plan to deploy builds on PyPI.
+Conda
+-----
+.. include:: ../README.rst
+   :start-after: CONDA_INSTALL_START
+   :end-before: CONDA_INSTALL_END
 
-Anaconda
---------
-We plan to deploy builds on Anaconda.
+
+Pip
+---
+We plan to deploy builds on PyPI.
 
 From Source
 -----------
