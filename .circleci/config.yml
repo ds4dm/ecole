@@ -20,7 +20,7 @@ workflows:
             - build_py36
       - build_test:
           name: build_clang
-          compiler: clang9
+          compiler: clang10
           requires:
             - build_py36
       - sanitize:
@@ -74,7 +74,7 @@ jobs:
         type: enum
         enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
     docker:
-      - image: "ecoleai/ci-builder-clang9-py3.6"
+      - image: "ecoleai/ci-builder-clang10-py3.6"
     steps:
       - checkout
       - build_ecole:
@@ -86,7 +86,7 @@ jobs:
 
   code_checker:
     docker:
-      - image: "ecoleai/ci-checker-clang9-py3.6"
+      - image: "ecoleai/ci-checker-clang10-py3.6"
     steps:
       - checkout
       - build_ecole:
@@ -95,7 +95,7 @@ jobs:
 
   build_doc:
     docker:
-      - image: "ecoleai/ci-documenter-clang9-py3.6"
+      - image: "ecoleai/ci-documenter-clang10-py3.6"
     steps:
       - checkout
       - build_ecole:
@@ -108,7 +108,7 @@ jobs:
         type: string
         default: "${CIRCLE_BRANCH}"
     docker:
-      - image: "ecoleai/ci-documenter-clang9-py3.6"
+      - image: "ecoleai/ci-documenter-clang10-py3.6"
     steps:
       - checkout
       # Easier/faster to rebuild than to share a workspace

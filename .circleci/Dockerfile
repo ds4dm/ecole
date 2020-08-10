@@ -1,5 +1,5 @@
 # Matrix built with different compilers (e.g. gcc9, clang10).
-ARG compiler=clang9
+ARG compiler=clang10
 
 # --------------------
 
@@ -30,7 +30,10 @@ WORKDIR /app
 # Code analysis dependencies
 FROM builder AS checker
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends clang-format clang-tidy && \
+    apt-get install --yes --no-install-recommends \
+        clang-format-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} && \
+    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-${LLVM_VERSION} 100 && \
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-${LLVM_VERSION} 100 && \
     apt-get clean && \
     pip install --no-cache-dir pre-commit
 

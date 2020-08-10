@@ -7,7 +7,7 @@ set -o pipefail  # Error if error in pipe
 
 function build-image {
 	local -r target="$1"
-	local -r compiler="${2:-clang9}"
+	local -r compiler="${2:-clang10}"
 	local -r python_version="${3:-3.6}"
 
 	cat "${DOCKERFILE_PATH}" | docker build \
@@ -17,10 +17,10 @@ function build-image {
 		--tag "${DOCKER_REPO}-${target}-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" -
 }
 
-for compiler in "gcc9" "clang9" ; do
+for compiler in "gcc9" "clang10" ; do
 	for python_version in "3.6" "3.7" "3.8" ; do
 		build-image builder "${compiler}" "${python_version}"
 	done
 done
-build-image checker clang9 3.6
-build-image documenter clang9 3.6
+build-image checker clang10 3.6
+build-image documenter clang10 3.6
