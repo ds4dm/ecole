@@ -26,6 +26,7 @@ add_executable(
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
+	src/observation/test-khalil-2016.cpp
 
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
