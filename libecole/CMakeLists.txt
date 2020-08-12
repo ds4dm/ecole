@@ -13,6 +13,7 @@ add_library(
 	src/reward/solvingtime.cpp
 	src/reward/nnodes.cpp
 	src/observation/nodebipartite.cpp
+	src/observation/khalil-2016.cpp
 	src/observation/strongbranchingscores.cpp
 	src/observation/pseudocosts.cpp
 	src/dynamics/branching.cpp
