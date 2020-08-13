@@ -1,4 +1,5 @@
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 
@@ -36,7 +37,7 @@ scip::real obj_l2_norm(Scip* const scip) noexcept {
 
 nonstd::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) noexcept {
 	auto const ub_val = SCIPcolGetUb(col);
-	if (SCIPisInfinity(scip, REALABS(ub_val))) {
+	if (SCIPisInfinity(scip, std::abs(ub_val))) {
 		return {};
 	}
 	return ub_val;
@@ -44,7 +45,7 @@ nonstd::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col)
 
 nonstd::optional<scip::real> lower_bound(Scip* const scip, scip::Col* const col) noexcept {
 	auto const lb_val = SCIPcolGetLb(col);
-	if (SCIPisInfinity(scip, REALABS(lb_val))) {
+	if (SCIPisInfinity(scip, std::abs(lb_val))) {
 		return {};
 	}
 	return lb_val;
@@ -135,7 +136,7 @@ scip::real row_l2_norm(scip::Row* const row) noexcept {
 
 nonstd::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const row) noexcept {
 	auto const lhs_val = SCIProwGetLhs(row);
-	if (SCIPisInfinity(scip, REALABS(lhs_val))) {
+	if (SCIPisInfinity(scip, std::abs(lhs_val))) {
 		return {};
 	}
 	return lhs_val - SCIProwGetConstant(row);
@@ -143,7 +144,7 @@ nonstd::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const r
 
 nonstd::optional<scip::real> right_hand_side(Scip* const scip, scip::Row* const row) noexcept {
 	auto const rhs_val = SCIProwGetRhs(row);
-	if (SCIPisInfinity(scip, REALABS(rhs_val))) {
+	if (SCIPisInfinity(scip, std::abs(rhs_val))) {
 		return {};
 	}
 	return rhs_val - SCIProwGetConstant(row);
