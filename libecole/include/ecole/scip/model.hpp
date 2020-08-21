@@ -92,8 +92,7 @@ public:
 	 * The method will throw an exception if the type is not *exactly* the one used
 	 * by SCIP.
 	 */
-	template <ParamType T>
-	void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
+	template <ParamType T> void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
 	template <ParamType T> param_t<T> get_param(std::string const& name) const;
 
 	/**
@@ -155,8 +154,7 @@ template <typename To, typename From>
 struct Caster<
 	To,
 	From,
-	std::enable_if_t<
-		!utility::is_narrow_castable<From, To>::value && std::is_convertible<From, To>::value>> {
+	std::enable_if_t<!utility::is_narrow_castable<From, To>::value && std::is_convertible<From, To>::value>> {
 	static To cast(From val) { return static_cast<To>(val); }
 };
 
@@ -164,8 +162,7 @@ struct Caster<
 // Cannot static_cast a variant into one of its held value. Other way around works though.
 template <typename To, typename... VariantFrom> struct Caster<To, nonstd::variant<VariantFrom...>> {
 	static To cast(nonstd::variant<VariantFrom...> variant_val) {
-		return nonstd::visit(
-			[](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
+		return nonstd::visit([](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
 	}
 };
 

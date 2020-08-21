@@ -16,8 +16,7 @@ auto Controller::Synchronizer::env_wait_thread() -> lock_t {
 	return lk;
 }
 
-auto Controller::Synchronizer::env_resume_thread(lock_t&& lk, action_func_t&& new_action_func)
-	-> void {
+auto Controller::Synchronizer::env_resume_thread(lock_t&& lk, action_func_t&& new_action_func) -> void {
 	validate_lock(lk);
 	action_func = std::move(new_action_func);
 	thread_owns_model = true;
@@ -72,8 +71,7 @@ auto Controller::Synchronizer::thread_terminate(lock_t&& lk, std::exception_ptr 
 	thread_terminate(std::move(lk));
 }
 
-auto Controller::Synchronizer::thread_action_function(lock_t const& lk) const noexcept
-	-> action_func_t {
+auto Controller::Synchronizer::thread_action_function(lock_t const& lk) const noexcept -> action_func_t {
 	validate_lock(lk);
 	return action_func;
 }

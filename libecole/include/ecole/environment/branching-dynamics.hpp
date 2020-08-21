@@ -10,8 +10,7 @@
 namespace ecole {
 namespace environment {
 
-class BranchingDynamics :
-	public EnvironmentDynamics<std::size_t, nonstd::optional<xt::xtensor<std::size_t, 1>>> {
+class BranchingDynamics : public EnvironmentDynamics<std::size_t, nonstd::optional<xt::xtensor<std::size_t, 1>>> {
 public:
 	using ActionSet = nonstd::optional<xt::xtensor<std::size_t, 1>>;
 

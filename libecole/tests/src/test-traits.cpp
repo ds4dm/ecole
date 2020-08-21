@@ -11,9 +11,7 @@ using namespace ecole;
 #define STATIC_REQUIRE_SAME(A, B) STATIC_REQUIRE(std::is_same<A, B>::value)
 
 TEST_CASE("Detect if observation function", "[trait]") {
-	SECTION("Positive tests") {
-		STATIC_REQUIRE(trait::is_observation_function<observation::Nothing>::value);
-	}
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_observation_function<observation::Nothing>::value); }
 
 	SECTION("Negative tests") {
 		STATIC_REQUIRE_FALSE(trait::is_observation_function<ecole::NoneType>::value);
@@ -22,9 +20,7 @@ TEST_CASE("Detect if observation function", "[trait]") {
 }
 
 TEST_CASE("Detect if environment", "[trait]") {
-	SECTION("Positive tests") {
-		STATIC_REQUIRE(trait::is_environment<environment::Configuring<>>::value);
-	}
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_environment<environment::Configuring<>>::value); }
 
 	SECTION("Negative tests") {
 		STATIC_REQUIRE_FALSE(trait::is_environment<environment::ConfiguringDynamics>::value);
@@ -33,9 +29,7 @@ TEST_CASE("Detect if environment", "[trait]") {
 }
 
 TEST_CASE("Detect if dynamics", "[trait]") {
-	SECTION("Positive tests") {
-		STATIC_REQUIRE(trait::is_dynamics<environment::ConfiguringDynamics>::value);
-	}
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_dynamics<environment::ConfiguringDynamics>::value); }
 
 	SECTION("Negative tests") {
 		STATIC_REQUIRE_FALSE(trait::is_dynamics<environment::Configuring<>>::value);

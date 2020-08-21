@@ -13,8 +13,7 @@
 namespace ecole {
 namespace environment {
 
-BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept :
-	pseudo_candidates(pseudo_candidates_) {}
+BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept : pseudo_candidates(pseudo_candidates_) {}
 
 namespace {
 
@@ -41,8 +40,7 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action)
-	-> std::tuple<bool, ActionSet> {
+auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 	if (action >= lp_cols.size()) {
 		throw Exception("Branching index is larger than the number of columns.");

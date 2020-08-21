@@ -53,10 +53,8 @@ private:
 /**
  * Helper function to bind common methods.
  */
-template <typename PyClass, typename... Args>
-void def_reset(PyClass /*pyclass*/, Args&&... /*args*/);
-template <typename PyClass, typename... Args>
-void def_obtain_reward(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass, typename... Args> void def_reset(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass, typename... Args> void def_obtain_reward(PyClass /*pyclass*/, Args&&... /*args*/);
 template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 
 /**
@@ -187,11 +185,7 @@ py::str Arithmetic::toString() const {
  *  Definition of Cumulative  *
  ******************************/
 
-Cumulative::Cumulative(
-	py::object function_,
-	py::object reduce_func_,
-	Reward init_cumul_,
-	py::str repr_) :
+Cumulative::Cumulative(py::object function_, py::object reduce_func_, Reward init_cumul_, py::str repr_) :
 	reduce_func(std::move(reduce_func_)),
 	function(std::move(function_)),
 	init_cumul(init_cumul_),
@@ -221,8 +215,7 @@ template <typename PyClass, typename... Args> void def_reset(PyClass pyclass, Ar
 	pyclass.def("reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
 }
 
-template <typename PyClass, typename... Args>
-void def_obtain_reward(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> void def_obtain_reward(PyClass pyclass, Args&&... args) {
 	pyclass.def(
 		"obtain_reward",
 		&PyClass::type::obtain_reward,

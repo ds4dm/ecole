@@ -8,9 +8,7 @@
 namespace ecole {
 namespace environment {
 
-template <
-	typename ObservationFunction = observation::NodeBipartite,
-	typename RewardFunction = reward::IsDone>
+template <typename ObservationFunction = observation::NodeBipartite, typename RewardFunction = reward::IsDone>
 using Branching = EnvironmentComposer<BranchingDynamics, ObservationFunction, RewardFunction>;
 
 }  // namespace environment

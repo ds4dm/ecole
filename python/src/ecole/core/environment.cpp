@@ -21,22 +21,14 @@ namespace py = pybind11;
 
 template <typename Dynamics> auto dynamics_class(py::module const& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
-		.def(
-			"reset_dynamics",
-			&Dynamics::reset_dynamics,
-			py::arg("model"),
-			py::call_guard<py::gil_scoped_release>())
+		.def("reset_dynamics", &Dynamics::reset_dynamics, py::arg("model"), py::call_guard<py::gil_scoped_release>())
 		.def(
 			"step_dynamics",
 			&Dynamics::step_dynamics,
 			py::arg("model"),
 			py::arg("action"),
 			py::call_guard<py::gil_scoped_release>())
-		.def(
-			"set_dynamics_random_state",
-			&Dynamics::set_dynamics_random_state,
-			py::arg("model"),
-			py::arg("random_engine"));
+		.def("set_dynamics_random_state", &Dynamics::set_dynamics_random_state, py::arg("model"), py::arg("random_engine"));
 }
 
 void bind_submodule(pybind11::module const& m) {
@@ -46,15 +38,9 @@ void bind_submodule(pybind11::module const& m) {
 
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(
-			"min_seed",
-			[](py::object const& /* cls */) {
-				return std::numeric_limits<RandomEngine::result_type>::min();
-			})
+			"min_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::min(); })
 		.def_property_readonly_static(
-			"max_seed",
-			[](py::object const& /* cls */) {
-				return std::numeric_limits<RandomEngine::result_type>::max();
-			})
+			"max_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::max(); })
 		.def(
 			py::init<RandomEngine::result_type>(),
 			py::arg("value") = RandomEngine::default_seed,

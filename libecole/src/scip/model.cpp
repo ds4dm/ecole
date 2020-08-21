@@ -108,8 +108,7 @@ template <> void Model::set_param<ParamType::Real>(std::string const& name, real
 template <> void Model::set_param<ParamType::Char>(std::string const& name, char value) {
 	scip::call(SCIPsetCharParam, get_scip_ptr(), name.c_str(), value);
 }
-template <>
-void Model::set_param<ParamType::String>(std::string const& name, std::string const& value) {
+template <> void Model::set_param<ParamType::String>(std::string const& name, std::string const& value) {
 	scip::call(SCIPsetStringParam, get_scip_ptr(), name.c_str(), value.c_str());
 }
 
@@ -202,8 +201,7 @@ nonstd::span<Var*> Model::variables() const noexcept {
 nonstd::span<Var*> Model::lp_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
-	scip::call(
-		SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
+	scip::call(SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 

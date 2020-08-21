@@ -25,8 +25,7 @@ public:
 
 	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor_*/);
 
-	auto
-	scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
+	auto scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
 		-> SCIP_RETCODE;
 
 private:
@@ -63,17 +62,7 @@ static std::unique_ptr<SCIP, ScipDeleter> copy_orig(SCIP const* const source) {
 	// Copy operation is not thread safe
 	static std::mutex m{};
 	std::lock_guard<std::mutex> g{m};
-	scip::call(
-		SCIPcopyOrig,
-		const_cast<SCIP*>(source),
-		dest.get(),
-		nullptr,
-		nullptr,
-		"",
-		false,
-		false,
-		false,
-		nullptr);
+	scip::call(SCIPcopyOrig, const_cast<SCIP*>(source), dest.get(), nullptr, nullptr, "", false, false, false, nullptr);
 	return dest;
 }
 
@@ -81,8 +70,7 @@ scip::Scimpl::Scimpl() : m_scip(create_scip()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
-Scimpl::Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept :
-	m_scip(std::move(scip_ptr)) {}
+Scimpl::Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept : m_scip(std::move(scip_ptr)) {}
 
 SCIP* scip::Scimpl::get_scip_ptr() noexcept {
 	return m_scip.get();
@@ -94,8 +82,8 @@ scip::Scimpl scip::Scimpl::copy_orig() {
 
 void Scimpl::solve_iter() {
 	auto* const scip_ptr = get_scip_ptr();
-	m_controller = std::make_unique<utility::Controller>(
-		[scip_ptr](std::weak_ptr<utility::Controller::Executor> weak_executor) {
+	m_controller =
+		std::make_unique<utility::Controller>([scip_ptr](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 			scip::call(
 				SCIPincludeObjBranchrule,
 				scip_ptr,
@@ -134,9 +122,7 @@ bool scip::Scimpl::solve_iter_is_done() {
 
 namespace {
 
-scip::ReverseBranchrule::ReverseBranchrule(
-	SCIP* scip,
-	std::weak_ptr<utility::Controller::Executor> weak_executor_) :
+scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
 	::scip::ObjBranchrule(
 		scip,
 		"ecole::ReverseBranchrule",
@@ -146,11 +132,8 @@ scip::ReverseBranchrule::ReverseBranchrule(
 		no_maxbounddist),
 	weak_executor(std::move(weak_executor_)) {}
 
-auto ReverseBranchrule::scip_execlp(
-	SCIP* scip,
-	SCIP_BRANCHRULE* /*branchrule*/,
-	SCIP_Bool,
-	SCIP_RESULT* result) -> SCIP_RETCODE {
+auto ReverseBranchrule::scip_execlp(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool, SCIP_RESULT* result)
+	-> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;

@@ -21,8 +21,7 @@ template <typename F> struct function_traits;
 /**
  * Specialization for function pointers.
  */
-template <typename R, typename... Args>
-struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
+template <typename R, typename... Args> struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
 
 template <typename R, typename... Args> struct function_traits<R(Args...)> {
 	using return_type = R;
@@ -50,8 +49,7 @@ struct function_traits<R (C::*)(Args...) const> : public function_traits<R(C&, A
 /**
  * Specialization for member object pointers.
  */
-template <typename C, typename R>
-struct function_traits<R(C::*)> : public function_traits<R(C&)> {};
+template <typename C, typename R> struct function_traits<R(C::*)> : public function_traits<R(C&)> {};
 
 /**
  * Specialization for functors.
@@ -89,8 +87,7 @@ template <typename F> using return_t = typename function_traits<F>::return_type;
 /**
  * Helper type for argument type.
  */
-template <std::size_t N, typename F>
-using arg_t = typename function_traits<F>::template args<N>::type;
+template <std::size_t N, typename F> using arg_t = typename function_traits<F>::template args<N>::type;
 
 }  // namespace utility
 }  // namespace ecole

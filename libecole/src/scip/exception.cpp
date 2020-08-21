@@ -131,10 +131,7 @@ namespace {
 
 thread_local std::string scip::ErrorCollector::errors{};
 
-void scip::ErrorCollector::scip_error(
-	SCIP_MESSAGEHDLR* /*messagehdlr*/,
-	FILE* /*file*/,
-	const char* message) {
+void scip::ErrorCollector::scip_error(SCIP_MESSAGEHDLR* /*messagehdlr*/, FILE* /*file*/, const char* message) {
 	errors += message;
 }
 

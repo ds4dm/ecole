@@ -16,8 +16,7 @@ template <typename...> using void_t = void;
 
 template <typename, typename = void_t<>> struct is_observation_function : std::false_type {};
 
-template <typename T>
-struct is_observation_function<T, void_t<decltype(&T::obtain_observation)>> : std::true_type {};
+template <typename T> struct is_observation_function<T, void_t<decltype(&T::obtain_observation)>> : std::true_type {};
 
 template <typename, typename = void_t<>> struct is_environment : std::false_type {};
 
@@ -25,8 +24,7 @@ template <typename T> struct is_environment<T, void_t<decltype(&T::step)>> : std
 
 template <typename, typename = void_t<>> struct is_dynamics : std::false_type {};
 
-template <typename T>
-struct is_dynamics<T, void_t<decltype(&T::step_dynamics)>> : std::true_type {};
+template <typename T> struct is_dynamics<T, void_t<decltype(&T::step_dynamics)>> : std::true_type {};
 
 /***********************************
  *  Detection of observation type  *
@@ -34,8 +32,7 @@ struct is_dynamics<T, void_t<decltype(&T::step_dynamics)>> : std::true_type {};
 
 template <typename, typename = void> struct observation_of;
 
-template <typename T>
-struct observation_of<T, std::enable_if_t<is_observation_function<T>::value>> {
+template <typename T> struct observation_of<T, std::enable_if_t<is_observation_function<T>::value>> {
 	using type = utility::return_t<decltype(&T::obtain_observation)>;
 };
 

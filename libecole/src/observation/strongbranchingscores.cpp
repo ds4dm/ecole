@@ -12,11 +12,9 @@
 namespace ecole {
 namespace observation {
 
-StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) :
-	pseudo_candidates(pseudo_candidates_) {}
+StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) : pseudo_candidates(pseudo_candidates_) {}
 
-nonstd::optional<xt::xtensor<double, 1>>
-StrongBranchingScores::obtain_observation(scip::Model& model) {
+nonstd::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observation(scip::Model& model) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}

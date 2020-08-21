@@ -39,8 +39,7 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 	}
 };
 
-using TestEnv =
-	environment::EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant>;
+using TestEnv = environment::EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant>;
 
 }  // namespace environment
 }  // namespace ecole
@@ -90,9 +89,7 @@ TEST_CASE("Environments have MDP API", "[env]") {
 		}
 	}
 
-	SECTION("Cannot transition without reseting") {
-		REQUIRE_THROWS_AS(env.step(some_action), environment::Exception);
-	}
+	SECTION("Cannot transition without reseting") { REQUIRE_THROWS_AS(env.step(some_action), environment::Exception); }
 
 	SECTION("Cannot transition past termination") {
 		std::tie(std::ignore, std::ignore, std::ignore, done) = env.reset(problem_file);

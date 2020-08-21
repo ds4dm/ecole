@@ -18,14 +18,12 @@ namespace detail {
 /**
  * Bind @ref nonstd::optional for usage in Pybind.
  */
-template <typename T>
-struct type_caster<nonstd::optional<T>> : optional_caster<nonstd::optional<T>> {};
+template <typename T> struct type_caster<nonstd::optional<T>> : optional_caster<nonstd::optional<T>> {};
 
 /**
  * Bind @ref nonstd::variant for usage in Pybind.
  */
-template <typename... Ts>
-struct type_caster<nonstd::variant<Ts...>> : variant_caster<nonstd::variant<Ts...>> {};
+template <typename... Ts> struct type_caster<nonstd::variant<Ts...>> : variant_caster<nonstd::variant<Ts...>> {};
 
 /**
  * Specifies the function used to visit the variant.

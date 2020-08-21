@@ -64,8 +64,7 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 	SECTION("Throw on wrong parameters type") {
 		REQUIRE_THROWS_AS(model.get_param<ParamType::Real>(int_param), scip::Exception);
 		REQUIRE_THROWS_WITH(
-			model.get_param<ParamType::Real>(int_param),
-			Contains(int_param) && Contains("int") && Contains("Real"));
+			model.get_param<ParamType::Real>(int_param), Contains(int_param) && Contains("int") && Contains("Real"));
 
 		constexpr auto some_real_val = 3.0;
 		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, some_real_val), scip::Exception);
@@ -76,8 +75,7 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 
 	SECTION("Throw on wrong parameter value") {
 		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(int_param, -3), scip::Exception);
-		REQUIRE_THROWS_WITH(
-			model.set_param<ParamType::Int>(int_param, -3), Contains(int_param) && Contains("-3"));
+		REQUIRE_THROWS_WITH(model.set_param<ParamType::Int>(int_param, -3), Contains(int_param) && Contains("-3"));
 	}
 
 	SECTION("Throw on unknown parameters") {

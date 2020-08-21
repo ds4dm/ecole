@@ -8,9 +8,7 @@
 namespace ecole {
 namespace environment {
 
-template <
-	typename ObservationFunction = observation::Nothing,
-	typename RewardFunction = reward::IsDone>
+template <typename ObservationFunction = observation::Nothing, typename RewardFunction = reward::IsDone>
 using Configuring = EnvironmentComposer<ConfiguringDynamics, ObservationFunction, RewardFunction>;
 
 }  // namespace environment

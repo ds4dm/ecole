@@ -82,8 +82,7 @@ nonstd::optional<scip::real> avg_sol(Scip* const scip, scip::Var* const var) noe
 	return {};
 }
 
-nonstd::optional<scip::real>
-feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
+nonstd::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
 	if (SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS) {
 		return {};
 	}
@@ -91,8 +90,7 @@ feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept
 }
 
 auto extract_col_feat(scip::Model const& model) {
-	auto constexpr n_col_feat =
-		11 + scip::enum_size<scip::var_type>::value + scip::enum_size<scip::base_stat>::value;
+	auto constexpr n_col_feat = 11 + scip::enum_size<scip::var_type>::value + scip::enum_size<scip::base_stat>::value;
 	auto* const scip = model.get_scip_ptr();
 	tensor col_feat{{model.lp_columns().size(), n_col_feat}, 0.};
 
@@ -298,8 +296,7 @@ utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
 
 auto NodeBipartite::obtain_observation(scip::Model& model) -> nonstd::optional<NodeBipartiteObs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
-		return NodeBipartiteObs{
-			extract_col_feat(model), extract_row_feat(model), extract_edge_feat(model)};
+		return NodeBipartiteObs{extract_col_feat(model), extract_row_feat(model), extract_edge_feat(model)};
 	}
 	return {};
 }

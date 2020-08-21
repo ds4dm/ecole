@@ -84,8 +84,7 @@ private:
  **********************************/
 
 template <class Function, class... Args>
-Controller::Controller(Function&& func_, Args&&... args_) :
-	synchronizer(std::make_shared<Synchronizer>()) {
+Controller::Controller(Function&& func_, Args&&... args_) : synchronizer(std::make_shared<Synchronizer>()) {
 	auto executor = std::make_shared<Executor>(synchronizer);
 
 	auto thread_func = [executor](Function&& func, Args&&... args) {
@@ -98,8 +97,7 @@ Controller::Controller(Function&& func_, Args&&... args_) :
 		}
 	};
 
-	solving_thread =
-		std::thread(thread_func, std::forward<Function>(func_), std::forward<Args>(args_)...);
+	solving_thread = std::thread(thread_func, std::forward<Function>(func_), std::forward<Args>(args_)...);
 }
 
 }  // namespace utility

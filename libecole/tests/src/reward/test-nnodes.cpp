@@ -17,9 +17,7 @@ TEST_CASE("NNodes unit tests", "[unit][reward]") {
 	reward::unit_tests(reward::NNodes{});
 }
 
-TEST_CASE(
-	"NNodes returns the difference in the total number of processed nodes between two states",
-	"[reward]") {
+TEST_CASE("NNodes returns the difference in the total number of processed nodes between two states", "[reward]") {
 
 	auto reward_func = reward::NNodes{};
 	auto model = get_model();  // a non-trivial instance is loaded
@@ -81,8 +79,7 @@ TEST_CASE("NNodes rewards are consistent when used in a Branching environment", 
 		REQUIRE(cum_reward >= n_steps);
 
 		while (!done) {
-			std::tie(std::ignore, action_set, reward, done, std::ignore) =
-				env.step(action_set.value()[0]);  // dumb action
+			std::tie(std::ignore, action_set, reward, done, std::ignore) = env.step(action_set.value()[0]);  // dumb action
 
 			cum_reward += reward;
 			n_steps += 1;

@@ -34,8 +34,7 @@ template <typename PyClass, typename... Args> auto def_reset(PyClass pyclass, Ar
 /**
  * Helper function to bind the `obtain_observation` method of observation functions.
  */
-template <typename PyClass, typename... Args>
-auto def_obtain_observation(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> auto def_obtain_observation(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
 		"obtain_observation",
 		&PyClass::type::obtain_observation,
@@ -69,9 +68,7 @@ void bind_submodule(py::module const& m) {
 		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
 	)")
 		.def_property_readonly(
-			"values",
-			[](coo_matrix & self) -> auto& { return self.values; },
-			"A vector of non zero values in the matrix")
+			"values", [](coo_matrix & self) -> auto& { return self.values; }, "A vector of non zero values in the matrix")
 		.def_property_readonly(
 			"indices",
 			[](coo_matrix & self) -> auto& { return self.indices; },
@@ -144,8 +141,7 @@ void bind_submodule(py::module const& m) {
 			By default psuedo-candidates will be computed.
 	)");
 	def_reset(strong_branching_scores, R"(Do nothing.)");
-	def_obtain_observation(
-		strong_branching_scores, "Extract an array containing strong branching scores.");
+	def_obtain_observation(strong_branching_scores, "Extract an array containing strong branching scores.");
 
 	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
 		Pseudocosts observation function on branch-and bound node.
