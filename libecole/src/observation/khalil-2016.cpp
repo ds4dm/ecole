@@ -42,7 +42,7 @@ template <typename T> auto square(T x) noexcept -> T {
  */
 template <typename T> auto safe_div(T x, T y) noexcept -> T {
 	static_assert(std::is_floating_point<T>::value, "Inputs are not decimals");
-	return y != 0. ? y / x : 0.;
+	return y != 0. ? x / y : 0.;
 }
 
 /**
@@ -130,7 +130,7 @@ struct StatsFeatures {
 	value_type count = 0.;
 	value_type sum = 0.;
 	value_type mean = 0.;
-	value_type variance = 0.;
+	value_type stddev = 0.;
 	value_type min = 0.;
 	value_type max = 0.;
 };
@@ -151,7 +151,7 @@ auto compute_stats(Range const& range, TransformFunc transform, FilterFunc filte
 	}
 
 	value_type const mean = sum / count;
-	value_type variance = 0.;
+	value_type stddev = 0.;
 	auto min = std::numeric_limits<transformed_type>::max();
 	auto max = std::numeric_limits<transformed_type>::min();
 
@@ -160,13 +160,12 @@ auto compute_stats(Range const& range, TransformFunc transform, FilterFunc filte
 		if (filter(value)) {
 			min = std::min(min, value);
 			max = std::max(max, value);
-			variance += square(static_cast<value_type>(value) - mean);
+			stddev += square(static_cast<value_type>(value) - mean);
 		}
 	}
-	// FIXME should it be std deviation ?
-	variance /= count;
+	stddev = std::sqrt(stddev / count);
 
-	return {count, sum, mean, variance, static_cast<value_type>(min), static_cast<value_type>(max)};
+	return {count, sum, mean, stddev, static_cast<value_type>(min), static_cast<value_type>(max)};
 }
 
 /**
@@ -184,7 +183,7 @@ template <typename Range> auto sum_positive_negative(Range const& range) noexcep
 		}
 	}
 	return std::make_pair(positive_sum, negative_sum);
-};
+}
 
 /*****************************
  *  Scip wrapping functions  *
@@ -279,7 +278,7 @@ template <typename... Features> constexpr auto is_contiguous(std::tuple<Features
 	constexpr std::array<std::size_t, n_features> arr = {static_cast<std::size_t>(Features::name)...};
 
 	for (std::size_t i = 0; i < arr.size(); ++i) {
-		if ((i < 0) && (arr[i] != arr[i - 1] + 1)) {
+		if ((i > 0) && (arr[i] != arr[i - 1] + 1)) {
 			return false;
 		}
 	}
@@ -349,7 +348,7 @@ auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noe
 	auto const stats = compute_stats(rows, transform, filter);
 	return std::make_tuple(
 		feature<Static::rows_deg_mean>(stats.mean),
-		feature<Static::rows_deg_var>(stats.variance),
+		feature<Static::rows_deg_stddev>(stats.stddev),
 		feature<Static::rows_deg_min>(stats.min),
 		feature<Static::rows_deg_max>(stats.max));
 }
@@ -366,7 +365,7 @@ auto stats_for_constraint_positive_coefficients(
 	return std::make_tuple(
 		feature<Static::rows_pos_coefs_count>(stats.count),
 		feature<Static::rows_pos_coefs_mean>(stats.mean),
-		feature<Static::rows_pos_coefs_var>(stats.variance),
+		feature<Static::rows_pos_coefs_stddev>(stats.stddev),
 		feature<Static::rows_pos_coefs_min>(stats.min),
 		feature<Static::rows_pos_coefs_max>(stats.max));
 }
@@ -383,7 +382,7 @@ auto stats_for_constraint_negative_coefficients(
 	return std::make_tuple(
 		feature<Static::rows_neg_coefs_count>(stats.count),
 		feature<Static::rows_neg_coefs_mean>(stats.mean),
-		feature<Static::rows_neg_coefs_var>(stats.variance),
+		feature<Static::rows_neg_coefs_stddev>(stats.stddev),
 		feature<Static::rows_neg_coefs_min>(stats.min),
 		feature<Static::rows_neg_coefs_max>(stats.max));
 }
@@ -492,8 +491,8 @@ auto infeasibility_statistics(scip::Var* const var) noexcept {
 	return std::make_tuple(
 		feature<Dynamic::n_cutoff_up>(n_infeasibles_up),
 		feature<Dynamic::n_cutoff_down>(n_infeasibles_down),
-		feature<Dynamic::n_branching_up>(safe_div(n_infeasibles_up, n_branchings_up)),
-		feature<Dynamic::n_branching_down>(safe_div(n_infeasibles_down, n_branchings_down)));
+		feature<Dynamic::n_cutoff_up_ratio>(safe_div(n_infeasibles_up, n_branchings_up)),
+		feature<Dynamic::n_cutoff_down_ratio>(safe_div(n_infeasibles_down, n_branchings_down)));
 }
 
 /**
@@ -519,7 +518,7 @@ auto dynamic_stats_for_constraint_degree(
 	auto const root_deg_max = get_feature_value<Static::rows_deg_max>(root_deg_stats);
 	return std::make_tuple(
 		feature<Dynamic::rows_deg_mean>(stats.mean),
-		feature<Dynamic::rows_deg_var>(stats.variance),
+		feature<Dynamic::rows_deg_stddev>(stats.stddev),
 		feature<Dynamic::rows_deg_min>(stats.min),
 		feature<Dynamic::rows_deg_max>(stats.max),
 		feature<Dynamic::rows_deg_mean_ratio>(safe_div(stats.mean, root_deg_mean + stats.mean)),
@@ -564,10 +563,10 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
 	}
 
 	return std::make_tuple(
-		feature<Dynamic::pos_coef_rhs_ratio_max>(positive_rhs_ratio_max),
-		feature<Dynamic::pos_coef_rhs_ratio_min>(positive_rhs_ratio_min),
-		feature<Dynamic::neg_coef_rhs_ratio_max>(negative_rhs_ratio_max),
-		feature<Dynamic::neg_coef_rhs_ratio_min>(negative_rhs_ratio_min));
+		feature<Dynamic::coef_pos_rhs_ratio_min>(positive_rhs_ratio_min),
+		feature<Dynamic::coef_pos_rhs_ratio_max>(positive_rhs_ratio_max),
+		feature<Dynamic::coef_neg_rhs_ratio_min>(negative_rhs_ratio_min),
+		feature<Dynamic::coef_neg_rhs_ratio_max>(negative_rhs_ratio_max));
 }
 
 /**
@@ -615,14 +614,14 @@ auto min_max_for_one_to_all_coefficient_ratios(
 	}
 
 	return std::make_tuple(
-		feature<Dynamic::pos_coef_pos_coef_ratio_max>(positive_positive_ratio_max),
 		feature<Dynamic::pos_coef_pos_coef_ratio_min>(positive_positive_ratio_min),
-		feature<Dynamic::pos_coef_neg_coef_ratio_max>(positive_negative_ratio_max),
+		feature<Dynamic::pos_coef_pos_coef_ratio_max>(positive_positive_ratio_max),
 		feature<Dynamic::pos_coef_neg_coef_ratio_min>(positive_negative_ratio_min),
-		feature<Dynamic::neg_coef_pos_coef_ratio_max>(negative_positive_ratio_max),
+		feature<Dynamic::pos_coef_neg_coef_ratio_max>(positive_negative_ratio_max),
 		feature<Dynamic::neg_coef_pos_coef_ratio_min>(negative_positive_ratio_min),
-		feature<Dynamic::neg_coef_neg_coef_ratio_max>(negative_negative_ratio_max),
-		feature<Dynamic::neg_coef_neg_coef_ratio_min>(negative_negative_ratio_min));
+		feature<Dynamic::neg_coef_pos_coef_ratio_max>(negative_positive_ratio_max),
+		feature<Dynamic::neg_coef_neg_coef_ratio_min>(negative_negative_ratio_min),
+		feature<Dynamic::neg_coef_neg_coef_ratio_max>(negative_negative_ratio_max));
 }
 
 /**
@@ -752,10 +751,15 @@ auto stats_for_active_constraint_coefficients(
 					auto const weighted_abs_coef = weight * abs_coef;
 
 					auto& stats = weights_stats[weight_idx];
-					stats.variance = square(weighted_abs_coef - stats.mean);
+					stats.stddev = square(weighted_abs_coef - stats.mean);
 				}
 			}
 		}
+
+		for (auto& stats : weights_stats) {
+			stats.stddev = std::sqrt(stats.stddev / static_cast<value_type>(n_active_rows));
+		}
+
 	} else {
 		for (auto& stats : weights_stats) {
 			stats = {};
@@ -766,25 +770,25 @@ auto stats_for_active_constraint_coefficients(
 		feature<Dynamic::active_coef_weight1_count>(weights_stats[0].count),
 		feature<Dynamic::active_coef_weight1_sum>(weights_stats[0].sum),
 		feature<Dynamic::active_coef_weight1_mean>(weights_stats[0].mean),
-		feature<Dynamic::active_coef_weight1_var>(weights_stats[0].variance),
+		feature<Dynamic::active_coef_weight1_stddev>(weights_stats[0].stddev),
 		feature<Dynamic::active_coef_weight1_min>(weights_stats[0].min),
 		feature<Dynamic::active_coef_weight1_max>(weights_stats[0].max),
 		feature<Dynamic::active_coef_weight2_count>(weights_stats[1].count),
 		feature<Dynamic::active_coef_weight2_sum>(weights_stats[1].sum),
 		feature<Dynamic::active_coef_weight2_mean>(weights_stats[1].mean),
-		feature<Dynamic::active_coef_weight2_var>(weights_stats[1].variance),
+		feature<Dynamic::active_coef_weight2_stddev>(weights_stats[1].stddev),
 		feature<Dynamic::active_coef_weight2_min>(weights_stats[1].min),
 		feature<Dynamic::active_coef_weight2_max>(weights_stats[1].max),
 		feature<Dynamic::active_coef_weight3_count>(weights_stats[2].count),
 		feature<Dynamic::active_coef_weight3_sum>(weights_stats[2].sum),
 		feature<Dynamic::active_coef_weight3_mean>(weights_stats[2].mean),
-		feature<Dynamic::active_coef_weight3_var>(weights_stats[2].variance),
+		feature<Dynamic::active_coef_weight3_stddev>(weights_stats[2].stddev),
 		feature<Dynamic::active_coef_weight3_min>(weights_stats[2].min),
 		feature<Dynamic::active_coef_weight3_max>(weights_stats[2].max),
 		feature<Dynamic::active_coef_weight4_count>(weights_stats[3].count),
 		feature<Dynamic::active_coef_weight4_sum>(weights_stats[3].sum),
 		feature<Dynamic::active_coef_weight4_mean>(weights_stats[3].mean),
-		feature<Dynamic::active_coef_weight4_var>(weights_stats[3].variance),
+		feature<Dynamic::active_coef_weight4_stddev>(weights_stats[3].stddev),
 		feature<Dynamic::active_coef_weight4_min>(weights_stats[3].min),
 		feature<Dynamic::active_coef_weight4_max>(weights_stats[3].max));
 }
@@ -873,6 +877,10 @@ auto extract_all_features(
  *  Observation extracting function  *
  *************************************/
 
+std::size_t const Khalil2016::Feature::n_static;
+std::size_t const Khalil2016::Feature::n_dynamic;
+std::size_t const Khalil2016::Feature::n_features;
+
 void Khalil2016::reset(scip::Model& model) {
 	static_features = extract_static_features(model);
 }
@@ -885,4 +893,4 @@ auto Khalil2016::obtain_observation(scip::Model& model) -> nonstd::optional<Khal
 }
 
 }  // namespace observation
-};  // namespace ecole
+}  // namespace ecole
