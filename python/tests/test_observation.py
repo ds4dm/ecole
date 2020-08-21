@@ -25,6 +25,7 @@ def pytest_generate_tests(metafunc):
             O.StrongBranchingScores(True),
             O.StrongBranchingScores(False),
             O.Pseudocosts(),
+            O.Khalil2016(),
         )
         metafunc.parametrize("observation_function", all_observation_functions)
 
@@ -83,3 +84,9 @@ def test_Pseudocosts_observation(solving_model):
     """Observation of Pseudocosts is a numpy array."""
     obs = make_obs(O.Pseudocosts(), solving_model)
     assert_array(obs)
+
+
+def test_Khalil2016_observatio(solving_model):
+    """Observation of Khalil2016 is a numpy matrix."""
+    obs = make_obs(O.Khalil2016(), solving_model)
+    assert_array(obs, ndim=2)

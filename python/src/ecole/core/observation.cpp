@@ -7,6 +7,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/observation/khalil-2016.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
@@ -154,6 +155,23 @@ void bind_submodule(py::module_ const& m) {
 	pseudocosts.def(py::init<>());
 	def_before_reset(pseudocosts, R"(Do nothing.)");
 	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
+
+	auto khalil_2016 = py::class_<Khalil2016>(m, "Khalil2016", R"(
+		Branching candidates features from Khalil et al. (2016).
+
+		The observation is a matrix where rows represent pseudo branching cnadidates and columns
+		represent features related to these variables.
+		See [Khalil2016]_ for a complete reference on this objservation function.
+
+		.. [Khalil2016]
+			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
+			"`Learning to branch in mixed integer programming.
+			<https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf>`_"
+			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
+	)");
+	khalil_2016.def(py::init<>());
+	def_reset(khalil_2016, R"(Precompute static features for all varaible columns.)");
+	def_extract(khalil_2016, "Extract the observation matrix.");
 }
 
 }  // namespace ecole::observation
