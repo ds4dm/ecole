@@ -42,13 +42,14 @@ familiar to reinforcement learning praticionners.
 The state-of-the-art Mixed Integer Linear Programming solver that acts as a controllable
 algorithm inside Ecole is `SCIP <https://scip.zib.de/>`_.
 
-The reader is referred to [Bengio2018]_ for motivation on why machine learning is a promising
+The reader is referred to [Bengio2020]_ for motivation on why machine learning is a promising
 candidate to use for combinatorial optimization, as well as the methodology to do so.
 
-.. [Bengio2018]
+.. [Bengio2020]
    Bengio, Yoshua, Andrea Lodi, and Antoine Prouvost.
-   "Machine Learning for Combinatorial Optimization: a Methodological Tour d'Horizon."
-   arXiv preprint arXiv:1811.06128 (2018).
+   "`Machine learning for combinatorial optimization: a methodological tour d'horizon.
+   <https://arxiv.org/pdf/1811.06128.pdf>`_"
+   *European Journal of Operational Research*. 2020.
 
 
 .. toctree::

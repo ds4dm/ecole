@@ -56,6 +56,7 @@ def pytest_generate_tests(metafunc):
             O.NodeBipartite(),
             O.StrongBranchingScores(True),
             O.StrongBranchingScores(False),
+            O.Pseudocosts(),
         )
         metafunc.parametrize("observation_function", all_observation_functions)
 
@@ -110,7 +111,7 @@ def test_StrongBranchingScores_observation(solving_model):
     assert_array(obs)
 
 
-def test_Pseudocosts(solving_model):
+def test_Pseudocosts_observation(solving_model):
     """Observation of Pseudocosts is a numpy array."""
     obs = make_obs(O.Pseudocosts(), solving_model)
     assert_array(obs)

@@ -17,10 +17,13 @@ Node Bipartite
 .. autoclass:: ecole.observation.NodeBipartite
 .. autoclass:: ecole.observation.NodeBipartiteObs
 
+Strong Branching Scores
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: ecole.observation.StrongBranchingScores
+
 Pseudocosts
 ^^^^^^^^^^^
 .. autoclass:: ecole.observation.Pseudocosts
-   :members:
 
 Utilities
 ---------
