@@ -13,8 +13,7 @@ public:
 	static Exception from_retcode(SCIP_RETCODE retcode);
 	static void reset_message_capture();
 
-	Exception(std::string const& message);
-	Exception(std::string&& message);
+	Exception(std::string message);
 
 	char const* what() const noexcept override;
 

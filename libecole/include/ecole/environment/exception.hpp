@@ -8,8 +8,7 @@ namespace environment {
 
 class Exception : public std::exception {
 public:
-	Exception(std::string const& message);
-	Exception(std::string&& message);
+	Exception(std::string message);
 
 	char const* what() const noexcept override;
 

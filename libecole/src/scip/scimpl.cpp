@@ -26,7 +26,7 @@ public:
 	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor_*/);
 
 	auto scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
-		-> SCIP_RETCODE;
+		-> SCIP_RETCODE override;
 
 private:
 	std::weak_ptr<utility::Controller::Executor> weak_executor;

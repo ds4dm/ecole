@@ -24,7 +24,7 @@ nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::M
 	SCIP_Real* cands_lp_values;
 	int nb_cands;
 
-	SCIPgetLPBranchCands(scip, &cands, &cands_lp_values, NULL, NULL, &nb_cands, NULL);
+	SCIPgetLPBranchCands(scip, &cands, &cands_lp_values, nullptr, nullptr, &nb_cands, nullptr);
 	assert(nb_cands > 0);
 
 	/* Store pseudocosts in tensor */

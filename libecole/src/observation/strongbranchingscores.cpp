@@ -46,7 +46,7 @@ nonstd::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observati
 	SCIP_Real* candscores;
 	int ncands;
 
-	SCIPgetVanillafullstrongData(scip, &cands, &candscores, &ncands, NULL, NULL);
+	SCIPgetVanillafullstrongData(scip, &cands, &candscores, &ncands, nullptr, nullptr);
 
 	assert(ncands >= 0);
 

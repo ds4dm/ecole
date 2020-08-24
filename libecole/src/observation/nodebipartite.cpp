@@ -94,7 +94,7 @@ auto extract_col_feat(scip::Model const& model) {
 	auto* const scip = model.get_scip_ptr();
 	tensor col_feat{{model.lp_columns().size(), n_col_feat}, 0.};
 
-	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
+	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
 	value_type const obj_norm = obj_l2_norm(scip);
 
 	auto* iter = col_feat.begin();
@@ -188,12 +188,12 @@ auto extract_row_feat(scip::Model const& model) {
 	auto* const scip = model.get_scip_ptr();
 	tensor row_feat{{n_ineq_rows(model), n_row_feat}, 0.};
 
-	value_type const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
+	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
 	value_type const obj_norm = obj_l2_norm(scip);
 
 	auto extract_row = [n_lps, obj_norm, scip](auto& iter, auto const row, bool const lhs) {
 		value_type const sign = lhs ? -1. : 1.;
-		value_type row_norm = static_cast<value_type>(row_l2_norm(row));
+		auto row_norm = static_cast<value_type>(row_l2_norm(row));
 		if (lhs) {
 			*(iter++) = sign * left_hand_side(scip, row).value() / row_norm;
 			*(iter++) = static_cast<value_type>(is_at_lhs(scip, row));
