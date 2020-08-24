@@ -1,5 +1,6 @@
 # readability-implicit-bool-conversion decrease readability due to SCIP_Bool being an unsigned int
 Checks: >-
+  bugprone-*,
   cert-*,
   clang-diagnostic-*,
   clang-analyzer-*,

@@ -145,6 +145,7 @@ template <> std::string Model::get_param<ParamType::String>(std::string const& n
 
 void Model::set_params(std::map<std::string, Param> name_values) {
 	for (auto&& name_val : name_values) {
+		// NOLINTNEXTLINE(bugprone-use-after-move)  This is the way to move element of a tuple
 		set_param(std::move(name_val).first, std::move(name_val).second);
 	}
 }
