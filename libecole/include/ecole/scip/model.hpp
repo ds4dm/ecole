@@ -172,11 +172,11 @@ template <typename From> struct Caster<bool, std::remove_cv<From>*> {
 };
 
 // Convert character to string
-template <> std::string Caster<std::string, char>::cast(char /*val*/);
+template <> std::string Caster<std::string, char>::cast(char val);
 
 // Convert string to character
-template <> char Caster<char, char const*>::cast(char const* /*val*/);
-template <> char Caster<char, std::string>::cast(std::string /*val*/);
+template <> char Caster<char, char const*>::cast(char const* val);
+template <> char Caster<char, std::string>::cast(std::string val);
 
 // Helper func to deduce From type automatically
 template <typename To, typename From> To cast(From val) {

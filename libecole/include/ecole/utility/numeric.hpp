@@ -9,14 +9,22 @@ namespace utility {
 
 template <typename...> using void_t = void;
 
-template <typename To, typename From, typename = void_t<>> struct is_static_castable : std::false_type {};
+template <typename From, typename To, typename = void_t<>> struct is_narrow_castable : std::false_type {};
 
-template <typename To, typename From>
-struct is_static_castable<To, From, void_t<decltype(static_cast<To>(std::declval<From>()))>> : std::true_type {};
+/**
+ * Do not narrow cast char to anything else.
+ */
+template <typename From> struct is_narrow_castable<From, char> : std::false_type {};
+template <typename To> struct is_narrow_castable<char, To> : std::false_type {};
+template <> struct is_narrow_castable<char, char> : std::true_type {};
 
-template <typename To, typename From>
-using is_narrow_castable =
-	std::integral_constant<bool, is_static_castable<To, From>::value && is_static_castable<From, To>::value>;
+template <typename From, typename To>
+struct is_narrow_castable<
+	To,
+	From,
+	std::enable_if_t<
+		std::is_convertible<From, To>::value && std::is_convertible<To, From>::value && !std::is_same<From, char>::value &&
+		!std::is_same<To, char>::value>> : std::true_type {};
 
 /**
  * A narrow cast raises if any numerical loss is detected.
