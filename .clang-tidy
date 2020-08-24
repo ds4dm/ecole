@@ -6,6 +6,7 @@ Checks: >-
   clang-analyzer-*,
   misc-*,
   performance-*,
+  portability-*,
   readability-*,
   -readability-implicit-bool-conversion
 WarningsAsErrors: '*'
