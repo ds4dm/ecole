@@ -834,8 +834,8 @@ auto extract_dynamic_features(
 template <typename Tensor> auto extract_reused_static_features(Tensor const& tensor) noexcept {
 	return std::make_tuple(
 		feature<Static::rows_deg_mean>(tensor[static_cast<std::size_t>(Static::rows_deg_mean)]),
-		feature<Static::rows_deg_min>(tensor[static_cast<std::size_t>(Static::rows_deg_mean)]),
-		feature<Static::rows_deg_max>(tensor[static_cast<std::size_t>(Static::rows_deg_mean)]));
+		feature<Static::rows_deg_min>(tensor[static_cast<std::size_t>(Static::rows_deg_min)]),
+		feature<Static::rows_deg_max>(tensor[static_cast<std::size_t>(Static::rows_deg_max)]));
 }
 
 auto extract_all_features(
