@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 add_executable(
 	test-libecole
-	main.cpp
+	src/main.cpp
 	src/conftest.cpp
 
 	src/test-traits.cpp
