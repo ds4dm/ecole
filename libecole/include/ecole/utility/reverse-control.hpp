@@ -49,7 +49,7 @@ private:
 		bool thread_finished = false;
 		action_func_t action_func;
 
-		auto validate_lock(lock_t const& lk) const noexcept -> void;
+		auto is_valid_lock(lock_t const& lk) const noexcept -> bool;
 		auto maybe_throw(lock_t&& lk) -> lock_t;
 	};
 

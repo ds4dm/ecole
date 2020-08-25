@@ -17,7 +17,7 @@ auto Controller::Synchronizer::env_wait_thread() -> lock_t {
 }
 
 auto Controller::Synchronizer::env_resume_thread(lock_t&& lk, action_func_t&& new_action_func) -> void {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	action_func = std::move(new_action_func);
 	thread_owns_model = true;
 	lk.unlock();
@@ -25,7 +25,7 @@ auto Controller::Synchronizer::env_resume_thread(lock_t&& lk, action_func_t&& ne
 }
 
 auto Controller::Synchronizer::env_stop_thread(lock_t&& lk) -> void {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	if (!thread_finished) {
 		env_resume_thread(std::move(lk), [](auto* scip, auto* result) {
 			SCIP_CALL(SCIPinterruptSolve(scip));
@@ -33,13 +33,14 @@ auto Controller::Synchronizer::env_stop_thread(lock_t&& lk) -> void {
 			return SCIP_OKAY;
 		});
 		lk = env_wait_thread();
-		validate_lock(lk);
+		assert(is_valid_lock(lk));
 	}
 	lk = maybe_throw(std::move(lk));
 }
 
 auto Controller::Synchronizer::env_thread_is_done(lock_t const& lk) const noexcept -> bool {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
+	(void)lk;  // Lock unused in Release
 	return thread_finished;
 }
 
@@ -48,7 +49,7 @@ auto Controller::Synchronizer::thread_start() -> lock_t {
 }
 
 auto Controller::Synchronizer::thread_hold_env(lock_t&& lk) -> lock_t {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	thread_owns_model = false;
 	lk.unlock();
 	model_avail_cv.notify_one();
@@ -58,7 +59,7 @@ auto Controller::Synchronizer::thread_hold_env(lock_t&& lk) -> lock_t {
 }
 
 auto Controller::Synchronizer::thread_terminate(lock_t&& lk) -> void {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	thread_owns_model = false;
 	thread_finished = true;
 	lk.unlock();
@@ -66,23 +67,23 @@ auto Controller::Synchronizer::thread_terminate(lock_t&& lk) -> void {
 }
 
 auto Controller::Synchronizer::thread_terminate(lock_t&& lk, std::exception_ptr const& e) -> void {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	except_ptr = e;
 	thread_terminate(std::move(lk));
 }
 
 auto Controller::Synchronizer::thread_action_function(lock_t const& lk) const noexcept -> action_func_t {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
+	(void)lk;  // Lock unused in Release
 	return action_func;
 }
 
-auto Controller::Synchronizer::validate_lock(lock_t const& lk) const noexcept -> void {
-	(void)lk;
-	assert(lk && (lk.mutex() == &model_mutex));
+auto Controller::Synchronizer::is_valid_lock(lock_t const& lk) const noexcept -> bool {
+	return lk && (lk.mutex() == &model_mutex);
 }
 
 auto Controller::Synchronizer::maybe_throw(lock_t&& lk) -> lock_t {
-	validate_lock(lk);
+	assert(is_valid_lock(lk));
 	auto e_ptr = except_ptr;
 	except_ptr = nullptr;
 	if (e_ptr) {
