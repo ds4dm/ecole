@@ -1,8 +1,8 @@
 [requires]
-xtensor/0.21.4
-span-lite/0.7.0
-fmt/6.1.2
-range-v3/0.11.0
+xtensor/[~=0.21]
+span-lite/[~=0.7]
+fmt/[~=7.0]
+range-v3/[~=0.11]
 
 [generators]
 cmake
