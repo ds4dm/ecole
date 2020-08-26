@@ -1,8 +1,7 @@
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/scip/model.hpp"
 
-namespace ecole {
-namespace reward {
+namespace ecole::reward {
 
 static auto n_lp_iterations(scip::Model const& model) {
 	switch (model.get_stage()) {
@@ -27,5 +26,4 @@ Reward LpIterations::obtain_reward(scip::Model const& model, bool /* done */) {
 	return static_cast<double>(lp_iter_diff);
 }
 
-}  // namespace reward
-}  // namespace ecole
+}  // namespace ecole::reward

@@ -2,8 +2,7 @@
 
 #include "ecole/utility/reverse-control.hpp"
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 /************************************************
  *  Implementation of Controller::Synchronizer  *
@@ -153,5 +152,4 @@ auto Controller::stop_thread() -> void {
 	synchronizer->env_stop_thread(std::move(model_lock));
 }
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility

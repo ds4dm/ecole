@@ -5,11 +5,9 @@
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/isdone.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 template <typename ObservationFunction = observation::Nothing, typename RewardFunction = reward::IsDone>
 using Configuring = EnvironmentComposer<ConfiguringDynamics, ObservationFunction, RewardFunction>;
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

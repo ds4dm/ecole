@@ -9,8 +9,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::Model& model) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
@@ -41,5 +40,4 @@ nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::M
 	return pseudocosts;
 }
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

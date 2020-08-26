@@ -8,8 +8,7 @@
 
 #include "scip/utils.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 /******************************************
  *  Declaration of the ReverseBranchrule  *
@@ -143,6 +142,4 @@ auto ReverseBranchrule::scip_execlp(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/,
 }
 
 }  // namespace
-
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

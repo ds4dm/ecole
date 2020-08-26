@@ -8,8 +8,7 @@
 
 #include "ecole/observation/abstract.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 class StrongBranchingScores : public ObservationFunction<nonstd::optional<xt::xtensor<double, 1>>> {
 public:
@@ -20,5 +19,4 @@ public:
 	nonstd::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model) override;
 };
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

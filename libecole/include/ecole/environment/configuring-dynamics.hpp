@@ -7,8 +7,7 @@
 #include "ecole/none.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 /**
  * A Dictionnary of parameter names to parameter values.
@@ -21,5 +20,4 @@ public:
 	std::tuple<bool, NoneType> step_dynamics(scip::Model& model, ParamDict const& param_dict) override;
 };
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

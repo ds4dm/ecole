@@ -4,8 +4,7 @@
 
 #include "conftest.hpp"
 
-namespace ecole {
-namespace reward {
+namespace ecole::reward {
 
 template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 	auto done = GENERATE(true, false);
@@ -24,5 +23,4 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 	}
 }
 
-}  // namespace reward
-}  // namespace ecole
+}  // namespace ecole::reward

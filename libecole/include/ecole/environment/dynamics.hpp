@@ -6,8 +6,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 using RandomEngine = std::mt19937;
 
@@ -56,5 +55,4 @@ public:
 	virtual std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, Action const& action) = 0;
 };
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

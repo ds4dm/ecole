@@ -3,8 +3,7 @@
 #include <cstddef>
 #include <tuple>
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 /**
  * Traits of functions, functions pointer, and function objects.
@@ -89,5 +88,4 @@ template <typename F> using return_t = typename function_traits<F>::return_type;
  */
 template <std::size_t N, typename F> using arg_t = typename function_traits<F>::template args<N>::type;
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility

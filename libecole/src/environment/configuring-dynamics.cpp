@@ -1,7 +1,6 @@
 #include "ecole/environment/configuring-dynamics.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 std::tuple<bool, NoneType> ConfiguringDynamics::reset_dynamics(scip::Model& /* model */) {
 	return {false, None};
@@ -15,5 +14,4 @@ std::tuple<bool, NoneType> ConfiguringDynamics::step_dynamics(scip::Model& model
 	return {true, None};
 }
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

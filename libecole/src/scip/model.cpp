@@ -15,8 +15,7 @@
 
 #include "scip/utils.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 Model::Model() : scimpl(std::make_unique<Scimpl>()) {}
 
@@ -251,5 +250,4 @@ template <> char Caster<char, std::string>::cast(std::string val) {
 
 }  // namespace internal
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

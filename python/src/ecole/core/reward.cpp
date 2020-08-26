@@ -13,8 +13,7 @@
 
 namespace py = pybind11;
 
-namespace ecole {
-namespace reward {
+namespace ecole::reward {
 
 /**
  * Proxy class for doing arithmetic on reward functions.
@@ -27,7 +26,7 @@ public:
 	Arithmetic(py::object operation, py::list const& functions, py::str repr);
 	void reset(py::object const& model);
 	Reward obtain_reward(py::object const& model, bool done);
-	py::str toString() const;
+	[[nodiscard]] py::str toString() const;
 
 private:
 	py::object operation;
@@ -40,7 +39,7 @@ public:
 	Cumulative(py::object function, py::object reduce_func, Reward init_cumul_, py::str repr);
 	void reset(py::object const& model);
 	Reward obtain_reward(py::object const& model, bool done);
-	py::str toString() const;
+	[[nodiscard]] py::str toString() const;
 
 private:
 	py::object reduce_func;
@@ -297,5 +296,4 @@ template <typename PyClass> void def_operators(PyClass pyclass) {
 	});
 }
 
-}  // namespace reward
-}  // namespace ecole
+}  // namespace ecole::reward

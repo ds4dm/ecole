@@ -4,8 +4,7 @@
 
 #include "ecole/scip/exception.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 template <typename Func, typename... Arguments> inline void call(Func func, Arguments&&... args) {
 	scip::Exception::reset_message_capture();
@@ -15,5 +14,4 @@ template <typename Func, typename... Arguments> inline void call(Func func, Argu
 	}
 }
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

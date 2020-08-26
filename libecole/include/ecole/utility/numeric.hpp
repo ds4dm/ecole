@@ -4,8 +4,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 template <typename...> using void_t = void;
 
@@ -37,5 +36,4 @@ template <typename To, typename From> To narrow_cast(From val) {
 	return val_to;
 }
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility

@@ -11,8 +11,7 @@
 #include "ecole/scip/type.hpp"
 #include "ecole/traits.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 template <typename Dynamics, typename ObservationFunction, typename RewardFunction>
 class EnvironmentComposer :
@@ -134,5 +133,4 @@ private:
 	bool can_transition = false;
 };
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

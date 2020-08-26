@@ -6,8 +6,7 @@
 #include "ecole/observation/abstract.hpp"
 #include "ecole/scip/model.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 class Nothing : public ObservationFunction<NoneType> {
 public:
@@ -16,5 +15,4 @@ public:
 	NoneType obtain_observation(scip::Model& /* model */) override { return None; }
 };
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

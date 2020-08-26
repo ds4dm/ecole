@@ -12,8 +12,7 @@
  * Cutomize PyBind casting for some types.
  */
 
-namespace pybind11 {
-namespace detail {
+namespace pybind11::detail {
 
 /**
  * Bind @ref nonstd::optional for usage in Pybind.
@@ -98,5 +97,4 @@ public:
 	using variant_caster::cast;
 };
 
-}  // namespace detail
-}  // namespace pybind11
+}  // namespace pybind11::detail

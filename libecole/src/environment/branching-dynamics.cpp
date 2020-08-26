@@ -10,8 +10,7 @@
 
 #include "scip/utils.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept : pseudo_candidates(pseudo_candidates_) {}
 
@@ -50,5 +49,4 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& act
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

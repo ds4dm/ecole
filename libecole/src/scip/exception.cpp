@@ -10,8 +10,7 @@
 
 #include "ecole/scip/exception.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 /***********************************
  *  Declaration of ErrorCollector  *
@@ -192,5 +191,4 @@ auto registered_handler() noexcept -> decltype(scip::message_handler) {
 decltype(scip::message_handler) message_handler = registered_handler();
 
 }  // namespace
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

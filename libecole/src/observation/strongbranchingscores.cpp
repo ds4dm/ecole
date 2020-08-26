@@ -9,8 +9,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) : pseudo_candidates(pseudo_candidates_) {}
 
@@ -70,5 +69,4 @@ nonstd::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observati
 	return strong_branching_scores;
 }
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

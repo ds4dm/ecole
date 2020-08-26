@@ -54,7 +54,10 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 	auto model = scip::Model{};
 	auto constexpr int_param = "conflict/minmaxvars";
 
-	SECTION("Get parameters") { model.get_param<ParamType::Int>(int_param); }
+	SECTION("Get parameters") {
+		auto const value = model.get_param<ParamType::Int>(int_param);
+		REQUIRE(value >= 0);
+	}
 
 	SECTION("Set parameters") {
 		model.set_param<ParamType::Int>(int_param, 3);
@@ -91,7 +94,10 @@ TEST_CASE("Automatic parameter management", "[scip]") {
 	auto model = scip::Model{};
 	auto constexpr int_param = "conflict/minmaxvars";
 
-	SECTION("Get parameters with automatic casting") { model.get_param<double>(int_param); }
+	SECTION("Get parameters with automatic casting") {
+		auto const value = model.get_param<double>(int_param);
+		REQUIRE(value >= 0);
+	}
 
 	SECTION("Set parameters with automatic casting") {
 		model.set_param(int_param, 1.);

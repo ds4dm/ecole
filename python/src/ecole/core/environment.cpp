@@ -14,8 +14,7 @@
 
 #include "core.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 namespace py = pybind11;
 
@@ -61,5 +60,4 @@ void bind_submodule(pybind11::module const& m) {
 		.def(py::init<>());
 }
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

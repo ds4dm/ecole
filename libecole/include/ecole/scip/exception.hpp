@@ -5,8 +5,7 @@
 
 #include <scip/scip.h>
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 class Exception : public std::exception {
 public:
@@ -15,11 +14,10 @@ public:
 
 	Exception(std::string message);
 
-	char const* what() const noexcept override;
+	[[nodiscard]] char const* what() const noexcept override;
 
 private:
 	std::string message;
 };
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

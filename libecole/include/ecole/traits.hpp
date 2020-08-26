@@ -5,8 +5,7 @@
 
 #include "ecole/utility/function-traits.hpp"
 
-namespace ecole {
-namespace trait {
+namespace ecole::trait {
 
 template <typename...> using void_t = void;
 
@@ -74,5 +73,4 @@ template <typename T> struct action_set_of<T, std::enable_if_t<is_dynamics<T>::v
 
 template <typename T> using action_set_of_t = typename action_set_of<T>::type;
 
-}  // namespace trait
-}  // namespace ecole
+}  // namespace ecole::trait

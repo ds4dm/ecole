@@ -16,8 +16,7 @@
  *  Mocking some classes for unit test  *
  ****************************************/
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 /**
  * Dummy dynamics that record calls for testing purposes.
@@ -41,8 +40,7 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 
 using TestEnv = environment::EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant>;
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment
 
 /**********************
  *  Test Environment  *

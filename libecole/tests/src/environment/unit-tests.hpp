@@ -9,8 +9,7 @@
 
 #include "conftest.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func const policy) {
 	auto model = get_model();
@@ -56,5 +55,4 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	}
 }
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

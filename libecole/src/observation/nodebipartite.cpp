@@ -11,8 +11,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 namespace {
 
@@ -301,5 +300,4 @@ auto NodeBipartite::obtain_observation(scip::Model& model) -> nonstd::optional<N
 	return {};
 }
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

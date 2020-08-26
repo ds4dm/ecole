@@ -2,8 +2,7 @@
 
 #include <type_traits>
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 /**
  * Dispatch between the type and a lvalue reference to a constant.
@@ -14,5 +13,4 @@ namespace utility {
 template <typename T>
 using value_or_const_ref_t = std::conditional_t<std::is_trivially_copyable<T>::value, T, T const&>;
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility

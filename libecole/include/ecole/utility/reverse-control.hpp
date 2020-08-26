@@ -11,8 +11,7 @@
 
 #include <scip/scip.h>
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 class Controller {
 public:
@@ -25,7 +24,7 @@ public:
 
 	auto wait_thread() -> void;
 	auto resume_thread(action_func_t&& action_func) -> void;
-	auto is_done() const noexcept -> bool;
+	[[nodiscard]] auto is_done() const noexcept -> bool;
 
 private:
 	class Synchronizer {
@@ -33,13 +32,13 @@ private:
 		auto env_wait_thread() -> lock_t;
 		auto env_resume_thread(lock_t&& lk, action_func_t&& action_func) -> void;
 		auto env_stop_thread(lock_t&& lk) -> void;
-		auto env_thread_is_done(lock_t const& lk) const noexcept -> bool;
+		[[nodiscard]] auto env_thread_is_done(lock_t const& lk) const noexcept -> bool;
 
 		auto thread_start() -> lock_t;
 		auto thread_hold_env(lock_t&& lk) -> lock_t;
 		auto thread_terminate(lock_t&& lk) -> void;
 		auto thread_terminate(lock_t&& lk, std::exception_ptr const& e) -> void;
-		auto thread_action_function(lock_t const& lk) const noexcept -> action_func_t;
+		[[nodiscard]] auto thread_action_function(lock_t const& lk) const noexcept -> action_func_t;
 
 	private:
 		std::exception_ptr except_ptr = nullptr;  // NOLINT(bugprone-throw-keyword-missing)
@@ -49,7 +48,7 @@ private:
 		bool thread_finished = false;
 		action_func_t action_func;
 
-		auto is_valid_lock(lock_t const& lk) const noexcept -> bool;
+		[[nodiscard]] auto is_valid_lock(lock_t const& lk) const noexcept -> bool;
 		auto maybe_throw(lock_t&& lk) -> lock_t;
 	};
 
@@ -100,5 +99,4 @@ Controller::Controller(Function&& func_, Args&&... args_) : synchronizer(std::ma
 	solving_thread = std::thread(thread_func, std::forward<Function>(func_), std::forward<Args>(args_)...);
 }
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility

@@ -6,8 +6,7 @@
 
 #include "ecole/utility/reverse-control.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 struct ScipDeleter {
 	void operator()(SCIP* ptr);
@@ -32,5 +31,4 @@ private:
 	std::unique_ptr<utility::Controller> m_controller = nullptr;
 };
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

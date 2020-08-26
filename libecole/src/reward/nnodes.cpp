@@ -2,8 +2,7 @@
 
 #include "ecole/scip/model.hpp"
 
-namespace ecole {
-namespace reward {
+namespace ecole::reward {
 
 void NNodes::reset(scip::Model const& /*unused*/) {
 	last_n_nodes = 0;
@@ -15,5 +14,4 @@ Reward NNodes::obtain_reward(scip::Model const& model, bool /* done */) {
 	return static_cast<double>(n_nodes_diff);
 }
 
-}  // namespace reward
-}  // namespace ecole
+}  // namespace ecole::reward

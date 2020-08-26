@@ -90,7 +90,7 @@ target_compile_definitions(
 		variant_CONFIG_SELECT_VARIANT=variant_VARIANT_NONSTD
 )
 
-target_compile_features(libecole PUBLIC cxx_std_14)
+target_compile_features(libecole PUBLIC cxx_std_17)
 
 set_target_properties(libecole PROPERTIES
 	# All code ending in a shared library should be made PIC

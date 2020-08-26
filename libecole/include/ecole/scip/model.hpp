@@ -17,8 +17,7 @@
 #include "ecole/utility/numeric.hpp"
 #include "ecole/utility/type_traits.hpp"
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 /* Forward declare scip holder type */
 class Scimpl;
@@ -52,9 +51,9 @@ public:
 	 * Ownership of the pointer is however not released by the Model.
 	 * This function is meant to use the original C API of SCIP.
 	 */
-	SCIP* get_scip_ptr() const noexcept;
+	[[nodiscard]] SCIP* get_scip_ptr() const noexcept;
 
-	Model copy_orig() const;
+	[[nodiscard]] Model copy_orig() const;
 
 	/**
 	 * Compare if two model share the same SCIP pointer, _i.e._ the same memory.
@@ -82,9 +81,9 @@ public:
 	 */
 	void read_prob(std::string const& filename) const;
 
-	Stage get_stage() const noexcept;
+	[[nodiscard]] Stage get_stage() const noexcept;
 
-	ParamType get_param_type(std::string const& name) const;
+	[[nodiscard]] ParamType get_param_type(std::string const& name) const;
 
 	/**
 	 * Get and set parameters by their exact SCIP type.
@@ -93,7 +92,7 @@ public:
 	 * by SCIP.
 	 */
 	template <ParamType T> void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
-	template <ParamType T> param_t<T> get_param(std::string const& name) const;
+	template <ParamType T>[[nodiscard]] param_t<T> get_param(std::string const& name) const;
 
 	/**
 	 * Get and set parameters with automatic casting.
@@ -103,10 +102,10 @@ public:
 	 * These methods do their best to convert to and from the required type.
 	 */
 	template <typename T> void set_param(std::string const& name, T value);
-	template <typename T> T get_param(std::string const& name) const;
+	template <typename T>[[nodiscard]] T get_param(std::string const& name) const;
 
 	void set_params(std::map<std::string, Param> name_values);
-	std::map<std::string, Param> get_params() const;
+	[[nodiscard]] std::map<std::string, Param> get_params() const;
 
 	void disable_presolve() const;
 	void disable_cuts() const;
@@ -115,18 +114,18 @@ public:
 	 * Transform, presolve, and solve problem.
 	 */
 	void solve() const;
-	bool is_solved() const noexcept;
+	[[nodiscard]] bool is_solved() const noexcept;
 
 	void solve_iter();
 	void solve_iter_branch(Var* var);
 	void solve_iter_stop();
-	bool solve_iter_is_done();
+	[[nodiscard]] bool solve_iter_is_done();
 
-	nonstd::span<Var*> variables() const noexcept;
-	nonstd::span<Var*> lp_branch_cands() const;
-	nonstd::span<Var*> pseudo_branch_cands() const;
-	nonstd::span<Col*> lp_columns() const;
-	nonstd::span<Row*> lp_rows() const;
+	[[nodiscard]] nonstd::span<Var*> variables() const noexcept;
+	[[nodiscard]] nonstd::span<Var*> lp_branch_cands() const;
+	[[nodiscard]] nonstd::span<Var*> pseudo_branch_cands() const;
+	[[nodiscard]] nonstd::span<Col*> lp_columns() const;
+	[[nodiscard]] nonstd::span<Row*> lp_rows() const;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;
@@ -229,5 +228,4 @@ template <typename T> T Model::get_param(std::string const& name) const {
 	}
 }
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

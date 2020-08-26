@@ -6,8 +6,7 @@
 #include "ecole/observation/abstract.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 class NodeBipartiteObs {
 public:
@@ -23,5 +22,4 @@ public:
 	nonstd::optional<NodeBipartiteObs> obtain_observation(scip::Model& model) override;
 };
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

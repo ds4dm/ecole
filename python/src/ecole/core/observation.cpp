@@ -14,8 +14,7 @@
 
 #include "core.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 namespace py = pybind11;
 
@@ -162,5 +161,4 @@ void bind_submodule(py::module const& m) {
 	def_obtain_observation(pseudocosts, "Extract an array containing pseudocosts.");
 }
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

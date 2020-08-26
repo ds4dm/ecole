@@ -7,8 +7,7 @@
 
 #include "ecole/environment/dynamics.hpp"
 
-namespace ecole {
-namespace environment {
+namespace ecole::environment {
 
 class BranchingDynamics : public EnvironmentDynamics<std::size_t, nonstd::optional<xt::xtensor<std::size_t, 1>>> {
 public:
@@ -23,5 +22,4 @@ public:
 	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, std::size_t const& action) override;
 };
 
-}  // namespace environment
-}  // namespace ecole
+}  // namespace ecole::environment

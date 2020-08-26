@@ -5,8 +5,7 @@
 #include <nonstd/variant.hpp>
 #include <scip/scip.h>
 
-namespace ecole {
-namespace scip {
+namespace ecole::scip {
 
 using long_int = SCIP_Longint;
 using real = SCIP_Real;
@@ -65,5 +64,4 @@ template <> struct enum_size<base_stat> { static constexpr std::size_t value = 4
 using var_type = SCIP_Vartype;
 template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

@@ -3,8 +3,7 @@
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace reward {
+namespace ecole::reward {
 
 class LpIterations : public RewardFunction {
 public:
@@ -15,5 +14,4 @@ private:
 	scip::long_int last_lp_iter = 0;
 };
 
-}  // namespace reward
-}  // namespace ecole
+}  // namespace ecole::reward

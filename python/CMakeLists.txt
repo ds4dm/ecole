@@ -40,7 +40,7 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
 	target_link_libraries(ecole-python PRIVATE xtensor::optimize)
 endif()
 
-target_compile_features(ecole-python PUBLIC cxx_std_14)
+target_compile_features(ecole-python PUBLIC cxx_std_17)
 
 set_target_properties(
 	ecole-python PROPERTIES

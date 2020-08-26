@@ -5,8 +5,7 @@
 
 #include <xtensor/xtensor.hpp>
 
-namespace ecole {
-namespace utility {
+namespace ecole::utility {
 
 template <typename T> struct coo_matrix {
 	using value_type = T;
@@ -15,8 +14,7 @@ template <typename T> struct coo_matrix {
 	xt::xtensor<std::size_t, 2> indices;
 	std::array<std::size_t, 2> shape;
 
-	std::size_t nnz() const noexcept { return values.size(); }
+	[[nodiscard]] std::size_t nnz() const noexcept { return values.size(); }
 };
 
-}  // namespace utility
-}  // namespace ecole
+}  // namespace ecole::utility
