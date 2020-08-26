@@ -64,4 +64,6 @@ template <> struct enum_size<base_stat> { static constexpr std::size_t value = 4
 using var_type = SCIP_Vartype;
 template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
 
+template <typename Enum> inline constexpr std::size_t enum_size_v = enum_size<Enum>::value;
+
 }  // namespace ecole::scip

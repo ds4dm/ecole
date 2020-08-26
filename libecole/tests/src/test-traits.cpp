@@ -8,32 +8,32 @@
 
 using namespace ecole;
 
-#define STATIC_REQUIRE_SAME(A, B) STATIC_REQUIRE(std::is_same<A, B>::value)
+#define STATIC_REQUIRE_SAME(A, B) STATIC_REQUIRE(std::is_same_v<A, B>)
 
 TEST_CASE("Detect if observation function", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_observation_function<observation::Nothing>::value); }
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_observation_function_v<observation::Nothing>); }
 
 	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_observation_function<ecole::NoneType>::value);
-		STATIC_REQUIRE_FALSE(trait::is_observation_function<environment::Configuring<>>::value);
+		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<ecole::NoneType>);
+		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<environment::Configuring<>>);
 	}
 }
 
 TEST_CASE("Detect if environment", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_environment<environment::Configuring<>>::value); }
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_environment_v<environment::Configuring<>>); }
 
 	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_environment<environment::ConfiguringDynamics>::value);
-		STATIC_REQUIRE_FALSE(trait::is_environment<observation::Nothing>::value);
+		STATIC_REQUIRE_FALSE(trait::is_environment_v<environment::ConfiguringDynamics>);
+		STATIC_REQUIRE_FALSE(trait::is_environment_v<observation::Nothing>);
 	}
 }
 
 TEST_CASE("Detect if dynamics", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_dynamics<environment::ConfiguringDynamics>::value); }
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_dynamics_v<environment::ConfiguringDynamics>); }
 
 	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_dynamics<environment::Configuring<>>::value);
-		STATIC_REQUIRE_FALSE(trait::is_dynamics<observation::Nothing>::value);
+		STATIC_REQUIRE_FALSE(trait::is_dynamics_v<environment::Configuring<>>);
+		STATIC_REQUIRE_FALSE(trait::is_dynamics_v<observation::Nothing>);
 	}
 }
 

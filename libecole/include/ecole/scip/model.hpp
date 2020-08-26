@@ -144,16 +144,13 @@ template <typename To, typename From, typename = void> struct Caster {
 
 // SFINAE class for narrow cast
 template <typename To, typename From>
-struct Caster<To, From, std::enable_if_t<utility::is_narrow_castable<From, To>::value>> {
+struct Caster<To, From, std::enable_if_t<utility::is_narrow_castable_v<From, To>>> {
 	static To cast(From val) { return utility::narrow_cast<To>(val); }
 };
 
 // SFINAE class for convertible but not narrowablecast
 template <typename To, typename From>
-struct Caster<
-	To,
-	From,
-	std::enable_if_t<!utility::is_narrow_castable<From, To>::value && std::is_convertible<From, To>::value>> {
+struct Caster<To, From, std::enable_if_t<!utility::is_narrow_castable_v<From, To> && std::is_convertible_v<From, To>>> {
 	static To cast(From val) { return static_cast<To>(val); }
 };
 

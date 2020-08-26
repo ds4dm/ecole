@@ -89,7 +89,7 @@ std::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip
 }
 
 auto extract_col_feat(scip::Model const& model) {
-	auto constexpr n_col_feat = 11 + scip::enum_size<scip::var_type>::value + scip::enum_size<scip::base_stat>::value;
+	auto constexpr n_col_feat = 11 + scip::enum_size_v<scip::var_type> + scip::enum_size_v<scip::base_stat>;
 	auto* const scip = model.get_scip_ptr();
 	tensor col_feat{{model.lp_columns().size(), n_col_feat}, 0.};
 
@@ -109,11 +109,11 @@ auto extract_col_feat(scip::Model const& model) {
 		*(iter++) = static_cast<value_type>(is_prim_sol_at_ub(scip, col));
 		*(iter++) = static_cast<value_type>(col->age) / (n_lps + cste);
 		iter[static_cast<std::size_t>(SCIPcolGetBasisStatus(col))] = 1.;
-		iter += scip::enum_size<scip::base_stat>::value;
+		iter += scip::enum_size_v<scip::base_stat>;
 		*(iter++) = best_sol_val(scip, var).value_or(nan);
 		*(iter++) = avg_sol(scip, var).value_or(nan);
 		iter[static_cast<std::size_t>(SCIPvarGetType(var))] = 1.;
-		iter += scip::enum_size<scip::var_type>::value;
+		iter += scip::enum_size_v<scip::var_type>;
 	}
 
 	// Make sure we iterated over as many element as there are in the tensor

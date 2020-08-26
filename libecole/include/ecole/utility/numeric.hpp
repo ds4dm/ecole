@@ -6,9 +6,7 @@
 
 namespace ecole::utility {
 
-template <typename...> using void_t = void;
-
-template <typename From, typename To, typename = void_t<>> struct is_narrow_castable : std::false_type {};
+template <typename From, typename To, typename = std::void_t<>> struct is_narrow_castable : std::false_type {};
 
 /**
  * Do not narrow cast char to anything else.
@@ -22,8 +20,10 @@ struct is_narrow_castable<
 	To,
 	From,
 	std::enable_if_t<
-		std::is_convertible<From, To>::value && std::is_convertible<To, From>::value && !std::is_same<From, char>::value &&
-		!std::is_same<To, char>::value>> : std::true_type {};
+		std::is_convertible_v<From, To> && std::is_convertible_v<To, From> && !std::is_same_v<From, char> &&
+		!std::is_same_v<To, char>>> : std::true_type {};
+
+template <typename From, typename To> inline constexpr bool is_narrow_castable_v = is_narrow_castable<From, To>::value;
 
 /**
  * A narrow cast raises if any numerical loss is detected.
