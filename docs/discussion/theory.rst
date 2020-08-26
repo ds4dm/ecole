@@ -68,8 +68,8 @@ where :math:`r_t := R(s_t)`.
 
     In the general case this quantity may not be bounded, for example for MDPs
     corresponding to *continuing* tasks where episode length may be infinite.
-    In Ecole, we garantee that all environments correspond to *episodic*
-    tasks, that is, each episode is garanteed to end in a terminal state.
+    In Ecole, we guarantee that all environments correspond to *episodic*
+    tasks, that is, each episode is guaranteed to end in a terminal state.
     This can be modeled by introducing a null state :math:`s_\textit{null}`,
     such that
 
