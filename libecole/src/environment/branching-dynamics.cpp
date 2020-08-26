@@ -16,7 +16,7 @@ BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept : pseudo_
 
 namespace {
 
-nonstd::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, bool pseudo) {
+std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, bool pseudo) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}

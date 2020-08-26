@@ -13,7 +13,7 @@ namespace ecole::observation {
 
 StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) : pseudo_candidates(pseudo_candidates_) {}
 
-nonstd::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observation(scip::Model& model) {
+std::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observation(scip::Model& model) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}

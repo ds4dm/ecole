@@ -1,6 +1,7 @@
 #pragma once
 
-#include <nonstd/optional.hpp>
+#include <optional>
+
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/observation/abstract.hpp"
@@ -17,9 +18,9 @@ public:
 	utility::coo_matrix<value_type> edge_features;
 };
 
-class NodeBipartite : public ObservationFunction<nonstd::optional<NodeBipartiteObs>> {
+class NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
 public:
-	nonstd::optional<NodeBipartiteObs> obtain_observation(scip::Model& model) override;
+	std::optional<NodeBipartiteObs> obtain_observation(scip::Model& model) override;
 };
 
 }  // namespace ecole::observation

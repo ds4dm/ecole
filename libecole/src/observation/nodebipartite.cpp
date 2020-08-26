@@ -34,7 +34,7 @@ scip::real obj_l2_norm(Scip* const scip) noexcept {
  *  Column features extraction functions  *
  ******************************************/
 
-nonstd::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) noexcept {
+std::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) noexcept {
 	auto const ub_val = SCIPcolGetUb(col);
 	if (SCIPisInfinity(scip, std::abs(ub_val))) {
 		return {};
@@ -42,7 +42,7 @@ nonstd::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col)
 	return ub_val;
 }
 
-nonstd::optional<scip::real> lower_bound(Scip* const scip, scip::Col* const col) noexcept {
+std::optional<scip::real> lower_bound(Scip* const scip, scip::Col* const col) noexcept {
 	auto const lb_val = SCIPcolGetLb(col);
 	if (SCIPisInfinity(scip, std::abs(lb_val))) {
 		return {};
@@ -66,7 +66,7 @@ bool is_prim_sol_at_ub(Scip* const scip, scip::Col* const col) noexcept {
 	return false;
 }
 
-nonstd::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
 	auto* const sol = SCIPgetBestSol(scip);
 	if (sol != nullptr) {
 		return SCIPgetSolVal(scip, sol, var);
@@ -74,14 +74,14 @@ nonstd::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var
 	return {};
 }
 
-nonstd::optional<scip::real> avg_sol(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<scip::real> avg_sol(Scip* const scip, scip::Var* const var) noexcept {
 	if (SCIPgetBestSol(scip) != nullptr) {
 		return SCIPvarGetAvgSol(var);
 	}
 	return {};
 }
 
-nonstd::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
+std::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
 	if (SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS) {
 		return {};
 	}
@@ -131,7 +131,7 @@ scip::real row_l2_norm(scip::Row* const row) noexcept {
 	return norm > 0 ? norm : 1.;
 }
 
-nonstd::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const row) noexcept {
+std::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const row) noexcept {
 	auto const lhs_val = SCIProwGetLhs(row);
 	if (SCIPisInfinity(scip, std::abs(lhs_val))) {
 		return {};
@@ -139,7 +139,7 @@ nonstd::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const r
 	return lhs_val - SCIProwGetConstant(row);
 }
 
-nonstd::optional<scip::real> right_hand_side(Scip* const scip, scip::Row* const row) noexcept {
+std::optional<scip::real> right_hand_side(Scip* const scip, scip::Row* const row) noexcept {
 	auto const rhs_val = SCIProwGetRhs(row);
 	if (SCIPisInfinity(scip, std::abs(rhs_val))) {
 		return {};
@@ -293,7 +293,7 @@ utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
  *  Observation extracting function  *
  *************************************/
 
-auto NodeBipartite::obtain_observation(scip::Model& model) -> nonstd::optional<NodeBipartiteObs> {
+auto NodeBipartite::obtain_observation(scip::Model& model) -> std::optional<NodeBipartiteObs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		return NodeBipartiteObs{extract_col_feat(model), extract_row_feat(model), extract_edge_feat(model)};
 	}

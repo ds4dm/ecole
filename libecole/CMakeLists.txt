@@ -70,8 +70,6 @@ target_link_libraries(
 	PUBLIC
 		libscip
 		CONAN_PKG::xtensor
-		CONAN_PKG::optional-lite
-		CONAN_PKG::variant-lite
 		CONAN_PKG::span-lite
 		CONAN_PKG::fmt
 	PRIVATE
@@ -79,15 +77,6 @@ target_link_libraries(
 		Ecole::sanitizers
 		Ecole::coverage
 		Threads::Threads
-)
-
-# Force optional-lite and variant-lite to not use std:: as an implementation.
-# Required as we are using C++14, but conda export a C++17 flag.
-target_compile_definitions(
-	libecole
-	PUBLIC
-		optional_CONFIG_SELECT_OPTIONAL=optional_OPTIONAL_NONSTD
-		variant_CONFIG_SELECT_VARIANT=variant_VARIANT_NONSTD
 )
 
 target_compile_features(libecole PUBLIC cxx_std_17)

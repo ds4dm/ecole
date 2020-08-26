@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
+#include <variant>
 
-#include <nonstd/variant.hpp>
 #include <scip/scip.h>
 
 namespace ecole::scip {
@@ -33,7 +33,7 @@ template <> struct ParamType_get<ParamType::String> { using type = std::string; 
  */
 template <ParamType T> using param_t = typename internal::ParamType_get<T>::type;
 
-using Param = nonstd::variant<
+using Param = std::variant<
 	param_t<ParamType::Bool>,
 	param_t<ParamType::Int>,
 	param_t<ParamType::LongInt>,

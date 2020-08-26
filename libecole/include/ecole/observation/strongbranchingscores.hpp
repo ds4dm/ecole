@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
-#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
@@ -10,13 +10,13 @@
 
 namespace ecole::observation {
 
-class StrongBranchingScores : public ObservationFunction<nonstd::optional<xt::xtensor<double, 1>>> {
+class StrongBranchingScores : public ObservationFunction<std::optional<xt::xtensor<double, 1>>> {
 public:
 	bool pseudo_candidates;
 
 	StrongBranchingScores(bool pseudo_candidates = true);
 
-	nonstd::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model) override;
+	std::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model) override;
 };
 
 }  // namespace ecole::observation

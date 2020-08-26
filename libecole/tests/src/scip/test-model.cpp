@@ -126,14 +126,14 @@ TEST_CASE("Variant parameter management", "[scip]") {
 
 	SECTION("Get parameters as variants") {
 		auto val = model.get_param<scip::Param>(int_param);
-		REQUIRE(nonstd::holds_alternative<int>(val));
-		REQUIRE(nonstd::get<int>(val) == model.get_param<int>(int_param));
+		REQUIRE(std::holds_alternative<int>(val));
+		REQUIRE(std::get<int>(val) == model.get_param<int>(int_param));
 	}
 
 	SECTION("Set parameters as variants") {
 		scip::Param new_val = model.get_param<int>(int_param) + 1;
 		model.set_param(int_param, new_val);
-		REQUIRE(model.get_param<int>(int_param) == nonstd::get<int>(new_val));
+		REQUIRE(model.get_param<int>(int_param) == std::get<int>(new_val));
 	}
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 	SECTION("Set map of parameters") {
 		auto vals = model.get_params();
-		vals[int_param] = nonstd::get<int>(vals[int_param]) + 1;
+		vals[int_param] = std::get<int>(vals[int_param]) + 1;
 		model.set_params(vals);
 		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
 	}

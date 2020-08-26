@@ -1,7 +1,5 @@
 [requires]
 xtensor/0.21.4
-optional-lite/3.2.0
-variant-lite/1.2.2
 span-lite/0.7.0
 fmt/6.1.2
 

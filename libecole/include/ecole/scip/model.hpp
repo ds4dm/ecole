@@ -159,9 +159,9 @@ struct Caster<
 
 // Visit From variants.
 // Cannot static_cast a variant into one of its held value. Other way around works though.
-template <typename To, typename... VariantFrom> struct Caster<To, nonstd::variant<VariantFrom...>> {
-	static To cast(nonstd::variant<VariantFrom...> variant_val) {
-		return nonstd::visit([](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
+template <typename To, typename... VariantFrom> struct Caster<To, std::variant<VariantFrom...>> {
+	static To cast(std::variant<VariantFrom...> variant_val) {
+		return std::visit([](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
 	}
 };
 

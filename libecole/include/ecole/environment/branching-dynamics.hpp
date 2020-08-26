@@ -1,17 +1,17 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 
-#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/environment/dynamics.hpp"
 
 namespace ecole::environment {
 
-class BranchingDynamics : public EnvironmentDynamics<std::size_t, nonstd::optional<xt::xtensor<std::size_t, 1>>> {
+class BranchingDynamics : public EnvironmentDynamics<std::size_t, std::optional<xt::xtensor<std::size_t, 1>>> {
 public:
-	using ActionSet = nonstd::optional<xt::xtensor<std::size_t, 1>>;
+	using ActionSet = std::optional<xt::xtensor<std::size_t, 1>>;
 
 	bool pseudo_candidates;
 

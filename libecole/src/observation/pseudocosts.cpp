@@ -1,7 +1,7 @@
 #include <cmath>
 #include <cstddef>
+#include <optional>
 
-#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
@@ -11,7 +11,7 @@
 
 namespace ecole::observation {
 
-nonstd::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::Model& model) {
+std::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::Model& model) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
