@@ -170,6 +170,14 @@ std::map<std::string, Param> Model::get_params() const {
 	return name_values;
 }
 
+void Model::transform_prob() const {
+	scip::call(SCIPtransformProb, get_scip_ptr());
+}
+
+void Model::presolve() const {
+	scip::call(SCIPpresolve, get_scip_ptr());
+}
+
 void Model::solve() const {
 	scip::call(SCIPsolve, get_scip_ptr());
 }

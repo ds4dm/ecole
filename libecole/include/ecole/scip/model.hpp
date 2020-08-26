@@ -113,6 +113,8 @@ public:
 	/**
 	 * Transform, presolve, and solve problem.
 	 */
+	void transform_prob() const;
+	void presolve() const;
 	void solve() const;
 	[[nodiscard]] bool is_solved() const noexcept;
 
