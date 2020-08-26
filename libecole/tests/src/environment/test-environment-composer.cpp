@@ -59,26 +59,22 @@ TEST_CASE("Environments accept SCIP parameters", "[env]") {
 
 TEST_CASE("Environments have MDP API", "[env]") {
 	auto env = environment::TestEnv{};
-	auto obs = trait::observation_of_t<decltype(env)>{};
-	auto action_set = trait::action_set_of_t<decltype(env)>{};
-	auto reward = reward::Reward{0};
-	auto done = false;
 	constexpr double some_action = 3.0;
 
 	SECTION("Call reset, reset, and delete") {
-		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
+		auto [obs, action_set, reward, done] = env.reset(problem_file);
 		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
 	}
 
 	SECTION("Call reset, step, and delete") {
-		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
+		auto [obs, action_set, reward, done] = env.reset(problem_file);
 		std::tie(obs, action_set, reward, done, std::ignore) = env.step(some_action);
 		REQUIRE(env.dynamics().last_action == some_action);
 	}
 
 	SECTION("Run full episodes") {
 		for (auto i = 0UL; i < 2; ++i) {
-			std::tie(obs, action_set, reward, done) = env.reset(problem_file);
+			auto [obs, action_set, reward, done] = env.reset(problem_file);
 			REQUIRE(env.dynamics().counter == 0UL);
 			while (!done) {
 				std::tie(obs, action_set, reward, done, std::ignore) = env.step(some_action);
@@ -90,7 +86,7 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	SECTION("Cannot transition without reseting") { REQUIRE_THROWS_AS(env.step(some_action), environment::Exception); }
 
 	SECTION("Cannot transition past termination") {
-		std::tie(std::ignore, std::ignore, std::ignore, done) = env.reset(problem_file);
+		auto [obs, action_set, reward, done] = env.reset(problem_file);
 		while (!done) {
 			std::tie(std::ignore, std::ignore, std::ignore, done, std::ignore) = env.step(some_action);
 		}

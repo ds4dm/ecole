@@ -61,9 +61,7 @@ public:
 			dynamics().set_dynamics_random_state(model(), random_engine);
 
 			// Bring model to initial state and reset state functions
-			bool done;
-			ActionSet action_set;
-			std::tie(done, action_set) = dynamics().reset_dynamics(model());
+			auto const [done, action_set] = dynamics().reset_dynamics(model());
 			obs_func().reset(model());
 			reward_func().reset(model());
 
@@ -98,9 +96,7 @@ public:
 			throw Exception("Environment need to be reset.");
 		}
 		try {
-			bool done;
-			ActionSet action_set;
-			std::tie(done, action_set) = dynamics().step_dynamics(model(), action);
+			auto const [done, action_set] = dynamics().step_dynamics(model(), action);
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(model(), done);
 

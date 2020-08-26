@@ -27,11 +27,9 @@ TEST_CASE("BranchingDynamics functional tests", "[dyn]") {
 	bool const pseudo_candidates = GENERATE(true, false);
 	environment::BranchingDynamics dyn{pseudo_candidates};
 	auto model = get_model();
-	bool done = false;
-	trait::action_set_of_t<environment::BranchingDynamics> action_set;
 
 	SECTION("Return valid action set") {
-		std::tie(std::ignore, action_set) = dyn.reset_dynamics(model);
+		auto const [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
 		auto const& branch_cands = action_set.value();
 		REQUIRE(branch_cands.size() > 0);
@@ -42,7 +40,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dyn]") {
 	}
 
 	SECTION("Solve instance") {
-		std::tie(done, action_set) = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			REQUIRE(action_set.has_value());
 			std::tie(done, action_set) = dyn.step_dynamics(model, action_set.value()[0]);
@@ -51,7 +49,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dyn]") {
 	}
 
 	SECTION("Throw on invalid branching variable") {
-		std::tie(done, action_set) = dyn.reset_dynamics(model);
+		auto const [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
 		REQUIRE(action_set.has_value());
 		auto const action = model.lp_columns().size() + 1;

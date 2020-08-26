@@ -62,12 +62,8 @@ TEST_CASE("NNodes rewards are consistent when used in a Branching environment", 
 		},
 		true};
 
-	decltype(env)::ActionSet action_set;
-	reward::Reward reward;
-	bool done;
-
 	for (auto i = 0; i < 2; ++i) {
-		std::tie(std::ignore, action_set, reward, done) = env.reset(problem_file);
+		auto [obs, action_set, reward, done] = env.reset(problem_file);
 
 		auto cum_reward = reward;
 		int n_steps = 0;

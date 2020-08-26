@@ -13,8 +13,6 @@ namespace ecole::environment {
 
 template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func const policy) {
 	auto model = get_model();
-	bool done = false;
-	trait::action_set_of_t<Dynamics> action_set;
 
 	SECTION("Has default constructor") { Dynamics{}; }
 
@@ -26,7 +24,7 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	}
 
 	SECTION("Reset, reset, and delete") {
-		std::tie(done, action_set) = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
 		model = get_model();
 		std::tie(done, action_set) = dyn.reset_dynamics(model);
@@ -34,13 +32,13 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	}
 
 	SECTION("Reset, step, and delete") {
-		std::tie(done, action_set) = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
 		std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set));
 	}
 
 	SECTION("Run full trajectory") {
-		std::tie(done, action_set) = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set));
 		}

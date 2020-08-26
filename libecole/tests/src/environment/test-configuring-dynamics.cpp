@@ -20,10 +20,9 @@ TEST_CASE("ConfiguringDynamics unit tests", "[unit][dyn]") {
 TEST_CASE("ConfiguringDynamics functional tests", "[dyn]") {
 	environment::ConfiguringDynamics dyn{};
 	auto model = get_model();
-	bool done = false;
 
 	SECTION("Episodes have length one") {
-		std::tie(done, std::ignore) = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
 		std::tie(done, std::ignore) = dyn.step_dynamics(model, {});
 		REQUIRE(done);

@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <iterator>
 #include <string>
 
 #include <fmt/format.h>
@@ -143,23 +145,32 @@ template <> std::string Model::get_param<ParamType::String>(std::string const& n
 }
 
 void Model::set_params(std::map<std::string, Param> name_values) {
-	for (auto&& name_val : name_values) {
-		// NOLINTNEXTLINE(bugprone-use-after-move)  This is the way to move element of a tuple
-		set_param(std::move(name_val).first, std::move(name_val).second);
-	}
+	std::for_each(
+		std::make_move_iterator(name_values.begin()),  //
+		std::make_move_iterator(name_values.end()),    //
+		[this](auto&& name_value) {
+			using Tuple = decltype(name_value);
+			set_param(std::forward<Tuple>(name_value).first, std::forward<Tuple>(name_value).second);
+		});
 }
 
-std::map<std::string, Param> Model::get_params() const {
-	auto* const scip = get_scip_ptr();
-	auto* const* const scip_params = SCIPgetParams(scip);
-	auto const n_scip_params = SCIPgetNParams(scip);
+namespace {
 
-	std::map<std::string, Param> params{};
-	for (auto i = 0; i < n_scip_params; ++i) {
-		std::string name = SCIPparamGetName(scip_params[i]);
-		params.insert({std::move(name), get_param<Param>(name)});
+nonstd::span<SCIP_PARAM*> get_params_span(Model const& model) noexcept {
+	auto* const scip = model.get_scip_ptr();
+	return {SCIPgetParams(scip), static_cast<std::size_t>(SCIPgetNParams(scip))};
+}
+
+}  // namespace
+
+std::map<std::string, Param> Model::get_params() const {
+	std::map<std::string, Param> name_values{};
+	for (auto* const param : get_params_span(*this)) {
+		auto name = std::string{SCIPparamGetName(param)};
+		auto value = get_param<Param>(name);
+		name_values.insert({std::move(name), std::move(value)});
 	}
-	return params;
+	return name_values;
 }
 
 void Model::solve() const {
