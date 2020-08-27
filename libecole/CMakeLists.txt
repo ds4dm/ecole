@@ -71,12 +71,13 @@ target_link_libraries(
 		libscip
 		CONAN_PKG::xtensor
 		CONAN_PKG::span-lite
-		CONAN_PKG::fmt
 	PRIVATE
 		Ecole::warnings
 		Ecole::sanitizers
 		Ecole::coverage
 		Threads::Threads
+		CONAN_PKG::fmt
+		CONAN_PKG::range-v3
 )
 
 target_compile_features(libecole PUBLIC cxx_std_17)
