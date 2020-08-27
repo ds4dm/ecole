@@ -14,8 +14,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 namespace {
 
@@ -136,8 +135,7 @@ struct StatsFeatures {
 };
 
 template <typename Range, typename TransformFunc, typename FilterFunc>
-auto compute_stats(Range const& range, TransformFunc transform, FilterFunc filter) noexcept
-	-> StatsFeatures {
+auto compute_stats(Range const& range, TransformFunc transform, FilterFunc filter) noexcept -> StatsFeatures {
 	using transformed_type = decltype(transform(std::declval<typename Range::value_type>()));
 
 	value_type count = 0.;
@@ -182,7 +180,7 @@ template <typename Range> auto sum_positive_negative(Range const& range) noexcep
 			negative_sum += val;
 		}
 	}
-	return std::make_pair(positive_sum, negative_sum);
+	return std::pair{positive_sum, negative_sum};
 }
 
 /*****************************
@@ -221,17 +219,10 @@ auto scip_row_get_vals(scip::Row* const row) noexcept -> nonstd::span<scip::real
  * This make it possible to have strong guarantees that features are not accidentally read/written
  * in the wrong column while minimizing overhead (because the name is known at compile time);
  */
-template <typename F, F feature_name> struct FeatureValue {
+template <auto feature_name> struct FeatureValue {
 	constexpr static auto name = feature_name;
 	value_type value;
 };
-
-template <Feature::Static feature_name> auto feature(value_type val) noexcept {
-	return FeatureValue<Feature::Static, feature_name>{val};
-}
-template <Feature::Dynamic feature_name> auto feature(value_type val) noexcept {
-	return FeatureValue<Feature::Dynamic, feature_name>{val};
-}
 
 /************************************
  *  Feature compile time functions  *
@@ -240,18 +231,13 @@ template <Feature::Dynamic feature_name> auto feature(value_type val) noexcept {
 /**
  * Get the value of a given feature in a feature tuple.
  */
-template <Static feature_name, typename... FeatVal>
-auto get_feature_value(std::tuple<FeatVal...> const& feature_tuple) {
-	return std::get<FeatureValue<Static, feature_name>>(feature_tuple).value;
-}
-template <Dynamic feature_name, typename... FeatVal>
-auto get_feature_value(std::tuple<FeatVal...> const& feature_tuple) {
-	return std::get<FeatureValue<Dynamic, feature_name>>(feature_tuple).value;
+template <auto feature_name, typename... FeatVal> auto get_feature_value(std::tuple<FeatVal...> const& feature_tuple) {
+	return std::get<FeatureValue<feature_name>>(feature_tuple).value;
 }
 
 template <typename... Features, std::size_t... I>
 constexpr auto
-features_tuple_to_tensor_impl(std::tuple<Features...> const& features, std::index_sequence<I...>) {
+features_tuple_to_tensor_impl(std::tuple<Features...> const& features, std::index_sequence<I...> /* tuple_indices */) {
 	constexpr auto n_features = sizeof...(Features);
 	return xt::xtensor_fixed<value_type, xt::xshape<n_features>>{std::get<I>(features).value...};
 }
@@ -261,8 +247,7 @@ features_tuple_to_tensor_impl(std::tuple<Features...> const& features, std::inde
  *
  * The type of features is a @ref FeatureValue that wraps a value with its associated name.
  */
-template <typename... Features>
-constexpr auto features_to_tensor(std::tuple<Features...> const& features) {
+template <typename... Features> constexpr auto features_tuple_to_tensor(std::tuple<Features...> const& features) {
 	constexpr auto n_features = sizeof...(Features);
 	return features_tuple_to_tensor_impl(features, std::make_index_sequence<n_features>{});
 }
@@ -273,7 +258,7 @@ constexpr auto features_to_tensor(std::tuple<Features...> const& features) {
  * With this compile time check other functions can bypass individually setting each feature by its
  * index and directy assign a whole tensor.
  */
-template <typename... Features> constexpr auto is_contiguous(std::tuple<Features...>) {
+template <typename... Features> constexpr auto is_contiguous(std::tuple<Features...> /* unused */) {
 	constexpr auto n_features = sizeof...(Features);
 	constexpr std::array<std::size_t, n_features> arr = {static_cast<std::size_t>(Features::name)...};
 
@@ -288,16 +273,14 @@ template <typename... Features> constexpr auto is_contiguous(std::tuple<Features
 /**
  * Return at compile time the feature index of the first feature in a tuple.
  */
-template <typename... Features, typename Tuple = std::tuple<Features...>>
-constexpr auto first_index(Tuple) {
+template <typename... Features, typename Tuple = std::tuple<Features...>> constexpr auto first_index(Tuple /*unused*/) {
 	return static_cast<std::size_t>(std::tuple_element_t<0, Tuple>::name);
 }
 
 /**
  * Return at compile time the feature index of the last feature in a tuple.
  */
-template <typename... Features, typename Tuple = std::tuple<Features...>>
-constexpr auto last_index(Tuple) {
+template <typename... Features, typename Tuple = std::tuple<Features...>> constexpr auto last_index(Tuple /*unused*/) {
 	constexpr auto last_index = std::tuple_size<Tuple>::value - 1;
 	return static_cast<std::size_t>(std::tuple_element_t<last_index, Tuple>::name);
 }
@@ -319,10 +302,11 @@ constexpr auto last_index(Tuple) {
  */
 auto objective_function_coefficient(scip::Col* const col) noexcept {
 	auto const obj = SCIPcolGetObj(col);
-	return std::make_tuple(
-		feature<Static::obj_coef>(obj),
-		feature<Static::obj_coef_pos_part>(std::max(obj, 0.)),
-		feature<Static::obj_coef_neg_part>(std::min(obj, 0.)));
+	return std::tuple{
+		FeatureValue<Static::obj_coef>{obj},
+		FeatureValue<Static::obj_coef_pos_part>{std::max(obj, 0.)},
+		FeatureValue<Static::obj_coef_neg_part>{std::min(obj, 0.)},
+	};
 }
 
 /**
@@ -331,7 +315,7 @@ auto objective_function_coefficient(scip::Col* const col) noexcept {
  * Number of constraints that the variable participates in (with a non-zero coefficient).
  */
 auto number_constraints(scip::Col* const col) noexcept {
-	return std::make_tuple(feature<Static::n_rows>(static_cast<value_type>(SCIPcolGetNNonz(col))));
+	return std::tuple{FeatureValue<Static::n_rows>{static_cast<value_type>(SCIPcolGetNNonz(col))}};
 }
 
 /**
@@ -346,11 +330,12 @@ auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noe
 	auto transform = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
 	auto filter = [](auto const /* degree */) { return true; };
 	auto const stats = compute_stats(rows, transform, filter);
-	return std::make_tuple(
-		feature<Static::rows_deg_mean>(stats.mean),
-		feature<Static::rows_deg_stddev>(stats.stddev),
-		feature<Static::rows_deg_min>(stats.min),
-		feature<Static::rows_deg_max>(stats.max));
+	return std::tuple{
+		FeatureValue<Static::rows_deg_mean>{stats.mean},
+		FeatureValue<Static::rows_deg_stddev>{stats.stddev},
+		FeatureValue<Static::rows_deg_min>{stats.min},
+		FeatureValue<Static::rows_deg_max>{stats.max},
+	};
 }
 
 /**
@@ -359,15 +344,15 @@ auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noe
  * A variable's positive coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-auto stats_for_constraint_positive_coefficients(
-	nonstd::span<scip::real> const coefficients) noexcept {
+auto stats_for_constraint_positive_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients, identity, greater_than(0.));
-	return std::make_tuple(
-		feature<Static::rows_pos_coefs_count>(stats.count),
-		feature<Static::rows_pos_coefs_mean>(stats.mean),
-		feature<Static::rows_pos_coefs_stddev>(stats.stddev),
-		feature<Static::rows_pos_coefs_min>(stats.min),
-		feature<Static::rows_pos_coefs_max>(stats.max));
+	return std::tuple{
+		FeatureValue<Static::rows_pos_coefs_count>{stats.count},
+		FeatureValue<Static::rows_pos_coefs_mean>{stats.mean},
+		FeatureValue<Static::rows_pos_coefs_stddev>{stats.stddev},
+		FeatureValue<Static::rows_pos_coefs_min>{stats.min},
+		FeatureValue<Static::rows_pos_coefs_max>{stats.max},
+	};
 }
 
 /**
@@ -376,15 +361,15 @@ auto stats_for_constraint_positive_coefficients(
  * A variable's negative coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-auto stats_for_constraint_negative_coefficients(
-	nonstd::span<scip::real> const coefficients) noexcept {
+auto stats_for_constraint_negative_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients, identity, lesser_than(0.));
-	return std::make_tuple(
-		feature<Static::rows_neg_coefs_count>(stats.count),
-		feature<Static::rows_neg_coefs_mean>(stats.mean),
-		feature<Static::rows_neg_coefs_stddev>(stats.stddev),
-		feature<Static::rows_neg_coefs_min>(stats.min),
-		feature<Static::rows_neg_coefs_max>(stats.max));
+	return std::tuple{
+		FeatureValue<Static::rows_neg_coefs_count>{stats.count},
+		FeatureValue<Static::rows_neg_coefs_mean>{stats.mean},
+		FeatureValue<Static::rows_neg_coefs_stddev>{stats.stddev},
+		FeatureValue<Static::rows_neg_coefs_min>{stats.min},
+		FeatureValue<Static::rows_neg_coefs_max>{stats.max},
+	};
 }
 
 /**
@@ -401,14 +386,13 @@ auto extract_static_features(scip::Col* const col) {
 		stats_for_constraint_positive_coefficients(coefficients),
 		stats_for_constraint_negative_coefficients(coefficients)  //
 	);
+	return features_tuple_to_tensor(features);
 
 	// Make sure at compile time that features are returned in correct order
 	using Tuple = decltype(features);
 	static_assert(is_contiguous(Tuple{}), "Static features are permuted");
 	static_assert(first_index(Tuple{}) == 0, "Static features must start at 0");
 	static_assert(last_index(Tuple{}) == Feature::n_static - 1, "Missing static features");
-
-	return features_to_tensor(features);
 }
 
 /**
@@ -448,9 +432,10 @@ auto slack_ceil_distances(Scip* const scip, scip::Col* const col) noexcept {
 	auto const solval = SCIPcolGetPrimsol(col);
 	auto const floor_distance = SCIPfeasFrac(scip, solval);
 	auto const ceil_distance = 1. - floor_distance;
-	return std::make_tuple(
-		feature<Dynamic::slack>(std::min(floor_distance, ceil_distance)),
-		feature<Dynamic::ceil_dist>(ceil_distance));
+	return std::tuple{
+		FeatureValue<Dynamic::slack>{std::min(floor_distance, ceil_distance)},
+		FeatureValue<Dynamic::ceil_dist>{ceil_distance},
+	};
 }
 
 /**
@@ -466,12 +451,13 @@ auto pseudocosts(Scip* const scip, scip::Var* const var) noexcept {
 	auto const pseudocost_sum = pseudocost_up + pseudocost_down;
 	auto const pseudocost_ratio = pseudocost_up != 0. ? pseudocost_up / pseudocost_sum : 0.;
 	auto const pseudocost_product = pseudocost_up * pseudocost_down;
-	return std::make_tuple(
-		feature<Dynamic::pseudocost_up>(pseudocost_up),
-		feature<Dynamic::pseudocost_down>(pseudocost_down),
-		feature<Dynamic::pseudocost_ratio>(pseudocost_ratio),
-		feature<Dynamic::pseudocost_sum>(pseudocost_sum),
-		feature<Dynamic::pseudocost_product>(pseudocost_product));
+	return std::tuple{
+		FeatureValue<Dynamic::pseudocost_up>{pseudocost_up},
+		FeatureValue<Dynamic::pseudocost_down>{pseudocost_down},
+		FeatureValue<Dynamic::pseudocost_ratio>{pseudocost_ratio},
+		FeatureValue<Dynamic::pseudocost_sum>{pseudocost_sum},
+		FeatureValue<Dynamic::pseudocost_product>{pseudocost_product},
+	};
 }
 
 /**
@@ -484,15 +470,14 @@ auto infeasibility_statistics(scip::Var* const var) noexcept {
 	// FIXME N.B. replaced by left, right infeasibility
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
-	auto const n_branchings_up =
-		static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
-	auto const n_branchings_down =
-		static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_DOWNWARDS));
-	return std::make_tuple(
-		feature<Dynamic::n_cutoff_up>(n_infeasibles_up),
-		feature<Dynamic::n_cutoff_down>(n_infeasibles_down),
-		feature<Dynamic::n_cutoff_up_ratio>(safe_div(n_infeasibles_up, n_branchings_up)),
-		feature<Dynamic::n_cutoff_down_ratio>(safe_div(n_infeasibles_down, n_branchings_down)));
+	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
+	auto const n_branchings_down = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_DOWNWARDS));
+	return std::tuple{
+		FeatureValue<Dynamic::n_cutoff_up>{n_infeasibles_up},
+		FeatureValue<Dynamic::n_cutoff_down>{n_infeasibles_down},
+		FeatureValue<Dynamic::n_cutoff_up_ratio>{safe_div(n_infeasibles_up, n_branchings_up)},
+		FeatureValue<Dynamic::n_cutoff_down_ratio>{safe_div(n_infeasibles_down, n_branchings_down)},
+	};
 }
 
 /**
@@ -516,14 +501,15 @@ auto dynamic_stats_for_constraint_degree(
 	auto const root_deg_mean = get_feature_value<Static::rows_deg_mean>(root_deg_stats);
 	auto const root_deg_min = get_feature_value<Static::rows_deg_min>(root_deg_stats);
 	auto const root_deg_max = get_feature_value<Static::rows_deg_max>(root_deg_stats);
-	return std::make_tuple(
-		feature<Dynamic::rows_deg_mean>(stats.mean),
-		feature<Dynamic::rows_deg_stddev>(stats.stddev),
-		feature<Dynamic::rows_deg_min>(stats.min),
-		feature<Dynamic::rows_deg_max>(stats.max),
-		feature<Dynamic::rows_deg_mean_ratio>(safe_div(stats.mean, root_deg_mean + stats.mean)),
-		feature<Dynamic::rows_deg_min_ratio>(safe_div(stats.min, root_deg_min + stats.min)),
-		feature<Dynamic::rows_deg_max_ratio>(safe_div(stats.max, root_deg_max + stats.max)));
+	return std::tuple{
+		FeatureValue<Dynamic::rows_deg_mean>{stats.mean},
+		FeatureValue<Dynamic::rows_deg_stddev>{stats.stddev},
+		FeatureValue<Dynamic::rows_deg_min>{stats.min},
+		FeatureValue<Dynamic::rows_deg_max>{stats.max},
+		FeatureValue<Dynamic::rows_deg_mean_ratio>{safe_div(stats.mean, root_deg_mean + stats.mean)},
+		FeatureValue<Dynamic::rows_deg_min_ratio>{safe_div(stats.min, root_deg_min + stats.min)},
+		FeatureValue<Dynamic::rows_deg_max_ratio>{safe_div(stats.max, root_deg_max + stats.max)},
+	};
 }
 
 /**
@@ -562,11 +548,12 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
 		rhs_ratio_updates(coef, -SCIProwGetLhs(rows[i]));
 	}
 
-	return std::make_tuple(
-		feature<Dynamic::coef_pos_rhs_ratio_min>(positive_rhs_ratio_min),
-		feature<Dynamic::coef_pos_rhs_ratio_max>(positive_rhs_ratio_max),
-		feature<Dynamic::coef_neg_rhs_ratio_min>(negative_rhs_ratio_min),
-		feature<Dynamic::coef_neg_rhs_ratio_max>(negative_rhs_ratio_max));
+	return std::tuple{
+		FeatureValue<Dynamic::coef_pos_rhs_ratio_min>{positive_rhs_ratio_min},
+		FeatureValue<Dynamic::coef_pos_rhs_ratio_max>{positive_rhs_ratio_max},
+		FeatureValue<Dynamic::coef_neg_rhs_ratio_min>{negative_rhs_ratio_min},
+		FeatureValue<Dynamic::coef_neg_rhs_ratio_max>{negative_rhs_ratio_max},
+	};
 }
 
 /**
@@ -613,15 +600,16 @@ auto min_max_for_one_to_all_coefficient_ratios(
 		}
 	}
 
-	return std::make_tuple(
-		feature<Dynamic::pos_coef_pos_coef_ratio_min>(positive_positive_ratio_min),
-		feature<Dynamic::pos_coef_pos_coef_ratio_max>(positive_positive_ratio_max),
-		feature<Dynamic::pos_coef_neg_coef_ratio_min>(positive_negative_ratio_min),
-		feature<Dynamic::pos_coef_neg_coef_ratio_max>(positive_negative_ratio_max),
-		feature<Dynamic::neg_coef_pos_coef_ratio_min>(negative_positive_ratio_min),
-		feature<Dynamic::neg_coef_pos_coef_ratio_max>(negative_positive_ratio_max),
-		feature<Dynamic::neg_coef_neg_coef_ratio_min>(negative_negative_ratio_min),
-		feature<Dynamic::neg_coef_neg_coef_ratio_max>(negative_negative_ratio_max));
+	return std::tuple{
+		FeatureValue<Dynamic::pos_coef_pos_coef_ratio_min>{positive_positive_ratio_min},
+		FeatureValue<Dynamic::pos_coef_pos_coef_ratio_max>{positive_positive_ratio_max},
+		FeatureValue<Dynamic::pos_coef_neg_coef_ratio_min>{positive_negative_ratio_min},
+		FeatureValue<Dynamic::pos_coef_neg_coef_ratio_max>{positive_negative_ratio_max},
+		FeatureValue<Dynamic::neg_coef_pos_coef_ratio_min>{negative_positive_ratio_min},
+		FeatureValue<Dynamic::neg_coef_pos_coef_ratio_max>{negative_positive_ratio_max},
+		FeatureValue<Dynamic::neg_coef_neg_coef_ratio_min>{negative_negative_ratio_min},
+		FeatureValue<Dynamic::neg_coef_neg_coef_ratio_max>{negative_negative_ratio_max},
+	};
 }
 
 /**
@@ -647,11 +635,10 @@ auto row_is_active(Scip* const scip, scip::Row* const row) noexcept -> bool {
  * This is equivalent to an unsafe/unchecked masked tensor.
  */
 auto stats_for_active_constraint_coefficients_weights(scip::Model const& model) {
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	auto const lp_rows = model.lp_rows();
 	auto const branch_candidates_span = model.pseudo_branch_cands();
-	std::set<scip::Var*> const branch_candidates{
-		branch_candidates_span.begin(), branch_candidates_span.end()};
+	std::set<scip::Var*> const branch_candidates{branch_candidates_span.begin(), branch_candidates_span.end()};
 
 	auto sum_abs_if_candidate = [&branch_candidates](auto const& row_vals, auto const& row_cols) {
 		auto const n_cols = row_cols.size();
@@ -668,9 +655,9 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model const& model) 
 	auto safe_inv = [](auto const x) { return x != 0. ? 1. / x : 1.; };
 
 	xt::xtensor<value_type, 2> weights{{lp_rows.size(), 4}, std::nan("")};
-	auto weights_iter = weights.begin();
+	auto* weights_iter = weights.begin();
 
-	for (auto const row : lp_rows) {
+	for (auto* const row : lp_rows) {
 		if (row_is_active(scip, row)) {
 			auto const row_vals = scip_row_get_vals(row);
 			*(weights_iter++) = 1.;
@@ -705,7 +692,7 @@ auto stats_for_active_constraint_coefficients(
 	nonstd::span<scip::real> const coefficients,
 	xt::xtensor<value_type, 2> active_rows_weights) noexcept {
 
-	std::array<StatsFeatures, 4> weights_stats{};
+	auto weights_stats = std::array<StatsFeatures, 4>{};
 	for (auto& stats : weights_stats) {
 		stats.min = std::numeric_limits<decltype(stats.min)>::max();
 		stats.max = std::numeric_limits<decltype(stats.max)>::min();
@@ -714,7 +701,7 @@ auto stats_for_active_constraint_coefficients(
 	auto const n_rows = rows.size();
 	std::size_t n_active_rows = 0UL;
 	for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
-		auto const row = rows[row_idx];
+		auto* const row = rows[row_idx];
 		auto const row_lp_idx = SCIProwGetLPPos(row);
 		auto const abs_coef = std::abs(coefficients[row_idx]);
 
@@ -741,7 +728,7 @@ auto stats_for_active_constraint_coefficients(
 		}
 
 		for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
-			auto const row = rows[row_idx];
+			auto* const row = rows[row_idx];
 			auto const row_lp_idx = SCIProwGetLPPos(row);
 			auto const abs_coef = std::abs(coefficients[row_idx]);
 			if (row_is_active(scip, row)) {
@@ -766,31 +753,32 @@ auto stats_for_active_constraint_coefficients(
 		}
 	}
 
-	return std::make_tuple(
-		feature<Dynamic::active_coef_weight1_count>(weights_stats[0].count),
-		feature<Dynamic::active_coef_weight1_sum>(weights_stats[0].sum),
-		feature<Dynamic::active_coef_weight1_mean>(weights_stats[0].mean),
-		feature<Dynamic::active_coef_weight1_stddev>(weights_stats[0].stddev),
-		feature<Dynamic::active_coef_weight1_min>(weights_stats[0].min),
-		feature<Dynamic::active_coef_weight1_max>(weights_stats[0].max),
-		feature<Dynamic::active_coef_weight2_count>(weights_stats[1].count),
-		feature<Dynamic::active_coef_weight2_sum>(weights_stats[1].sum),
-		feature<Dynamic::active_coef_weight2_mean>(weights_stats[1].mean),
-		feature<Dynamic::active_coef_weight2_stddev>(weights_stats[1].stddev),
-		feature<Dynamic::active_coef_weight2_min>(weights_stats[1].min),
-		feature<Dynamic::active_coef_weight2_max>(weights_stats[1].max),
-		feature<Dynamic::active_coef_weight3_count>(weights_stats[2].count),
-		feature<Dynamic::active_coef_weight3_sum>(weights_stats[2].sum),
-		feature<Dynamic::active_coef_weight3_mean>(weights_stats[2].mean),
-		feature<Dynamic::active_coef_weight3_stddev>(weights_stats[2].stddev),
-		feature<Dynamic::active_coef_weight3_min>(weights_stats[2].min),
-		feature<Dynamic::active_coef_weight3_max>(weights_stats[2].max),
-		feature<Dynamic::active_coef_weight4_count>(weights_stats[3].count),
-		feature<Dynamic::active_coef_weight4_sum>(weights_stats[3].sum),
-		feature<Dynamic::active_coef_weight4_mean>(weights_stats[3].mean),
-		feature<Dynamic::active_coef_weight4_stddev>(weights_stats[3].stddev),
-		feature<Dynamic::active_coef_weight4_min>(weights_stats[3].min),
-		feature<Dynamic::active_coef_weight4_max>(weights_stats[3].max));
+	return std::tuple{
+		FeatureValue<Dynamic::active_coef_weight1_count>{weights_stats[0].count},
+		FeatureValue<Dynamic::active_coef_weight1_sum>{weights_stats[0].sum},
+		FeatureValue<Dynamic::active_coef_weight1_mean>{weights_stats[0].mean},
+		FeatureValue<Dynamic::active_coef_weight1_stddev>{weights_stats[0].stddev},
+		FeatureValue<Dynamic::active_coef_weight1_min>{weights_stats[0].min},
+		FeatureValue<Dynamic::active_coef_weight1_max>{weights_stats[0].max},
+		FeatureValue<Dynamic::active_coef_weight2_count>{weights_stats[1].count},
+		FeatureValue<Dynamic::active_coef_weight2_sum>{weights_stats[1].sum},
+		FeatureValue<Dynamic::active_coef_weight2_mean>{weights_stats[1].mean},
+		FeatureValue<Dynamic::active_coef_weight2_stddev>{weights_stats[1].stddev},
+		FeatureValue<Dynamic::active_coef_weight2_min>{weights_stats[1].min},
+		FeatureValue<Dynamic::active_coef_weight2_max>{weights_stats[1].max},
+		FeatureValue<Dynamic::active_coef_weight3_count>{weights_stats[2].count},
+		FeatureValue<Dynamic::active_coef_weight3_sum>{weights_stats[2].sum},
+		FeatureValue<Dynamic::active_coef_weight3_mean>{weights_stats[2].mean},
+		FeatureValue<Dynamic::active_coef_weight3_stddev>{weights_stats[2].stddev},
+		FeatureValue<Dynamic::active_coef_weight3_min>{weights_stats[2].min},
+		FeatureValue<Dynamic::active_coef_weight3_max>{weights_stats[2].max},
+		FeatureValue<Dynamic::active_coef_weight4_count>{weights_stats[3].count},
+		FeatureValue<Dynamic::active_coef_weight4_sum>{weights_stats[3].sum},
+		FeatureValue<Dynamic::active_coef_weight4_mean>{weights_stats[3].mean},
+		FeatureValue<Dynamic::active_coef_weight4_stddev>{weights_stats[3].stddev},
+		FeatureValue<Dynamic::active_coef_weight4_min>{weights_stats[3].min},
+		FeatureValue<Dynamic::active_coef_weight4_max>{weights_stats[3].max},
+	};
 }
 
 /**
@@ -817,14 +805,13 @@ auto extract_dynamic_features(
 		min_max_for_ratios_constraint_coeffs_rhs(scip, rows, coefficients),
 		min_max_for_one_to_all_coefficient_ratios(rows, coefficients),
 		stats_for_active_constraint_coefficients(scip, rows, coefficients, active_rows_weights));
+	return features_tuple_to_tensor(features);
 
 	// Make sure at compile time that features are returned in correct order
 	using Tuple = decltype(features);
 	static_assert(is_contiguous(Tuple{}), "Dynammic features are permuted");
 	static_assert(first_index(Tuple{}) == Feature::n_static, "Dynamic features start at n_static");
 	static_assert(last_index(Tuple{}) == Feature::n_features - 1, "Missing dynamic features");
-
-	return features_to_tensor(features);
 }
 
 /******************************
@@ -832,40 +819,35 @@ auto extract_dynamic_features(
  ******************************/
 
 template <typename Tensor> auto extract_reused_static_features(Tensor const& tensor) noexcept {
-	return std::make_tuple(
-		feature<Static::rows_deg_mean>(tensor[static_cast<std::size_t>(Static::rows_deg_mean)]),
-		feature<Static::rows_deg_min>(tensor[static_cast<std::size_t>(Static::rows_deg_min)]),
-		feature<Static::rows_deg_max>(tensor[static_cast<std::size_t>(Static::rows_deg_max)]));
+	return std::tuple{
+		FeatureValue<Static::rows_deg_mean>{tensor[static_cast<std::size_t>(Static::rows_deg_mean)]},
+		FeatureValue<Static::rows_deg_min>{tensor[static_cast<std::size_t>(Static::rows_deg_min)]},
+		FeatureValue<Static::rows_deg_max>{tensor[static_cast<std::size_t>(Static::rows_deg_max)]},
+	};
 }
 
-auto extract_all_features(
-	scip::Model const& model,
-	xt::xtensor<value_type, 2> const& static_features) {
+auto extract_all_features(scip::Model const& model, xt::xtensor<value_type, 2> const& static_features) {
 
 	xt::xtensor<value_type, 2> observation{
 		{model.pseudo_branch_cands().size(), Feature::n_static + Feature::n_dynamic},
 		std::nan(""),
 	};
 
-	auto const scip = model.get_scip_ptr();
+	auto* const scip = model.get_scip_ptr();
 	auto const active_rows_weights = stats_for_active_constraint_coefficients_weights(model);
 
 	auto const pseudo_branch_cands = model.pseudo_branch_cands();
 	auto const n_pseudo_branch_cands = pseudo_branch_cands.size();
 	for (std::size_t var_idx = 0; var_idx < n_pseudo_branch_cands; ++var_idx) {
-		auto const var = pseudo_branch_cands[var_idx];
+		auto* const var = pseudo_branch_cands[var_idx];
 		auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
 
 		using namespace xt::placeholders;
 		// Static features are precomputed
-		xt::view(observation, var_idx, xt::range(_, Feature::n_static)) =
-			xt::row(static_features, col_idx);
+		xt::view(observation, var_idx, xt::range(_, Feature::n_static)) = xt::row(static_features, col_idx);
 		// Dynamic features
 		xt::view(observation, var_idx, xt::range(Feature::n_static, _)) = extract_dynamic_features(
-			scip,
-			var,
-			active_rows_weights,
-			extract_reused_static_features(xt::row(static_features, col_idx)));
+			scip, var, active_rows_weights, extract_reused_static_features(xt::row(static_features, col_idx)));
 	}
 
 	return observation;
@@ -877,20 +859,15 @@ auto extract_all_features(
  *  Observation extracting function  *
  *************************************/
 
-std::size_t const Khalil2016::Feature::n_static;
-std::size_t const Khalil2016::Feature::n_dynamic;
-std::size_t const Khalil2016::Feature::n_features;
-
 void Khalil2016::reset(scip::Model& model) {
 	static_features = extract_static_features(model);
 }
 
-auto Khalil2016::obtain_observation(scip::Model& model) -> nonstd::optional<Khalil2016Obs> {
+auto Khalil2016::obtain_observation(scip::Model& model) -> std::optional<Khalil2016Obs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		return extract_all_features(model, static_features);
 	}
 	return {};
 }
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation

@@ -1,18 +1,17 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 
-#include <nonstd/optional.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/observation/abstract.hpp"
 
-namespace ecole {
-namespace observation {
+namespace ecole::observation {
 
 using Khalil2016Obs = xt::xtensor<double, 2>;
 
-class Khalil2016 : public ObservationFunction<nonstd::optional<Khalil2016Obs>> {
+class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
 public:
 	struct Feature {
 		static constexpr std::size_t n_static = 18;
@@ -110,11 +109,10 @@ public:
 	};
 
 	void reset(scip::Model& model) override;
-	nonstd::optional<Khalil2016Obs> obtain_observation(scip::Model& model) override;
+	std::optional<Khalil2016Obs> obtain_observation(scip::Model& model) override;
 
 private:
 	xt::xtensor<Khalil2016Obs::value_type, 2> static_features;
 };
 
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation
