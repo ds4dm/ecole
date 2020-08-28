@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <set>
@@ -7,6 +6,11 @@
 #include <utility>
 
 #include <nonstd/span.hpp>
+#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/range/conversion.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/zip.hpp>
 #include <xtensor/xfixed.hpp>
 #include <xtensor/xview.hpp>
 
@@ -17,6 +21,8 @@
 namespace ecole::observation {
 
 namespace {
+
+namespace views = ranges::views;
 
 using Feature = Khalil2016::Feature;
 using Static = Khalil2016::Feature::Static;
@@ -40,64 +46,8 @@ template <typename T> auto square(T x) noexcept -> T {
  * division.
  */
 template <typename T> auto safe_div(T x, T y) noexcept -> T {
-	static_assert(std::is_floating_point<T>::value, "Inputs are not decimals");
+	static_assert(std::is_floating_point_v<T>, "Inputs are not decimals");
 	return y != 0. ? x / y : 0.;
-}
-
-/**
- * Wrap std::copy to use directly with range container.
- */
-template <typename InputContainer, typename OutputIt>
-auto copy(InputContainer const& container, OutputIt out_first) -> OutputIt {
-	return std::copy(container.begin(), container.end(), out_first);
-}
-
-/**
- * Wrap std::accumulate (with binary operation) to use directly with a range container.
- */
-template <typename InputContainer, typename T, typename BinaryOperation>
-auto accumulate(InputContainer const& container, T init, BinaryOperation op) -> T {
-	return std::accumulate(container.cbegin(), container.cend(), std::move(init), std::move(op));
-}
-
-/**
- * Sum of the absolute value of element in a range.
- */
-template <typename InputContainer> auto sum_abs(InputContainer const& container) {
-	return accumulate(
-		container,
-		typename InputContainer::value_type{0},
-		[](auto const cumulate, auto const element) { return cumulate + std::abs(element); }  //
-	);
-}
-
-/**
- * Identity function to use as unary operation.
- */
-auto const identity = [](auto const x) { return x; };
-
-/**
- * Greater than filtering function object.
- */
-template <typename T> auto greater_than(T other) noexcept {
-	struct greater_than_func {
-		T other = 0.;
-		bool operator()(T elem) const noexcept { return elem > other; }
-	};
-
-	return greater_than_func{other};
-}
-
-/**
- * Lesser than filtering function object.
- */
-template <typename T> auto lesser_than(T other) noexcept {
-	struct lesser_than_func {
-		T other = 0.;
-		bool operator()(T elem) const noexcept { return elem < other; }
-	};
-
-	return lesser_than_func{other};
 }
 
 /**
@@ -107,22 +57,15 @@ template <typename T> auto lesser_than(T other) noexcept {
  * @param transform A callable to apply on every element of the container.
  * @param filter A callable to filter in elements (after transformation).
  */
-template <typename Range, typename TransformFunc, typename FilterFunc>
-auto count_sum(Range const& range, TransformFunc transform, FilterFunc filter) noexcept
-	-> std::pair<value_type, value_type> {
-	using transformed_type = decltype(transform(std::declval<typename Range::value_type>()));
-
-	transformed_type sum_val = 0;
-	std::size_t count_val = 0UL;
+template <typename Range> auto count_sum(Range range) noexcept {
+	auto sum = ranges::range_value_t<Range>{0};
+	auto count = std::size_t{0};
 
 	for (auto const element : range) {
-		auto const value = transform(element);
-		if (filter(value)) {
-			count_val++;
-			sum_val += value;
-		}
+		count++;
+		sum += element;
 	}
-	return {count_val, sum_val};
+	return std::pair{count, sum};
 }
 
 struct StatsFeatures {
@@ -134,45 +77,42 @@ struct StatsFeatures {
 	value_type max = 0.;
 };
 
-template <typename Range, typename TransformFunc, typename FilterFunc>
-auto compute_stats(Range const& range, TransformFunc transform, FilterFunc filter) noexcept -> StatsFeatures {
-	using transformed_type = decltype(transform(std::declval<typename Range::value_type>()));
-
-	value_type count = 0.;
-	value_type sum = 0.;
-	std::tie(count, sum) = count_sum(range, transform, filter);
+template <typename Range> auto compute_stats(Range range) noexcept -> StatsFeatures {
+	auto const [count, sum] = count_sum(range);
 
 	// We can assume count to be always positive after this point and that the (filtered) iteration
 	// will contain at least one element.
-	if (count == 0.) {
+	if (count == 0) {
 		return {};
 	}
 
-	value_type const mean = sum / count;
-	value_type stddev = 0.;
-	auto min = std::numeric_limits<transformed_type>::max();
-	auto max = std::numeric_limits<transformed_type>::min();
+	auto const mean = static_cast<value_type>(sum) / static_cast<value_type>(count);
+	auto stddev = value_type{0.};
+	auto min = std::numeric_limits<ranges::range_value_t<Range>>::max();
+	auto max = std::numeric_limits<ranges::range_value_t<Range>>::min();
 
-	for (auto const range_value : range) {
-		auto const value = transform(range_value);
-		if (filter(value)) {
-			min = std::min(min, value);
-			max = std::max(max, value);
-			stddev += square(static_cast<value_type>(value) - mean);
-		}
+	for (auto const element : range) {
+		min = std::min(min, element);
+		max = std::max(max, element);
+		stddev += square(static_cast<value_type>(element) - mean);
 	}
-	stddev = std::sqrt(stddev / count);
+	stddev = std::sqrt(stddev / static_cast<value_type>(count));
 
-	return {count, sum, mean, stddev, static_cast<value_type>(min), static_cast<value_type>(max)};
+	return {
+		static_cast<value_type>(count),
+		static_cast<value_type>(sum),
+		mean,
+		stddev,
+		static_cast<value_type>(min),
+		static_cast<value_type>(max)};
 }
 
 /**
  * Return the sum of positive numbers and the sum of negative numbers in a range.
  */
-template <typename Range> auto sum_positive_negative(Range const& range) noexcept {
-	using sum_type = typename Range::value_type;
-	sum_type positive_sum = 0;
-	sum_type negative_sum = 0;
+template <typename Range> auto sum_positive_negative(Range range) noexcept {
+	auto positive_sum = ranges::range_value_t<Range>{0};
+	auto negative_sum = ranges::range_value_t<Range>{0};
 	for (auto const val : range) {
 		if (val > 0) {
 			positive_sum += val;
@@ -327,9 +267,8 @@ auto number_constraints(scip::Col* const col) noexcept {
  * The constraint degree is computed on the root LP (mean, stdev., min, max)
  */
 auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noexcept {
-	auto transform = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
-	auto filter = [](auto const /* degree */) { return true; };
-	auto const stats = compute_stats(rows, transform, filter);
+	auto row_get_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
+	auto const stats = compute_stats(rows | ranges::views::transform(row_get_nnz));
 	return std::tuple{
 		FeatureValue<Static::rows_deg_mean>{stats.mean},
 		FeatureValue<Static::rows_deg_stddev>{stats.stddev},
@@ -345,7 +284,7 @@ auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noe
  * (count, mean, stdev., min, max).
  */
 auto stats_for_constraint_positive_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
-	auto const stats = compute_stats(coefficients, identity, greater_than(0.));
+	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
 	return std::tuple{
 		FeatureValue<Static::rows_pos_coefs_count>{stats.count},
 		FeatureValue<Static::rows_pos_coefs_mean>{stats.mean},
@@ -362,7 +301,7 @@ auto stats_for_constraint_positive_coefficients(nonstd::span<scip::real> const c
  * (count, mean, stdev., min, max).
  */
 auto stats_for_constraint_negative_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
-	auto const stats = compute_stats(coefficients, identity, lesser_than(0.));
+	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
 	return std::tuple{
 		FeatureValue<Static::rows_neg_coefs_count>{stats.count},
 		FeatureValue<Static::rows_neg_coefs_mean>{stats.mean},
@@ -495,9 +434,8 @@ template <typename... FeatVal>
 auto dynamic_stats_for_constraint_degree(
 	nonstd::span<scip::Row*> const rows,
 	std::tuple<FeatVal...> const& root_deg_stats) noexcept {
-	auto transform = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
-	auto filter = [](auto const /* degree */) { return true; };
-	auto const stats = compute_stats(rows, transform, filter);
+	auto row_get_lp_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
+	auto const stats = compute_stats(rows | views::transform(row_get_lp_nnz));
 	auto const root_deg_mean = get_feature_value<Static::rows_deg_mean>(root_deg_stats);
 	auto const root_deg_min = get_feature_value<Static::rows_deg_min>(root_deg_stats);
 	auto const root_deg_max = get_feature_value<Static::rows_deg_max>(root_deg_stats);
@@ -540,12 +478,10 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
 		}
 	};
 
-	auto const size = rows.size();
-	for (std::size_t i = 0; i < size; ++i) {
-		auto const coef = coefficients[i];
-		rhs_ratio_updates(coef, SCIProwGetRhs(rows[i]));
+	for (auto const [row, coef] : views::zip(rows, coefficients)) {
+		rhs_ratio_updates(coef, SCIProwGetRhs(row));
 		// FIXME Should it not be -coeff given that we multiply by -1 to get a lhs into a rhs
-		rhs_ratio_updates(coef, -SCIProwGetLhs(rows[i]));
+		rhs_ratio_updates(coef, -SCIProwGetLhs(row));
 	}
 
 	return std::tuple{
@@ -577,12 +513,8 @@ auto min_max_for_one_to_all_coefficient_ratios(
 	value_type negative_negative_ratio_max = 0;
 	value_type negative_negative_ratio_min = 1;
 
-	auto const size = rows.size();
-	for (std::size_t i = 0; i < size; ++i) {
-		auto const sums = sum_positive_negative(scip_row_get_vals(rows[i]));
-		value_type const positive_coeficients_sum = sums.first;
-		value_type const negative_coeficients_sum = sums.second;
-		auto const coef = coefficients[i];
+	for (auto const [row, coef] : views::zip(rows, coefficients)) {
+		auto const [positive_coeficients_sum, negative_coeficients_sum] = sum_positive_negative(scip_row_get_vals(row));
 		if (coef > 0) {
 			auto const positive_ratio = coef / positive_coeficients_sum;
 			auto const negative_ratio = coef / (coef - negative_coeficients_sum);
@@ -637,21 +569,28 @@ auto row_is_active(Scip* const scip, scip::Row* const row) noexcept -> bool {
 auto stats_for_active_constraint_coefficients_weights(scip::Model const& model) {
 	auto* const scip = model.get_scip_ptr();
 	auto const lp_rows = model.lp_rows();
-	auto const branch_candidates_span = model.pseudo_branch_cands();
-	std::set<scip::Var*> const branch_candidates{branch_candidates_span.begin(), branch_candidates_span.end()};
+	auto const branch_candidates = model.pseudo_branch_cands() | ranges::to<std::set>();
 
-	auto sum_abs_if_candidate = [&branch_candidates](auto const& row_vals, auto const& row_cols) {
-		auto const n_cols = row_cols.size();
-		value_type sum = 0.;
-		for (std::size_t i = 0; i < n_cols; ++i) {
-			auto const var = SCIPcolGetVar(row_cols[i]);
-			if (branch_candidates.find(var) != branch_candidates.end()) {
-				sum += std::abs(row_vals[i]);
+	/** Check if a column is a branching candidate. */
+	auto is_candidate = [&branch_candidates](auto* col) { return branch_candidates.count(SCIPcolGetVar(col)) > 0; };
+
+	/** Compute the sum of absolute values in a range. */
+	auto sum_abs = [](auto range) {
+		return ranges::accumulate(range | views::transform([](auto x) { return std::abs(x); }), 0.);
+	};
+
+	/** Compute the sum of absolute value of column coefficient if the column is a branching candidate. */
+	auto sum_abs_if_candidate = [&is_candidate](auto const& row_cols, auto const& row_cols_vals) {
+		auto sum = value_type{0.};
+		for (auto const [col, val] : views::zip(row_cols, row_cols_vals)) {
+			if (is_candidate(col)) {
+				sum += std::abs(val);
 			}
 		}
 		return sum;
 	};
 
+	/** Compute the inverse of a number or 1 if the number is zero. */
 	auto safe_inv = [](auto const x) { return x != 0. ? 1. / x : 1.; };
 
 	xt::xtensor<value_type, 2> weights{{lp_rows.size(), 4}, std::nan("")};
@@ -659,10 +598,10 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model const& model) 
 
 	for (auto* const row : lp_rows) {
 		if (row_is_active(scip, row)) {
-			auto const row_vals = scip_row_get_vals(row);
+			auto const row_cols_vals = scip_row_get_vals(row);
 			*(weights_iter++) = 1.;
-			*(weights_iter++) = safe_inv(sum_abs(row_vals));
-			*(weights_iter++) = safe_inv(sum_abs_if_candidate(row_vals, scip_row_get_cols(row)));
+			*(weights_iter++) = safe_inv(sum_abs(row_cols_vals));
+			*(weights_iter++) = safe_inv(sum_abs_if_candidate(scip_row_get_cols(row), row_cols_vals));
 			*(weights_iter++) = std::abs(SCIProwGetDualsol(row));
 		} else {
 			weights_iter += 4;
@@ -698,12 +637,9 @@ auto stats_for_active_constraint_coefficients(
 		stats.max = std::numeric_limits<decltype(stats.max)>::min();
 	}
 
-	auto const n_rows = rows.size();
 	std::size_t n_active_rows = 0UL;
-	for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
-		auto* const row = rows[row_idx];
+	for (auto const [row, coef] : views::zip(rows, coefficients)) {
 		auto const row_lp_idx = SCIProwGetLPPos(row);
-		auto const abs_coef = std::abs(coefficients[row_idx]);
 
 		if (row_is_active(scip, row)) {
 			n_active_rows++;
@@ -711,7 +647,7 @@ auto stats_for_active_constraint_coefficients(
 			for (std::size_t weight_idx = 0; weight_idx < weights_stats.size(); ++weight_idx) {
 				auto const weight = active_rows_weights(row_lp_idx, weight_idx);
 				assert(!std::isnan(weight));  // If NaN likely hit a maked value
-				auto const weighted_abs_coef = weight * abs_coef;
+				auto const weighted_abs_coef = weight * std::abs(coef);
 
 				auto& stats = weights_stats[weight_idx];
 				stats.count += weight;
@@ -727,15 +663,13 @@ auto stats_for_active_constraint_coefficients(
 			stats.mean = stats.sum / static_cast<value_type>(n_active_rows);
 		}
 
-		for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
-			auto* const row = rows[row_idx];
+		for (auto const [row, coef] : views::zip(rows, coefficients)) {
 			auto const row_lp_idx = SCIProwGetLPPos(row);
-			auto const abs_coef = std::abs(coefficients[row_idx]);
 			if (row_is_active(scip, row)) {
 				for (std::size_t weight_idx = 0; weight_idx < weights_stats.size(); ++weight_idx) {
 					auto const weight = active_rows_weights(row_lp_idx, weight_idx);
 					assert(!std::isnan(weight));  // If NaN likely hit a maked value
-					auto const weighted_abs_coef = weight * abs_coef;
+					auto const weighted_abs_coef = weight * std::abs(coef);
 
 					auto& stats = weights_stats[weight_idx];
 					stats.stddev = square(weighted_abs_coef - stats.mean);
