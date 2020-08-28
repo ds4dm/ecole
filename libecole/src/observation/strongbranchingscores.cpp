@@ -1,6 +1,8 @@
 #include <cmath>
 #include <cstddef>
 
+#include <nonstd/span.hpp>
+#include <range/v3/view/zip.hpp>
 #include <scip/scipdefplugins.h>
 #include <scip/struct_branch.h>
 #include <scip/utils.hpp>
@@ -10,6 +12,24 @@
 #include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
+
+namespace views = ranges::views;
+
+namespace {
+
+/** get vanilla full strong branching scores and variables */
+auto scip_get_vanillafullstrong_data(Scip* const scip) noexcept {
+	SCIP_VAR** cands = nullptr;
+	SCIP_Real* cands_scores = nullptr;
+	int n_cands = 0;
+	SCIPgetVanillafullstrongData(scip, &cands, &cands_scores, &n_cands, nullptr, nullptr);
+	return std::tuple{
+		nonstd::span{cands, static_cast<std::size_t>(n_cands)},
+		nonstd::span{cands_scores, static_cast<std::size_t>(n_cands)},
+	};
+}
+
+}  // namespace
 
 StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) : pseudo_candidates(pseudo_candidates_) {}
 
@@ -39,15 +59,7 @@ std::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observation(
 	SCIP_RESULT result;
 	scip::call(branchrule->branchexeclp, scip, branchrule, false, &result);
 	assert(result == SCIP_DIDNOTRUN);
-
-	/* get vanilla full strong branching scores */
-	SCIP_VAR** cands;
-	SCIP_Real* candscores;
-	int ncands;
-
-	SCIPgetVanillafullstrongData(scip, &cands, &candscores, &ncands, nullptr, nullptr);
-
-	assert(ncands >= 0);
+	auto const [cands, cands_scores] = scip_get_vanillafullstrong_data(scip);
 
 	/* restore model parameters */
 	model.set_param("branching/vanillafullstrong/integralcands", integralcands);
@@ -60,10 +72,9 @@ std::optional<xt::xtensor<double, 1>> StrongBranchingScores::obtain_observation(
 	auto const num_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
 	auto strong_branching_scores = xt::xtensor<double, 1>({num_lp_columns}, std::nan(""));
 
-	for (std::size_t i = 0; i < static_cast<std::size_t>(ncands); i++) {
-		auto* const col = SCIPvarGetCol(cands[i]);
-		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(col));
-		strong_branching_scores[lp_index] = static_cast<double>(candscores[i]);
+	for (auto const [var, score] : views::zip(cands, cands_scores)) {
+		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(SCIPvarGetCol(var)));
+		strong_branching_scores[lp_index] = static_cast<double>(score);
 	}
 
 	return strong_branching_scores;
