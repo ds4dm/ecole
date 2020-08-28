@@ -8,6 +8,7 @@
 #include <string>
 
 #include <fmt/format.h>
+#include <range/v3/view/move.hpp>
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
@@ -145,13 +146,9 @@ template <> std::string Model::get_param<ParamType::String>(std::string const& n
 }
 
 void Model::set_params(std::map<std::string, Param> name_values) {
-	std::for_each(
-		std::make_move_iterator(name_values.begin()),  //
-		std::make_move_iterator(name_values.end()),    //
-		[this](auto&& name_value) {
-			using Tuple = decltype(name_value);
-			set_param(std::forward<Tuple>(name_value).first, std::forward<Tuple>(name_value).second);
-		});
+	for (auto&& [name, value] : ranges::views::move(name_values)) {
+		set_param(name, std::move(value));
+	}
 }
 
 namespace {
