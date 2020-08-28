@@ -1,7 +1,8 @@
 ---
 name: 🤔 Question
-about: Good place to ask anyhting about Ecole
+about: Good place to ask anything about Ecole
 title: ''
 labels: question
 assignees: ''
+
 ---
