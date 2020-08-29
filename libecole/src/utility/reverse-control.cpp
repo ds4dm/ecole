@@ -37,9 +37,8 @@ auto Controller::Synchronizer::env_stop_thread(lock_t&& lk) -> void {
 	lk = maybe_throw(std::move(lk));
 }
 
-auto Controller::Synchronizer::env_thread_is_done(lock_t const& lk) const noexcept -> bool {
+auto Controller::Synchronizer::env_thread_is_done([[maybe_unused]] lock_t const& lk) const noexcept -> bool {
 	assert(is_valid_lock(lk));
-	(void)lk;  // Lock unused in Release
 	return thread_finished;
 }
 
@@ -71,9 +70,9 @@ auto Controller::Synchronizer::thread_terminate(lock_t&& lk, std::exception_ptr 
 	thread_terminate(std::move(lk));
 }
 
-auto Controller::Synchronizer::thread_action_function(lock_t const& lk) const noexcept -> action_func_t {
+auto Controller::Synchronizer::thread_action_function([[maybe_unused]] lock_t const& lk) const noexcept
+	-> action_func_t {
 	assert(is_valid_lock(lk));
-	(void)lk;  // Lock unused in Release
 	return action_func;
 }
 

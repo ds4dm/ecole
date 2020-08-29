@@ -153,9 +153,8 @@ scip::ErrorCollector::ErrorCollector() noexcept : ObjMessagehdlr(false) {
 
 void scip::MessageHandlerDeleter::operator()(SCIP_MESSAGEHDLR* ptr) {
 	// Cannot use scip::call because it accesses the collector which no longer exists.
-	auto retcode = SCIPmessagehdlrRelease(&ptr);
+	[[maybe_unused]] auto retcode = SCIPmessagehdlrRelease(&ptr);
 	assert(retcode == SCIP_OKAY);
-	(void)retcode;
 }
 
 auto make_unique_hander() {

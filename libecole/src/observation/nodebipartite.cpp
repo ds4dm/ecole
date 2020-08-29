@@ -117,7 +117,7 @@ auto extract_col_feat(scip::Model const& model) {
 	}
 
 	// Make sure we iterated over as many element as there are in the tensor
-	assert(static_cast<std::size_t>(iter - col_feat.begin()) == col_feat.size());
+	assert(iter == col_feat.end());
 
 	return col_feat;
 }
@@ -217,9 +217,7 @@ auto extract_row_feat(scip::Model const& model) {
 	}
 
 	// Make sure we iterated over as many element as there are in the tensor
-	auto diff = iter_ - row_feat.begin();
-	(void)diff;
-	assert(static_cast<std::size_t>(iter_ - row_feat.begin()) == row_feat.size());
+	assert(iter_ == row_feat.end());
 
 	return row_feat;
 }
