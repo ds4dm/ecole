@@ -38,6 +38,9 @@ html_favicon = "static/favicon.ico"
 html_static_path = ["static"]
 html_style = "css/custom.css"
 
+# Custom footer
+templates_path = ["_templates"]
+
 # Autodoc to read Python docstrings
 extensions += ["sphinx.ext.autodoc"]
 autodoc_default_options = {
