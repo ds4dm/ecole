@@ -1,4 +1,4 @@
-.. image:: docs/static/images/ecole-logo.svg
+.. image:: docs/_static/images/ecole-logo.svg
    :target: https://www.ecole.ai
    :alt: Ecole logo
    :width: 40 %

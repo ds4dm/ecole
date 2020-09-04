@@ -28,7 +28,7 @@ set(SPHINX_HTML_DIR "${SPHINX_BUILD_DIR}/html")
 file(MAKE_DIRECTORY "${SPHINX_BUILD_DIR}")
 configure_file("${SPHINX_SOURCE_DIR}/conf.py.in" "${SPHINX_BUILD_DIR}/conf.py" @ONLY)
 # Files such as logo and css need to be relative to configuration directory
-file(COPY "${SPHINX_SOURCE_DIR}/static" DESTINATION "${SPHINX_BUILD_DIR}")
+file(COPY "${SPHINX_SOURCE_DIR}/_static" DESTINATION "${SPHINX_BUILD_DIR}")
 file(COPY "${SPHINX_SOURCE_DIR}/_templates" DESTINATION "${SPHINX_BUILD_DIR}")
 add_custom_target(
 	ecole-sphinx
