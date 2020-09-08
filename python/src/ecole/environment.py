@@ -72,6 +72,10 @@ class EnvironmentComposer:
         instance:
             The combinatorial optimization problem to tackle during the newly started
             episode.
+        dynamics_args:
+            Extra arguments are forwarded as is to the underlying Dynamics.
+        dynamics_kwargs:
+            Extra arguments are forwarded as is to the underlying Dynamics.
 
         Returns
         -------
@@ -129,6 +133,10 @@ class EnvironmentComposer:
             The action to take in as part of the Markov Decision Process.
             If an action set has been given in the latest call (inluding calls to
             :meth:`reset`), then the action **must** be in that set.
+        dynamics_args:
+            Extra arguments are forwarded as is to the underlying Dynamics.
+        dynamics_kwargs:
+            Extra arguments are forwarded as is to the underlying Dynamics.
 
         Returns
         -------

@@ -27,6 +27,8 @@ Given that this is not an easy topic, it is discussed in :ref:`seeding-discussio
 
 Creating Dynamics
 -----------------
+Reset and Step
+^^^^^^^^^^^^^^
 Creating dynamics is very similar to
 :ref:`creating reward and observation functions<create-new-functions>`.
 It can be done from scratch or by inheriting an existing one.
@@ -80,3 +82,39 @@ Now, to use it as a full environent that can manage observations and rewards, we
 
 
 ``SimpleBranching`` is a fully featured environment as any other in Ecole.
+
+Passing parameters
+^^^^^^^^^^^^^^^^^^
+We can make the previous example more flexible by deciding what we want to disable.
+To do so, we will take parameters in the constructor
+
+.. code-block:: python
+
+   class SimpleBranchingDynamics(ecole.environment.BranchinDynamics):
+
+       def __init__(self, disable_presolve=True, disable_cuts=True):
+           self.disable_presolve = disable_presolve
+           self.disable_cuts = disable_cuts
+
+       def reset_dynamics(self, model):
+           # Share memory with Ecole model
+           pyscipopt_model = model.as_pyscipopt()
+
+           if self.disable_presolve:
+               pyscipopt_model.setPresolve(PY_SCIP_PARAMSETTING.OFF)
+           if self.disable_cuts:
+               pyscipopt_model.setSeparating(PY_SCIP_PARAMSETTING.OFF)
+
+           # Let the parent class get the model to the root node and return
+           # the done flag / action_set
+           return super().reset_dynamics(model)
+
+
+The constructor arguments are forwarded from the :py:meth:`~ecole.environment.EnvironmentComposer.__init__` constructor:
+
+.. code-block:: python
+
+   env = SimpleBranching(observation_function=None, disable_cuts=False)
+
+Similarily, extra arguments given to the environemnt :py:meth:`~ecole.environment.EnvironmentComposer.reset` and
+:py:meth:`~ecole.environment.EnvironmentComposer.step` are forwarded to the associated dynamics methods.
