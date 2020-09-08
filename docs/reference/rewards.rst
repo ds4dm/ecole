@@ -1,3 +1,5 @@
+.. _reward-reference:
+
 Rewards
 =======
 

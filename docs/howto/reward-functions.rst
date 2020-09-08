@@ -4,15 +4,13 @@ Use Reward Functions
 ====================
 
 Similarily to :ref:`observation functions <use-observation-functions>` the reward recieved by
-the user for learning can be customized by changing the ``RewardFunction`` used by the
+the user for learning can be customized by changing the :py:class:`~ecole.typing.RewardFunction` used by the
 solver.
 In fact the mechanism of reward functions is very similar to that of observation
 functions.
 Likewise environment is not computing the reward directly but delegates that
-responsibility to a ``RewardFunction`` object.
+responsibility to a :py:class:`~ecole.typing.RewardFunction` object.
 The object has complete access to the solver and extract the data it needs.
-
-.. TODO Add reference and docstring for reward functions
 
 Using a different reward function is done with another parameter to the environment.
 For instance with the :py:class:`~ecole.environment.Configuring` environment:
@@ -36,8 +34,9 @@ Environments also have a default reward function.
 
 .. TODO Adapt the output to the actual __repr__
 
-See [TODO] for the list of available reward functions, as well as [TODO] for explanation
-on how to create one.
+See :ref:`the reference<reward-reference>` for the list of available reward function,
+as well as :ref:`the documention<create-new-functions>` for explanation on how to create one.
+
 
 Arithmetic on Reward Functions
 ------------------------------

@@ -73,9 +73,9 @@ class EnvironmentComposer:
             The combinatorial optimization problem to tackle during the newly started
             episode.
         dynamics_args:
-            Extra arguments are forwarded as is to the underlying Dynamics.
+            Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
         dynamics_kwargs:
-            Extra arguments are forwarded as is to the underlying Dynamics.
+            Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
 
         Returns
         -------
@@ -134,9 +134,9 @@ class EnvironmentComposer:
             If an action set has been given in the latest call (inluding calls to
             :meth:`reset`), then the action **must** be in that set.
         dynamics_args:
-            Extra arguments are forwarded as is to the underlying Dynamics.
+            Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
         dynamics_kwargs:
-            Extra arguments are forwarded as is to the underlying Dynamics.
+            Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
 
         Returns
         -------

@@ -117,4 +117,5 @@ The constructor arguments are forwarded from the :py:meth:`~ecole.environment.En
    env = SimpleBranching(observation_function=None, disable_cuts=False)
 
 Similarily, extra arguments given to the environemnt :py:meth:`~ecole.environment.EnvironmentComposer.reset` and
-:py:meth:`~ecole.environment.EnvironmentComposer.step` are forwarded to the associated dynamics methods.
+:py:meth:`~ecole.environment.EnvironmentComposer.step` are forwarded to the associated
+:py:class:`~ecole.typing.Dynamics` methods.

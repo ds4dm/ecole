@@ -4,12 +4,10 @@ Use Observation Functions
 =========================
 
 Using any environment, the observation [#observation]_ recieved by the user to take the
-next action can be customized changing the ``ObservationFunction`` used by the solver.
+next action can be customized changing the :py:class:`~ecole.typing.ObservationFunction` used by the solver.
 The environment is not extracting data directly but delegates that responsibility to an
-``ObservationFunction`` object.
+:py:class:`~ecole.typing.ObservationFunction` object.
 The object has complete access to the solver and extract the data it needs.
-
-.. TODO Add reference and docstring for observation functions
 
 Using a different observation function is as easy as passing it as a parameter when
 creating an environment.
@@ -38,10 +36,10 @@ Environments have an observation function set as default parameter for convenien
 .. TODO Use an observation function that is more intutive than Nothing
 .. TODO Adapt the output to the actual __repr__
 
-See [TODO] for the list of available observation function, as well as [TODO] for
-explanation on how to create one.
 
-.. TODO Fill the missing references
+See :ref:`the reference<observation-reference>` for the list of available observation function,
+as well as :ref:`the documention<create-new-functions>` for explanation on how to create one.
+
 
 No Observation Function
 -----------------------
