@@ -60,7 +60,7 @@ class EnvironmentComposer:
         else:
             return observation_function
 
-    def reset(self, instance, *args, **kwargs):
+    def reset(self, instance, *dynamics_args, **dynamics_kwargs):
         """Start a new episode.
 
         This method brings the environment to a new initial state, *i.e.* starts a new
@@ -102,7 +102,9 @@ class EnvironmentComposer:
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
-            done, action_set = self.dynamics.reset_dynamics(self.model, *args, **kwargs)
+            done, action_set = self.dynamics.reset_dynamics(
+                self.model, *dynamics_args, **dynamics_kwargs
+            )
             self.observation_function.reset(self.model)
             self.reward_function.reset(self.model)
 
@@ -113,7 +115,7 @@ class EnvironmentComposer:
             self.can_transition = False
             raise e
 
-    def step(self, action):
+    def step(self, action, *dynamics_args, **dynamics_kwargs):
         """Transition from one state to another.
 
         This method takes a user action to transition from the current state to the
@@ -152,7 +154,9 @@ class EnvironmentComposer:
             raise core.environment.Exception("Environment need to be reset.")
 
         try:
-            done, action_set = self.dynamics.step_dynamics(self.model, action)
+            done, action_set = self.dynamics.step_dynamics(
+                self.model, action, *dynamics_args, **dynamics_kwargs
+            )
             reward = self.reward_function.obtain_reward(self.model, done)
             observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, reward, done, {}
