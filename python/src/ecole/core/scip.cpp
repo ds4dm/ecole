@@ -59,6 +59,8 @@ void bind_submodule(py::module_ const& m) {
 		.def("disable_presolve", &Model::disable_presolve)
 		.def("write_problem", &Model::write_problem, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
 
+		.def("transform_prob", &Model::transform_prob, py::call_guard<py::gil_scoped_release>())
+		.def("presolve", &Model::presolve, py::call_guard<py::gil_scoped_release>())
 		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>())
 		.def("is_solved", &Model::is_solved);
 }
