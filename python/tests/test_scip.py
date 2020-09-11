@@ -120,3 +120,18 @@ def test_set_params(model):
 
     for name, _ in names_types:
         assert model.get_param(name) == params[name]
+
+
+@pytest.mark.slow
+def test_transform_prob(model):
+    model.transform_prob()
+
+
+@pytest.mark.slow
+def test_presolve(model):
+    model.presolve()
+
+
+@pytest.mark.slow
+def test_presolve(model):
+    model.solve()
