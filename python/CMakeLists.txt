@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 # Moving files to binary dir to create python package
 foreach(py_file "setup.py" "src/ecole/__init__.py")
 	configure_file(

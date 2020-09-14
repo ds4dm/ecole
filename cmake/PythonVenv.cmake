@@ -1,5 +1,3 @@
-cmake_minimum_required (VERSION 3.14)
-
 option(ENABLE_PYTHON_VENV "Install Ecole Python library in a virtual environment" OFF)
 
 if(NOT ENABLE_PYTHON_VENV)
