@@ -20,6 +20,7 @@ endfunction()
 
 # Set of defaults for Ecole users
 macro(set_user_defaults)
+	option(ENABLE_IPO "Enable Interprocedural Optimization, aka Link Time Optimization (LTO)" ON)
 	set_default_build_type(RelWithDebInfo)
 endmacro()
 
