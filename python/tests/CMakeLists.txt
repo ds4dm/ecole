@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 add_test(
 	NAME test-ecole-python
 	COMMAND venv-python -m pytest

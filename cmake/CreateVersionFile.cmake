@@ -7,8 +7,6 @@
 # All other variable defined before running the script can also be used for templating the
 # versio file.
 
-cmake_minimum_required(VERSION 3.14)
-
 # Default working directory
 if(NOT WORKING_DIR)
 	get_filename_component(WORKING_DIR "${SOURCE_FILE}" DIRECTORY)
