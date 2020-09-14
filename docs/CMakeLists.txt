@@ -1,5 +1,3 @@
-cmake_minimum_required (VERSION 3.8)
-
 option(ENABLE_DOCUMENTATION "Build documentation with Doxygen and Sphinx" OFF)
 option(DOC_WARNINGS_AS_ERRORS "Treat documentation warnings as errors" OFF)
 option(ENABLE_DOCUMENTATION_TESTING "Enable documentation testing" OFF)
