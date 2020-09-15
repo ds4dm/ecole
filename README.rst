@@ -99,7 +99,7 @@ CMake is made available in the ``ecole`` environment created earlier.
 
 SCIP runtime dependency
 ^^^^^^^^^^^^^^^^^^^^^^^
-Scip dependency is resolved from `conda` inside `conda-dev.yaml`.
+Scip dependency is resolved from `conda` inside `dev/conda.yaml`.
 No other action are necessary :)
 
 Building
