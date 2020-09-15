@@ -4,6 +4,8 @@ set -o errexit   # Fail script on errors
 set -o nounset   # Fail on empty variables
 set -o pipefail  # Error if error in pipe
 
+# Set on DockerHub but set default value to use script locally
+DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
 for image_name in $(docker images "${DOCKER_REPO}-*" --format "{{.Repository}}"); do
 	docker push "${image_name}"

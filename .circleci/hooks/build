@@ -4,6 +4,12 @@ set -o errexit   # Fail script on errors
 set -o nounset   # Fail on empty variables
 set -o pipefail  # Error if error in pipe
 
+# Directory of this file
+__DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set on DockerHub but set default value to use script locally
+DOCKERFILE_PATH="${DOCKERFILE_PATH:-${__DIR__}/../Dockerfile}"
+DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
 function build-image {
 	local -r target="$1"
