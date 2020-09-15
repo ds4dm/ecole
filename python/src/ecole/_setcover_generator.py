@@ -5,7 +5,7 @@ from pyscipopt import Model
 import ecole.scip
 
 
-class Setcover:
+class SetcoverGenerator:
     def __init__(self, parameter_generator):
         self.parameter_generator = parameter_generator
         self.rng = np.random.RandomState()
