@@ -1,6 +1,4 @@
 import numpy as np
-import scipy
-import scipy.sparse
 
 from pyscipopt import Model
 
@@ -88,12 +86,21 @@ class Setcover:
         # sample objective coefficients
         c = self.rng.randint(max_coef, size=ncols) + 1
 
-        # sparse CSC to sparse CSR matrix
-        A = scipy.sparse.csc_matrix(
-            (np.ones(len(indices), dtype=int), indices, indptr), shape=(nrows, ncols)
-        ).tocsr()
-        indices = A.indices
-        indptr = A.indptr
+        # convert csc indices/indptr to csr indices/indptr
+        indptr_csr = np.zeros((nrows + 1), dtype=int)
+        indptr_counter = np.zeros((nrows + 1), dtype=int)
+        indices_csr = np.zeros(len(indices), dtype=int)
+
+        # compute indptr for csr
+        for i in range(len(indices)):
+            indptr_csr[indices[i] + 1] += 1
+        indptr_csr = np.cumsum(indptr_csr)
+
+        # compute indices for csr
+        for col in range(ncols):
+            for row in indices[indptr[col] : indptr[col + 1]]:
+                indices_csr[indptr_csr[row] + indptr_counter[row]] = col
+                indptr_counter[row] += 1
 
         # generate SCIP instance from problem
         model = Model()
@@ -107,7 +114,7 @@ class Setcover:
         model_vars = model.getVars()
         for i in range(nrows):
             cons_lhs = 0
-            consvars = [model_vars[j] for j in indices[indptr[i] : indptr[i + 1]]]
+            consvars = [model_vars[j] for j in indices_csr[indptr_csr[i] : indptr_csr[i + 1]]]
             for var in consvars:
                 cons_lhs += var
             model.addCons(cons_lhs >= 1)
