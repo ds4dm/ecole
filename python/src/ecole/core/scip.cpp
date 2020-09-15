@@ -59,6 +59,7 @@ void bind_submodule(py::module m) {
 		.def("set_params", &Model::set_params, py::arg("name_values"))
 		.def("disable_cuts", &Model::disable_cuts)
 		.def("disable_presolve", &Model::disable_presolve)
+		.def("write_problem", &Model::write_problem, py::arg("filename"))
 
 		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>());
 }
