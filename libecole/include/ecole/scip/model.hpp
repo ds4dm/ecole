@@ -66,6 +66,11 @@ public:
 	static Model from_file(std::string const& filename);
 
 	/**
+	 * Writes the Model into a file.
+	 */
+	void write_problem(const std::string& filename);
+
+	/**
 	 * Read a problem file into the Model.
 	 */
 	void read_prob(std::string const& filename);
