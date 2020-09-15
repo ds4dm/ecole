@@ -64,7 +64,9 @@ set(
 	PYTHON_FILES
 	"py.typed" "typing.py" "version.py"
 	"observation.py" "reward.py" "scip.py" "environment.py"
-	"instance_generators/instance_generators.py"
+	"setcover.py"
+	"combinatorial_auction.py"
+	"instance_generators.py"
 )
 set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
 list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
