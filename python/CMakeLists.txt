@@ -9,11 +9,20 @@ foreach(py_file "setup.py" "src/ecole/__init__.py")
 endforeach(py_file)
 
 
-find_package(pybind11 REQUIRED)
+# Temporary override pybind11 version to 2.5 otherwise pinned down by xtensor-python
+# Until https://github.com/conda-forge/xtensor-python-feedstock/pull/65 is merged
+include(FetchContent)
+FetchContent_Declare(
+	PyBind11
+	GIT_REPOSITORY "https://github.com/pybind/pybind11"
+	GIT_TAG "v2.5.0"
+)
+set(PYBIND11_CPP_STANDARD -std=c++17)
+FetchContent_MakeAvailable(PyBind11)
+# find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
 
-set(PYBIND11_CPP_STANDARD -std=c++17)
 pybind11_add_module(
 	ecole-python SYSTEM
 	src/ecole/core/core.cpp
