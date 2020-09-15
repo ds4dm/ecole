@@ -5,7 +5,7 @@ from pyscipopt import Model
 import ecole.scip
 
 
-class CombinatorialAuction:
+class CombinatorialAuctionGenerator:
     def __init__(self, parameter_generator=None):
         self.parameter_generator = parameter_generator
         self.rng = np.random.RandomState()

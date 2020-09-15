@@ -24,7 +24,7 @@ class ParameterGenerator:
 def test_Setcover(model):
     """ Test for Setcover instance generator. """
     parameter_generator = ParameterGenerator()
-    instances = ecole.instance_generators.Setcover(parameter_generator)
+    instances = ecole.instances.SetcoverGenerator(parameter_generator)
     model = next(instances)
 
     assert isinstance(model, ecole.core.scip.Model)
@@ -33,7 +33,7 @@ def test_Setcover(model):
 def test_CombinatorialAuction(model):
     """ Test for CombinatorialAuction instance generator. """
     parameter_generator = ParameterGenerator()
-    instances = ecole.instance_generators.CombinatorialAuction(parameter_generator)
+    instances = ecole.instances.CombinatorialAuctionGenerator(parameter_generator)
     next(instances)
     model = next(instances)
 
