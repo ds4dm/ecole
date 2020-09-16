@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+
+%help
+	This image provides a complete developement environemnt for Ecole.
+	Use as `singularity run ...` as `singularity shell ...` will not initialize conda properly.
+
+%files
+	conda.yaml
+
+%post
+	/opt/conda/bin/conda update -n base -c defaults conda
+	/opt/conda/bin/conda env create -n ecole --file conda.yaml
+	/opt/conda/bin/conda install -n ecole -c conda-forge gxx_linux-64
+	/opt/conda/bin/conda clean --all
+	rm conda.yaml
+
+	# Singularity does all the environment sourcing as shell(only latter calls bash),
+	# which conda does not support.
+	# We put the content in a file, manually call bash, and source it.
+	echo "source /opt/conda/etc/profile.d/conda.sh" >> /conda_init.sh
+	echo "conda activate ecole" >> /conda_init.sh
+
+%runscript
+	exec /bin/bash --rcfile /conda_init.sh "$@"
