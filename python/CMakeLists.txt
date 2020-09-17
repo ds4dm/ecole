@@ -33,12 +33,8 @@ target_link_libraries(
 	PRIVATE
 		Ecole::libecole
 		Ecole::warnings
-		xtensor
 		xtensor-python
 )
-if(CMAKE_BUILD_TYPE MATCHES Release)
-	target_link_libraries(ecole-python PRIVATE xtensor::optimize)
-endif()
 
 set_target_properties(
 	ecole-python PROPERTIES
