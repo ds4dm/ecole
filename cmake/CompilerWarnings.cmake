@@ -4,7 +4,7 @@
 # https://github.com/lefticus/cpp_starter_project/blob/master/cmake/CompilerWarnings.cmake
 
 function(set_project_warnings project_name)
-	option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" TRUE)
+	option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 	set(MSVC_WARNINGS
 		# Baseline reasonable warnings
