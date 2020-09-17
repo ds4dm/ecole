@@ -24,23 +24,23 @@ class SetcoverGenerator:
 
     def generate_instance(self, nrows=500, ncols=1000, density=0.05, max_coef=100):
         """
-		Generate a set cover instance with specified characteristics, and writes
-		it to a file in the LP format.
-		Algorithm described in:
-			E.Balas and A.Ho, Set covering algorithms using cutting planes, heuristics,
-			and subgradient optimization: A computational study, Mathematical
-			Programming, 12 (1980), 37-60.
-		Parameters
-		----------
-		nrows : int
-			Desired number of rows
-		ncols : int
-			Desired number of columns
-		density: float between 0 (excluded) and 1 (included)
-			Desired density of the constraint matrix
-		max_coef: int
-			Maximum objective coefficient (>=1)
-		"""
+        Generate a set cover instance with specified characteristics, and writes
+        it to a file in the LP format.
+        Algorithm described in:
+            E.Balas and A.Ho, Set covering algorithms using cutting planes, heuristics,
+            and subgradient optimization: A computational study, Mathematical
+            Programming, 12 (1980), 37-60.
+        Parameters
+        ----------
+        nrows : int
+            Desired number of rows
+        ncols : int
+            Desired number of columns
+        density: float between 0 (excluded) and 1 (included)
+            Desired density of the constraint matrix
+        max_coef: int
+            Maximum objective coefficient (>=1)
+        """
         nnzrs = int(nrows * ncols * density)
 
         assert nnzrs >= nrows  # at least 1 col per row
