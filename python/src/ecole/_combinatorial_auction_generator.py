@@ -38,40 +38,40 @@ class CombinatorialAuctionGenerator:
         warnings=False,
     ):
         """
-		Generate a Combinatorial Auction instance with specified characteristics, and writes
-		it to a file in the LP format.
-		Algorithm described in:
-			Kevin Leyton-Brown, Mark Pearson, and Yoav Shoham. (2000).
-			Towards a universal test suite for combinatorial auction algorithms.
-			Proceedings of ACM Conference on Electronic Commerce (EC-00) 66-76.
-		section 4.3., the 'arbitrary' scheme.
-		Parameters
-		----------
-		n_items : int
-			The number of items.
-		n_bids : int
-			The number of bids.
-		min_value : int
-			The minimum resale value for an item.
-		max_value : int
-			The maximum resale value for an item.
-		value_deviation : int
-			The deviation allowed for each bidder's private value of an item, relative from max_value.
-		add_item_prob : float in [0, 1]
-			The probability of adding a new item to an existing bundle.
-		max_n_sub_bids : int
-			The maximum number of substitutable bids per bidder (+1 gives the maximum number of bids per bidder).
-		additivity : float
-			Additivity parameter for bundle prices. Note that additivity < 0 gives sub-additive bids, while additivity > 0 gives super-additive bids.
-		budget_factor : float
-			The budget factor for each bidder, relative to their initial bid's price.
-		resale_factor : float
-			The resale factor for each bidder, relative to their initial bid's resale value.
-		integers : logical
-			Should bid's prices be integral ?
-		warnings : logical
-			Should warnings be printed ?
-		"""
+        Generate a Combinatorial Auction instance with specified characteristics, and writes
+        it to a file in the LP format.
+        Algorithm described in:
+            Kevin Leyton-Brown, Mark Pearson, and Yoav Shoham. (2000).
+            Towards a universal test suite for combinatorial auction algorithms.
+            Proceedings of ACM Conference on Electronic Commerce (EC-00) 66-76.
+        section 4.3., the 'arbitrary' scheme.
+        Parameters
+        ----------
+        n_items : int
+            The number of items.
+        n_bids : int
+            The number of bids.
+        min_value : int
+            The minimum resale value for an item.
+        max_value : int
+            The maximum resale value for an item.
+        value_deviation : int
+            The deviation allowed for each bidder's private value of an item, relative from max_value.
+        add_item_prob : float in [0, 1]
+            The probability of adding a new item to an existing bundle.
+        max_n_sub_bids : int
+            The maximum number of substitutable bids per bidder (+1 gives the maximum number of bids per bidder).
+        additivity : float
+            Additivity parameter for bundle prices. Note that additivity < 0 gives sub-additive bids, while additivity > 0 gives super-additive bids.
+        budget_factor : float
+            The budget factor for each bidder, relative to their initial bid's price.
+        resale_factor : float
+            The resale factor for each bidder, relative to their initial bid's resale value.
+        integers : logical
+            Should bid's prices be integral ?
+        warnings : logical
+            Should warnings be printed ?
+        """
 
         assert min_value >= 0 and max_value >= min_value
         assert add_item_prob >= 0 and add_item_prob <= 1
