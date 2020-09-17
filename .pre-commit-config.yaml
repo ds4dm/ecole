@@ -23,3 +23,14 @@ repos:
     rev: 19.10b0
     hooks:
       - id: black
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.1.9
+    hooks:
+    - id: forbid-crlf
+    - id: remove-crlf
+    # Black does not clear tabs in docstrings
+    - id: forbid-tabs
+      files: '.*\.py'
+    - id: remove-tabs
+      files: '.*\.py'
+      args: [ '--whitespaces-count', '4' ]
