@@ -51,12 +51,8 @@ target_include_directories(
 
 find_package(SCIP 7 REQUIRED)
 find_package(Threads REQUIRED)
-target_link_libraries(libecole PUBLIC libscip PRIVATE Threads::Threads)
-
-# Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
-get_target_property(SCIP_LOCATION libscip LOCATION)
-get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
-list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
+find_package(xtl REQUIRED)
+find_package(xtensor REQUIRED)
 
 conan_cmake_run(
 	CONANFILE conanfile.txt
@@ -73,7 +69,7 @@ target_link_libraries(
 	libecole
 	PUBLIC
 		libscip
-		CONAN_PKG::xtensor
+		xtensor  # xtensor::optimize and xtensor::use_simd are hardware dependent
 		CONAN_PKG::span-lite
 	PRIVATE
 		Ecole::warnings
@@ -83,6 +79,11 @@ target_link_libraries(
 		CONAN_PKG::fmt
 		CONAN_PKG::range-v3
 )
+
+# Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
+get_target_property(SCIP_LOCATION libscip LOCATION)
+get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
+list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
 
 target_compile_features(libecole PUBLIC cxx_std_17)
 

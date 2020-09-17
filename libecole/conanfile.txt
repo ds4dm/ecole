@@ -1,5 +1,6 @@
 [requires]
-xtensor/[~=0.21]
+# Not using xtensor from conan because we need the same version with Python
+# xtensor/[~=0.21]
 span-lite/[~=0.7]
 fmt/[~=7.0]
 range-v3/[~=0.11]
