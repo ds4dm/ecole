@@ -8,23 +8,9 @@ default set of parameters.
 import ecole
 
 
-class ParameterGenerator:
-    """ Basic parameter generator to return an empty dictionary on
-        each iter.  Returning an empty dict will use the default
-        parameters of each instance generator.
-    """
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return {}
-
-
 def test_Setcover(model):
     """ Test for Setcover instance generator. """
-    parameter_generator = ParameterGenerator()
-    instances = ecole.instances.SetcoverGenerator(parameter_generator)
+    instances = ecole.instances.SetCoverGenerator()
     model = next(instances)
 
     assert isinstance(model, ecole.core.scip.Model)
@@ -32,9 +18,7 @@ def test_Setcover(model):
 
 def test_CombinatorialAuction(model):
     """ Test for CombinatorialAuction instance generator. """
-    parameter_generator = ParameterGenerator()
-    instances = ecole.instances.CombinatorialAuctionGenerator(parameter_generator)
-    next(instances)
+    instances = ecole.instances.CombinatorialAuctionGenerator()
     model = next(instances)
 
     assert isinstance(model, ecole.core.scip.Model)
