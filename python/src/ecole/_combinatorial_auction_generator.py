@@ -1,43 +1,135 @@
 import numpy as np
-
-from pyscipopt import Model
+import logging
 
 import ecole.scip
 
 
 class CombinatorialAuctionGenerator:
-    def __init__(self, parameter_generator=None):
-        self.parameter_generator = parameter_generator
+    def __init__(
+        self,
+        n_items: int = 100,
+        n_bids: int = 500,
+        min_value: int = 1,
+        max_value: int = 100,
+        value_deviation: float = 0.5,
+        add_item_prob: float = 0.9,
+        max_n_sub_bids: int = 5,
+        additivity: float = 0.2,
+        budget_factor: float = 1.5,
+        resale_factor: float = 0.5,
+        integers: float = False,
+    ):
+        """Constructor for the set cover generator.
+
+        The parameters passed in this constructor will be used when a user calls next().  In order to modify
+        parameters between instances, see generate_instances.
+
+        Parameters
+        ----------
+        n_items:
+            The number of items.
+        n_bids:
+            The number of bids.
+        min_value:
+            The minimum resale value for an item.
+        max_value:
+            The maximum resale value for an item.
+        value_deviation:
+            The deviation allowed for each bidder's private value of an item, relative from max_value.
+        add_item_prob:
+            The probability of adding a new item to an existing bundle.
+            This parameters must be in the range [0,1].
+        max_n_sub_bids:
+            The maximum number of substitutable bids per bidder (+1 gives the maximum number of bids per bidder).
+        additivity:
+            Additivity parameter for bundle prices. Note that additivity < 0 gives sub-additive bids, while additivity > 0 gives super-additive bids.
+        budget_factor:
+            The budget factor for each bidder, relative to their initial bid's price.
+        resale_factor:
+            The resale factor for each bidder, relative to their initial bid's resale value.
+        integers:
+            Determines if the bid prices should be integral.
+
+        """
+        self.n_items = n_items
+        self.n_bids = n_bids
+        self.min_value = min_value
+        self.max_value = max_value
+        self.value_deviation = value_deviation
+        self.add_item_prob = add_item_prob
+        self.max_n_sub_bids = max_n_sub_bids
+        self.additivity = additivity
+        self.budget_factor = budget_factor
+        self.resale_factor = resale_factor
+        self.integers = integers
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         self.rng = np.random.RandomState()
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        param_dict = next(self.parameter_generator)
-        model = self.generate_instance(**param_dict)
+        """ Generates an instance of combinatorial auction.
 
-        return ecole.scip.Model.from_pyscipopt(model)
+        This method is used to generate an instance of the combinatorial auction problem
+        with the set of parameters passed in the constructor.
 
-    def seed(self, seed):
+        Returns
+        -------
+        model:
+            an ecole model of a combinatorial auction instance.
+
+        """
+        return self.generate_instance(
+            self.n_items,
+            self.n_bids,
+            self.min_value,
+            self.max_value,
+            self.value_deviation,
+            self.add_item_prob,
+            self.max_n_sub_bids,
+            self.additivity,
+            self.budget_factor,
+            self.resale_factor,
+            self.integers,
+        )
+
+    def seed(self, seed: int):
+        """ Seeds SetCoverGenerator.
+
+        This method sets the random seed of the SetCoverGenerator.
+
+        Parameters
+        ----------
+        seed:
+            The seed in which to set the random number generator with.
+
+        """
         self.rng.seed(seed)
 
     def generate_instance(
         self,
-        n_items=100,
-        n_bids=500,
-        min_value=1,
-        max_value=100,
-        value_deviation=0.5,
-        add_item_prob=0.9,
-        max_n_sub_bids=5,
-        additivity=0.2,
-        budget_factor=1.5,
-        resale_factor=0.5,
-        integers=False,
-        warnings=False,
+        n_items: int = 100,
+        n_bids: int = 500,
+        min_value: int = 1,
+        max_value: int = 100,
+        value_deviation: float = 0.5,
+        add_item_prob: float = 0.9,
+        max_n_sub_bids: int = 5,
+        additivity: float = 0.2,
+        budget_factor: float = 1.5,
+        resale_factor: float = 0.5,
+        integers: bool = False,
     ):
-        """
+        """ Generates an instance of a combinatorial auction problem.
+
+        This method generates a random instance of a combinatorial auction problem based on the
+        specified parameters and returns it as an ecole model.  The user can call this function
+        with any set of parameters or simply use next() which call this method with the set of
+        parameters in the constructor.
+
         Generate a Combinatorial Auction instance with specified characteristics, and writes
         it to a file in the LP format.
         Algorithm described in:
@@ -45,34 +137,39 @@ class CombinatorialAuctionGenerator:
             Towards a universal test suite for combinatorial auction algorithms.
             Proceedings of ACM Conference on Electronic Commerce (EC-00) 66-76.
         section 4.3., the 'arbitrary' scheme.
+
         Parameters
         ----------
-        n_items : int
+        n_items:
             The number of items.
-        n_bids : int
+        n_bids:
             The number of bids.
-        min_value : int
+        min_value:
             The minimum resale value for an item.
-        max_value : int
+        max_value:
             The maximum resale value for an item.
-        value_deviation : int
+        value_deviation:
             The deviation allowed for each bidder's private value of an item, relative from max_value.
-        add_item_prob : float in [0, 1]
+        add_item_prob:
             The probability of adding a new item to an existing bundle.
-        max_n_sub_bids : int
+            This parameters must be in the range [0,1].
+        max_n_sub_bids:
             The maximum number of substitutable bids per bidder (+1 gives the maximum number of bids per bidder).
-        additivity : float
+        additivity:
             Additivity parameter for bundle prices. Note that additivity < 0 gives sub-additive bids, while additivity > 0 gives super-additive bids.
-        budget_factor : float
+        budget_factor:
             The budget factor for each bidder, relative to their initial bid's price.
-        resale_factor : float
+        resale_factor:
             The resale factor for each bidder, relative to their initial bid's resale value.
-        integers : logical
-            Should bid's prices be integral ?
-        warnings : logical
-            Should warnings be printed ?
-        """
+        integers:
+            Determines if the bid prices should be integral.
 
+        Returns
+        -------
+        model:
+            an ecole model of a combinatorial auction instance.
+
+        """
         assert min_value >= 0 and max_value >= min_value
         assert add_item_prob >= 0 and add_item_prob <= 1
 
@@ -128,8 +225,7 @@ class CombinatorialAuctionGenerator:
 
             # drop negativaly priced bundles
             if price < 0:
-                if warnings:
-                    print("warning: negatively priced bundle avoided")
+                self.logger.warning("Negatively priced bundle avoided")
                 continue
 
             # bid on initial bundle
@@ -172,23 +268,19 @@ class CombinatorialAuctionGenerator:
                     break
 
                 if price < 0:
-                    if warnings:
-                        print("warning: negatively priced substitutable bundle avoided")
+                    self.logger.warning("Negatively priced substitutable bundle avoided")
                     continue
 
                 if price > budget:
-                    if warnings:
-                        print("warning: over priced substitutable bundle avoided")
+                    self.logger.warning("Over priced substitutable bundle avoided")
                     continue
 
                 if values[bundle].sum() < min_resale_value:
-                    if warnings:
-                        print("warning: substitutable bundle below min resale value avoided")
+                    self.logger.warning("Substitutable bundle below min resale value avoided")
                     continue
 
                 if frozenset(bundle) in bidder_bids:
-                    if warnings:
-                        print("warning: duplicated substitutable bundle avoided")
+                    self.logger.warning("Duplicated substitutable bundle avoided")
                     continue
 
                 bidder_bids[frozenset(bundle)] = price
@@ -205,6 +297,8 @@ class CombinatorialAuctionGenerator:
                 bids.append((list(bundle) + dummy_item, price))
 
         # generate SCIP instance from problem
+        from pyscipopt import Model
+
         model = Model()
         model.setMaximize()
 
@@ -226,4 +320,4 @@ class CombinatorialAuctionGenerator:
                     cons_lhs += model_vars[i]
                 model.addCons(cons_lhs <= 1)
 
-        return model
+        return ecole.scip.Model.from_pyscipopt(model)

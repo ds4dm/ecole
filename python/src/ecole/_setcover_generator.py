@@ -1,45 +1,103 @@
 import numpy as np
 
-from pyscipopt import Model
-
 import ecole.scip
 
 
-class SetcoverGenerator:
-    def __init__(self, parameter_generator):
-        self.parameter_generator = parameter_generator
+class SetCoverGenerator:
+    def __init__(
+        self, nrows: int = 500, ncols: int = 1000, density: float = 0.05, max_coef: int = 100
+    ):
+        """Constructor for the set cover generator.
+
+        The parameters passed in this constructor will be used when a user calls next().  In order to modify
+        parameters between instances, see generate_instances.
+
+        Parameters
+        ----------
+        nrows
+            Desired number of rows
+        ncols
+            Desired number of columns
+        density:
+            Desired density of the constraint matrix.
+            The value must be in the range Value in the range (0,1].
+        max_coef:
+            Maximum objective coefficient.
+            The value must be in >= 1.
+
+        """
+        self.nrows = nrows
+        self.ncols = ncols
+        self.density = density
+        self.max_coef = max_coef
+
         self.rng = np.random.RandomState()
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        param_dict = next(self.parameter_generator)
-        model = self.generate_instance(**param_dict)
+        """ Generates an instance of setcover.
 
-        return ecole.scip.Model.from_pyscipopt(model)
+        This method is used to generate an instance of the setcover problem
+        with the set of parameters passed in the constructor.
 
-    def seed(self, seed):
+        Returns
+        -------
+        model:
+            an ecole model of a set cover instance.
+
+        """
+        return self.generate_instance(self.nrows, self.ncols, self.density, self.max_coef)
+
+    def seed(self, seed: int):
+        """ Seeds SetCoverGenerator.
+
+        This method sets the random seed of the SetCoverGenerator.
+
+        Parameters
+        ----------
+        seed:
+            The seed in which to set the random number generator with.
+
+        """
         self.rng.seed(seed)
 
-    def generate_instance(self, nrows=500, ncols=1000, density=0.05, max_coef=100):
-        """
+    def generate_instance(
+        self, nrows: int = 500, ncols: int = 1000, density: float = 0.05, max_coef: int = 100
+    ):
+        """Generates an instance of a combinatorial auction problem.
+
+        This method generates a random instance of a combinatorial auction problem based on the
+        specified parameters and returns it as an ecole model.  The user can call this function
+        with any set of parameters or simply use next() which call this method with the set of
+        parameters in the constructor.
+
         Generate a set cover instance with specified characteristics, and writes
         it to a file in the LP format.
         Algorithm described in:
             E.Balas and A.Ho, Set covering algorithms using cutting planes, heuristics,
             and subgradient optimization: A computational study, Mathematical
             Programming, 12 (1980), 37-60.
+
         Parameters
         ----------
-        nrows : int
+        nrows
             Desired number of rows
-        ncols : int
+        ncols
             Desired number of columns
-        density: float between 0 (excluded) and 1 (included)
-            Desired density of the constraint matrix
-        max_coef: int
-            Maximum objective coefficient (>=1)
+        density:
+            Desired density of the constraint matrix.
+            The value must be in the range Value in the range (0,1].
+        max_coef:
+            Maximum objective coefficient.
+            The value must be in >= 1.
+
+        Returns
+        -------
+        model:
+            an ecole model of a set cover instance.
+
         """
         nnzrs = int(nrows * ncols * density)
 
@@ -103,6 +161,8 @@ class SetcoverGenerator:
                 indptr_counter[row] += 1
 
         # generate SCIP instance from problem
+        from pyscipopt import Model
+
         model = Model()
         model.setMinimize()
 
@@ -119,4 +179,4 @@ class SetcoverGenerator:
                 cons_lhs += var
             model.addCons(cons_lhs >= 1)
 
-        return model
+        return ecole.scip.Model.from_pyscipopt(model)
