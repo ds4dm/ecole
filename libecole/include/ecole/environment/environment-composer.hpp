@@ -53,7 +53,8 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model&& new_model) override {
+	template <typename... Args>
+	auto reset(scip::Model&& new_model, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
 		can_transition = true;
 		try {
 			// Create clean new Model
@@ -62,7 +63,7 @@ public:
 			dynamics().set_dynamics_random_state(model(), random_engine);
 
 			// Bring model to initial state and reset state functions
-			auto const [done, action_set] = dynamics().reset_dynamics(model());
+			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			obs_func().reset(model());
 			reward_func().reset(model());
 
@@ -78,26 +79,29 @@ public:
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, Reward, bool> reset(std::string const& filename) override {
-		return reset(scip::Model::from_file(filename));
+	template <typename... Args>
+	auto reset(scip::Model const& model, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
+		return reset(model.copy_orig(), std::forward<Args>(args)...);
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::reset
 	 */
-	std::tuple<Observation, ActionSet, Reward, bool> reset(scip::Model const& model) override {
-		return reset(model.copy_orig());
+	template <typename... Args>
+	auto reset(std::string const& filename, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
+		return reset(scip::Model::from_file(filename), std::forward<Args>(args)...);
 	}
 
 	/**
 	 * @copydoc ecole::environment::Environment::step
 	 */
-	std::tuple<Observation, ActionSet, Reward, bool, Info> step(Action const& action) override {
+	template <typename... Args>
+	auto step(Action const& action, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool, Info> {
 		if (!can_transition) {
 			throw Exception("Environment need to be reset.");
 		}
 		try {
-			auto const [done, action_set] = dynamics().step_dynamics(model(), action);
+			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 			auto const reward = reward_func().obtain_reward(model(), done);
 
