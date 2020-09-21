@@ -8,7 +8,7 @@ add_executable(
 	src/test-random.cpp
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
-	src/environment/test-environment-composer.cpp
+	src/environment/test-environment.cpp
 	src/environment/test-branching-dynamics.cpp
 	src/environment/test-configuring-dynamics.cpp
 	src/reward/test-lpiterations.cpp

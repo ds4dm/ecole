@@ -1,4 +1,4 @@
-"""Unit tests for Ecole EnvironmentComposer."""
+"""Unit tests for Ecole Environment."""
 
 import unittest.mock as mock
 
@@ -12,7 +12,7 @@ class MockDynamics(mock.MagicMock):
         self.step_dynamics = mock.MagicMock(return_value=(True, "other_action_set"))
 
 
-class MockEnvironment(ecole.environment.EnvironmentComposer):
+class MockEnvironment(ecole.environment.Environment):
     __Dynamics__ = MockDynamics
 
 

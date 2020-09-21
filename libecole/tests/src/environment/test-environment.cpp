@@ -3,7 +3,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/dynamics.hpp"
-#include "ecole/environment/environment-composer.hpp"
+#include "ecole/environment/environment.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/none.hpp"
 #include "ecole/observation/nothing.hpp"
@@ -38,7 +38,7 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 	}
 };
 
-using TestEnv = environment::EnvironmentComposer<TestDynamics, observation::Nothing, reward::Constant>;
+using TestEnv = environment::Environment<TestDynamics, observation::Nothing, reward::Constant>;
 
 }  // namespace ecole::environment
 

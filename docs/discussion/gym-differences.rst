@@ -15,7 +15,7 @@ This is why Ecole let users change the environment reward and observation using
 Parameter to reset
 ------------------
 In OpenAI Gym, ``reset`` does not take parameters whereas is Ecole
-:py:meth:`~ecole.environment.EnvironmentComposer.reset` takes a problem instance as a mandatory
+:py:meth:`~ecole.environment.Environment.reset` takes a problem instance as a mandatory
 input.
 This is because when doing machine learning for optimization, there is no practical interest in
 solving the same problem over and over again.
@@ -30,8 +30,8 @@ is defined in the environment.
 
 Done on reset
 -------------
-In Ecole, :py:meth:`~ecole.environment.EnvironmentComposer.reset` returns the same ``done`` flag as
-in :py:meth:`~ecole.environment.EnvironmentComposer.step`.
+In Ecole, :py:meth:`~ecole.environment.Environment.reset` returns the same ``done`` flag as
+in :py:meth:`~ecole.environment.Environment.step`.
 This is because nothing prevent an initial state from also being a terminal one.
 It is not only a theoretical consideration.
 For instance, in :py:class:`~ecole.environment.Branching`, the initial state would typically be on
@@ -47,13 +47,13 @@ Ecole environments are more complex.
 For instance in :py:class:`~ecole.environment.Branching` the set of valid actions changes, not only
 with every episode, but also with every transition!
 The ``action_set`` is required to make the next call to
-:py:meth:`~ecole.environment.EnvironmentComposer.step`.
-We chose to add it as a return type to :py:meth:`~ecole.environment.EnvironmentComposer.step` and
-:py:meth:`~ecole.environment.EnvironmentComposer.reset` to emphasize this difference.
+:py:meth:`~ecole.environment.Environment.step`.
+We chose to add it as a return type to :py:meth:`~ecole.environment.Environment.step` and
+:py:meth:`~ecole.environment.Environment.reset` to emphasize this difference.
 
 Reward offset
 -------------
-In :py:meth:`~ecole.environment.EnvironmentComposer.reset` a ``reward_offset`` is returned.
+In :py:meth:`~ecole.environment.Environment.reset` a ``reward_offset`` is returned.
 This is not only a difference with OpenAI Gym, but also not part of the MDP formulation.
 It has not purpose for learning algorithms, rather it is meant for evaluating the complete solving
 procedure.
@@ -70,7 +70,7 @@ matching the metric.
 No observation on terminal states
 ---------------------------------
 On terminal states, in OpenAI Gym as in Ecole, no further action can be taken and the environment
-need to be :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+need to be :py:meth:`~ecole.environment.Environment.reset`.
 Most of the time, a terminal state in Ecole is a solved problem.
 This means that some complex observations cannot be extracted because they required information that
 simply do not exist.

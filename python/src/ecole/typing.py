@@ -22,7 +22,7 @@ ActionSet = TypeVar("ActionSet")
 class Dynamics(Protocol[Action, ActionSet]):
     """Dynamics are raw environments.
 
-    The class is a bare :py:class:`ecole.environment.EnvironmentComposer` without rewards,
+    The class is a bare :py:class:`ecole.environment.Environment` without rewards,
     observations, and other utlilities.
     It defines the state transitions of a Markov Decision Process, that is the series of steps and
     possible actions of the environment.
@@ -33,7 +33,7 @@ class Dynamics(Protocol[Action, ActionSet]):
     ) -> None:
         """Set the random state of the episode.
 
-        This method is called by :py:meth:`~ecole.environment.EnvironmentComposer.reset` to
+        This method is called by :py:meth:`~ecole.environment.Environment.reset` to
         set all the random elements of the dynamics for the upcoming episode.
         The random engine is kept between episodes in order to sample different episodes.
 
@@ -103,7 +103,7 @@ class Dynamics(Protocol[Action, ActionSet]):
 class RewardFunction(Protocol):
     """Class repsonsible for extracting rewards.
 
-    Reward functions are objects given to the :py:class:`~ecole.environment.EnvironmentComposer`
+    Reward functions are objects given to the :py:class:`~ecole.environment.Environment`
     to extract the reward used for learning.
     """
 
@@ -111,7 +111,7 @@ class RewardFunction(Protocol):
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes
-        :py:meth:`~ecole.environment.EnvironmentComposer.reset` on the initial state.
+        :py:meth:`~ecole.environment.Environment.reset` on the initial state.
         It can is usually used to reset the observation function internal data.
 
         Parameters
@@ -134,7 +134,7 @@ class RewardFunction(Protocol):
         *i.e.*, this method is not a getter and can have side effects.
 
         Note that the method is also called on
-        :py:meth:`~ecole.environment.EnvironmentComposer.reset`, after :py:meth:`reset`, to obtain
+        :py:meth:`~ecole.environment.Environment.reset`, after :py:meth:`reset`, to obtain
         the ``reward_offset``.
 
         Parameters
@@ -160,7 +160,7 @@ class ObservationFunction(Protocol[Observation]):
     """Class repsonsible for extracting observations.
 
     Observation functions are objects given to the
-    :py:class:`~ecole.environment.EnvironmentComposer` to extract the observations used to take the
+    :py:class:`~ecole.environment.Environment` to extract the observations used to take the
     next action.
     """
 
@@ -168,7 +168,7 @@ class ObservationFunction(Protocol[Observation]):
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes
-        :py:meth:`~ecole.environment.EnvironmentComposer.reset` on the initial state.
+        :py:meth:`~ecole.environment.Environment.reset` on the initial state.
         It can is usually used to reset the observation function internal data.
 
         Parameters

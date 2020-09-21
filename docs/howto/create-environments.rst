@@ -47,9 +47,9 @@ by calling ``SCIPsetPresolving`` and ``SCIPsetSeparating`` through PyScipOpt
 (`SCIP doc <https://www.scipopt.org/doc/html/group__ParameterMethods.php>`_).
 
 We will do so by overriding :py:meth:`~ecole.environment.BranchingDynamics.reset_dynamics`, which
-get called by :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+get called by :py:meth:`~ecole.environment.Environment.reset`.
 The similar method :py:meth:`~ecole.environment.BranchingDynamics.step_dynamics`, which is called
-by :py:meth:`~ecole.environment.EnvironmentComposer.step` does not need to be changed in this
+by :py:meth:`~ecole.environment.Environment.step` does not need to be changed in this
 example so we do not override it.
 
 .. code-block:: python
@@ -74,12 +74,12 @@ example so we do not override it.
 
 With the ``SimpleBranchingDynamics``, we have defined what we want the solver to do.
 Now, to use it as a full environent that can manage observations and rewards, we wrap it with the
-:py:class:`~ecole.environment.EnvironmentComposer`.
+:py:class:`~ecole.environment.Environment`.
 
 
 .. code-block:: python
 
-   class SimpleBranching(ecole.environment.EnvironmentComposer):
+   class SimpleBranching(ecole.environment.Environment):
        __Dynamics__ = SimpleBranchingDynamics
 
 

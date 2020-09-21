@@ -15,7 +15,7 @@ namespace ecole::environment {
  * A subclass defines the dynamics of the environment, that is the initial probability
  * distribution and state transition.
  * In other words, it defines an environment wihtout observations or rewards.
- * This class is used by @ref EnvironmentComposer to create the final environment with
+ * This class is used by  Environment to create the final environment with
  * state functions.
  *
  * @tparam Action The type of action recived by the environment.
@@ -42,14 +42,14 @@ public:
 	/**
 	 * Reset the Model to a new initial state.
 	 *
-	 * This method called by the environment on @ref Environment::reset.
+	 * This method called by the environment on  Environment::reset.
 	 */
 	virtual std::tuple<bool, ActionSet> reset_dynamics(scip::Model& model) = 0;
 
 	/**
 	 * Transition the Model.
 	 *
-	 * This method called by the environment on @ref Environment::step.
+	 * This method called by the environment on Environment::step.
 	 */
 	virtual std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, Action const& action) = 0;
 };

@@ -15,17 +15,17 @@ between episodes, and start a new episode by calling
 :py:class:`~ecole.typing.Dynamics`.
 The latter set random elements of the state including, but not necessary limited to, the
 :py:class:`~ecole.scip.Model` random seed, by consuming random numbers from the
-:py:class:`~ecole.RandomEngine`.
-That way, the :py:class:`~ecole.typing.EnvironmentComposer` can avoid generating identical
+:py:class:`~ecole.environment.RandomeEngine`.
+That way, the :py:class:`~ecole.environment.Environment` can avoid generating identical
 episodes while letting :py:class:`~ecole.typing.Dynamics` decide what random parameters need to
 be set.
 
-The :py:meth:`~ecole.environment.EnvironmentComposer.seed` method really belongs to the the environment,
-because it seeds the :py:class:`~ecole.RandomEngine`., not direclty the episode for
+The :py:meth:`~ecole.environment.Environment.seed` method is really one of the environment,
+because it seeds the :py:class:`~ecole.RandomEngine`, not direclty the episode for
 the :py:class:`~ecole.typing.Dynamics`.
 
-When not explicitly seeded, environment use a :py:class:`~ecole.RandomEngine` derived from Ecole's global source of
-randomness by invoking :py:func:`ecole.spawn_random_engine`.
+When not explicitly seeded, :py:class:`~ecole.typing.Environment` use a :py:class:`~ecole.RandomEngine` derived
+from Ecole's global source of randomness by invoking :py:func:`ecole.spawn_random_engine`.
 By default this source is truly random, but it can be controlled with :py:func:`ecole.seed`.
 
 Similarily, an :py:class:`~ecole.typing.InstanceGenerator` default random engine derived from Ecole global source of

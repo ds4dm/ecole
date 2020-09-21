@@ -3,7 +3,7 @@ Environments
 
 Interface
 ---------
-.. autoclass:: ecole.environment.EnvironmentComposer
+.. autoclass:: ecole.environment.Environment
 
 Protocol
 --------

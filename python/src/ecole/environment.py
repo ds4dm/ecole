@@ -6,7 +6,7 @@ import ecole.reward
 from ecole.core.environment import *
 
 
-class EnvironmentComposer:
+class Environment:
 
     __Dynamics__ = None
     __DefaultObservationFunction__ = ecole.observation.Nothing
@@ -181,10 +181,10 @@ class EnvironmentComposer:
         self.random_engine.seed(value)
 
 
-class Branching(EnvironmentComposer):
+class Branching(Environment):
     __Dynamics__ = core.environment.BranchingDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
-class Configuring(EnvironmentComposer):
+class Configuring(Environment):
     __Dynamics__ = core.environment.ConfiguringDynamics

@@ -167,13 +167,13 @@ environment.
    PO-MDP state, in order to allow for a strict interpretation of Ecole
    environments as PO-MDPs.
 
-The :py:class:`~ecole.environment.EnvironmentComposer` class wraps all of
+The :py:class:`~ecole.environment.Environment` class wraps all of
 those components together to form the actual PO-MDP. Its API can be
 interpreted as follows:
 
-* :py:meth:`~ecole.environment.EnvironmentComposer.reset` <=>
+* :py:meth:`~ecole.environment.Environment.reset` <=>
   :math:`s_0 \sim p_\textit{init}(s_0), r_0=R(s_0), o_0=O(s_0)`
-* :py:meth:`~ecole.environment.EnvironmentComposer.step` <=>
+* :py:meth:`~ecole.environment.Environment.step` <=>
   :math:`s_{t+1} \sim p_\textit{trans}(s_{t+1}|a_t,s_t), r_t=R(s_t), o_t=O(s_t)`
 * ``done == True`` <=> the current state :math:`s_{t}` is terminal. As such,
   the episode ends now.
@@ -182,8 +182,8 @@ interpreted as follows:
 
    In Ecole we allow environments to optionally specify a set of valid
    actions at each time step :math:`t`. To this end, both the
-   :py:meth:`~ecole.environment.EnvironmentComposer.reset` and
-   :py:meth:`~ecole.environment.EnvironmentComposer.step` methods return
+   :py:meth:`~ecole.environment.Environment.reset` and
+   :py:meth:`~ecole.environment.Environment.step` methods return
    the valid ``action_set`` for the next transition, in addition to the
    current observation and reward. This action set is optional, and
    environments in which the action set is implicit may simply return
@@ -197,12 +197,12 @@ user.
 
    As can be seen from :eq:`mdp_control` and :eq:`pomdp_control`, the initial
    reward :math:`r_0` returned by
-   :py:meth:`~ecole.environment.EnvironmentComposer.reset`
+   :py:meth:`~ecole.environment.Environment.reset`
    does not affect the control problem. In Ecole we
    nevertheless chose to preserve this initial reward, in order to obtain
    meaningfull cumulated episode rewards, such as the total running time
    (which must include the time spend in
-   :py:meth:`~ecole.environment.EnvironmentComposer.reset`), or the total
+   :py:meth:`~ecole.environment.Environment.reset`), or the total
    number of branch-and-bound nodes in a
    :py:class:`~ecole.environment.Branching` environment (which must include
    the root node).

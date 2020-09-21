@@ -100,10 +100,10 @@ exponential moving average.
 We also inherited the :py:meth:`~ecole.typing.ObservationFunction.reset` method which does not
 return anything.
 This method is called at the begining of the episode by
-:py:meth:`~ecole.environment.EnvironmentComposer.reset` and is used to reintialize the class
+:py:meth:`~ecole.environment.Environment.reset` and is used to reintialize the class
 internal attribute on new episodes.
 The :py:meth:`~ecole.typing.ObservationFunction.obtain_observation` is also called during during
-:py:meth:`~ecole.environment.EnvironmentComposer.reset`, hence the ``if`` else ``else`` condition.
+:py:meth:`~ecole.environment.Environment.reset`, hence the ``if`` else ``else`` condition.
 Both these methods call the parent method to let it do its own initialization/reseting.
 
 .. warning::

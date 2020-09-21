@@ -15,23 +15,23 @@
 namespace pybind11::detail {
 
 /**
- * Custom caster for @ref ecole::NoneType.
+ * Custom caster for  ecole::NoneType.
  *
  * Cast to `None` in Python and does not cast to C++.
  */
 template <> struct type_caster<ecole::NoneType> : void_caster<ecole::NoneType> {};
 
 /**
- * Custom caster for @ref scip::Param.
+ * Custom caster for  scip::Param.
  *
  * The default caster for variant greedily cast to the first compile-time compatible
  * type found in the variant.
  * However it is not necessarily the best one. For instance, given that
- * @ref scip::Param contains both `char` and `std::string`, the default caster cast all
+ *  scip::Param contains both `char` and `std::string`, the default caster cast all
  * Python `str` as char, and complains (dynamically) when the `str` is longer than one
  * character.
  * Here, we cast the python value to the largest possible container, knowing that
- * @ref scip::Model::set_param will be able to downcast based on the SCIP parameter
+ *  scip::Model::set_param will be able to downcast based on the SCIP parameter
  * type.
  *
  * Implement a custom Python to C++ caster for scip::Param
@@ -42,17 +42,17 @@ public:
 	 * Description and value variable.
 	 *
 	 * This macro establishes the name description in function signatures and declares a
-	 * local variable `value` of type @ref scip::Param.
+	 * local variable `value` of type  scip::Param.
 	 */
 	PYBIND11_TYPE_CASTER(ecole::scip::Param, _("Union[bool, int, float, str]"));  // NOLINT
 
 	/**
 	 * Conversion from Python to C++.
 	 *
-	 * Convert a PyObject into a @ref scip::Param instance or return false upon failure.
+	 * Convert a PyObject into a  scip::Param instance or return false upon failure.
 	 * The second argument indicates whether implicit conversions should be applied.
 	 * Uses a variant with only the largest container, relying on
-	 * @ref scip::Model::set_param to properly downcast when needed.
+	 *  scip::Model::set_param to properly downcast when needed.
 	 *
 	 * @param src The PyObject to convert from.
 	 */
