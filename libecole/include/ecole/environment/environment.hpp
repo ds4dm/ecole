@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #include "ecole/dynamics/dynamics.hpp"
-#include "ecole/environment/exception.hpp"
+#include "ecole/exception.hpp"
 #include "ecole/random.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"

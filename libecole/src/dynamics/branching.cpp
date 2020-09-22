@@ -5,7 +5,7 @@
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/branching.hpp"
-#include "ecole/environment/exception.hpp"
+#include "ecole/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
@@ -42,7 +42,7 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 	if (action >= lp_cols.size()) {
-		throw environment::Exception{"Branching index is larger than the number of columns."};
+		throw Exception{"Branching index is larger than the number of columns."};
 	}
 	model.solve_iter_branch(SCIPcolGetVar(lp_cols[action]));
 

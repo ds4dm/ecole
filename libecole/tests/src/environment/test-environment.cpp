@@ -4,7 +4,7 @@
 
 #include "ecole/dynamics/dynamics.hpp"
 #include "ecole/environment/environment.hpp"
-#include "ecole/environment/exception.hpp"
+#include "ecole/exception.hpp"
 #include "ecole/none.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/constant.hpp"
@@ -89,14 +89,14 @@ TEST_CASE("Environments have MDP API", "[env]") {
 		}
 	}
 
-	SECTION("Cannot transition without reseting") { REQUIRE_THROWS_AS(env.step(some_action), environment::Exception); }
+	SECTION("Cannot transition without reseting") { REQUIRE_THROWS_AS(env.step(some_action), Exception); }
 
 	SECTION("Cannot transition past termination") {
 		auto [obs, action_set, reward, done] = env.reset(problem_file);
 		while (!done) {
 			std::tie(std::ignore, std::ignore, std::ignore, done, std::ignore) = env.step(some_action);
 		}
-		REQUIRE_THROWS_AS(env.step(some_action), environment::Exception);
+		REQUIRE_THROWS_AS(env.step(some_action), Exception);
 	}
 }
 

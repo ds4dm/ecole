@@ -16,7 +16,7 @@ add_library(
 	src/observation/pseudocosts.cpp
 	src/dynamics/branching.cpp
 	src/dynamics/configuring.cpp
-	src/environment/exception.cpp
+	src/exception.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 

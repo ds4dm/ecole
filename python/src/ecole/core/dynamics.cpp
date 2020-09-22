@@ -7,7 +7,6 @@
 
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/dynamics/configuring.hpp"
-#include "ecole/environment/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -30,8 +29,6 @@ template <typename Dynamics> auto dynamics_class(py::module const& m, char const
 
 void bind_submodule(pybind11::module const& m) {
 	m.doc() = "Ecole collection of environment dynamics.";
-
-	py::register_exception<environment::Exception>(m, "Exception");
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);

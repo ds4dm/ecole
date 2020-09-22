@@ -43,7 +43,7 @@ class DynamicsUnitTests:
 
     def test_exception(self, model):
         """Bad action raise exceptions."""
-        with pytest.raises((ecole.environment.Exception, ecole.scip.Exception)):
+        with pytest.raises((ecole.Exception, ecole.scip.Exception)):
             self.dynamics.reset_dynamics(model)
             self.dynamics.step_dynamics(model, self.bad_action)
 

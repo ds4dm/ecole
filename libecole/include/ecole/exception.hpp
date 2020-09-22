@@ -3,11 +3,11 @@
 #include <exception>
 #include <string>
 
-namespace ecole::environment {
+namespace ecole {
 
 class Exception : public std::exception {
 public:
-	Exception(std::string message);
+	Exception(std::string message) noexcept;
 
 	[[nodiscard]] char const* what() const noexcept override;
 
@@ -15,4 +15,4 @@ private:
 	std::string message;
 };
 
-}  // namespace ecole::environment
+}  // namespace ecole

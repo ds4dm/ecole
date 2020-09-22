@@ -6,7 +6,7 @@
 #include <xtensor/xsort.hpp>
 
 #include "ecole/dynamics/branching.hpp"
-#include "ecole/environment/exception.hpp"
+#include "ecole/exception.hpp"
 
 #include "conftest.hpp"
 #include "dynamics/unit-tests.hpp"
