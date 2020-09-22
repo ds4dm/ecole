@@ -3,7 +3,7 @@
 import ecole.core as core
 import ecole.observation
 import ecole.reward
-from ecole.core.environment import *
+from ecole.core.dynamics import *
 
 
 class Environment:
@@ -182,9 +182,9 @@ class Environment:
 
 
 class Branching(Environment):
-    __Dynamics__ = core.environment.BranchingDynamics
+    __Dynamics__ = core.dynamics.BranchingDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
 class Configuring(Environment):
-    __Dynamics__ = core.environment.ConfiguringDynamics
+    __Dynamics__ = core.dynamics.ConfiguringDynamics

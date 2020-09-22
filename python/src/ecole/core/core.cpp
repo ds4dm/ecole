@@ -71,5 +71,5 @@ PYBIND11_MODULE(core, m) {
 	scip::bind_submodule(m.def_submodule("scip"));
 	observation::bind_submodule(m.def_submodule("observation"));
 	reward::bind_submodule(m.def_submodule("reward"));
-	environment::bind_submodule(m.def_submodule("environment"));
+	dynamics::bind_submodule(m.def_submodule("dynamics"));
 }

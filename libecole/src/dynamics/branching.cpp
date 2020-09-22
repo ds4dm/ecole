@@ -4,13 +4,13 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/environment/branching-dynamics.hpp"
+#include "ecole/dynamics/branching.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "scip/utils.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept : pseudo_candidates(pseudo_candidates_) {}
 
@@ -42,11 +42,11 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 	if (action >= lp_cols.size()) {
-		throw Exception{"Branching index is larger than the number of columns."};
+		throw environment::Exception{"Branching index is larger than the number of columns."};
 	}
 	model.solve_iter_branch(SCIPcolGetVar(lp_cols[action]));
 
 	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
 }
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics

@@ -7,7 +7,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 /**
  * Abstract class for environment Dynamics.
@@ -54,4 +54,4 @@ public:
 	virtual std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, Action const& action) = 0;
 };
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics

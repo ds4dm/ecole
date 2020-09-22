@@ -23,13 +23,13 @@ TEST_CASE("Detect if environment", "[trait]") {
 	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_environment_v<environment::Configuring<>>); }
 
 	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_environment_v<environment::ConfiguringDynamics>);
+		STATIC_REQUIRE_FALSE(trait::is_environment_v<dynamics::ConfiguringDynamics>);
 		STATIC_REQUIRE_FALSE(trait::is_environment_v<observation::Nothing>);
 	}
 }
 
 TEST_CASE("Detect if dynamics", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_dynamics_v<environment::ConfiguringDynamics>); }
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_dynamics_v<dynamics::ConfiguringDynamics>); }
 
 	SECTION("Negative tests") {
 		STATIC_REQUIRE_FALSE(trait::is_dynamics_v<environment::Configuring<>>);
@@ -43,11 +43,11 @@ TEST_CASE("Detect observation type", "[trait]") {
 }
 
 TEST_CASE("Detect action type", "[trait]") {
-	STATIC_REQUIRE_SAME(trait::action_of_t<environment::Configuring<>>, environment::ParamDict);
-	STATIC_REQUIRE_SAME(trait::action_of_t<environment::ConfiguringDynamics>, environment::ParamDict);
+	STATIC_REQUIRE_SAME(trait::action_of_t<environment::Configuring<>>, dynamics::ParamDict);
+	STATIC_REQUIRE_SAME(trait::action_of_t<dynamics::ConfiguringDynamics>, dynamics::ParamDict);
 }
 
 TEST_CASE("Detect action set type", "[trait]") {
 	STATIC_REQUIRE_SAME(trait::action_set_of_t<environment::Configuring<>>, ecole::NoneType);
-	STATIC_REQUIRE_SAME(trait::action_set_of_t<environment::ConfiguringDynamics>, ecole::NoneType);
+	STATIC_REQUIRE_SAME(trait::action_set_of_t<dynamics::ConfiguringDynamics>, ecole::NoneType);
 }

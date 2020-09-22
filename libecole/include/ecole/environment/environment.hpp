@@ -5,7 +5,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/dynamics/dynamics.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/random.hpp"
 #include "ecole/reward/abstract.hpp"
@@ -16,7 +16,7 @@
 namespace ecole::environment {
 
 using Seed = typename RandomEngine::result_type;
-using Reward = ecole::reward::Reward;
+using Reward = reward::Reward;
 using Info = int;  // FIXME dummy type while the information is not implemented
 
 /**

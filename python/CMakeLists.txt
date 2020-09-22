@@ -29,7 +29,7 @@ pybind11_add_module(
 	src/ecole/core/scip.cpp
 	src/ecole/core/observation.cpp
 	src/ecole/core/reward.cpp
-	src/ecole/core/environment.cpp
+	src/ecole/core/dynamics.cpp
 )
 
 target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/core)

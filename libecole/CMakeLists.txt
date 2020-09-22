@@ -14,8 +14,8 @@ add_library(
 	src/observation/nodebipartite.cpp
 	src/observation/strongbranchingscores.cpp
 	src/observation/pseudocosts.cpp
-	src/environment/branching-dynamics.cpp
-	src/environment/configuring-dynamics.cpp
+	src/dynamics/branching.cpp
+	src/dynamics/configuring.cpp
 	src/environment/exception.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)

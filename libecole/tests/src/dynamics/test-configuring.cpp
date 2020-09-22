@@ -3,22 +3,22 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/configuring-dynamics.hpp"
+#include "ecole/dynamics/configuring.hpp"
 
 #include "conftest.hpp"
-#include "environment/unit-tests.hpp"
+#include "dynamics/unit-tests.hpp"
 
 using namespace ecole;
 
 TEST_CASE("ConfiguringDynamics unit tests", "[unit][dynamics]") {
-	auto const policy = [](auto const & /*action_set*/) -> trait::action_of_t<environment::ConfiguringDynamics> {
+	auto const policy = [](auto const & /*action_set*/) -> trait::action_of_t<dynamics::ConfiguringDynamics> {
 		return {{"branching/scorefunc", 's'}};
 	};
-	environment::unit_tests(environment::ConfiguringDynamics{}, policy);
+	dynamics::unit_tests(dynamics::ConfiguringDynamics{}, policy);
 }
 
 TEST_CASE("ConfiguringDynamics functional tests", "[dynamics]") {
-	environment::ConfiguringDynamics dyn{};
+	dynamics::ConfiguringDynamics dyn{};
 	auto model = get_model();
 
 	SECTION("Episodes have length one") {
@@ -35,7 +35,7 @@ TEST_CASE("ConfiguringDynamics functional tests", "[dynamics]") {
 	}
 
 	SECTION("Accept multiple parameters") {
-		trait::action_of_t<environment::ConfiguringDynamics> const params = {
+		trait::action_of_t<dynamics::ConfiguringDynamics> const params = {
 			{"branching/scorefunc", 's'},
 			{"branching/scorefac", 0.1},
 			{"branching/divingpscost", false},

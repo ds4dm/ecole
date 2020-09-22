@@ -5,9 +5,9 @@
 
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/dynamics/dynamics.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 class BranchingDynamics : public EnvironmentDynamics<std::size_t, std::optional<xt::xtensor<std::size_t, 1>>> {
 public:
@@ -22,4 +22,4 @@ public:
 	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, std::size_t const& action) override;
 };
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics

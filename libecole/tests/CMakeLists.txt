@@ -9,8 +9,8 @@ add_executable(
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
 	src/environment/test-environment.cpp
-	src/environment/test-branching-dynamics.cpp
-	src/environment/test-configuring-dynamics.cpp
+	src/dynamics/test-branching.cpp
+	src/dynamics/test-configuring.cpp
 	src/reward/test-lpiterations.cpp
 	src/reward/test-constant.cpp
 	src/reward/test-isdone.cpp

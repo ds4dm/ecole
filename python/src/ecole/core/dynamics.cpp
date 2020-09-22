@@ -5,14 +5,14 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/environment/branching-dynamics.hpp"
-#include "ecole/environment/configuring-dynamics.hpp"
+#include "ecole/dynamics/branching.hpp"
+#include "ecole/dynamics/configuring.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 namespace py = pybind11;
 
@@ -29,9 +29,9 @@ template <typename Dynamics> auto dynamics_class(py::module const& m, char const
 }
 
 void bind_submodule(pybind11::module const& m) {
-	m.doc() = "Ecole collection of environments.";
+	m.doc() = "Ecole collection of environment dynamics.";
 
-	py::register_exception<Exception>(m, "Exception");
+	py::register_exception<environment::Exception>(m, "Exception");
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);
@@ -40,4 +40,4 @@ void bind_submodule(pybind11::module const& m) {
 		.def(py::init<>());
 }
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics

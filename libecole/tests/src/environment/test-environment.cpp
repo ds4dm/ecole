@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/dynamics/dynamics.hpp"
 #include "ecole/environment/environment.hpp"
 #include "ecole/environment/exception.hpp"
 #include "ecole/none.hpp"
@@ -16,7 +16,8 @@
  *  Mocking some classes for unit test  *
  ****************************************/
 
-namespace ecole::environment {
+namespace ecole {
+namespace dynamics {
 
 /**
  * Dummy dynamics that record calls for testing purposes.
@@ -38,9 +39,14 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 	}
 };
 
-using TestEnv = environment::Environment<TestDynamics, observation::Nothing, reward::Constant>;
+}  // namespace dynamics
 
-}  // namespace ecole::environment
+namespace environment {
+
+using TestEnv = Environment<dynamics::TestDynamics, observation::Nothing, reward::Constant>;
+
+}  // namespace environment
+}  // namespace ecole
 
 /**********************
  *  Test Environment  *

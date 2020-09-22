@@ -5,11 +5,11 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp>
 
-#include "ecole/environment/branching-dynamics.hpp"
+#include "ecole/dynamics/branching.hpp"
 #include "ecole/environment/exception.hpp"
 
 #include "conftest.hpp"
-#include "environment/unit-tests.hpp"
+#include "dynamics/unit-tests.hpp"
 
 using namespace ecole;
 
@@ -20,12 +20,12 @@ TEST_CASE("BranchingDynamics unit tests", "[unit][dynamics]") {
 		auto const branch_idx = branch_first ? 0 : action_set.value().size() - 1;
 		return action_set.value()[branch_idx];
 	};
-	environment::unit_tests(environment::BranchingDynamics{pseudo_candidates}, policy);
+	dynamics::unit_tests(dynamics::BranchingDynamics{pseudo_candidates}, policy);
 }
 
 TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 	bool const pseudo_candidates = GENERATE(true, false);
-	environment::BranchingDynamics dyn{pseudo_candidates};
+	dynamics::BranchingDynamics dyn{pseudo_candidates};
 	auto model = get_model();
 
 	SECTION("Return valid action set") {
@@ -53,6 +53,6 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		REQUIRE_FALSE(done);
 		REQUIRE(action_set.has_value());
 		auto const action = model.lp_columns().size() + 1;
-		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), environment::Exception);
+		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::exception);
 	}
 }

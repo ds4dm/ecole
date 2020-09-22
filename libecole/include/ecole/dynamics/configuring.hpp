@@ -3,11 +3,11 @@
 #include <map>
 #include <string>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/dynamics/dynamics.hpp"
 #include "ecole/none.hpp"
 #include "ecole/scip/type.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 /**
  * A Dictionnary of parameter names to parameter values.
@@ -20,4 +20,4 @@ public:
 	std::tuple<bool, NoneType> step_dynamics(scip::Model& model, ParamDict const& param_dict) override;
 };
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics

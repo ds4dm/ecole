@@ -4,12 +4,12 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/dynamics/dynamics.hpp"
 #include "ecole/traits.hpp"
 
 #include "conftest.hpp"
 
-namespace ecole::environment {
+namespace ecole::dynamics {
 
 template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func const policy) {
 	auto model = get_model();
@@ -53,4 +53,4 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	}
 }
 
-}  // namespace ecole::environment
+}  // namespace ecole::dynamics
