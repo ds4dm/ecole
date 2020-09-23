@@ -252,7 +252,7 @@ def test_CapacitedFacilityLocation_solving():
     """ Test that capacited facility location instance solves. """
     from pyscipopt import Model
 
-    instances = ecole.instance.CapacitedFacilityLocationGenerator()
+    instances = ecole.instance.CapacitedFacilityLocationGenerator(n_customers=50, n_facilities=50)
     instance = next(instances)
 
     model = instance.as_pyscipopt()
