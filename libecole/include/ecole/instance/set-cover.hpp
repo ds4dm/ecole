@@ -1,0 +1,34 @@
+#pragma once
+
+#include <cstdint>
+#include <random>
+
+#include "ecole/scip/model.hpp"
+
+namespace ecole::instance {
+
+using RandomEngine = std::mt19937;
+
+class SetCoverGenerator {
+public:
+	struct Parameters {
+		std::size_t n_rows = 500;   // NOLINT(readability-magic-numbers)
+		std::size_t n_cols = 1000;  // NOLINT(readability-magic-numbers)
+		double density = 0.05;      // NOLINT(readability-magic-numbers)
+		int max_coef = 100;         // NOLINT(readability-magic-numbers)
+	};
+
+	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+
+	SetCoverGenerator(Parameters parameters, RandomEngine random_engine);
+	SetCoverGenerator(Parameters parameters);
+	SetCoverGenerator();
+
+	scip::Model next();
+
+private:
+	RandomEngine random_engine;
+	Parameters parameters;
+};
+
+}  // namespace ecole::instance

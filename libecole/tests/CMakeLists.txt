@@ -20,6 +20,8 @@ add_executable(
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
 
+	src/instance/test-set-cover.cpp
+
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp

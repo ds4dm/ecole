@@ -9,7 +9,8 @@ add_library(
 	src/scip/model.cpp
 	src/scip/exception.cpp
 	src/scip/row.cpp
-
+	src/instance/set-cover.cpp
+	src/utility/reverse-control.cpp
 	src/reward/isdone.cpp
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
