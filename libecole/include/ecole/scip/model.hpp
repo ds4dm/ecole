@@ -15,7 +15,7 @@
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
-#include "ecole/utility/type_traits.hpp"
+#include "ecole/utility/type-traits.hpp"
 
 namespace ecole::scip {
 

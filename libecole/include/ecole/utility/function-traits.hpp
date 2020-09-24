@@ -17,13 +17,8 @@ namespace ecole::utility {
  */
 template <typename F> struct function_traits;
 
-/**
- * Specialization for function pointers.
- */
-template <typename R, typename... Args> struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
-
-template <typename R, typename... Args> struct function_traits<R(Args...)> {
-	using return_type = R;
+template <typename Return, typename... Args> struct function_traits<Return(Args...)> {
+	using return_type = Return;
 
 	static constexpr std::size_t n_args = sizeof...(Args);
 
@@ -34,21 +29,28 @@ template <typename R, typename... Args> struct function_traits<R(Args...)> {
 };
 
 /**
+ * Specialization for function pointers.
+ */
+template <typename Return, typename... Args>
+struct function_traits<Return (*)(Args...)> : function_traits<Return(Args...)> {};
+
+/**
  * Specialization for member function pointers.
  */
-template <typename C, typename R, typename... Args>
-struct function_traits<R (C::*)(Args...)> : public function_traits<R(C&, Args...)> {};
+template <typename Class, typename Return, typename... Args>
+struct function_traits<Return (Class::*)(Args...)> : public function_traits<Return(Class&, Args...)> {};
 
 /**
  * Specialization for const member function pointer.
  */
-template <typename C, typename R, typename... Args>
-struct function_traits<R (C::*)(Args...) const> : public function_traits<R(C&, Args...)> {};
+template <typename Class, typename Return, typename... Args>
+struct function_traits<Return (Class::*)(Args...) const> : function_traits<Return(Class&, Args...)> {};
 
 /**
  * Specialization for member object pointers.
  */
-template <typename C, typename R> struct function_traits<R(C::*)> : public function_traits<R(C&)> {};
+template <typename Class, typename Return>
+struct function_traits<Return(Class::*)> : function_traits<Return(Class&)> {};
 
 /**
  * Specialization for functors.
