@@ -66,6 +66,11 @@ public:
 	static Model from_file(std::string const& filename);
 
 	/**
+	 * Constuct an empty problem with empty data structures.
+	 */
+	static Model prob_basic();
+
+	/**
 	 * Writes the Model into a file.
 	 */
 	void write_problem(const std::string& filename);

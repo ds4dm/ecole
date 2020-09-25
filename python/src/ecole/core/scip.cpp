@@ -20,6 +20,7 @@ void bind_submodule(py::module m) {
 
 	py::class_<Model, std::shared_ptr<Model>>(m, "Model")  //
 		.def_static("from_file", &Model::from_file)
+		.def_static("prob_basic", &Model::prob_basic)
 		.def_static(
 			"from_pyscipopt",
 			[](py::object pyscipopt_model) {
