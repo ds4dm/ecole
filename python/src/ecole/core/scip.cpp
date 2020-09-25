@@ -61,7 +61,8 @@ void bind_submodule(py::module m) {
 		.def("disable_presolve", &Model::disable_presolve)
 		.def("write_problem", &Model::write_problem, py::arg("filename"))
 
-		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>());
+		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>())
+		.def("is_solved", &Model::is_solved);
 }
 
 }  // namespace scip
