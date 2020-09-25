@@ -50,6 +50,12 @@ Model Model::from_file(const std::string& filename) {
 	return model;
 }
 
+Model Model::prob_basic() {
+	auto model = Model{};
+	scip::call(SCIPcreateProbBasic, model.get_scip_ptr(), "Model");
+	return model;
+}
+
 void Model::write_problem(const std::string& filename) {
 	scip::call(SCIPwriteOrigProblem, get_scip_ptr(), filename.c_str(), nullptr, true);
 }
