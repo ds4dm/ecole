@@ -30,7 +30,7 @@ class CapacitedFacilityLocationGenerator:
         return self
 
     def __next__(self):
-        """ Gets the next instances of a capacited facility location problem.
+        """Gets the next instances of a capacited facility location problem.
 
         This method calls generate_instance() with the parameters passed in
         the constructor and returns the ecole.scip.Model.
@@ -44,7 +44,7 @@ class CapacitedFacilityLocationGenerator:
         return generate_instance(self.n_customers, self.n_facilities, self.ratio, self.rng)
 
     def seed(self, seed: int):
-        """ Seeds CapacitedFacilityLocationGenerator.
+        """Seeds CapacitedFacilityLocationGenerator.
 
         This method sets the random seed of the CapacitedFacilityLocationGenerator.
 
@@ -60,7 +60,7 @@ class CapacitedFacilityLocationGenerator:
 def generate_instance(
     n_customers: int, n_facilities: int, ratio: float, rng: np.random.RandomState
 ):
-    """ Generates an instance of a capacited facility location problem.
+    """Generates an instance of a capacited facility location problem.
 
     This method generates an instance of the capacited facility location problem based on the
     specified parameters and returns it as an ecole model.
@@ -118,11 +118,9 @@ def generate_instance(
         * demands.reshape((-1, 1))
     )
 
-    # write problem as pyscipopt model
-    from pyscipopt import Model
-
-    model = Model()
-    model.setMinimize()
+    model = ecole.scip.Model.prob_basic()
+    pyscipopt_model = model.as_pyscipopt()
+    pyscipopt_model.setMinimize()
 
     # add variables
     var_dict = {}
@@ -132,14 +130,16 @@ def generate_instance(
     for i in range(n_customers):
         var_dict["x"][i + 1] = {}
         for j in range(n_facilities):
-            var_dict["x"][i + 1][j + 1] = model.addVar(
+            var_dict["x"][i + 1][j + 1] = pyscipopt_model.addVar(
                 name=f"x_{i+1}_{j+1}", vtype="C", obj=trans_costs[i, j], lb=0, ub=1,
             )
 
     # fixed costs for opening facilities
     var_dict["y"] = {}
     for j in range(n_facilities):
-        var_dict["y"][j + 1] = model.addVar(name=f"y_{j+1}", vtype="B", obj=fixed_costs[j])
+        var_dict["y"][j + 1] = pyscipopt_model.addVar(
+            name=f"y_{j+1}", vtype="B", obj=fixed_costs[j]
+        )
 
     # add constraints
     # constraint for each customer to have demand
@@ -148,7 +148,7 @@ def generate_instance(
         cons_lhs = 0
         for var in vars_to_sum:
             cons_lhs += var
-        model.addCons(cons_lhs <= -1, name=f"demand_{i+1}")
+        pyscipopt_model.addCons(cons_lhs <= -1, name=f"demand_{i+1}")
 
     # constraint that the demand at each location does not exceed capacity
     for j in range(n_facilities):
@@ -157,14 +157,14 @@ def generate_instance(
         cons_lhs = 0
         for var in vars_to_sum:
             cons_lhs += var
-        model.addCons(cons_lhs <= 0, name=f"capacity_{i+1}")
+        pyscipopt_model.addCons(cons_lhs <= 0, name=f"capacity_{i+1}")
 
     # constraint to for LP relaxation tightening
     for i in range(n_customers):
         for j in range(n_facilities):
-            model.addCons(
+            pyscipopt_model.addCons(
                 var_dict["x"][i + 1][j + 1] - var_dict["y"][j + 1] <= 0,
                 name=f"tightening_{i+1}_{j+1}",
             )
 
-    return ecole.scip.Model.from_pyscipopt(model)
+    return model

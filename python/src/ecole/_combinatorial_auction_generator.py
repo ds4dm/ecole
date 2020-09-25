@@ -71,7 +71,7 @@ class CombinatorialAuctionGenerator:
         return self
 
     def __next__(self):
-        """ Gets the next instances of a combinatorial auction problem.
+        """Gets the next instances of a combinatorial auction problem.
 
         This method calls generate_instance() with the parameters passed in
         the constructor and returns the ecole.scip.Model.
@@ -99,7 +99,7 @@ class CombinatorialAuctionGenerator:
         )
 
     def seed(self, seed: int):
-        """ Seeds SetCoverGenerator.
+        """Seeds SetCoverGenerator.
 
         This method sets the random seed of the SetCoverGenerator.
 
@@ -127,7 +127,7 @@ def generate_instance(
     logger: logging.Logger,
     rng: np.random.RandomState,
 ):
-    """ Generates an instance of a combinatorial auction problem.
+    """Generates an instance of a combinatorial auction problem.
 
     This method generates an instance of a combinatorial auction problem based on the
     specified parameters and returns it as an ecole model.
@@ -292,28 +292,26 @@ def generate_instance(
         for bundle, price in bidder_bids.items():
             bids.append((list(bundle) + dummy_item, price))
 
-    # generate SCIP instance from problem
-    from pyscipopt import Model
-
-    model = Model()
-    model.setMaximize()
+    model = ecole.scip.Model.prob_basic()
+    pyscipopt_model = model.as_pyscipopt()
+    pyscipopt_model.setMaximize()
 
     bids_per_item = [[] for item in range(n_items + n_dummy_items)]
 
     # add variables
     for i, bid in enumerate(bids):
         bundle, price = bid
-        model.addVar(name=f"x{i+1}", vtype="B", obj=price)
+        pyscipopt_model.addVar(name=f"x{i+1}", vtype="B", obj=price)
         for item in bundle:
             bids_per_item[item].append(i)
 
     # add constraints
-    model_vars = model.getVars()
+    pyscipopt_model_vars = pyscipopt_model.getVars()
     for item_bids in bids_per_item:
         cons_lhs = 0
         if item_bids:
             for i in item_bids:
-                cons_lhs += model_vars[i]
-            model.addCons(cons_lhs <= 1)
+                cons_lhs += pyscipopt_model_vars[i]
+            pyscipopt_model.addCons(cons_lhs <= 1)
 
-    return ecole.scip.Model.from_pyscipopt(model)
+    return model

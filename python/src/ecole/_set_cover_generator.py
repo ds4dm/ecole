@@ -37,7 +37,7 @@ class SetCoverGenerator:
         return self
 
     def __next__(self):
-        """ Gets the next instances of a set covering problem.
+        """Gets the next instances of a set covering problem.
 
         This method calls generate_instance() with the parameters passed in
         the constructor and returns the ecole.scip.Model.
@@ -51,7 +51,7 @@ class SetCoverGenerator:
         return generate_instance(self.n_rows, self.n_cols, self.density, self.max_coef, self.rng)
 
     def seed(self, seed: int):
-        """ Seeds SetCoverGenerator.
+        """Seeds SetCoverGenerator.
 
         This method sets the random seed of the SetCoverGenerator.
 
@@ -153,23 +153,21 @@ def generate_instance(
             indices_csr[indptr_csr[row] + indptr_counter[row]] = col
             indptr_counter[row] += 1
 
-    # generate SCIP instance from problem
-    from pyscipopt import Model
-
-    model = Model()
-    model.setMinimize()
+    model = ecole.scip.Model.prob_basic()
+    pyscipopt_model = model.as_pyscipopt()
+    pyscipopt_model.setMinimize()
 
     # add variables
     for j in range(n_cols):
-        model.addVar(name=f"x{j+1}", vtype="B", obj=c[j])
+        pyscipopt_model.addVar(name=f"x{j+1}", vtype="B", obj=c[j])
 
     # add constraints
-    model_vars = model.getVars()
+    pyscipopt_model_vars = pyscipopt_model.getVars()
     for i in range(n_rows):
         cons_lhs = 0
-        consvars = [model_vars[j] for j in indices_csr[indptr_csr[i] : indptr_csr[i + 1]]]
+        consvars = [pyscipopt_model_vars[j] for j in indices_csr[indptr_csr[i] : indptr_csr[i + 1]]]
         for var in consvars:
             cons_lhs += var
-        model.addCons(cons_lhs >= 1)
+        pyscipopt_model.addCons(cons_lhs >= 1)
 
-    return ecole.scip.Model.from_pyscipopt(model)
+    return model
