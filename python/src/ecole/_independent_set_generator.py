@@ -1,7 +1,7 @@
-import numpy as np
-
 from itertools import combinations
 from typing import List, Set, Tuple, Dict
+
+import numpy as np
 
 import ecole.scip
 
@@ -46,7 +46,7 @@ class IndependentSetGenerator:
         return self
 
     def __next__(self):
-        """ Gets the next instances of a independent set problem.
+        """Gets the next instances of a independent set problem.
 
         This method calls generate_instance() with the parameters passed in
         the constructor and returns the ecole.scip.Model.
@@ -63,7 +63,7 @@ class IndependentSetGenerator:
         )
 
     def seed(self, seed: int):
-        """ Seeds IndependentSetGenerator.
+        """Seeds IndependentSetGenerator.
 
         This method sets the random seed of the IndependentSetGenerator.
 
@@ -140,17 +140,15 @@ def generate_instance(
         if node not in used_nodes:
             inequalities.add((node,))
 
-    # write problem as pyscipopt model
-    from pyscipopt import Model
-
-    model = Model()
-    model.setMaximize()
+    model = ecole.scip.Model.prob_basic()
+    pyscipopt_model = model.as_pyscipopt()
+    pyscipopt_model.setMaximize()
 
     var_dict = {}
 
     # add variable for each node
     for node in range(len(graph)):
-        var_dict[node + 1] = model.addVar(name=f"x_{node+1}", vtype="B", obj=1.0)
+        var_dict[node + 1] = pyscipopt_model.addVar(name=f"x_{node+1}", vtype="B", obj=1.0)
 
     # add constraints such that no connect nodes both set to 1
     for count, group in enumerate(inequalities):
@@ -158,9 +156,9 @@ def generate_instance(
         cons_lhs = 0
         for var in vars_to_sum:
             cons_lhs += var
-        model.addCons(cons_lhs <= 1)
+        pyscipopt_model.addCons(cons_lhs <= 1)
 
-    return ecole.scip.Model.from_pyscipopt(model)
+    return model
 
 
 class Graph:
@@ -195,7 +193,7 @@ class Graph:
         self.neighbors = neighbors
 
     def __len__(self):
-        """ Gets the number of nodes in the graph.
+        """Gets the number of nodes in the graph.
 
         Returns
         -------
@@ -205,7 +203,7 @@ class Graph:
         return self.n_nodes
 
     def greedy_clique_partition(self):
-        """ Partition the graph into cliques using a greedy algorithm.
+        """Partition the graph into cliques using a greedy algorithm.
 
         Returns
         -------
