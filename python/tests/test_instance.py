@@ -26,10 +26,10 @@ def pytest_generate_tests(metafunc):
     """
     if "instance_generator" in metafunc.fixturenames:
         all_instance_generators = (
-            I.SetCoverGenerator(),
-            I.CombinatorialAuctionGenerator(),
-            I.CapacitedFacilityLocationGenerator(),
-            I.IndependentSetGenerator(),
+            I.SetCoverGenerator(n_rows=100, n_cols=200),
+            I.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
+            I.CapacitedFacilityLocationGenerator(n_customers=60, n_facilities=50),
+            I.IndependentSetGenerator(n_nodes=100),
         )
         metafunc.parametrize("instance_generator", all_instance_generators)
 
