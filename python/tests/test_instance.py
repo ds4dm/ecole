@@ -34,6 +34,11 @@ def test_default_init(instance_generator):
     type(instance_generator)()
 
 
+def test_random_engine_init(instance_generator):
+    """Construct a random engine."""
+    type(instance_generator)(random_engine=ecole.environment.RandomEngine())
+
+
 def test_generate_instance(instance_generator):
     """Use stateless instance generating function."""
     InstanceGenerator = type(instance_generator)
