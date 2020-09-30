@@ -99,10 +99,15 @@ template <typename PyClass, typename Members> void def_init(PyClass& py_class, M
 		// Bind a constructor that takes as input all parameters
 		py_class.def(
 			// Get the type of each parameter and add it to the Python constructor
-			py::init([](utility::return_t<decltype(members.value)>... params) {
-				// Call the C++ constructor with a Parameter struct
-				return std::make_unique<Generator>(Parameters{params...});
+			py::init([](RandomEngine const* random_engine, utility::return_t<decltype(members.value)>... params) {
+				// Disaptch to the C++ constructors with a Parameter struct
+				if (random_engine == nullptr) {
+					return std::make_unique<Generator>(Parameters{params...});
+				}
+				return std::make_unique<Generator>(*random_engine, Parameters{params...});
 			}),
+			// None as nullptr are allowed
+			py::arg("random_engine").none(true) = py::none(),
 			// Set name for all constructor parameters.
 			// Fetch default value on the default parameters
 			(py::arg(members.name) = std::invoke(members.value, default_params))...);
