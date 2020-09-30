@@ -18,13 +18,15 @@ public:
 		int max_coef = 100;         // NOLINT(readability-magic-numbers)
 	};
 
-	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);
 
-	SetCoverGenerator(Parameters parameters, RandomEngine random_engine);
+	SetCoverGenerator(RandomEngine random_engine, Parameters parameters);
 	SetCoverGenerator(Parameters parameters);
 	SetCoverGenerator();
 
 	scip::Model next();
+
+	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
 	RandomEngine random_engine;

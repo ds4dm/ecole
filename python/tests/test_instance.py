@@ -37,9 +37,7 @@ def test_default_init(instance_generator):
 def test_generate_instance(instance_generator):
     """Use stateless instance generating function."""
     InstanceGenerator = type(instance_generator)
-    model = InstanceGenerator.generate_instance(
-        InstanceGenerator.Parameters(), ecole.environment.RandomEngine()
-    )
+    model = InstanceGenerator.generate_instance(ecole.environment.RandomEngine())
     assert isinstance(model, ecole.scip.Model)
 
 
@@ -55,3 +53,9 @@ def test_repeated_slice_iteration(instance_generator):
     for epoch in range(2):
         for model in itertools.islice(instance_generator, 2):
             assert isinstance(model, ecole.scip.Model)
+
+
+def test_SetCoverGenerator_parameters():
+    """Parameters are bound in the constructor and as attributes."""
+    generator = I.SetCoverGenerator(n_cols=10)
+    assert generator.n_cols == 10
