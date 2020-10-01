@@ -58,7 +58,7 @@ Model Model::prob_basic() {
 	return model;
 }
 
-void Model::write_problem(const std::string& filename) {
+void Model::write_problem(const std::string& filename) const {
 	scip::call(SCIPwriteOrigProblem, get_scip_ptr(), filename.c_str(), nullptr, true);
 }
 

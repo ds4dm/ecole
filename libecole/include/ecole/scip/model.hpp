@@ -74,7 +74,7 @@ public:
 	/**
 	 * Writes the Model into a file.
 	 */
-	void write_problem(const std::string& filename);
+	void write_problem(const std::string& filename) const;
 
 	/**
 	 * Read a problem file into the Model.
