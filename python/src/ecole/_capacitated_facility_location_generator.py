@@ -3,9 +3,9 @@ import numpy as np
 import ecole.scip
 
 
-class CapacitedFacilityLocationGenerator:
+class CapacitatedFacilityLocationGenerator:
     def __init__(self, n_customers: int = 100, n_facilities: int = 100, ratio: float = 5.0):
-        """Constructor for the capacited facility location generator.
+        """Constructor for the capacitated facility location generator.
 
         The parameters passed in this constructor will be used when a user calls next() or iterates
         over the object.
@@ -30,7 +30,7 @@ class CapacitedFacilityLocationGenerator:
         return self
 
     def __next__(self):
-        """Gets the next instances of a capacited facility location problem.
+        """Gets the next instances of a capacitated facility location problem.
 
         This method calls generate_instance() with the parameters passed in
         the constructor and returns the ecole.scip.Model.
@@ -38,15 +38,15 @@ class CapacitedFacilityLocationGenerator:
         Returns
         -------
         model:
-            an ecole model of a capacited facility location instance.
+            an ecole model of a capacitated facility location instance.
 
         """
         return generate_instance(self.n_customers, self.n_facilities, self.ratio, self.rng)
 
     def seed(self, seed: int):
-        """Seeds CapacitedFacilityLocationGenerator.
+        """Seeds CapacitatedFacilityLocationGenerator.
 
-        This method sets the random seed of the CapacitedFacilityLocationGenerator.
+        This method sets the random seed of the CapacitatedFacilityLocationGenerator.
 
         Parameters
         ----------
@@ -60,9 +60,9 @@ class CapacitedFacilityLocationGenerator:
 def generate_instance(
     n_customers: int, n_facilities: int, ratio: float, rng: np.random.RandomState
 ):
-    """Generates an instance of a capacited facility location problem.
+    """Generates an instance of a capacitated facility location problem.
 
-    This method generates an instance of the capacited facility location problem based on the
+    This method generates an instance of the capacitated facility location problem based on the
     specified parameters and returns it as an ecole model.
 
     The problem is generated following:

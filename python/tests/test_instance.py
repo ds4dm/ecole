@@ -28,7 +28,7 @@ def pytest_generate_tests(metafunc):
         all_instance_generators = (
             I.SetCoverGenerator(n_rows=100, n_cols=200),
             I.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
-            I.CapacitedFacilityLocationGenerator(n_customers=60, n_facilities=50),
+            I.CapacitatedFacilityLocationGenerator(n_customers=60, n_facilities=50),
             I.IndependentSetGenerator(n_nodes=100),
         )
         metafunc.parametrize("instance_generator", all_instance_generators)
@@ -107,9 +107,9 @@ def test_CombinatorialAuction_instance():
 
 
 @requires_pyscipopt
-def test_CapacitedFacilityLocation_instance():
-    """Test output of capacited facility location auction instance."""
-    instances = ecole.instance.CapacitedFacilityLocationGenerator()
+def test_CapacitatedFacilityLocation_instance():
+    """Test output of capacitated facility location auction instance."""
+    instances = ecole.instance.CapacitatedFacilityLocationGenerator()
     instance = next(instances)
     model = instance.as_pyscipopt()
 
