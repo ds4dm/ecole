@@ -4,7 +4,7 @@
 #include <string>
 #include <tuple>
 
-#include "ecole/environment/dynamics.hpp"
+#include "ecole/random.hpp"
 #include "ecole/reward/abstract.hpp"
 
 namespace ecole {
@@ -14,8 +14,6 @@ class Model;
 }
 
 namespace environment {
-
-using Seed = typename RandomEngine::result_type;
 
 using ecole::reward::Reward;
 using Info = int;  // FIXME dummy type while the information is not implemented

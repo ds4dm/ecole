@@ -7,6 +7,7 @@
 
 #include "ecole/abstract.hpp"
 #include "ecole/environment/exception.hpp"
+#include "ecole/random.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/traits.hpp"
@@ -27,7 +28,7 @@ public:
 	/**
 	 * Default construct everything and seed environment with random value.
 	 */
-	EnvironmentComposer() : random_engine(std::random_device{}()) {}
+	EnvironmentComposer() : random_engine(spawn_random_engine()) {}
 
 	/**
 	 * Fully customize environment and seed environment with random value.
@@ -42,7 +43,7 @@ public:
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
 		m_scip_params(std::move(scip_params)),
-		random_engine(std::random_device{}()) {}
+		random_engine(spawn_random_engine()) {}
 
 	/**
 	 * @copydoc ecole::environment::Environment::seed

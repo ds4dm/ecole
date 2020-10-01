@@ -3,12 +3,11 @@
 #include <random>
 #include <tuple>
 
+#include "ecole/random.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::environment {
-
-using RandomEngine = std::mt19937;
 
 /**
  * Abstract class for environment Dynamics.
