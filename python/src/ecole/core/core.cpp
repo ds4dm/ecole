@@ -48,8 +48,24 @@ PYBIND11_MODULE(core, m) {
 			py::arg("value") = RandomEngine::default_seed,
 			"Reinitialize the internal state of the random-number engine using new seed "
 			"value.")
+		.def("discard", &RandomEngine::discard, py::arg("n"), R"(
+			Advance the internal state by n times.
+
+			Equivalent to calling operator() n times and discarding the result.
+		)")
+		.def("__call__", &RandomEngine::operator(), R"(
+			Generate a pseudo-random value.
+
+			The state of the engine is advanced by one position.
+		)")                          // NOLINT(misc-redundant-expression)  pybind specific syntax
 		.def(py::self == py::self)   // NOLINT(misc-redundant-expression)  pybind specific syntax
 		.def(py::self != py::self);  // NOLINT(misc-redundant-expression)  pybind specific syntax
+
+	m.def("seed", &ecole::seed, py::arg("val"), "Seed the main source of randomness in Ecole.");
+	m.def(
+		"spawn_random_engine",
+		&ecole::spawn_random_engine,
+		"Create new random engine deriving from main source of randomness");
 
 	scip::bind_submodule(m.def_submodule("scip"));
 	observation::bind_submodule(m.def_submodule("observation"));

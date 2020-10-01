@@ -1,7 +1,5 @@
 """Ecole collection of environments."""
 
-import random
-
 import ecole.core as core
 import ecole.observation
 import ecole.reward
@@ -27,9 +25,7 @@ class EnvironmentComposer:
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
-        self.random_engine = ecole.RandomEngine(
-            random.randint(ecole.RandomEngine.min_seed, ecole.RandomEngine.max_seed)
-        )
+        self.random_engine = ecole.spawn_random_engine()
 
     @classmethod
     def __parse_reward_function(cls, reward_function):

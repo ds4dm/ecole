@@ -9,22 +9,24 @@ One such aspect is the solver randomness, which is controlled by its random seed
 This means that, by default, Ecole environment will generate different episodes (and in
 particular different initial states) after each new call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
-To do so, the environment keeps a :py:class:`~ecole.environment.RandomeEngine` (random state)
+To do so, the environment keeps a :py:class:`~ecole.RandomEngine` (random state)
 between episodes, and start a new episode by calling
 :py:meth:`~ecole.typing.Dynamics.set_dynamics_random_state` on the underlying
 :py:class:`~ecole.typing.Dynamics`.
 The latter set random elements of the state including, but not necessary limited to, the
 :py:class:`~ecole.scip.Model` random seed, by consuming random numbers from the
-:py:class:`~ecole.environment.RandomeEngine`.
+:py:class:`~ecole.RandomEngine`.
 That way, the :py:class:`~ecole.typing.EnvironmentComposer` can avoid generating identical
 episodes while letting :py:class:`~ecole.typing.Dynamics` decide what random parameters need to
 be set.
 
-The :py:meth:`~ecole.environment.EnvironmentComposer.seed` method is really one of the environment,
-because it seeds the :py:class:`~ecole.environment.RandomeEngine`., not direclty the episode for
+The :py:meth:`~ecole.environment.EnvironmentComposer.seed` method really belongs to the the environment,
+because it seeds the :py:class:`~ecole.RandomEngine`., not direclty the episode for
 the :py:class:`~ecole.typing.Dynamics`.
-Upon creation :py:class:`~ecole.typing.EnvironmentComposer` seed themslef from Python's
-`random module <https://docs.python.org/3/library/random.html>`_.
+
+When not explicitly seeded, environment use a :py:class:`~ecole.RandomEngine` derived from Ecole's global source of
+randomness.
+By default this source is truly random, but it can be controlled with :py:func:`ecole.seed`.
 
 In short we provide the following snippets.
 
@@ -34,10 +36,9 @@ Running this program again will give the same outcome.
 
 .. code-block:: python
 
-   import random
    import ecole
 
-   random.seed(754)
+   ecole.seed(754)
 
    environment = ecole.environment.Branching()
 
