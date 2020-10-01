@@ -84,6 +84,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    reference/observations.rst
    reference/rewards.rst
    reference/scip-interface.rst
+   reference/utilities.rst
 
 .. toctree::
    :caption: Discussion

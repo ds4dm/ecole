@@ -29,7 +29,7 @@ class Dynamics(Protocol[Action, ActionSet]):
     """
 
     def set_dynamics_random_state(
-        self, model: ecole.scip.Model, random_engine: ecole.environment.RandomEngine
+        self, model: ecole.scip.Model, random_engine: ecole.RandomEngine
     ) -> None:
         """Set the random state of the episode.
 

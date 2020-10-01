@@ -1,8 +1,6 @@
-#include <limits>
 #include <memory>
 #include <string>
 
-#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
@@ -34,24 +32,6 @@ void bind_submodule(pybind11::module const& m) {
 	m.doc() = "Ecole collection of environments.";
 
 	py::register_exception<Exception>(m, "Exception");
-
-	py::class_<RandomEngine>(m, "RandomEngine")  //
-		.def_property_readonly_static(
-			"min_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::min(); })
-		.def_property_readonly_static(
-			"max_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::max(); })
-		.def(
-			py::init<RandomEngine::result_type>(),
-			py::arg("value") = RandomEngine::default_seed,
-			"Construct the pseudo-random number engine.")
-		.def(
-			"seed",
-			[](RandomEngine& self, RandomEngine::result_type value) { self.seed(value); },
-			py::arg("value") = RandomEngine::default_seed,
-			"Reinitialize the internal state of the random-number engine using new seed "
-			"value.")
-		.def(py::self == py::self)   // NOLINT(misc-redundant-expression)  pybind specific syntax
-		.def(py::self != py::self);  // NOLINT(misc-redundant-expression)  pybind specific syntax
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //
 		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);

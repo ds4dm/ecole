@@ -69,7 +69,7 @@ def test_seed():
     """Random engine is consumed."""
     env = MockEnvironment()
     env.seed(33)
-    assert env.random_engine == ecole.environment.RandomEngine(33)
+    assert env.random_engine == ecole.RandomEngine(33)
 
 
 def test_scip_params(model):

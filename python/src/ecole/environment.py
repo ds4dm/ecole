@@ -27,8 +27,8 @@ class EnvironmentComposer:
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
-        self.random_engine = RandomEngine(
-            random.randint(RandomEngine.min_seed, RandomEngine.max_seed)
+        self.random_engine = ecole.RandomEngine(
+            random.randint(ecole.RandomEngine.min_seed, ecole.RandomEngine.max_seed)
         )
 
     @classmethod
@@ -175,7 +175,7 @@ class EnvironmentComposer:
     def seed(self, value: int) -> None:
         """Set the random seed of the environment.
 
-        The the random seed is used to seed the environment :py:class:`RandomEngine`.
+        The the random seed is used to seed the environment :py:class:`~ecole.RandomEngine`.
         At every call to :py:meth:`reset`, the random engine is used to create new seeds
         for the solver.
         Setting the seed once will ensure determinism for the next trajectories.

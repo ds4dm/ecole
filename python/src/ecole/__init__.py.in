@@ -1,5 +1,7 @@
 __version__ = "@Ecole_VERSION@"  # Filled by CMake
 
+from ecole.core import RandomEngine
+
 import ecole.environment
 import ecole.observation
 import ecole.reward
