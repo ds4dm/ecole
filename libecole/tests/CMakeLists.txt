@@ -5,6 +5,7 @@ add_executable(
 	main.cpp
 	src/conftest.cpp
 	src/test-traits.cpp
+	src/test-random.cpp
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
 	src/environment/test-environment-composer.cpp
