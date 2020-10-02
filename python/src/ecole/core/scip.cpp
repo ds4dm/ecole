@@ -18,7 +18,7 @@ void bind_submodule(py::module const& m) {
 	py::register_exception<scip::Exception>(m, "Exception");
 
 	py::class_<Model, std::shared_ptr<Model>>(m, "Model")  //
-		.def_static("from_file", &Model::from_file)
+		.def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
 		.def_static("prob_basic", &Model::prob_basic)
 		.def_static(
 			"from_pyscipopt",
@@ -57,7 +57,7 @@ void bind_submodule(py::module const& m) {
 		.def("set_params", &Model::set_params, py::arg("name_values"))
 		.def("disable_cuts", &Model::disable_cuts)
 		.def("disable_presolve", &Model::disable_presolve)
-		.def("write_problem", &Model::write_problem, py::arg("filename"))
+		.def("write_problem", &Model::write_problem, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
 
 		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>())
 		.def("is_solved", &Model::is_solved);
