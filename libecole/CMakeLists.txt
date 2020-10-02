@@ -31,7 +31,7 @@ add_custom_target(
 		-D Ecole_VERSION_MAJOR="${Ecole_VERSION_MAJOR}"
 		-D Ecole_VERSION_MINOR="${Ecole_VERSION_MINOR}"
 		-D Ecole_VERSION_PATCH="${Ecole_VERSION_PATCH}"
-		-P "${CMAKE_SOURCE_DIR}/cmake/VersionScript.cmake" > /dev/null
+		-P "${CMAKE_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
 )
 add_dependencies(libecole ecole-version)
 
