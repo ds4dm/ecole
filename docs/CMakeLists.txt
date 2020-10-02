@@ -25,16 +25,11 @@ set(SPHINX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/sphinx")
 set(SPHINX_HTML_DIR "${SPHINX_BUILD_DIR}/html")
 
-file(MAKE_DIRECTORY "${SPHINX_BUILD_DIR}")
-configure_file("${SPHINX_SOURCE_DIR}/conf.py.in" "${SPHINX_BUILD_DIR}/conf.py" @ONLY)
-# Files such as logo and css need to be relative to configuration directory
-file(COPY "${SPHINX_SOURCE_DIR}/_static" DESTINATION "${SPHINX_BUILD_DIR}")
-file(COPY "${SPHINX_SOURCE_DIR}/_templates" DESTINATION "${SPHINX_BUILD_DIR}")
 add_custom_target(
 	ecole-sphinx
 	COMMAND
 	venv-python -m sphinx -q -W -b html
-		-c "${SPHINX_BUILD_DIR}"  # Find config file in build directory
+		-c "${SPHINX_SOURCE_DIR}"
 		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
 		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
 	BYPRODUCTS "${SPHINX_BUILD_DIR}"

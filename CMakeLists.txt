@@ -9,7 +9,6 @@ project(
 	LANGUAGES CXX
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
-set(Ecole_AUTHORS "Antoine Prouvost")
 
 # Set default parameters. Assumes Ecole user,
 include(cmake/DefaultSettings.cmake)

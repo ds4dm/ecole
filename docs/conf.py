@@ -1,10 +1,33 @@
-project = "Ecole"
-# Filled by CMake
-copyright = "@Ecole_AUTHORS@"
-version = "@Ecole_VERSION_MAJOR@.@Ecole_VERSION_MINOR@"
-release = "@Ecole_VERSION@"
-author = "@Ecole_AUTHORS@"
+from typing import List, Tuple
+import pathlib
+import re
 
+
+CURRENT_FILE = pathlib.Path(__file__).resolve()
+CURRENT_DIR = CURRENT_FILE.parent
+PROJECT_DIR = CURRENT_DIR.parent
+
+
+def read_authors(file: pathlib.Path) -> List[str]:
+    with open(file) as f:
+        return [l.strip() for l in f.readlines()]
+
+
+def read_version(file: pathlib.Path) -> Tuple[int, int, int]:
+    with open(file) as f:
+        text = f.read()
+        major = re.search("VERSION_MAJOR (\d+)", text).group(1)
+        minor = re.search("VERSION_MINOR (\d+)", text).group(1)
+        patch = re.search("VERSION_PATCH (\d+)", text).group(1)
+        return major, minor, patch
+
+
+project = "Ecole"
+author = ", ".join(read_authors(PROJECT_DIR / "AUTHORS"))
+copyright = author
+version_major, version_minor, version_patch = read_version(PROJECT_DIR / "VERSION")
+version = f"{version_major}.{version_minor}"
+release = f"{version_major}.{version_minor}.{version_patch}"
 
 extensions = [
     "sphinx.ext.autodoc",  # Read doc from Python docstrings
