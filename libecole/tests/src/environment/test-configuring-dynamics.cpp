@@ -10,14 +10,14 @@
 
 using namespace ecole;
 
-TEST_CASE("ConfiguringDynamics unit tests", "[unit][dyn]") {
+TEST_CASE("ConfiguringDynamics unit tests", "[unit][dynamics]") {
 	auto const policy = [](auto const & /*action_set*/) -> trait::action_of_t<environment::ConfiguringDynamics> {
 		return {{"branching/scorefunc", 's'}};
 	};
 	environment::unit_tests(environment::ConfiguringDynamics{}, policy);
 }
 
-TEST_CASE("ConfiguringDynamics functional tests", "[dyn]") {
+TEST_CASE("ConfiguringDynamics functional tests", "[dynamics]") {
 	environment::ConfiguringDynamics dyn{};
 	auto model = get_model();
 

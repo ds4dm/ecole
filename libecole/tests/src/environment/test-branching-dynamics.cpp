@@ -13,7 +13,7 @@
 
 using namespace ecole;
 
-TEST_CASE("BranchingDynamics unit tests", "[unit][dyn]") {
+TEST_CASE("BranchingDynamics unit tests", "[unit][dynamics]") {
 	bool const pseudo_candidates = GENERATE(true, false);
 	bool const branch_first = GENERATE(true, false);
 	auto const policy = [branch_first](auto const& action_set) {
@@ -23,7 +23,7 @@ TEST_CASE("BranchingDynamics unit tests", "[unit][dyn]") {
 	environment::unit_tests(environment::BranchingDynamics{pseudo_candidates}, policy);
 }
 
-TEST_CASE("BranchingDynamics functional tests", "[dyn]") {
+TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 	bool const pseudo_candidates = GENERATE(true, false);
 	environment::BranchingDynamics dyn{pseudo_candidates};
 	auto model = get_model();
