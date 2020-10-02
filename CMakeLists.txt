@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 
+include(cmake/Version.cmake)
+read_version("${CMAKE_SOURCE_DIR}/VERSION" Ecole_VERSION)
 
 project(
 	Ecole
-	VERSION 0.2.0
+	VERSION "${Ecole_VERSION}"
 	LANGUAGES CXX
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
