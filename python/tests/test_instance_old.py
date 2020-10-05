@@ -14,8 +14,7 @@ import ecole.instance as I
 
 
 requires_pyscipopt = pytest.mark.skipif(
-    importlib.util.find_spec("pyscipopt") is None,
-    reason="PyScipOpt is not installed.",
+    importlib.util.find_spec("pyscipopt") is None, reason="PyScipOpt is not installed.",
 )
 
 
@@ -62,31 +61,6 @@ def test_generator_instance_solving(instance_generator):
     model = next(instance_generator)
     model.solve()
     assert model.is_solved()
-
-
-@requires_pyscipopt
-def test_SetCover_instance():
-    """Test output of set cover instance."""
-    instances = ecole.instance.SetCoverGenerator()
-    instance = next(instances)
-    model = instance.as_pyscipopt()
-
-    # assert number of rows and columns are consistent with generator
-    assert model.getNVars() == instances.n_cols
-    assert model.getNConss() == instances.n_rows
-
-    # assert minimization problem
-    assert model.getObjectiveSense() == "minimize"
-
-    # assert all variables are binary
-    for var in model.getVars():
-        assert var.vtype() == "BINARY"
-
-    # assert coefficient of variable in each constraint is 1.
-    for constraint in model.getConss():
-        assert model.getLhs(constraint) == 1
-        for coef in model.getValsLinear(constraint).values():
-            assert coef == 1
 
 
 @requires_pyscipopt
