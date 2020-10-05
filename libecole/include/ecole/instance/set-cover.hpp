@@ -24,7 +24,7 @@ public:
 	SetCoverGenerator();
 
 	scip::Model next();
-
+	void seed(Seed seed);
 	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
