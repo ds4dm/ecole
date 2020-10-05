@@ -128,6 +128,7 @@ public:
 	[[nodiscard]] bool solve_iter_is_done();
 
 	[[nodiscard]] nonstd::span<Var*> variables() const noexcept;
+	[[nodiscard]] nonstd::span<Cons*> constraints() const noexcept;
 	[[nodiscard]] nonstd::span<Var*> lp_branch_cands() const;
 	[[nodiscard]] nonstd::span<Var*> pseudo_branch_cands() const;
 	[[nodiscard]] nonstd::span<Col*> lp_columns() const;
