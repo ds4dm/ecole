@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <random>
 
+#include "ecole/instance/abstract.hpp"
 #include "ecole/random.hpp"
-#include "ecole/scip/model.hpp"
 
 namespace ecole::instance {
 
-class SetCoverGenerator {
+class SetCoverGenerator : public InstanceGenerator {
 public:
 	struct Parameters {
 		std::size_t n_rows = 500;   // NOLINT(readability-magic-numbers)
@@ -23,8 +23,9 @@ public:
 	SetCoverGenerator(Parameters parameters);
 	SetCoverGenerator();
 
-	scip::Model next();
-	void seed(Seed seed);
+	scip::Model next() override;
+	void seed(Seed seed) override;
+
 	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
