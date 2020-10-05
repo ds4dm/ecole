@@ -3,11 +3,10 @@
 #include <cstdint>
 #include <random>
 
+#include "ecole/random.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole::instance {
-
-using RandomEngine = std::mt19937;
 
 class SetCoverGenerator {
 public:
