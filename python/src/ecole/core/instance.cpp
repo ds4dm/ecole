@@ -63,64 +63,76 @@ void bind_submodule(py::module const& m) {
  *  Binding code for instance generators  *
  ******************************************/
 
-template <typename PyClass, typename Members> void def_generate_instance(PyClass& py_class, Members&& members_tuple) {
-	// Lambda with core logic to unpack tuple in individual parameters
-	auto def_generate_instance_impl = [&py_class](auto... members) {
-		// The C++ class being wrapped
-		using Generator = typename PyClass::type;
-		using Parameters = typename Generator::Parameters;
-		// Instantiate the C++ parameters at compile time to get default parameters.
-		static constexpr auto default_params = Parameters{};
-		// Bind a the static method that takes as input all parameters
-		py_class.def_static(
-			"generate_instance",
-			// Get the type of each parameter and add it to the Python function parameters
-			[](RandomEngine& random_engine, utility::return_t<decltype(members.value)>... params) {
-				// Call the C++ static function with a Parameter struct
-				return Generator::generate_instance(random_engine, Parameters{params...});
-			},
-			py::arg("random_engine"),
-			// Set name for all function parameters.
-			// Fetch default value on the default parameters
-			(py::arg(members.name) = std::invoke(members.value, default_params))...);
-	};
-
-	// Forward call to lambda in order to unpack the tuple
-	std::apply(def_generate_instance_impl, std::forward<Members>(members_tuple));
+/**
+ * Implementation of def_generate_instance to unpack tuple.
+ */
+template <typename PyClass, typename... Members>
+void def_generate_instance_impl(PyClass& py_class, Members&&... members) {
+	// The C++ class being wrapped
+	using Generator = typename PyClass::type;
+	using Parameters = typename Generator::Parameters;
+	// Instantiate the C++ parameters at compile time to get default parameters.
+	static constexpr auto default_params = Parameters{};
+	// Bind a the static method that takes as input all parameters
+	py_class.def_static(
+		"generate_instance",
+		// Get the type of each parameter and add it to the Python function parameters
+		[](RandomEngine& random_engine, utility::return_t<decltype(members.value)>... params) {
+			// Call the C++ static function with a Parameter struct
+			return Generator::generate_instance(random_engine, Parameters{params...});
+		},
+		py::arg("random_engine"),
+		// Set name for all function parameters.
+		// Fetch default value on the default parameters
+		(py::arg(members.name) = std::invoke(members.value, default_params))...);
 }
 
-template <typename PyClass, typename Members> void def_init(PyClass& py_class, Members&& members_tuple) {
-	// Lambda with core logic to unpack tuple in individual parameters
-	auto def_init_impl = [&py_class](auto... members) {
-		// The C++ class being wrapped
-		using Generator = typename PyClass::type;
-		using Parameters = typename Generator::Parameters;
-		// Instantiate the C++ parameters at compile time to get default parameters.
-		static constexpr auto default_params = Parameters{};
-		// Bind a constructor that takes as input all parameters
-		py_class.def(
-			// Get the type of each parameter and add it to the Python constructor
-			py::init([](RandomEngine const* random_engine, utility::return_t<decltype(members.value)>... params) {
-				// Disaptch to the C++ constructors with a Parameter struct
-				if (random_engine == nullptr) {
-					return std::make_unique<Generator>(Parameters{params...});
-				}
-				return std::make_unique<Generator>(*random_engine, Parameters{params...});
-			}),
-			// None as nullptr are allowed
-			py::arg("random_engine").none(true) = py::none(),
-			// Set name for all constructor parameters.
-			// Fetch default value on the default parameters
-			(py::arg(members.name) = std::invoke(members.value, default_params))...);
-	};
-
-	// Forward call to lambda in order to unpack the tuple
-	std::apply(def_init_impl, std::forward<Members>(members_tuple));
+template <typename PyClass, typename MemberTuple>
+void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple) {
+	// Forward call to impl in order to unpack the tuple
+	std::apply(
+		[&py_class](auto&&... members) {
+			def_generate_instance_impl(py_class, std::forward<decltype(members)>(members)...);
+		},
+		std::forward<MemberTuple>(members_tuple));
 }
 
-template <typename PyClass, typename Members> void def_attributes(PyClass& py_class, Members&& members_tuple) {
+/**
+ * Implementation of def_init to unpack tuple.
+ */
+template <typename PyClass, typename... MemberTuple> void def_init_impl(PyClass& py_class, MemberTuple&&... members) {
+	// The C++ class being wrapped
+	using Generator = typename PyClass::type;
+	using Parameters = typename Generator::Parameters;
+	// Instantiate the C++ parameters at compile time to get default parameters.
+	static constexpr auto default_params = Parameters{};
+	// Bind a constructor that takes as input all parameters
+	py_class.def(
+		// Get the type of each parameter and add it to the Python constructor
+		py::init([](RandomEngine const* random_engine, utility::return_t<decltype(members.value)>... params) {
+			// Dispatch to the C++ constructors with a Parameter struct
+			if (random_engine == nullptr) {
+				return std::make_unique<Generator>(Parameters{params...});
+			}
+			return std::make_unique<Generator>(*random_engine, Parameters{params...});
+		}),
+		// None as nullptr are allowed
+		py::arg("random_engine").none(true) = py::none(),
+		// Set name for all constructor parameters.
+		// Fetch default value on the default parameters
+		(py::arg(members.name) = std::invoke(members.value, default_params))...);
+}
+
+template <typename PyClass, typename MemberTuple> void def_init(PyClass& py_class, MemberTuple&& members_tuple) {
+	// Forward call to impl in order to unpack the tuple
+	std::apply(
+		[&py_class](auto&&... members) { def_init_impl(py_class, std::forward<decltype(members)>(members)...); },
+		std::forward<MemberTuple>(members_tuple));
+}
+
+template <typename PyClass, typename MemberTuple> void def_attributes(PyClass& py_class, MemberTuple&& members_tuple) {
 	// Lambda with core logic to unpack tuple in individual parameters
-	auto def_attributes_impl = [&py_class](auto... members) {
+	auto def_attributes_impl = [&py_class](auto&&... members) {
 		// The C++ class being wrapped
 		using Generator = typename PyClass::type;
 		// Bind attribute access for each member variable (comma operator fold expression).
@@ -131,7 +143,7 @@ template <typename PyClass, typename Members> void def_attributes(PyClass& py_cl
 	};
 
 	// Forward call to lambda in order to unpack the tuple
-	std::apply(def_attributes_impl, std::forward<Members>(members_tuple));
+	std::apply(def_attributes_impl, std::forward<MemberTuple>(members_tuple));
 }
 
 template <typename PyClass> void def_iterator(PyClass& py_class) {
