@@ -17,4 +17,8 @@ scip::Model SetCoverGenerator::next() {
 	return generate_instance(random_engine, parameters);
 }
 
+void SetCoverGenerator::seed(Seed seed) {
+	random_engine.seed(seed);
+}
+
 }  // namespace ecole::instance
