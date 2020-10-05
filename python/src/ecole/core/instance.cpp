@@ -56,6 +56,7 @@ void bind_submodule(py::module const& m) {
 	def_init(set_cover_gen, set_cover_params);
 	def_attributes(set_cover_gen, set_cover_params);
 	def_iterator(set_cover_gen);
+	set_cover_gen.def("seed", &SetCoverGenerator::seed, py::arg("seed"));
 }
 
 /******************************************
