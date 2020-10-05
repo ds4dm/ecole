@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/observation/focusnode.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
@@ -116,6 +117,31 @@ void bind_submodule(py::module const& m) {
 	node_bipartite.def(py::init<>());
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
+
+	py::class_<FocusNodeObs>(m, "FocusNodeObs", R"(
+		Add description.
+	)")  //
+		.def_property_readonly(
+			"number", [](FocusNodeObs & self) -> auto& { return self.number; }, "Add description.")
+		.def_property_readonly(
+			"depth", [](FocusNodeObs & self) -> auto& { return self.depth; }, "Add description.")
+		.def_property_readonly(
+			"lowerbound", [](FocusNodeObs & self) -> auto& { return self.lowerbound; }, "Add description.")
+		.def_property_readonly(
+			"estimate", [](FocusNodeObs & self) -> auto& { return self.estimate; }, "Add description.")
+		.def_property_readonly(
+			"n_added_conss", [](FocusNodeObs & self) -> auto& { return self.n_added_conss; }, "Add description.")
+		.def_property_readonly(
+			"parent_number", [](FocusNodeObs & self) -> auto& { return self.parent_number; }, "Add description.")
+		.def_property_readonly(
+			"parent_lowerbound", [](FocusNodeObs & self) -> auto& { return self.parent_lowerbound; }, "Add description.");
+
+	auto focus_node = py::class_<FocusNode>(m, "FocusNode", R"(
+ 		Add description
+ 	)");
+	focus_node.def(py::init<>());
+	def_reset(focus_node, R"(Do nothing.)");
+	def_obtain_observation(focus_node, "Extract a new :py:class:`FocusNodeObs`.");
 
 	auto strong_branching_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
 		Strong branching score observation function on branch-and bound node.

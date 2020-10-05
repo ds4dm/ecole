@@ -12,6 +12,7 @@ add_library(
 	src/reward/lpiterations.cpp
 	src/reward/nnodes.cpp
 	src/observation/nodebipartite.cpp
+	src/observation/focusnode.cpp
 	src/observation/strongbranchingscores.cpp
 	src/observation/pseudocosts.cpp
 	src/environment/branching-dynamics.cpp

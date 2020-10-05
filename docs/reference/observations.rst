@@ -27,6 +27,11 @@ Pseudocosts
 ^^^^^^^^^^^
 .. autoclass:: ecole.observation.Pseudocosts
 
+Focus Node
+^^^^^^^^^^^^^^
+.. autoclass:: ecole.observation.FocusNode
+.. autoclass:: ecole.observation.FocusNodeObs
+
 Utilities
 ---------
 The following observation functions are used internally by Ecole.
