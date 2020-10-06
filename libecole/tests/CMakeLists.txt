@@ -23,6 +23,7 @@ add_executable(
 	src/instance/test-set-cover.cpp
 	src/instance/test-independent-set.cpp
 	src/instance/test-combinatorial-auction.cpp
+	src/instance/test-capacitated-facility-location.cpp
 
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
