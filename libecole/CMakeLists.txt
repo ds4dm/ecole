@@ -11,7 +11,7 @@ add_library(
 	src/scip/row.cpp
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
-	src/utility/reverse-control.cpp
+	src/instance/combinatorial-auction.cpp
 	src/reward/isdone.cpp
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
