@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
 #include "ecole/utility/function-traits.hpp"
 
@@ -45,18 +46,47 @@ template <typename PyClass> void def_iterator(PyClass& py_class);
 void bind_submodule(py::module const& m) {
 	m.doc() = "Random instance generators for Ecole.";
 
+	// The Set Cover parameters used in constructor, generate_instance, and attributes
 	auto constexpr set_cover_params = std::tuple{
 		Member{"n_rows", &SetCoverGenerator::Parameters::n_rows},
 		Member{"n_cols", &SetCoverGenerator::Parameters::n_cols},
 		Member{"density", &SetCoverGenerator::Parameters::density},
 		Member{"max_coef", &SetCoverGenerator::Parameters::max_coef},
 	};
+	// Bind SetCoverGenerator and remove intermediate Parameter class
 	auto set_cover_gen = py::class_<SetCoverGenerator>{m, "SetCoverGenerator"};
 	def_generate_instance(set_cover_gen, set_cover_params);
 	def_init(set_cover_gen, set_cover_params);
 	def_attributes(set_cover_gen, set_cover_params);
 	def_iterator(set_cover_gen);
 	set_cover_gen.def("seed", &SetCoverGenerator::seed, py::arg("seed"));
+
+	// The Independent Set parameters used in constructor, generate_instance, and attributes
+	auto constexpr independent_set_params = std::tuple{
+		Member{"n_nodes", &IndependentSetGenerator::Parameters::n_nodes},
+		Member{"edge_probability", &IndependentSetGenerator::Parameters::edge_probability},
+		Member{"affinity", &IndependentSetGenerator::Parameters::affinity},
+		Member{"graph_type", &IndependentSetGenerator::Parameters::graph_type},
+	};
+	// Create class for IndependenSetGenerator
+	auto independent_set_gen = py::class_<IndependentSetGenerator>{m, "IndependentSetGenerator"};
+	// Bind IndependenSetGenerator::Parameter::GraphType enum
+	auto graph_type = py::enum_<IndependentSetGenerator::Parameters::GraphType>{independent_set_gen, "GraphType"};
+	graph_type  //
+		.value("barabasi_albert", IndependentSetGenerator::Parameters::GraphType::barabasi_albert)
+		.value("erdos_renyi", IndependentSetGenerator::Parameters::GraphType::erdos_renyi)
+		.export_values();
+	// Add contructor from str to IndependenSetGenerator::Parameter::GraphType and make it implicit
+	graph_type.def(py::init([members = graph_type.attr("__members__")](py::str const& name) {
+		return members[name].cast<IndependentSetGenerator::Parameters::GraphType>();
+	}));
+	py::implicitly_convertible<py::str, IndependentSetGenerator::Parameters::GraphType>();
+	// Bind IndependentSetGenerator methods and remove intermediate Parameter class
+	def_generate_instance(independent_set_gen, independent_set_params);
+	def_init(independent_set_gen, independent_set_params);
+	def_attributes(independent_set_gen, independent_set_params);
+	def_iterator(independent_set_gen);
+	independent_set_gen.def("seed", &IndependentSetGenerator::seed, py::arg("seed"));
 }
 
 /******************************************

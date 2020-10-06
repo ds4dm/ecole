@@ -21,6 +21,7 @@ add_executable(
 	src/data/test-timed.cpp
 
 	src/instance/test-set-cover.cpp
+	src/instance/test-independent-set.cpp
 
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
