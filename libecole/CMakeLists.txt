@@ -12,6 +12,7 @@ add_library(
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
 	src/instance/combinatorial-auction.cpp
+	src/instance/capacitated-facility-location.cpp
 	src/reward/isdone.cpp
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp

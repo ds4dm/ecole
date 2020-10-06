@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "ecole/instance/capacitated-facility-location.hpp"
 #include "ecole/instance/combinatorial-auction.hpp"
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
@@ -112,6 +113,21 @@ void bind_submodule(py::module const& m) {
 	def_attributes(combinatorial_auction_gen, combinatorial_auction_params);
 	def_iterator(combinatorial_auction_gen);
 	combinatorial_auction_gen.def("seed", &CombinatorialAuctionGenerator::seed, py::arg("seed"));
+
+	// The Capacitated Facility Location parameters used in constructor, generate_instance, and attributes
+	auto constexpr capacitated_facility_location_params = std::tuple{
+		Member{"n_customers", &CapacitatedFacilityLocationGenerator::Parameters::n_customers},
+		Member{"n_facilities", &CapacitatedFacilityLocationGenerator::Parameters::n_facilities},
+		Member{"ratio", &CapacitatedFacilityLocationGenerator::Parameters::ratio},
+	};
+	// Bind CapacitatedFacilityLocationGenerator and remove intermediate Parameter class
+	auto capacitated_facility_location_gen =
+		py::class_<CapacitatedFacilityLocationGenerator>{m, "CapacitatedFacilityLocationGenerator"};
+	def_generate_instance(capacitated_facility_location_gen, capacitated_facility_location_params);
+	def_init(capacitated_facility_location_gen, capacitated_facility_location_params);
+	def_attributes(capacitated_facility_location_gen, capacitated_facility_location_params);
+	def_iterator(capacitated_facility_location_gen);
+	capacitated_facility_location_gen.def("seed", &CapacitatedFacilityLocationGenerator::seed, py::arg(" seed"));
 }
 
 /******************************************
