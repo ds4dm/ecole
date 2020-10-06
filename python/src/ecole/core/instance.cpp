@@ -43,6 +43,11 @@ template <typename PyClass, typename Members> void def_attributes(PyClass& py_cl
  */
 template <typename PyClass> void def_iterator(PyClass& py_class);
 
+/**
+ * Bind a string constructor for Enums.
+ */
+template <typename PyEnum> void def_init_str(PyEnum& py_enum);
+
 void bind_submodule(py::module const& m) {
 	m.doc() = "Random instance generators for Ecole.";
 
@@ -77,10 +82,7 @@ void bind_submodule(py::module const& m) {
 		.value("erdos_renyi", IndependentSetGenerator::Parameters::GraphType::erdos_renyi)
 		.export_values();
 	// Add contructor from str to IndependenSetGenerator::Parameter::GraphType and make it implicit
-	graph_type.def(py::init([members = graph_type.attr("__members__")](py::str const& name) {
-		return members[name].cast<IndependentSetGenerator::Parameters::GraphType>();
-	}));
-	py::implicitly_convertible<py::str, IndependentSetGenerator::Parameters::GraphType>();
+	def_init_str(graph_type);
 	// Bind IndependentSetGenerator methods and remove intermediate Parameter class
 	def_generate_instance(independent_set_gen, independent_set_params);
 	def_init(independent_set_gen, independent_set_params);
@@ -181,6 +183,15 @@ template <typename PyClass> void def_iterator(PyClass& py_class) {
 	using Generator = typename PyClass::type;
 	py_class.def("__iter__", [](Generator& self) -> Generator& { return self; });
 	py_class.def("__next__", &Generator::next);
+}
+
+template <typename PyEnum> void def_init_str(PyEnum& py_enum) {
+	// The C++ being wrapped
+	using Enum = typename PyEnum::type;
+	// Add contructor from str to the enum and make it implicit
+	py_enum.def(py::init(
+		[members = py_enum.attr("__members__")](py::str const& name) { return members[name].template cast<Enum>(); }));
+	py::implicitly_convertible<py::str, Enum>();
 }
 
 }  // namespace ecole::instance
