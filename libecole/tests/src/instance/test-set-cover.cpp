@@ -8,7 +8,7 @@
 
 using namespace ecole;
 
-TEST_CASE("Unit test", "[instance]") {
+TEST_CASE("SetCoverGenerator unit test", "[instance]") {
 	auto generator = instance::SetCoverGenerator{};
 
 	static auto constexpr n_instances = 10;

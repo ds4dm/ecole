@@ -225,11 +225,6 @@ nonstd::span<Var*> Model::variables() const noexcept {
 	return {SCIPgetVars(scip_ptr), static_cast<std::size_t>(SCIPgetNVars(scip_ptr))};
 }
 
-nonstd::span<Cons*> Model::constraints() const noexcept {
-	auto* const scip_ptr = get_scip_ptr();
-	return {SCIPgetConss(scip_ptr), static_cast<std::size_t>(SCIPgetNConss(scip_ptr))};
-}
-
 nonstd::span<Var*> Model::lp_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
