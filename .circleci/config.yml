@@ -57,6 +57,9 @@ jobs:
         default: ""
     docker:
       - image: "ecoleai/ci-builder-<<parameters.compiler>>-py<<parameters.python>>"
+        auth: &dockerhub_auth
+          username: "$DOCKERHUB_USERNAME"
+          password: "$DOCKERHUB_PASSWORD"
     steps:
       - checkout
       - build_ecole:
@@ -75,6 +78,7 @@ jobs:
         enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
     docker:
       - image: "ecoleai/ci-builder-clang10-py3.6"
+        auth: *dockerhub_auth
     steps:
       - checkout
       - build_ecole:
@@ -87,6 +91,7 @@ jobs:
   code_checker:
     docker:
       - image: "ecoleai/ci-checker-clang10-py3.6"
+        auth: *dockerhub_auth
     steps:
       - checkout
       - build_ecole:
@@ -96,6 +101,7 @@ jobs:
   build_doc:
     docker:
       - image: "ecoleai/ci-documenter-clang10-py3.6"
+        auth: *dockerhub_auth
     steps:
       - checkout
       - build_ecole:
@@ -109,6 +115,7 @@ jobs:
         default: "${CIRCLE_BRANCH}"
     docker:
       - image: "ecoleai/ci-documenter-clang10-py3.6"
+        auth: *dockerhub_auth
     steps:
       - checkout
       # Easier/faster to rebuild than to share a workspace
