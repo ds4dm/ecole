@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "ecole/instance/combinatorial-auction.hpp"
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
 #include "ecole/utility/function-traits.hpp"
@@ -89,6 +90,28 @@ void bind_submodule(py::module const& m) {
 	def_attributes(independent_set_gen, independent_set_params);
 	def_iterator(independent_set_gen);
 	independent_set_gen.def("seed", &IndependentSetGenerator::seed, py::arg("seed"));
+
+	// The Combinatorial Auction parameters used in constructor, generate_instance, and attributes
+	auto constexpr combinatorial_auction_params = std::tuple{
+		Member{"n_items", &CombinatorialAuctionGenerator::Parameters::n_items},
+		Member{"n_bids", &CombinatorialAuctionGenerator::Parameters::n_bids},
+		Member{"min_value", &CombinatorialAuctionGenerator::Parameters::min_value},
+		Member{"max_value", &CombinatorialAuctionGenerator::Parameters::max_value},
+		Member{"value_deviation", &CombinatorialAuctionGenerator::Parameters::value_deviation},
+		Member{"add_item_prob", &CombinatorialAuctionGenerator::Parameters::add_item_prob},
+		Member{"max_n_sub_bids", &CombinatorialAuctionGenerator::Parameters::max_n_sub_bids},
+		Member{"additivity", &CombinatorialAuctionGenerator::Parameters::additivity},
+		Member{"budget_factor", &CombinatorialAuctionGenerator::Parameters::budget_factor},
+		Member{"resale_factor", &CombinatorialAuctionGenerator::Parameters::resale_factor},
+		Member{"integers", &CombinatorialAuctionGenerator::Parameters::integers},
+	};
+	// Bind CombinatorialAuctionGenerator and remove intermediate Parameter class
+	auto combinatorial_auction_gen = py::class_<CombinatorialAuctionGenerator>{m, "CombinatorialAuctionGenerator"};
+	def_generate_instance(combinatorial_auction_gen, combinatorial_auction_params);
+	def_init(combinatorial_auction_gen, combinatorial_auction_params);
+	def_attributes(combinatorial_auction_gen, combinatorial_auction_params);
+	def_iterator(combinatorial_auction_gen);
+	combinatorial_auction_gen.def("seed", &CombinatorialAuctionGenerator::seed, py::arg("seed"));
 }
 
 /******************************************
