@@ -6,18 +6,15 @@
 
 #include "ecole/instance/set-cover.hpp"
 
+#include "instance/unit-tests.hpp"
+
 using namespace ecole;
 
-TEST_CASE("SetCoverGenerator unit test", "[instance]") {
-	auto generator = instance::SetCoverGenerator{};
-
-	static auto constexpr n_instances = 10;
-	for (auto i = 0; i < n_instances; ++i) {
-		auto model = generator.next();
-	}
+TEST_CASE("SetCoverGenerator unit test", "[unit][instance]") {
+	instance::unit_tests(instance::SetCoverGenerator{});
 }
 
-TEST_CASE("Generate set cover instances", "[instance]") {
+TEST_CASE("Instances generated are set cover instances", "[instance]") {
 	auto constexpr params = instance::SetCoverGenerator::Parameters{};
 	auto generator = instance::SetCoverGenerator{};
 	auto model = generator.next();
