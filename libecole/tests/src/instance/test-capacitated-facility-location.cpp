@@ -2,13 +2,10 @@
 
 #include "ecole/instance/capacitated-facility-location.hpp"
 
+#include "instance/unit-tests.hpp"
+
 using namespace ecole;
 
-TEST_CASE("CapaciteatedFacilityLocationGenerator unit test", "[instance]") {
-	auto generator = instance::CapacitatedFacilityLocationGenerator{};
-
-	static auto constexpr n_instances = 10;
-	for (auto i = 0; i < n_instances; ++i) {
-		auto model = generator.next();
-	}
+TEST_CASE("CapaciteatedFacilityLocationGenerator unit test", "[unit][instance]") {
+	instance::unit_tests(instance::CapacitatedFacilityLocationGenerator{});
 }
