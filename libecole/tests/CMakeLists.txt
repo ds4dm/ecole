@@ -20,6 +20,7 @@ add_executable(
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
 
+	src/instance/unit-tests.cpp
 	src/instance/test-set-cover.cpp
 	src/instance/test-independent-set.cpp
 	src/instance/test-combinatorial-auction.cpp

@@ -2,13 +2,10 @@
 
 #include "ecole/instance/independent-set.hpp"
 
+#include "instance/unit-tests.hpp"
+
 using namespace ecole;
 
-TEST_CASE("IndependentSetGenerator unit test", "[instance]") {
-	auto generator = instance::IndependentSetGenerator{};
-
-	static auto constexpr n_instances = 10;
-	for (auto i = 0; i < n_instances; ++i) {
-		auto model = generator.next();
-	}
+TEST_CASE("IndependentSetGenerator unit test", "[unit][instance]") {
+	instance::unit_tests(instance::IndependentSetGenerator{});
 }
