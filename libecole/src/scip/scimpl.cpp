@@ -6,7 +6,7 @@
 
 #include "ecole/scip/scimpl.hpp"
 
-#include "scip/utils.hpp"
+#include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
 
