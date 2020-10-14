@@ -5,11 +5,11 @@
 #include <range/v3/view/zip.hpp>
 #include <scip/scipdefplugins.h>
 #include <scip/struct_branch.h>
-#include <scip/utils.hpp>
 
 #include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/type.hpp"
+#include "ecole/scip/utils.hpp"
 
 namespace ecole::observation {
 
