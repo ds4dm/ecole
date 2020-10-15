@@ -28,17 +28,18 @@ template <typename Ptr> struct Member {
 /**
  * Bind the static method `generate_instance` by unpacking the Parameter struct into individual function parameters.
  */
-template <typename PyClass, typename Members> void def_generate_instance(PyClass& py_class, Members&& members_tuple);
+template <typename PyClass, typename MemberTuple>
+void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple);
 
 /**
  * Bind the constructor by unpacking the Parameter struct into individual function parameters.
  */
-template <typename PyClass, typename Members> void def_init(PyClass& py_class, Members&& members_tuple);
+template <typename PyClass, typename MemberTuple> void def_init(PyClass& py_class, MemberTuple&& members_tuple);
 
 /**
  * Bind all the parameters attributes by forwarding the call to get_paramters.
  */
-template <typename PyClass, typename Members> void def_attributes(PyClass& py_class, Members&& members_tuple);
+template <typename PyClass, typename MemberTuple> void def_attributes(PyClass& py_class, MemberTuple&& members_tuple);
 
 /**
  * Bind infinite Python iteration using the `next` method.
@@ -143,7 +144,8 @@ void def_generate_instance_impl(PyClass& py_class, Members&&... members) {
 	using Generator = typename PyClass::type;
 	using Parameters = typename Generator::Parameters;
 	// Instantiate the C++ parameters at compile time to get default parameters.
-	static constexpr auto default_params = Parameters{};
+	// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
+	static auto const default_params = Parameters{};
 	// Bind a the static method that takes as input all parameters
 	py_class.def_static(
 		"generate_instance",
@@ -171,12 +173,13 @@ void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple) {
 /**
  * Implementation of def_init to unpack tuple.
  */
-template <typename PyClass, typename... MemberTuple> void def_init_impl(PyClass& py_class, MemberTuple&&... members) {
+template <typename PyClass, typename... Members> void def_init_impl(PyClass& py_class, Members&&... members) {
 	// The C++ class being wrapped
 	using Generator = typename PyClass::type;
 	using Parameters = typename Generator::Parameters;
 	// Instantiate the C++ parameters at compile time to get default parameters.
-	static constexpr auto default_params = Parameters{};
+	// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
+	static auto const default_params = Parameters{};
 	// Bind a constructor that takes as input all parameters
 	py_class.def(
 		// Get the type of each parameter and add it to the Python constructor
@@ -201,20 +204,23 @@ template <typename PyClass, typename MemberTuple> void def_init(PyClass& py_clas
 		std::forward<MemberTuple>(members_tuple));
 }
 
-template <typename PyClass, typename MemberTuple> void def_attributes(PyClass& py_class, MemberTuple&& members_tuple) {
-	// Lambda with core logic to unpack tuple in individual parameters
-	auto def_attributes_impl = [&py_class](auto&&... members) {
-		// The C++ class being wrapped
-		using Generator = typename PyClass::type;
-		// Bind attribute access for each member variable (comma operator fold expression).
-		// Fetch the value on the Parameter object of the C++ class
-		((py_class.def_property_readonly(
-			 members.name, [value = members.value](Generator& self) { return std::invoke(value, self.get_parameters()); })),
-		 ...);
-	};
+template <typename PyClass, typename Member> void def_attributes_impl(PyClass& py_class, Member&& member) {
+	// The C++ class being wrapped
+	using Generator = typename PyClass::type;
+	// Bind attribute access for a given member variable
+	// Fetch the value on the Parameter object of the C++ class
+	py_class.def_property_readonly(
+		member.name, [value = member.value](Generator& self) { return std::invoke(value, self.get_parameters()); });
+}
 
-	// Forward call to lambda in order to unpack the tuple
-	std::apply(def_attributes_impl, std::forward<MemberTuple>(members_tuple));
+template <typename PyClass, typename MemberTuple> void def_attributes(PyClass& py_class, MemberTuple&& members_tuple) {
+	// Forward call to impl in order to unpack the tuple
+	std::apply(
+		[&py_class](auto&&... members) {
+			// Bind attribute access for each member variable (comma operator fold expression).
+			((def_attributes_impl(py_class, std::forward<decltype(members)>(members))), ...);
+		},
+		std::forward<MemberTuple>(members_tuple));
 }
 
 template <typename PyClass> void def_iterator(PyClass& py_class) {
