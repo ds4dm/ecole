@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 
 #include "ecole/instance/abstract.hpp"
 #include "ecole/random.hpp"
