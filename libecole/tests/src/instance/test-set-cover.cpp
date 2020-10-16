@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include <catch2/catch.hpp>
 #include <scip/cons.h>
 #include <scip/cons_linear.h>
@@ -11,7 +13,10 @@
 using namespace ecole;
 
 TEST_CASE("SetCoverGenerator unit test", "[unit][instance]") {
-	instance::unit_tests(instance::SetCoverGenerator{});
+	// Keep problem size reasonable for tests
+	std::size_t constexpr n_rows = 100;
+	std::size_t constexpr n_cols = 200;
+	instance::unit_tests(instance::SetCoverGenerator{{n_rows, n_cols}});
 }
 
 TEST_CASE("Instances generated are set cover instances", "[instance]") {
