@@ -19,10 +19,28 @@ namespace ecole::scip {
  *
  * The arguments are forwarded to SCIPcreateConsBasicLinear.
  */
-template <typename... Args> auto create_cons_basic_linear(SCIP* scip, Args&&... args) {
+inline auto create_cons_basic_linear(
+	SCIP* scip,
+	char const* name,
+	std::size_t n_vars,
+	SCIP_VAR const* const* vars,
+	SCIP_Real const* vals,
+	SCIP_Real lhs,
+	SCIP_Real rhs) {
+
 	SCIP_CONS* cons = nullptr;
-	scip::call(SCIPcreateConsBasicLinear, scip, &cons, std::forward<Args>(args)...);
-	return std::unique_ptr{cons, [scip](SCIP_CONS* ptr) { scip::call(SCIPreleaseCons, scip, &ptr); }};
+	scip::call(
+		SCIPcreateConsBasicLinear,
+		scip,
+		&cons,
+		name,
+		static_cast<int>(n_vars),
+		const_cast<SCIP_VAR**>(vars),
+		const_cast<SCIP_Real*>(vals),
+		lhs,
+		rhs);
+	auto deleter = [scip](SCIP_CONS* ptr) { scip::call(SCIPreleaseCons, scip, &ptr); };
+	return std::unique_ptr<SCIP_CONS, decltype(deleter)>{cons, deleter};
 }
 
 }  // namespace ecole::scip
