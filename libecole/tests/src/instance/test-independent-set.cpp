@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include <catch2/catch.hpp>
 
 #include "ecole/instance/independent-set.hpp"
@@ -7,5 +9,7 @@
 using namespace ecole;
 
 TEST_CASE("IndependentSetGenerator unit test", "[unit][instance]") {
-	instance::unit_tests(instance::IndependentSetGenerator{});
+	// Keep problem size reasonable for tests
+	std::size_t constexpr n_nodes = 100;
+	instance::unit_tests(instance::IndependentSetGenerator{{n_nodes}});
 }
