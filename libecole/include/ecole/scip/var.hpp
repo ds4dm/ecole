@@ -21,7 +21,8 @@ namespace ecole::scip {
 template <typename... Args> auto create_var_basic(SCIP* scip, Args&&... args) {
 	SCIP_VAR* var = nullptr;
 	scip::call(SCIPcreateVarBasic, scip, &var, std::forward<Args>(args)...);
-	return std::unique_ptr{var, [scip](SCIP_VAR* ptr) { scip::call(SCIPreleaseVar, scip, &ptr); }};
+	auto deleter = [scip](SCIP_VAR* ptr) { scip::call(SCIPreleaseVar, scip, &ptr); };
+	return std::unique_ptr<SCIP_VAR, decltype(deleter)>{var, deleter};
 }
 
 }  // namespace ecole::scip
