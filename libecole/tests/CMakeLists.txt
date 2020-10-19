@@ -48,23 +48,13 @@ target_compile_definitions(
 
 target_include_directories(test-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-conan_cmake_run(
-	CONANFILE conanfile.txt
-	BASIC_SETUP
-	CMAKE_TARGETS
-	NO_OUTPUT_DIRS
-	KEEP_RPATHS
-	SKIP_STD
-	OUTPUT_QUIET
-)
-find_package(SCIP REQUIRED)
-
 target_link_libraries(
 	test-libecole
 	PRIVATE
 		Ecole::libecole
 		Ecole::warnings
 		Ecole::sanitizers
+		CONAN_PKG::range-v3
 		CONAN_PKG::catch2
 		libscip
 )
