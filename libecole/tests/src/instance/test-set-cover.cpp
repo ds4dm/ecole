@@ -7,6 +7,7 @@
 #include <scip/var.h>
 
 #include "ecole/instance/set-cover.hpp"
+#include "ecole/scip/cons.hpp"
 
 #include "instance/unit-tests.hpp"
 
@@ -39,14 +40,12 @@ TEST_CASE("Instances generated are set cover instances", "[instance]") {
 
 	SECTION("Constraints contain only ones") {
 		for (auto* const cons : model.constraints()) {
-			SCIP_Bool success = FALSE;
-			REQUIRE(SCIPconsGetLhs(scip_ptr, cons, &success) == 1.);
-			REQUIRE(success == TRUE);
+			auto const inf = SCIPinfinity(scip_ptr);
+			REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == 1.);
+			REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == inf);
 
-			auto* const cons_values = SCIPgetValsLinear(scip_ptr, cons);
-			auto const cons_n_values = SCIPgetNVarsLinear(scip_ptr, cons);
-			for (auto i = 0; i < cons_n_values; ++i) {
-				REQUIRE(cons_values[i] == 1.);
+			for (auto const val : scip::get_vals_linear(scip_ptr, cons)) {
+				REQUIRE(val == 1.);
 			}
 		}
 	}
