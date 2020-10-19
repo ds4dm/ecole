@@ -7,6 +7,7 @@ add_library(
 	src/utility/chrono.cpp
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
+	src/scip/cons.cpp
 	src/scip/exception.cpp
 	src/scip/row.cpp
 	src/instance/set-cover.cpp
