@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 
 #include <catch2/catch.hpp>
@@ -60,15 +61,21 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 		// Correct constraints bounds
 		auto const inf = SCIPinfinity(scip_ptr);
 		for (auto* cons : conss) {
+			auto const coefs = scip::get_vals_linear(scip_ptr, cons);
 			if (is_demand(cons)) {
-				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == -1.0);
-				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
+				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == 1.0);
+				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == inf);
+				REQUIRE(coefs.size() == params.n_facilities);
+				REQUIRE(std::all_of(coefs.begin(), coefs.end(), [](auto coef) { return coef == 1.; }));
 			} else if (is_capacity(cons)) {
-				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == -0.0);
 				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
+				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
+				REQUIRE(coefs.size() == params.n_customers + 1);
 			} else if (is_thightening(cons)) {
-				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == -0.0);
 				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
+				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
+				REQUIRE(coefs.size() == 2);
+				REQUIRE(std::all_of(coefs.begin(), coefs.end(), [](auto coef) { return std::abs(coef) == 1.; }));
 			}
 		}
 	}

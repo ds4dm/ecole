@@ -146,12 +146,13 @@ auto add_demand_cons(SCIP* scip, xt::xtensor<SCIP_VAR*, 2> const& serving_vars) 
 	// Asserting row major as we pass the pointer as an array to SCIP when creating constraints
 	assert(serving_vars.layout() == xt::layout_type::row_major);
 
-	// FIXME why not 1. and lhs?
-	auto const coefs = xvector({n_facilities}, -1.);
+	// Note change to the negative of the constraint from
+	// Gasse et al. Exact combinatorial optimization with graph convolutional neural networks 2019.
+	auto const coefs = xvector({n_facilities}, 1.);
 	for (std::size_t customer_idx = 0; customer_idx < n_customers; ++customer_idx) {
 		auto const name = fmt::format("d_{}", customer_idx);
 		auto cons = scip::create_cons_basic_linear(
-			scip, name.c_str(), n_facilities, &serving_vars(customer_idx, 0), coefs.data(), -inf, -1);
+			scip, name.c_str(), n_facilities, &serving_vars(customer_idx, 0), coefs.data(), 1.0, inf);
 		scip::call(SCIPaddCons, scip, cons.get());
 	}
 }
