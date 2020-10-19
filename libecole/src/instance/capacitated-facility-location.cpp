@@ -234,7 +234,7 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 	// transport costs from facility to customers
 	auto const transportation_costs = static_cast<xmatrix>(
 		unit_transportation_costs(parameters.n_customers, parameters.n_facilities, random_engine) *
-		xt::view(demands, xt::all(), 1));
+		xt::view(demands, xt::all(), xt::newaxis()));
 
 	// Scale capacities according to ration after sampling as stated in Cornuejols et al. (1991).
 	capacities = capacities * parameters.ratio * xt::sum(demands)() / xt::sum(capacities)();
