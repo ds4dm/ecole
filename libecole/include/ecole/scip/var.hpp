@@ -9,6 +9,19 @@
 
 namespace ecole::scip {
 
+/** Scip deleter for Var pointers. */
+class VarReleaser {
+public:
+	/** Capture the SCIP pointer but does not extend its lifetime. */
+	VarReleaser(SCIP* scip_) noexcept : scip(scip_){};
+
+	/** Call SCIPvarRelease */
+	void operator()(SCIP_VAR* ptr);
+
+private:
+	SCIP* scip = nullptr;
+};
+
 /**
  * Create a variable with automatic management (RAII).
  *
@@ -18,11 +31,7 @@ namespace ecole::scip {
  *
  * The arguments are forwarded to SCIPcreateVarBasic.
  */
-template <typename... Args> auto create_var_basic(SCIP* scip, Args&&... args) {
-	SCIP_VAR* var = nullptr;
-	scip::call(SCIPcreateVarBasic, scip, &var, std::forward<Args>(args)...);
-	auto deleter = [scip](SCIP_VAR* ptr) { scip::call(SCIPreleaseVar, scip, &ptr); };
-	return std::unique_ptr<SCIP_VAR, decltype(deleter)>{var, deleter};
-}
+auto create_var_basic(SCIP* scip, char const* name, SCIP_Real lb, SCIP_Real ub, SCIP_Real obj, SCIP_VARTYPE vartype)
+	-> std::unique_ptr<SCIP_VAR, VarReleaser>;
 
 }  // namespace ecole::scip

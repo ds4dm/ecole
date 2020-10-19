@@ -12,9 +12,13 @@
 
 namespace ecole::scip {
 
+/** Scip deleter for Cons pointers. */
 class ConsReleaser {
 public:
+	/** Capture the SCIP pointer but does not extend its lifetime. */
 	ConsReleaser(SCIP* scip_) noexcept : scip(scip_){};
+
+	/** Call SCIPconsRelease */
 	void operator()(SCIP_CONS* ptr);
 
 private:

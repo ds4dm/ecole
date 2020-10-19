@@ -26,7 +26,7 @@ auto create_cons_basic_linear(
 		const_cast<SCIP_Real*>(vals),
 		lhs,
 		rhs);
-	return {cons, ConsReleaser(scip)};
+	return {cons, ConsReleaser{scip}};
 }
 
 auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {

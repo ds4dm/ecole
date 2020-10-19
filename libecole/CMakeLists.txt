@@ -8,6 +8,7 @@ add_library(
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
 	src/scip/cons.cpp
+	src/scip/var.cpp
 	src/scip/exception.cpp
 	src/scip/row.cpp
 	src/instance/set-cover.cpp
