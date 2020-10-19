@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 
+#include <nonstd/span.hpp>
 #include <scip/cons_linear.h>
 #include <scip/scip.h>
 #include <scip/scip_cons.h>
@@ -39,7 +40,8 @@ auto create_cons_basic_linear(
 	SCIP_Real rhs) -> std::unique_ptr<SCIP_CONS, ConsReleaser>;
 
 auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real>;
-
 auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real>;
+
+auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_Real const>;
 
 }  // namespace ecole::scip

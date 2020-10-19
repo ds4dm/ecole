@@ -38,13 +38,20 @@ auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::opti
 	return rhs;
 }
 
-auto cons_get_lhs(SCIP* const scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {
+auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {
 	SCIP_Bool success = FALSE;
 	auto const lhs = SCIPconsGetLhs(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons), &success);
 	if (success == FALSE) {
 		return {};
 	}
 	return lhs;
+}
+
+auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_Real const> {
+	return {
+		SCIPgetValsLinear(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons)),
+		static_cast<std::size_t>(SCIPgetNVarsLinear(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons))),
+	};
 }
 
 }  // namespace ecole::scip
