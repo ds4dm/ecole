@@ -82,53 +82,6 @@ def test_CombinatorialAuction_instance():
 
 
 @requires_pyscipopt
-def test_CapacitatedFacilityLocation_instance():
-    """Test output of capacitated facility location auction instance."""
-    instances = ecole.instance.CapacitatedFacilityLocationGenerator()
-    instance = next(instances)
-    model = instance.as_pyscipopt()
-
-    # assert the correct number of variables
-    assert (
-        model.getNVars() == instances.n_customers * instances.n_facilities + instances.n_facilities
-    )
-
-    # assert the correct number of constraints
-    num_demand_constraints = instances.n_customers
-    num_capacity_constraints = instances.n_facilities
-    num_tightening_constraints = instances.n_customers * instances.n_facilities
-    assert (
-        model.getNConss()
-        == num_demand_constraints + num_capacity_constraints + num_tightening_constraints
-    )
-
-    # assert minimization problem
-    assert model.getObjectiveSense() == "minimize"
-
-    # assert that the correct variables binary/continous
-    for var in model.getVars():
-        if "y_" in var.name:
-            assert var.vtype() == "BINARY"
-        else:
-            assert var.vtype() == "CONTINUOUS"
-            assert var.getLbGlobal() == 0
-            assert var.getUbGlobal() == 1
-
-    # assert that constraints have the correct bound and form if applicable
-    for constraint in model.getConss():
-        if "demand_" in constraint.name:
-            assert model.getRhs(constraint) == -1
-            for coef in model.getValsLinear(constraint).values():
-                assert coef == -1
-
-        elif "capacity_" in constraint.name:
-            assert model.getRhs(constraint) == 0
-
-        elif "tightening_" in constraint.name:
-            assert model.getRhs(constraint) == 0
-
-
-@requires_pyscipopt
 def test_IndependentSet_instance():
     """Test output of independent set instance."""
     instances = ecole.instance.IndependentSetGenerator()
