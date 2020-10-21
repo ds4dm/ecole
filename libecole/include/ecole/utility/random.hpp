@@ -44,7 +44,7 @@ auto arg_choice(std::size_t n_samples, std::vector<T> weights, RandomEngine& ran
 	assert(n_samples <= n_items);
 
 	// Compute (modified) keys as weight/randexp(1) reusing weights vector.
-	auto randexp = std::exponential_distribution<T>{T{1.}};
+	auto randexp = std::exponential_distribution<T>{1.};
 	for (auto& w : weights) {
 		w /= randexp(random_engine);
 	}
