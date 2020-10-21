@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <random>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -41,7 +42,9 @@ auto arg_choice(std::size_t n_samples, std::vector<T> weights, RandomEngine& ran
 	static_assert(std::is_floating_point_v<T>, "Weights must be real numbers.");
 
 	auto const n_items = weights.size();
-	assert(n_samples <= n_items);
+	if (n_samples > n_items) {
+		throw std::invalid_argument{"Cannot sample more than there are items."};
+	}
 
 	// Compute (modified) keys as weight/randexp(1) reusing weights vector.
 	auto randexp = std::exponential_distribution<T>{1.};
