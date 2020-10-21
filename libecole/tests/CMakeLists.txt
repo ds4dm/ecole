@@ -7,6 +7,7 @@ add_executable(
 	src/test-random.cpp
 
 	src/utility/test-chrono.cpp
+	src/utility/test-vector.cpp
 
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
