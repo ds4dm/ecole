@@ -1,4 +1,5 @@
 #include <set>
+#include <stdexcept>
 
 #include <catch2/catch.hpp>
 
@@ -23,6 +24,13 @@ TEST_CASE("Choice return indices within items", "[utility]") {  // NOLINT
 	for (auto i : indices) {
 		REQUIRE(i <= weights.size());
 	}
+}
+
+TEST_CASE("Throw on invalid input", "[utility]") {
+	auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+	auto weights = std::vector<double>{1., 2., 1., 3.};  // NOLINT(readability-magic-numbers)
+	std::size_t const n_samples = weights.size() + 1;
+	REQUIRE_THROWS_AS(utility::arg_choice(n_samples, weights, random_engine), std::invalid_argument);
 }
 
 TEST_CASE("Null weighted items are never selected", "[utility]") {  // NOLINT
