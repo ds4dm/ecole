@@ -47,5 +47,6 @@ auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::opti
 auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real>;
 
 auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_Real const>;
+auto get_vars_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_VAR* const>;
 
 }  // namespace ecole::scip
