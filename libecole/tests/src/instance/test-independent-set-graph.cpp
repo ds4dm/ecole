@@ -46,6 +46,8 @@ TEST_CASE("Unit test graph class used in IndependentSet", "[instance][unit]") {
 
 	SECTION("Get the number of nodes") { REQUIRE(graph.n_nodes() == n_nodes); }
 
+	SECTION("Get the number of edges") { REQUIRE(graph.n_edges() == edges.size()); }
+
 	SECTION("Get degrees") {
 		REQUIRE(graph.degree(0) == 2);
 		REQUIRE(graph.degree(1) == 1);
