@@ -54,4 +54,11 @@ auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd
 	};
 }
 
+auto get_vars_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_VAR* const> {
+	return {
+		SCIPgetVarsLinear(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons)),
+		static_cast<std::size_t>(SCIPgetNVarsLinear(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons))),
+	};
+}
+
 }  // namespace ecole::scip
