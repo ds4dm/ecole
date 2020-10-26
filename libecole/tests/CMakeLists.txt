@@ -25,6 +25,7 @@ add_executable(
 	src/instance/unit-tests.cpp
 	src/instance/test-set-cover.cpp
 	src/instance/test-independent-set.cpp
+	src/instance/test-independent-set-graph.cpp
 	src/instance/test-combinatorial-auction.cpp
 	src/instance/test-capacitated-facility-location.cpp
 
@@ -48,7 +49,12 @@ target_compile_definitions(
 	test-libecole PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
 )
 
-target_include_directories(test-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(
+	test-libecole
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/src
+		${CMAKE_SOURCE_DIR}/libecole/src  # Add libecole private include
+	)
 
 target_link_libraries(
 	test-libecole
