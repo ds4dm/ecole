@@ -50,8 +50,7 @@ using value_type = scip::real;
 using xvector = xt::xtensor<value_type, 1>;
 using xmatrix = xt::xtensor<value_type, 2>;
 
-/**
- * Function to sample the unit transporation costs matrix between customers and facilities.
+/** Function to sample the unit transporation costs matrix between customers and facilities.
  *
  * The costs are sampled per unit of demand, as described in Cornuejols et al. (1991).
  */
@@ -72,8 +71,7 @@ auto unit_transportation_costs(std::size_t n_customers, std::size_t n_facilities
 	return costs;
 }
 
-/**
- * Create and add a single binary variable the representing whether to open the facility.
+/** Create and add a single binary variable the representing whether to open the facility.
  *
  * Variable are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured by
  * the scip*.
@@ -87,10 +85,9 @@ auto add_facility_var(SCIP* scip, std::size_t idx, scip::real cost) -> SCIP_VAR*
 	return var_ptr;
 }
 
-/**
- * Create and add all variables for opening the facilities.
+/** Create and add all variables for opening the facilities.
  *
- * Varaibles pointers are returned in a array with as many entries as there are facilities.
+ * Variables pointers are returned in a array with as many entries as there are facilities.
  */
 auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
 	auto vars = xt::xtensor<SCIP_VAR*, 1>{fixed_costs.shape(), nullptr};
@@ -101,8 +98,7 @@ auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
 	return vars;
 }
 
-/**
- * Create and add a single continuous variable the for the fraction of customer demand served by the facility.
+/** Create and add a single continuous variable the for the fraction of customer demand served by the facility.
  *
  * Variable are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured by
  * the scip*.
@@ -116,8 +112,7 @@ auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_
 	return var_ptr;
 }
 
-/**
- * Create and add all variables for serving the fraction of customer demands from facilities.
+/** Create and add all variables for serving the fraction of customer demands from facilities.
  *
  * Variables pointers are returned in a matrix where rows reprensent customers and columns reprensent facilities.
  */
@@ -133,8 +128,7 @@ auto add_serving_vars(SCIP* scip, xmatrix const& transportation_costs) {
 	return vars;
 }
 
-/**
- * Add n_customers constraints for meeting customer demands.
+/** Add n_customers constraints for meeting customer demands.
  *
  * For every customer add a constraint that their demand is met through all facilities.
  * That is, fractions served through each facilities sum to one.
@@ -157,8 +151,7 @@ auto add_demand_cons(SCIP* scip, xt::xtensor<SCIP_VAR*, 2> const& serving_vars) 
 	}
 }
 
-/**
- * Add n_facilities constraints stating that facilities cannot exceed their capacity.
+/** Add n_facilities constraints stating that facilities cannot exceed their capacity.
  *
  * For each facility the sum of all fraction of demand served, multiplied by the demand, must be smaller than the
  * facility capacity.
@@ -189,8 +182,7 @@ auto add_capacity_cons(
 	}
 }
 
-/**
- * Add n_customers * n_facilities constraint that tighten the LP relaxation.
+/** Add n_customers * n_facilities constraint that tighten the LP relaxation.
  *
  * A facility cannot serve demand if it is not open.
  * Constraints are relased automatically (through unique_ptr in scip::create_cons_basic_linear).
