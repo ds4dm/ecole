@@ -44,6 +44,7 @@ public:
 	[[nodiscard]] auto degree(Node n) const noexcept -> std::size_t { return edges[n].size(); }
 	[[nodiscard]] auto neighbors(Node n) const noexcept -> std::vector<Node> const& { return edges[n]; }
 	[[nodiscard]] auto are_connected(Node popular, Node unpopular) const -> bool;
+	[[nodiscard]] auto n_edges() const noexcept -> std::size_t;
 
 	/** Apply a function on all edges in the graph.
 	 *

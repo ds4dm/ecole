@@ -27,6 +27,16 @@ auto Graph::are_connected(Node popular, Node unpopular) const -> bool {
 	return std::find(neighbors(unpopular).begin(), neighbors(unpopular).end(), popular) != neighbors(unpopular).end();
 }
 
+auto Graph::n_edges() const noexcept -> std::size_t {
+	auto count = std::size_t{0};
+	for (auto const& neighbors : edges) {
+		count += neighbors.size();
+	}
+	// Each edge is stored twice
+	assert(count % 2 == 0);
+	return count / 2;
+}
+
 void Graph::add_edge(Edge edge) {
 	assert(!are_connected(edge.first, edge.second));
 	edges[edge.first].push_back(edge.second);
