@@ -13,6 +13,7 @@ add_library(
 	src/scip/row.cpp
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
+	src/instance/independent-set-graph.cpp
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
 	src/reward/isdone.cpp
