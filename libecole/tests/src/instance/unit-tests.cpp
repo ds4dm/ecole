@@ -1,62 +1,43 @@
 #include <cstddef>
 
+#include <range/v3/view/zip.hpp>
 #include <scip/cons_linear.h>
 #include <scip/scip.h>
 
+#include "ecole/scip/cons.hpp"
+
 #include "unit-tests.hpp"
+
+namespace views = ranges::views;
 
 namespace ecole::instance {
 
 namespace {
 
-auto same_lhs(SCIP* scip1, SCIP_Cons* constraint1, SCIP* scip2, SCIP_Cons* constraint2) noexcept -> bool {
-	SCIP_Bool success1 = FALSE;
-	SCIP_Bool success2 = FALSE;
-	auto const lhs1 = SCIPconsGetLhs(scip1, constraint1, &success1);
-	auto const lhs2 = SCIPconsGetLhs(scip2, constraint2, &success2);
-	if (success1 == FALSE) {
-		return false;
-	}
-	if (success2 == FALSE) {
-		return false;
-	}
-	return lhs1 == lhs2;
-}
-
-auto same_rhs(SCIP* scip1, SCIP_Cons* constraint1, SCIP* scip2, SCIP_Cons* constraint2) noexcept -> bool {
-	SCIP_Bool success1 = FALSE;
-	SCIP_Bool success2 = FALSE;
-	auto const rhs1 = SCIPconsGetRhs(scip1, constraint1, &success1);
-	auto const rhs2 = SCIPconsGetRhs(scip2, constraint2, &success2);
-	if (success1 == FALSE) {
-		return false;
-	}
-	if (success2 == FALSE) {
-		return false;
-	}
-	return rhs1 == rhs2;
-}
-
 auto same_constraint_permutation(SCIP* scip1, SCIP_Cons* constraint1, SCIP* scip2, SCIP_Cons* constraint2) noexcept
 	-> bool {
-	if (!same_lhs(scip1, constraint1, scip2, constraint2)) {
+	if (scip::cons_get_lhs(scip1, constraint1) != scip::cons_get_lhs(scip2, constraint2)) {
 		return false;
 	}
-	if (!same_rhs(scip1, constraint1, scip2, constraint2)) {
-		return false;
-	}
-
-	auto* const cons_values1 = SCIPgetValsLinear(scip1, constraint1);
-	auto const cons_n_values1 = static_cast<std::size_t>(SCIPgetNVarsLinear(scip1, constraint1));
-	auto* const cons_values2 = SCIPgetValsLinear(scip2, constraint2);
-	auto const cons_n_values2 = static_cast<std::size_t>(SCIPgetNVarsLinear(scip2, constraint2));
-
-	if (cons_n_values1 != cons_n_values2) {
+	if (scip::cons_get_rhs(scip1, constraint1) != scip::cons_get_rhs(scip2, constraint2)) {
 		return false;
 	}
 
-	for (std::size_t i = 0; i < cons_n_values1; ++i) {
-		if (cons_values1[i] != cons_values2[i]) {
+	auto vals1 = scip::get_vals_linear(scip1, constraint1);
+	auto vals2 = scip::get_vals_linear(scip2, constraint2);
+	if (vals1.size() != vals2.size()) {
+		return false;
+	}
+	for (auto [v1, v2] : views::zip(vals1, vals2)) {
+		if (v1 != v2) {
+			return false;
+		}
+	}
+
+	auto vars1 = scip::get_vars_linear(scip1, constraint1);
+	auto vars2 = scip::get_vars_linear(scip2, constraint2);
+	for (auto [v1, v2] : views::zip(vars1, vars2)) {
+		if (SCIPvarGetIndex(v1) != SCIPvarGetIndex(v2)) {
 			return false;
 		}
 	}
