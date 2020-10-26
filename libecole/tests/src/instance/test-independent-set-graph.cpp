@@ -103,3 +103,35 @@ TEST_CASE("Unit test graph class used in IndependentSet", "[instance][unit]") {
 		}
 	}
 }
+
+TEST_CASE("Erdos Renyi builder", "[instance]") {
+	// These tests are actually not random because the random engine is always the same, but it could be changed that
+	// the results should hold with very high probability
+	auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+	auto constexpr n_nodes = 100;
+	auto constexpr edge_prob = 0.5;
+	auto graph = Graph::erdos_renyi(n_nodes, edge_prob, random_engine);
+
+	// Number of edges follows a binomial(C(n_nodes,2), edge_prob).
+	// With the Chernov Bounds, we compute that this is true with proba ~ 1-1e-40
+	auto constexpr likely_edge_bound = 2000;
+	REQUIRE(graph.n_edges() >= likely_edge_bound);
+	REQUIRE(graph.n_edges() <= n_nodes * (n_nodes - 1) - likely_edge_bound);
+
+	// Node degree follows a binomial(n_nodes-1, edge_prob).
+	// With the Chernov Bounds, we compute that this is true with proba ~ 1-1e-16
+	auto constexpr likely_degree_bound = 10;
+	for (auto node = Graph::Node{0}; node < graph.n_nodes(); ++node) {
+		REQUIRE(graph.degree(node) >= likely_degree_bound);
+		REQUIRE(graph.degree(node) <= n_nodes - 1 - likely_degree_bound);
+	}
+}
+
+TEST_CASE("Barabasi Albert builder", "[instance]") {
+	auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+	auto constexpr n_nodes = 100;
+	auto constexpr affinity = 11;
+	auto graph = Graph::barabasi_albert(n_nodes, affinity, random_engine);
+	// Deterministic, according to building algorithm
+	REQUIRE(graph.n_edges() == (n_nodes - affinity - 1) * affinity + affinity);
+}
