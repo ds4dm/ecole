@@ -79,27 +79,3 @@ def test_CombinatorialAuction_instance():
     # assert all variables are binary
     for var in model.getVars():
         assert var.vtype() == "BINARY"
-
-
-@requires_pyscipopt
-def test_IndependentSet_instance():
-    """Test output of independent set instance."""
-    instances = ecole.instance.IndependentSetGenerator()
-    instance = next(instances)
-    model = instance.as_pyscipopt()
-
-    # assert a variable for each node
-    assert model.getNVars() == instances.n_nodes
-
-    # assert minimization problem
-    assert model.getObjectiveSense() == "maximize"
-
-    # assert all variables are binary
-    for var in model.getVars():
-        assert var.vtype() == "BINARY"
-
-    # assert coefficient of variable in each constraint is 1.
-    for constraint in model.getConss():
-        assert model.getRhs(constraint) == 1
-        for coef in model.getValsLinear(constraint).values():
-            assert coef == 1
