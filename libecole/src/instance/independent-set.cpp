@@ -10,6 +10,7 @@
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/scip/cons.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/utils.hpp"
 #include "ecole/scip/var.hpp"
 
 #include "instance/independent-set-graph.hpp"
@@ -140,6 +141,7 @@ scip::Model IndependentSetGenerator::generate_instance(RandomEngine& random_engi
 	auto const graph = make_graph(parameters, random_engine);
 	auto model = scip::Model::prob_basic();
 	auto* const scip = model.get_scip_ptr();
+	scip::call(SCIPsetObjsense, scip, SCIP_OBJSENSE_MAXIMIZE);
 
 	auto vars = add_node_vars(scip, graph.n_nodes());
 	auto cons_creator = ConstraintCreator{graph.n_nodes()};
