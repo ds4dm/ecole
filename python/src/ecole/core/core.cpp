@@ -57,15 +57,16 @@ PYBIND11_MODULE(core, m) {
 			Generate a pseudo-random value.
 
 			The state of the engine is advanced by one position.
-		)")                          // NOLINT(misc-redundant-expression)  pybind specific syntax
+		)")
 		.def(py::self == py::self)   // NOLINT(misc-redundant-expression)  pybind specific syntax
 		.def(py::self != py::self);  // NOLINT(misc-redundant-expression)  pybind specific syntax
 
-	m.def("seed", &ecole::seed, py::arg("val"), "Seed the main source of randomness in Ecole.");
-	m.def(
-		"spawn_random_engine",
-		&ecole::spawn_random_engine,
-		"Create new random engine deriving from main source of randomness");
+	m.def("seed", &ecole::seed, py::arg("val"), "Seed the global source of randomness in Ecole.");
+	m.def("spawn_random_engine", &ecole::spawn_random_engine, R"(
+		Create new random engine deriving from global source of randomness.
+
+		The global source of randomness is advance so two random engien created successively have different states.
+	)");
 
 	scip::bind_submodule(m.def_submodule("scip"));
 	observation::bind_submodule(m.def_submodule("observation"));
