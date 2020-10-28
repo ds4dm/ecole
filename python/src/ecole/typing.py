@@ -5,7 +5,7 @@ Ecole flexibility relies on
 and therefore requires to explicit the structures at hand.
 """
 
-from typing import TypeVar, Tuple
+from typing import TypeVar, Tuple, Iterator, Any, overload
 
 try:
     from typing import Protocol
@@ -197,4 +197,36 @@ class ObservationFunction(Protocol[Observation]):
             The return is passed to the user by the environment.
 
         """
+        ...
+
+
+class InstanceGenerator(Protocol):
+    """A class to generate generate and iteratate over random problem instance.
+
+    The class combines a :py:class:`~ecole.RandomEngine` with the static function :py:meth:`generate_instance`
+    to provide iterating capabilities.
+    """
+
+    @staticmethod
+    def generate_instance(
+        *args: Any, random_engine: ecole.RandomEngine, **kwargs: Any
+    ) -> ecole.scip.Model:
+        """Generate a problem instance using the random engine for any source of randomness."""
+        ...
+
+    @overload
+    def __init__(self, *args: Any, random_engine: ecole.RandomEngine, **kwargs: Any) -> None:
+        """Create an iterator with the given parameters and a copy of the random state."""
+        ...
+
+    def __next__(self) -> ecole.scip.Model:
+        """Generate a problem instance using the random engine of the class."""
+        ...
+
+    def __iter__(self) -> Iterator[ecole.scip.Model]:
+        """Return itself as an iterator."""
+        ...
+
+    def seed(self, int) -> None:
+        """Seed the random engine of the class."""
         ...
