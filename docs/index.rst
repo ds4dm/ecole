@@ -68,6 +68,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    howto/reward-functions.rst
    howto/create-functions.rst
    howto/create-environments.rst
+   howto/instances.rst
 
 .. toctree::
    :caption: Tutorials

@@ -1,3 +1,5 @@
+.. _create-new-environment:
+
 Create New Environments
 =======================
 
