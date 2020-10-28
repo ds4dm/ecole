@@ -1,14 +1,12 @@
 Generate Problem Instances
 ==========================
 
-.. FIXME add typing reference
-
-Ecole contains a number of problem instance generators in the ``ecole.instance`` module.
+Ecole contains a number of problem :py:class:`~ecole.typing.InstanceGenerator` in the ``ecole.instance`` module.
 They generate instances as :py:class:`ecole.scip.Model`.
 To generate instances, first instantiate a generator.
 All generators are constructed with different parameters depending on the problem type.
-Instance generator are infinite `Python iterators <https://wiki.python.org/moin/Iterator>`_ so we can iterate over them
-using any of Python iterating mechnisms.
+An :py:class:`~ecole.typing.InstanceGenerator` is infinite `Python iterators <https://wiki.python.org/moin/Iterator>`_ so
+we can iterate over them using any of Python iterating mechnisms.
 
 For instance, to generate `set covering problems <https://en.wikipedia.org/wiki/Set_cover_problem>`_, one would use
 :py:class:`~ecole.instance.SetCoverGenerator` in the following fashion:
@@ -35,9 +33,8 @@ For users more comfortable with iterators, other possibilities exists, such as
 
 Generators Random States
 ------------------------
-Instance generators holds a random state to generate instance.
-.. FIXME add typing reference
-This can be better understood when using the ``seed`` method of the generators.
+An :py:class:`~ecole.typing.InstanceGenerator` holds a random state to generate instance.
+This can be better understood when using the :py:meth:`~ecole.typing.InstanceGenerator.seed` method of the generator.
 
 .. code-block:: python
 
@@ -85,7 +82,7 @@ A typical example training voer 1000 instances/episodes would look like:
 
 Adapt Instance Generators
 -------------------------
-Instance generators only create instances for users to consume.
+An :py:class:`~ecole.typing.InstanceGenerator` only create instances for users to consume.
 Therefore, there is no constraints on how iterating over instance should be done, it is entirely up to the user.
 Using different data structure, such as lists, dictionaries, *etc.* is completely valid because environments never
 "*see*" generators, only the instances.
@@ -139,9 +136,8 @@ Another useful case it to generate instances of a same problem type but with dif
 If there are few different set of parameter to choose from, then we could use the same technique as above.
 However, with more set of parameters (or even infinite), this becomes wasteful (or impossible).
 
-.. FIXME generate_instance
-
-To do this, we can use the generators ``generate_instance`` static function and manually pass a shared random state.
+To do this, we can use the generators :py:meth:`~ecole.typing.InstanceGenerator.generate_instance` static function
+and manually pass a :py:class:`~ecole.RandomEngine`.
 For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
 :py:class:`~ecole.instance.SetCoverGenerator`, one could use
 

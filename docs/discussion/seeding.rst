@@ -25,8 +25,11 @@ because it seeds the :py:class:`~ecole.RandomEngine`., not direclty the episode 
 the :py:class:`~ecole.typing.Dynamics`.
 
 When not explicitly seeded, environment use a :py:class:`~ecole.RandomEngine` derived from Ecole's global source of
-randomness.
+randomness by invoking :py:func:`ecole.spawn_random_engine`.
 By default this source is truly random, but it can be controlled with :py:func:`ecole.seed`.
+
+Similarily, an :py:class:`~ecole.typing.InstanceGenerator` default random engine derived from Ecole global source of
+randomness.
 
 In short we provide the following snippets.
 
