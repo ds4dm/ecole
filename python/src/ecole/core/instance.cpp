@@ -119,6 +119,7 @@ void bind_submodule(py::module const& m) {
 	auto constexpr capacitated_facility_location_params = std::tuple{
 		Member{"n_customers", &CapacitatedFacilityLocationGenerator::Parameters::n_customers},
 		Member{"n_facilities", &CapacitatedFacilityLocationGenerator::Parameters::n_facilities},
+		Member{"continuous_assignment", &CapacitatedFacilityLocationGenerator::Parameters::continuous_assignment},
 		Member{"ratio", &CapacitatedFacilityLocationGenerator::Parameters::ratio},
 	};
 	// Bind CapacitatedFacilityLocationGenerator and remove intermediate Parameter class

@@ -104,9 +104,11 @@ auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
  * the scip*.
  * Their lifetime should not exceed that of the scip* (although that was already implied when creating them).
  */
-auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_idx, scip::real cost) -> SCIP_VAR* {
+auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_idx, scip::real cost, bool continuous)
+	-> SCIP_VAR* {
 	auto const name = fmt::format("s_{}_{}", customer_idx, facility_idx);
-	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., cost, SCIP_VARTYPE_CONTINUOUS);
+	auto unique_var = scip::create_var_basic(
+		scip, name.c_str(), 0., 1., cost, continuous ? SCIP_VARTYPE_CONTINUOUS : SCIP_VARTYPE_BINARY);
 	auto* var_ptr = unique_var.get();
 	scip::call(SCIPaddVar, scip, var_ptr);
 	return var_ptr;
@@ -116,13 +118,13 @@ auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_
  *
  * Variables pointers are returned in a matrix where rows reprensent customers and columns reprensent facilities.
  */
-auto add_serving_vars(SCIP* scip, xmatrix const& transportation_costs) {
+auto add_serving_vars(SCIP* scip, xmatrix const& transportation_costs, bool continuous) {
 	auto const [n_customers, n_facilities] = transportation_costs.shape();
 	auto vars = xt::xtensor<SCIP_VAR*, 2>{{n_customers, n_facilities}, nullptr};
 	for (std::size_t customer_idx = 0; customer_idx < n_customers; ++customer_idx) {
 		for (std::size_t facility_idx = 0; facility_idx < n_facilities; ++facility_idx) {
 			auto cost = transportation_costs(customer_idx, facility_idx);
-			vars(customer_idx, facility_idx) = add_serving_var(scip, customer_idx, facility_idx, cost);
+			vars(customer_idx, facility_idx) = add_serving_var(scip, customer_idx, facility_idx, cost, continuous);
 		}
 	}
 	return vars;
@@ -229,14 +231,14 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 		unit_transportation_costs(parameters.n_customers, parameters.n_facilities, random_engine) *
 		xt::view(demands, xt::all(), xt::newaxis()));
 
-	// Scale capacities according to ration after sampling as stated in Cornuejols et al. (1991).
+	// Scale capacities according to ratio after sampling as stated in Cornuejols et al. (1991).
 	capacities = capacities * parameters.ratio * xt::sum(demands)() / xt::sum(capacities)();
 
 	auto model = scip::Model::prob_basic();
 	auto* const scip = model.get_scip_ptr();
 
 	auto const facility_vars = add_facility_vars(scip, fixed_costs);
-	auto const serving_vars = add_serving_vars(scip, transportation_costs);
+	auto const serving_vars = add_serving_vars(scip, transportation_costs, parameters.continuous_assignment);
 
 	add_demand_cons(scip, serving_vars);
 	add_capacity_cons(scip, serving_vars, facility_vars, demands, capacities);
