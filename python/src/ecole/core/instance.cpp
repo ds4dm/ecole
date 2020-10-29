@@ -121,6 +121,10 @@ void bind_submodule(py::module const& m) {
 		Member{"n_facilities", &CapacitatedFacilityLocationGenerator::Parameters::n_facilities},
 		Member{"continuous_assignment", &CapacitatedFacilityLocationGenerator::Parameters::continuous_assignment},
 		Member{"ratio", &CapacitatedFacilityLocationGenerator::Parameters::ratio},
+		Member{"demand_interval", &CapacitatedFacilityLocationGenerator::Parameters::demand_interval},
+		Member{"capacity_interval", &CapacitatedFacilityLocationGenerator::Parameters::capacity_interval},
+		Member{"fixed_cost_cste_interval", &CapacitatedFacilityLocationGenerator::Parameters::fixed_cost_cste_interval},
+		Member{"fixed_cost_scale_interval", &CapacitatedFacilityLocationGenerator::Parameters::fixed_cost_scale_interval},
 	};
 	// Bind CapacitatedFacilityLocationGenerator and remove intermediate Parameter class
 	auto capacitated_facility_location_gen =
