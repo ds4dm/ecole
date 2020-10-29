@@ -29,7 +29,7 @@ template <typename Ptr> struct Member {
  * Bind the static method `generate_instance` by unpacking the Parameter struct into individual function parameters.
  */
 template <typename PyClass, typename MemberTuple>
-void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple);
+void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple, char const* docstring = "");
 
 /**
  * Bind the constructor by unpacking the Parameter struct into individual function parameters.
@@ -63,7 +63,33 @@ void bind_submodule(py::module const& m) {
 	};
 	// Bind SetCoverGenerator and remove intermediate Parameter class
 	auto set_cover_gen = py::class_<SetCoverGenerator>{m, "SetCoverGenerator"};
-	def_generate_instance(set_cover_gen, set_cover_params);
+	def_generate_instance(set_cover_gen, set_cover_params, R"(
+		Generate a set cover MILP problem instance.
+
+		Algorithm described in [Balas1980]_.
+
+		Parameters
+		----------
+		n_rows:
+			The number of rows.
+		n_cols:
+			The number of columns.
+		density:
+			The density of the constraint matrix.
+			The value must be in the range ]0,1].
+		max_coef:
+			Maximum objective coefficient.
+			The value must be greater than one.
+		random_engine:
+			The random number generator used to peform all sampling.
+
+		References
+		----------
+			.. [Balas1980]
+				Egon Balas and Andrew Ho.
+				"Set covering algorithms using cutting planes, heuristics, and subgradient optimization: A computational study".
+				*Mathematical Programming*, 12, 37-60. 1980.
+	)");
 	def_init(set_cover_gen, set_cover_params);
 	def_attributes(set_cover_gen, set_cover_params);
 	def_iterator(set_cover_gen);
@@ -87,7 +113,35 @@ void bind_submodule(py::module const& m) {
 	// Add contructor from str to IndependenSetGenerator::Parameter::GraphType and make it implicit
 	def_init_str(graph_type);
 	// Bind IndependentSetGenerator methods and remove intermediate Parameter class
-	def_generate_instance(independent_set_gen, independent_set_params);
+	def_generate_instance(independent_set_gen, independent_set_params, R"(
+		Generate an independent set MILP problem instance.
+
+		Given an undireted graph, the problem is to find a maximum subset of nodes such that no pair of nodes are connected.
+		There are one variable per node in the underlying graph.
+		Instead of adding one constraint per edge, a greedy algorithm is run to replace these inequalities when clique is
+		found.
+		The maximization problem is unwheighted, that is all objective coefficients are equal to one.
+
+		Random sampling is perfomed by sampling a graph for the formulation.
+
+		Parameters
+		----------
+		n_nodes:
+			The number of nodes in the graph, and therefore of variable.
+		edge_probability:
+			The probability of generating each edge.
+			This parameter must be in the range [0, 1].
+			This parameter will only be used if `graph_type == "erdos_renyi"`.
+		affinity:
+			The number of nodes each new node will be attached to, in the sampling scheme.
+			This parameter must be an integer >= 1.
+			This parameter will only be used if `graph_type == "barabasi_albert"`.
+		graph_type:
+			The method used in which to generate graphs.
+			One of "barabasi_albert" or "erdos_renyi"
+		random_engine:
+			The random number generator used to peform all sampling.
+	)");
 	def_init(independent_set_gen, independent_set_params);
 	def_attributes(independent_set_gen, independent_set_params);
 	def_iterator(independent_set_gen);
@@ -109,7 +163,51 @@ void bind_submodule(py::module const& m) {
 	};
 	// Bind CombinatorialAuctionGenerator and remove intermediate Parameter class
 	auto combinatorial_auction_gen = py::class_<CombinatorialAuctionGenerator>{m, "CombinatorialAuctionGenerator"};
-	def_generate_instance(combinatorial_auction_gen, combinatorial_auction_params);
+	def_generate_instance(combinatorial_auction_gen, combinatorial_auction_params, R"(
+		Generate a combinatorial auction MILP problem instance.
+
+		This method generates an instance of a combinatorial auction problem based on the
+		specified parameters and returns it as an ecole model.
+
+		Algorithm described in [LeytonBrown2000]_.
+
+		Parameters
+		----------
+		n_items:
+			The number of items.
+		n_bids:
+			The number of bids.
+		min_value:
+			The minimum resale value for an item.
+		max_value:
+			The maximum resale value for an item.
+		value_deviation:
+			The deviation allowed for each bidder's private value of an item, relative from max_value.
+		add_item_prob:
+			The probability of adding a new item to an existing bundle.
+			This parameters must be in the range [0,1].
+		max_n_sub_bids:
+			The maximum number of substitutable bids per bidder (+1 gives the maximum number of bids per bidder).
+		additivity:
+			Additivity parameter for bundle prices. Note that additivity < 0 gives sub-additive bids, while
+			additivity > 0 gives super-additive bids.
+		budget_factor:
+			The budget factor for each bidder, relative to their initial bid's price.
+		resale_factor:
+			The resale factor for each bidder, relative to their initial bid's resale value.
+		integers:
+			Determines if the bid prices should be integral.
+		random_engine:
+			The random number generator used to peform all sampling.
+
+		References
+		----------
+		.. [LeytonBrown2000]
+			Kevin Leyton-Brown, Mark Pearson, and Yoav Shoham.
+			"Towards a universal test suite for combinatorial auction algorithms".
+			*Proceedings of ACM Conference on Electronic Commerce* (EC01) 66-76.
+			section 4.3., the 'arbitrary' scheme. 2000.
+	)");
 	def_init(combinatorial_auction_gen, combinatorial_auction_params);
 	def_attributes(combinatorial_auction_gen, combinatorial_auction_params);
 	def_iterator(combinatorial_auction_gen);
@@ -129,7 +227,52 @@ void bind_submodule(py::module const& m) {
 	// Bind CapacitatedFacilityLocationGenerator and remove intermediate Parameter class
 	auto capacitated_facility_location_gen =
 		py::class_<CapacitatedFacilityLocationGenerator>{m, "CapacitatedFacilityLocationGenerator"};
-	def_generate_instance(capacitated_facility_location_gen, capacitated_facility_location_params);
+	def_generate_instance(capacitated_facility_location_gen, capacitated_facility_location_params, R"(
+		Generate a capacitated facility location MILP problem instance.
+
+		The capacitated facility location assigns a number of customers to be served from a number of facilities.
+		Not all facilities need to be opened.
+		In fact, the problem is to minimized the sum of the fixed costs for each facilities and the sum of transportation
+		costs for serving a given customer from a given facility.
+		In a variant of the problem, the customers can be served from multiple facilities and the associated variables
+		become [0,1] continuous.
+
+		The sampling algorithm is described in [Cornuejols1991]_, but uniform sampling as been replaced by *integer*
+		uniform sampling.
+
+		Parameters
+		----------
+		n_customers:
+			The number of customers.
+		n_facilities:
+			The number of facilities.
+		continuous_assignment:
+			Whether variable for assigning a customer to a facility are binary or [0,1] continuous.
+		ratio:
+			After all sampling is performed, the capacities are scaled by `ratio * sum(demands) / sum(capacities)`.
+		demand_interval:
+			The customer demands are sampled independently as uniform integers in this interval [lower, upper[.
+		capacity_interval:
+			The facility capacities are sampled independently as uniform integers in this interval [lower, upper[.
+		fixed_cost_cste_interval:
+			The fixed costs are the sum of two terms.
+			The first terms in the fixed costs for opening facilities are sampled independently as uniform integers
+			in this interval [lower, upper[.
+		fixed_cost_scale_interval:
+			The fixed costs are the sum of two terms.
+			The second terms in the fixed costs for opening facilities are sampled independently as uniform integers
+			in this interval [lower, upper[ multiplied by the square root of their capacity prior to scaling.
+			This second term reflects the economies of scale.
+		random_engine:
+			The random number generator used to peform all sampling.
+
+		References
+		----------
+		.. [Cornuejols1991]
+			Cornuejols G, Sridharan R, Thizy J-M.
+			"A Comparison of Heuristics and Relaxations for the Capacitated Plant Location Problem".
+			*European Journal of Operations Research* 50:280-297. 1991.
+	)");
 	def_init(capacitated_facility_location_gen, capacitated_facility_location_params);
 	def_attributes(capacitated_facility_location_gen, capacitated_facility_location_params);
 	def_iterator(capacitated_facility_location_gen);
@@ -144,7 +287,7 @@ void bind_submodule(py::module const& m) {
  * Implementation of def_generate_instance to unpack tuple.
  */
 template <typename PyClass, typename... Members>
-void def_generate_instance_impl(PyClass& py_class, Members&&... members) {
+void def_generate_instance_impl(PyClass& py_class, char const* docstring, Members&&... members) {
 	// The C++ class being wrapped
 	using Generator = typename PyClass::type;
 	using Parameters = typename Generator::Parameters;
@@ -163,15 +306,16 @@ void def_generate_instance_impl(PyClass& py_class, Members&&... members) {
 		// Set name for all function parameters.
 		// Fetch default value on the default parameters
 		(py::arg(members.name) = std::invoke(members.value, default_params))...,
-		py::call_guard<py::gil_scoped_release>());
+		py::call_guard<py::gil_scoped_release>(),
+		docstring);
 }
 
 template <typename PyClass, typename MemberTuple>
-void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple) {
+void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple, char const* docstring) {
 	// Forward call to impl in order to unpack the tuple
 	std::apply(
-		[&py_class](auto&&... members) {
-			def_generate_instance_impl(py_class, std::forward<decltype(members)>(members)...);
+		[&py_class, docstring](auto&&... members) {
+			def_generate_instance_impl(py_class, docstring, std::forward<decltype(members)>(members)...);
 		},
 		std::forward<MemberTuple>(members_tuple));
 }
