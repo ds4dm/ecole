@@ -1,13 +1,20 @@
 Using Environments
 ==================
 
-The goal of Ecole is to provide Markov decision process abstractions of common sequential decision making tasks that appear when solving combinatorial optimization problems using a solver. These control tasks are represented by stateful classes called environments.
+The goal of Ecole is to provide Markov decision process abstractions of common sequential decision making tasks that
+appear when solving combinatorial optimization problems using a solver.
+These control tasks are represented by stateful classes called environments.
 
-In this formulation, each solving of an instance is an episode. The environment class must first be instantiated, and then a specific instance must be loaded by a call to :py:meth:`~ecole.environment.EnvironmentComposer.reset`, which will bring the process to its initial state. Afterwards, successive calls to :py:meth:`~ecole.environment.EnvironmentComposer.step` will take an action from the user and transition to the next state. Finally, when the episode is finished, that is when the instance has been fully solved, a new solving episode can be started with another call to :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+In this formulation, each solving of an instance is an episode.
+The environment class must first be instantiated, and then a specific instance must be loaded by a call to
+:py:meth:`~ecole.environment.EnvironmentComposer.reset`, which will bring the process to its initial state.
+Afterwards, successive calls to :py:meth:`~ecole.environment.EnvironmentComposer.step` will take an action from the
+user and transition to the next state.
+Finally, when the episode is finished, that is when the instance has been fully solved, a new solving episode can be
+started with another call to :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
 
-For instance, using the :py:class:`~ecole.environment.Branching` environment for branch-and-bound variable selection, solving a specific instance once by always selecting the first fractional variable would look as follows.
-
-.. TODO verify proper link of branching
+For instance, using the :py:class:`~ecole.environment.Branching` environment for branch-and-bound variable selection,
+solving a specific instance once by always selecting the first fractional variable would look as follows.
 
 .. code-block:: python
 
@@ -19,7 +26,7 @@ For instance, using the :py:class:`~ecole.environment.Branching` environment for
    for _ in range(10):
        observation, action_set, reward_offset, done = env.reset("path/to/instance")
        while not done:
-           obs, action_set, reward, done, info = env.step(action_set[0])
+           observation, action_set, reward, done, info = env.step(action_set[0])
 
 
 Let us analyze this example in more detail.
@@ -30,9 +37,11 @@ General structure
 The example is driven by two loops.
 The inner ``while`` loop, the so-called *control loop*, transitions from an initial state until a
 terminal state is reached, which is signaled with the boolean flag ``done == True``.
-In Ecole, the termination of the environment coincides with the termination of the underlying combinatorial optimization algorithm.
+In Ecole, the termination of the environment coincides with the termination of the underlying combinatorial
+optimization algorithm.
 A full execution of this loop is known as an *episode*.
-The control loop matches a Markov decision process formulation, as used in control theory, dynamic programming and reinforcement learning.
+The control loop matches a Markov decision process formulation, as used in control theory, dynamic programming and
+reinforcement learning.
 
 .. figure:: images/mdp.png
    :alt: Markov Decision Process interaction loop.
@@ -50,9 +59,14 @@ The control loop matches a Markov decision process formulation, as used in contr
 
 The outer ``for`` loop in the example simply repeats the control loop several times, and is in
 charge of generating the initial state of each episode.
-In order to obtain a sufficient statistical signal for learning the control policy, numerous episodes are usually required for learning.
+In order to obtain a sufficient statistical signal for learning the control policy, numerous episodes are usually
+required for learning.
 Also, although not showcased here, there is usually little practical interest in using the same combinatorial problem
-instance for generating each episode. Indeed, it is usually desirable to learn policies that will generalize to new, unseen instances, which is very unlikely if the learning policy is tailored to solve a single specific instance. Ideally, one would like to sample training episodes from a family of similar instances, in order to solve new, similar instances in the future.
+instance for generating each episode.
+Indeed, it is usually desirable to learn policies that will generalize to new, unseen instances, which is very unlikely
+if the learning policy is tailored to solve a single specific instance.
+Ideally, one would like to sample training episodes from a family of similar instances, in order to solve new, similar
+instances in the future.
 
 .. TODO add ref to theoretical section
 
@@ -64,8 +78,10 @@ Environment parameters
 Each environment can be given a set of parameters at construction, in order to further customize the task being
 solved.
 For instance, the :py:class:`~ecole.environment.Branching` environment takes a ``pseudo_candidates``
-boolean parameter, to decide whether branching candidates should include all non fixed integral variables, or only the fractional ones.
-Environments can be instantiated with no constructor arguments, as in the previous example, in which case a set of default parameters will be used.
+boolean parameter, to decide whether branching candidates should include all non fixed integral variables, or only the
+fractional ones.
+Environments can be instantiated with no constructor arguments, as in the previous example, in which case a set of
+default parameters will be used.
 
 Every environment can optionally take a dictionary of
 `SCIP parameters <https://scip.zib.de/doc/html/PARAMETERS.php>`_ that will be used to
@@ -109,16 +125,18 @@ The method is parameterized with a problem instance file: the combinatorial
 optimization problem that will be loaded and solved by the `SCIP <https://scip.zib.de/>`_ solver
 during the episode.
 
-* The ``observation`` consists of information about the state of the solver that should be used to select the next action
-  to perform (for example, using a machine learning algorithm.)
+* The ``observation`` consists of information about the state of the solver that should be used to select the next
+  action to perform (for example, using a machine learning algorithm.)
 * The ``action_set``, when not ``None``, describes the set of candidate actions which are valid for the next transition.
   This is necessary for environments where the action set varies from state to state.
   For instance, in the :py:class:`~ecole.environment.Branching` environment the set of candidate variables
   for branching depends on the value of the current LP solution, which changes at every iteration of the algorithm.
 * The ``reward_offset`` is an offset to the reward function that accounts for any computation happening in
   :py:meth:`~ecole.environment.EnvironmentComposer.reset` when generating the initial state.
-  For example, if clock time is selected as a reward function in a :py:class:`~ecole.environment.Branching` environment, this would account for
-  time spent in the preprocessing phase before any branching is performed. This offset is thus important for benchmarking, but has no effect
+  For example, if clock time is selected as a reward function in a :py:class:`~ecole.environment.Branching` environment,
+  this would account for
+  time spent in the preprocessing phase before any branching is performed.
+  This offset is thus important for benchmarking, but has no effect
   on the control problem, and can be ignored when training a machine learning agent.
 * The boolean flag ``done`` indicates whether the initial state is also a terminal state.
   This can happen in some environments, such as :py:class:`~ecole.environment.Branching`, where the problem instance
