@@ -24,6 +24,21 @@ that acts as a controllable algorithm.
 The underlying solver used is `SCIP <https://scip.zib.de/>`_, and the user facing API is
 meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possible).
 
+.. code-block:: python
+
+   import ecole
+
+   env = ecole.environment.Branching(
+       reward_function=-ecole.reward.LpIterations(),
+       observation_function=ecole.observation.NodeBipartite()
+   )
+   instances = ecole.instance.SetCoverGenerator()
+
+   for _ in range(10):
+        observation, action_set, reward_offset, done = env.reset(next(instances))
+        while not done:
+            observation, action_set, reward, done, info = env.step(action_set[0])
+
 
 Installation
 ------------
