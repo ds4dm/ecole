@@ -67,8 +67,7 @@ Indeed, it is usually desirable to learn policies that will generalize to new, u
 if the learning policy is tailored to solve a single specific instance.
 Ideally, one would like to sample training episodes from a family of similar instances, in order to solve new, similar
 instances in the future.
-
-.. TODO add ref to theoretical section
+For more details, see the :ref:`Ecole theortical model<theory>` in the discussion.
 
 
 .. _environment-parameters:

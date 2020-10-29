@@ -1,3 +1,5 @@
+.. _theory:
+
 Ecole Theoretical Model
 =======================
 
