@@ -162,7 +162,8 @@ void def_generate_instance_impl(PyClass& py_class, Members&&... members) {
 		py::arg("random_engine"),
 		// Set name for all function parameters.
 		// Fetch default value on the default parameters
-		(py::arg(members.name) = std::invoke(members.value, default_params))...);
+		(py::arg(members.name) = std::invoke(members.value, default_params))...,
+		py::call_guard<py::gil_scoped_release>());
 }
 
 template <typename PyClass, typename MemberTuple>
@@ -232,7 +233,7 @@ template <typename PyClass> void def_iterator(PyClass& py_class) {
 	// The C++ class being wrapped
 	using Generator = typename PyClass::type;
 	py_class.def("__iter__", [](Generator& self) -> Generator& { return self; });
-	py_class.def("__next__", &Generator::next);
+	py_class.def("__next__", &Generator::next, py::call_guard<py::gil_scoped_release>());
 }
 
 template <typename PyEnum> void def_init_str(PyEnum& py_enum) {
