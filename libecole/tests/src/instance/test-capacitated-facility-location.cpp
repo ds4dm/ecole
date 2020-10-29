@@ -10,17 +10,26 @@
 #include "instance/unit-tests.hpp"
 
 using namespace ecole;
+using instance::CapacitatedFacilityLocationGenerator;
+using Parameters = typename instance::CapacitatedFacilityLocationGenerator::Parameters;
+
+/** Wrapper around std::count_if to reduce verbosity. */
+template <typename Range, typename Predicate> auto count_if(Range const& range, Predicate&& predicate) {
+	return static_cast<std::size_t>(std::count_if(range.begin(), range.end(), std::forward<Predicate>(predicate)));
+}
+
+// Keep problem size reasonable for tests. Very rough eyeballing.
+auto constexpr continuous_params = Parameters{60, 40, true, 10.0};
+auto constexpr binary_params = Parameters{30, 15, false, 10.0};
 
 TEST_CASE("CapaciteatedFacilityLocationGenerator unit test", "[unit][instance]") {
-	// Keep problem size reasonable for tests
-	std::size_t constexpr n_customers = 60;
-	std::size_t constexpr n_facilities = 50;
-	instance::unit_tests(instance::CapacitatedFacilityLocationGenerator{{n_customers, n_facilities}});
+	auto const params = GENERATE(continuous_params, binary_params);
+	instance::unit_tests(CapacitatedFacilityLocationGenerator{params});
 }
 
 TEST_CASE("Instances generated are capacitated facility location instances", "[instance]") {
-	auto constexpr params = instance::CapacitatedFacilityLocationGenerator::Parameters{};
-	auto generator = instance::CapacitatedFacilityLocationGenerator{};
+	auto const params = GENERATE(continuous_params, binary_params);
+	auto generator = CapacitatedFacilityLocationGenerator{params};
 	auto model = generator.next();
 	auto* const scip_ptr = model.get_scip_ptr();
 
@@ -32,15 +41,15 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 		auto const is_serving = [](auto* var) { return SCIPvarGetName(var)[0] == 's'; };
 
 		// Correct number of variables
-		REQUIRE(std::count_if(vars.begin(), vars.end(), is_facility) == params.n_facilities);
-		REQUIRE(std::count_if(vars.begin(), vars.end(), is_serving) == params.n_facilities * params.n_customers);
+		REQUIRE(count_if(vars, is_facility) == params.n_facilities);
+		REQUIRE(count_if(vars, is_serving) == params.n_facilities * params.n_customers);
 
 		// Correct variable type and bounds
 		for (auto* var : vars) {
 			if (is_facility(var)) {
 				REQUIRE(SCIPvarGetType(var) == SCIP_VARTYPE_BINARY);
 			} else if (is_serving(var)) {
-				REQUIRE(SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS);
+				REQUIRE(SCIPvarGetType(var) == (params.continuous_assignment ? SCIP_VARTYPE_CONTINUOUS : SCIP_VARTYPE_BINARY));
 				REQUIRE(SCIPvarGetLbOriginal(var) == 0.0);
 				REQUIRE(SCIPvarGetUbOriginal(var) == 1.0);
 			}
@@ -54,9 +63,9 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 		auto const conss = model.constraints();
 
 		// Correct number of constraints
-		REQUIRE(std::count_if(conss.begin(), conss.end(), is_demand) == params.n_customers);
-		REQUIRE(std::count_if(conss.begin(), conss.end(), is_capacity) == params.n_facilities);
-		REQUIRE(std::count_if(conss.begin(), conss.end(), is_thightening) == params.n_facilities * params.n_customers);
+		REQUIRE(count_if(conss, is_demand) == params.n_customers);
+		REQUIRE(count_if(conss, is_capacity) == params.n_facilities);
+		REQUIRE(count_if(conss, is_thightening) == params.n_facilities * params.n_customers);
 
 		// Correct constraints bounds
 		auto const inf = SCIPinfinity(scip_ptr);

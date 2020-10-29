@@ -10,9 +10,10 @@ namespace ecole::instance {
 class CapacitatedFacilityLocationGenerator : public InstanceGenerator {
 public:
 	struct Parameters {
-		std::size_t n_customers = 100;   // NOLINT(readability-magic-numbers)
-		std::size_t n_facilities = 100;  // NOLINT(readability-magic-numbers)
-		double ratio = 5.0;              // NOLINT(readability-magic-numbers)
+		std::size_t n_customers = 100;       // NOLINT(readability-magic-numbers)
+		std::size_t n_facilities = 100;      // NOLINT(readability-magic-numbers)
+		bool continuous_assignment = false;  // NOLINT(readability-magic-numbers)
+		double ratio = 5.0;                  // NOLINT(readability-magic-numbers)
 	};
 
 	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);
