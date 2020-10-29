@@ -29,15 +29,15 @@ meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possi
    import ecole
 
    env = ecole.environment.Branching(
-       reward_function=-ecole.reward.LpIterations(),
-       observation_function=ecole.observation.NodeBipartite()
+       reward_function=-1.5 * ecole.reward.LpIterations() ** 2,
+       observation_function=ecole.observation.NodeBipartite(),
    )
    instances = ecole.instance.SetCoverGenerator()
 
    for _ in range(10):
-        observation, action_set, reward_offset, done = env.reset(next(instances))
-        while not done:
-            observation, action_set, reward, done, info = env.step(action_set[0])
+       observation, action_set, reward_offset, done = env.reset(next(instances))
+       while not done:
+          observation, action_set, reward, done, info = env.step(action_set[0])
 
 
 Installation
