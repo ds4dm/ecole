@@ -121,9 +121,12 @@ Resetting environments
 Each episode in the inner ``while`` starts with a call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset` in order to bring the environment into a new
 initial state.
-The method is parameterized with a problem instance file: the combinatorial
-optimization problem that will be loaded and solved by the `SCIP <https://scip.zib.de/>`_ solver
-during the episode.
+The method is parameterized with a problem instance: the combinatorial optimization problem that will be loaded and
+solved by the `SCIP <https://scip.zib.de/>`_ solver during the episode.
+In the most simple case this is the path to a problem file.
+For problems instances that are generated programatically
+(for instance using `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ or using
+:ref:`instance generators<generate-instances>`) a :py:class:`ecole.scip.Model` is also accepted.
 
 * The ``observation`` consists of information about the state of the solver that should be used to select the next
   action to perform (for example, using a machine learning algorithm.)

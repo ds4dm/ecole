@@ -1,3 +1,5 @@
+.. _generate-instances:
+
 Generate Problem Instances
 ==========================
 
