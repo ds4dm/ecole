@@ -1,5 +1,6 @@
 #include <array>
 #include <memory>
+#include <utility>
 
 #include <fmt/format.h>
 #include <range/v3/view/enumerate.hpp>
@@ -25,7 +26,7 @@ namespace ecole::instance {
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
 	RandomEngine random_engine_,
 	CapacitatedFacilityLocationGenerator::Parameters parameters_) :
-	random_engine{random_engine_}, parameters{parameters_} {}
+	random_engine{random_engine_}, parameters{std::move(parameters_)} {}
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
 	CapacitatedFacilityLocationGenerator::Parameters parameters_) :
 	CapacitatedFacilityLocationGenerator{ecole::spawn_random_engine(), parameters_} {}
@@ -214,18 +215,21 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 	RandomEngine& random_engine,
 	CapacitatedFacilityLocationGenerator::Parameters parameters) {
 
-	// Why do we sample as ints?
-	using xt::random::randint;
+	// Sample 1D integers array in the given interval (xtensor lazy).
+	// We sample as integer as it is generally preferred by integer programming reseachers.
+	// The usual argument is that one can turn everything into integer with appropriate scaling (rational data).
+	auto randint = [&random_engine](std::size_t n, auto interval) {
+		return xt::random::randint({n}, interval.first, interval.second, random_engine);
+	};
 
-	// FIXME Should we keep these magic numbers or make them parameters?
 	// Customer demand
-	auto const demands = static_cast<xvector>(randint({parameters.n_customers}, 5, 35 + 1, random_engine));
+	auto const demands = static_cast<xvector>(randint(parameters.n_customers, parameters.demand_interval));
 	// Facilities capacity for serving customer demand
-	auto capacities = static_cast<xvector>(randint({parameters.n_facilities}, 10, 160 + 1, random_engine));
+	auto capacities = static_cast<xvector>(randint(parameters.n_facilities, parameters.capacity_interval));
 	// Fixed costs for opening facilities
 	auto const fixed_costs = static_cast<xvector>(
-		randint({parameters.n_facilities}, 100, 110 + 1, random_engine) * xt::sqrt(capacities) +
-		randint({parameters.n_facilities}, 0, 90 + 1, random_engine));
+		randint(parameters.n_facilities, parameters.fixed_cost_scale_interval) * xt::sqrt(capacities) +
+		randint(parameters.n_facilities, parameters.fixed_cost_cste_interval));
 	// transport costs from facility to customers
 	auto const transportation_costs = static_cast<xmatrix>(
 		unit_transportation_costs(parameters.n_customers, parameters.n_facilities, random_engine) *

@@ -80,5 +80,6 @@ def test_CombinatorialAuctionGenerator_parameters():
 
 def test_CapacitatedFacilityLocationGenerator_parameters():
     """Parameters are bound in the constructor and as attributes."""
-    generator = ecole.instance.CapacitatedFacilityLocationGenerator(ratio=-1)
+    generator = ecole.instance.CapacitatedFacilityLocationGenerator(ratio=-1, demand_interval=(1, 5))
     assert generator.ratio == -1
+    assert generator.demand_interval == (1, 5)
