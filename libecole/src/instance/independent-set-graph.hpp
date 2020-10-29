@@ -24,13 +24,17 @@ public:
 
 	/** Sample a new graph using Erdos Renyi algorithm.
 	 *
+	 * @param n_nodes The number of nodes in the graph generated.
 	 * @param edge_probability The probability that a given edge is added to the graph.
+	 * @param random_engine The random number generator used to sample edges.
 	 */
 	static auto erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngine& random_engine) -> Graph;
 
 	/** Sample a new graph using Barabasi Albert algorithm.
 	 *
+	 * @param n_nodes The number of nodes in the graph generated.
 	 * @param affinity The number of nodes that each node is connected to.
+	 * @param random_engine The random number generator used to sample edges.
 	 */
 	static auto barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEngine& random_engine) -> Graph;
 
