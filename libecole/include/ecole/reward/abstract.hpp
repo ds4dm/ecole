@@ -25,12 +25,12 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(scip::Model const& /* model */) {}
+	virtual void reset(scip::Model& /* model */) {}
 
 	/**
 	 * The method called by the environment on every new state (after transitioning).
 	 */
-	virtual Reward obtain_reward(scip::Model const& model, bool done = false) = 0;
+	virtual Reward obtain_reward(scip::Model& model, bool done = false) = 0;
 };
 
 }  // namespace reward

@@ -2,7 +2,7 @@
 
 namespace ecole::reward {
 
-Reward IsDone::obtain_reward(scip::Model const& /*model*/, bool done) {
+Reward IsDone::obtain_reward(scip::Model& /*model*/, bool done) {
 	return done ? 1 : 0;
 }
 
