@@ -4,19 +4,26 @@ add_executable(
 	test-libecole
 	main.cpp
 	src/conftest.cpp
+
 	src/test-traits.cpp
 	src/test-random.cpp
+
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
+
 	src/environment/test-environment.cpp
+
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
+
 	src/reward/test-lpiterations.cpp
 	src/reward/test-constant.cpp
 	src/reward/test-isdone.cpp
-	src/observation/test-nothing.cpp
-	src/observation/test-nodebipartite.cpp
 	src/reward/test-nnodes.cpp
+
+	src/observation/test-nothing.cpp
+	src/observation/test-tuple.cpp
+	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
 )
