@@ -7,6 +7,7 @@
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/reward/nnodes.hpp"
+#include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -115,7 +116,7 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
-		LP Iteration difference.
+		LP iterations difference.
 
 		The reward is defined as the number of iterations spent in solving the Linear Programs
 		associated with the problem since the previous state.
@@ -141,6 +142,31 @@ void bind_submodule(py::module_ const& m) {
 		Update the internal node count and return the difference.
 
 		The difference in number of nodes is computed in between calls.
+		)");
+
+	auto solvingtime = py::class_<SolvingTime>(m, "SolvingTime", R"(
+		Solving time difference.
+
+		The reward is defined as the amount of time spent solving the instance since the previous state.
+        The solving time is maintained internally by SCIP and is specific to the operating system: it
+        includes presolving and time spent waiting on the agent.
+
+        N.B. Using this reward function will overwrite the `timing/clocktype` SCIP parameter.
+	)");
+	solvingtime.def(py::init<bool>(), py::arg("wall") = false, R"(
+		Constructor for SolvingTime.
+
+		Parameters
+		----------
+		wall : bool, optional
+			If true, the wall time will be used. If False (default), the process time will be used.
+	)");
+	def_operators(solvingtime);
+	def_reset(solvingtime, "Reset the internal clock counter.");
+	def_obtain_reward(solvingtime, R"(
+		Update the internal clock counter and return the difference.
+
+		The difference in solving time is computed in between calls.
 		)");
 }
 
