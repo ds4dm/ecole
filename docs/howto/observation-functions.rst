@@ -57,7 +57,7 @@ explicitly pass ``None`` to the environment constructor.
 
 Multiple Observation Functions
 ------------------------------
-To use multiple observation functions, wrap them in a ``tuple`` or ``dict``.
+To use multiple observation functions, wrap them in a ``list`` or ``dict``.
 
 .. code-block:: python
 
@@ -67,7 +67,7 @@ To use multiple observation functions, wrap them in a ``tuple`` or ``dict``.
    >>> env = ecole.environment.branching(observation_function=obs_func)
    >>> obs, _, _, _ = env.reset("path/to/problem")
    >>> obs
-   (ecole.observation.NodeBipartiteObs(), None)
+   [ecole.observation.NodeBipartiteObs(), None]
 
 Similarily with a tuple
 

@@ -35,10 +35,10 @@ Nothing
 ^^^^^^^
 .. autoclass:: ecole.observation.Nothing
 
-Tuple of Observations
-^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: ecole.observation.TupleFunction
+List of Observations
+^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: ecole.observation.VectorFunction
 
 Dictionnary of Observations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: ecole.observation.DictFunction
+.. autoclass:: ecole.observation.MapFunction
