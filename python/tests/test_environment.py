@@ -23,11 +23,11 @@ def test_observation_function_none(model):
     assert obs is None
 
 
-def test_observation_function_tuple(model):
+def test_observation_function_vector(model):
     """Tuple are parsed as tuple of observations"""
     env = MockEnvironment(observation_function=(mock.MagicMock(), mock.MagicMock()))
     obs = env.observation_function.obtain_observation(model)
-    assert isinstance(obs, tuple)
+    assert isinstance(obs, list)
     assert len(obs) == 2
 
 

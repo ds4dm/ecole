@@ -14,10 +14,10 @@ import numpy as np
 import ecole.observation as O
 
 
-def test_TupleFunction(model):
-    """Dispach calls and pack the result in a tuple."""
+def test_VectorFunction(model):
+    """Dispach calls and pack the result in a list."""
     obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    tuple_obs_func = O.TupleFunction(obs_func1, obs_func2)
+    tuple_obs_func = O.VectorFunction(obs_func1, obs_func2)
 
     tuple_obs_func.reset(model)
     obs_func1.reset.assert_called_once_with(model)
@@ -26,7 +26,7 @@ def test_TupleFunction(model):
     obs_func1.obtain_observation.return_value = "something"
     obs_func2.obtain_observation.return_value = "else"
     obs = tuple_obs_func.obtain_observation(model)
-    assert obs == ("something", "else")
+    assert obs == ["something", "else"]
 
 
 def test_DictFunction(model):

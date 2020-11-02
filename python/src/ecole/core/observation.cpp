@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -9,6 +10,7 @@
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/observation/vector.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
@@ -43,6 +45,25 @@ template <typename PyClass, typename... Args> auto def_obtain_observation(PyClas
 }
 
 /**
+ * A C++ class to wrap any Python object as an observation function.
+ *
+ * This is used to bind temaplated types such as MapObservation and VectorObservation
+ */
+class PyObservationFunction : observation::ObservationFunction<py::object> {
+public:
+	PyObservationFunction() noexcept = default;
+	explicit PyObservationFunction(py::object obs_func) noexcept : observation_function(std::move(obs_func)) {}
+
+	void reset(scip::Model& model) final { observation_function.attr("reset")(&model); }
+	py::object obtain_observation(scip::Model& model) final {
+		return observation_function.attr("obtain_observation")(&model);
+	}
+
+private:
+	py::object observation_function;
+};
+
+/**
  * Observation module bindings definitions.
  */
 void bind_submodule(py::module_ const& m) {
@@ -59,6 +80,23 @@ void bind_submodule(py::module_ const& m) {
 	nothing.def(py::init<>());
 	def_reset(nothing, R"(Do nothing.)");
 	def_obtain_observation(nothing, R"(Return None.)");
+
+	using PyVectorFunction = VectorFunction<PyObservationFunction>;
+	py::class_<PyVectorFunction>(
+		m, "VectorFunction", "Pack observation functions together and return observations as list.")
+		.def(py::init([](py::args const& objects) {
+			auto functions = std::vector<PyObservationFunction>{objects.size()};
+			std::transform(objects.begin(), objects.end(), functions.begin(), [](py::handle obj) {
+				return PyObservationFunction{py::reinterpret_borrow<py::object>(obj)};
+			});
+			return std::make_unique<PyVectorFunction>(std::move(functions));
+		}))
+		.def("reset", &PyVectorFunction::reset, py::arg("model"), "Call reset on all observation functions.")
+		.def(
+			"obtain_observation",
+			&PyVectorFunction::obtain_observation,
+			py::arg("model"),
+			"Return observation from all functions as a tuple.");
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(
