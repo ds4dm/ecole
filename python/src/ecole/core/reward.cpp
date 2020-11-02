@@ -59,7 +59,7 @@ template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 /**
  * Reward module bindings definitions.
  */
-void bind_submodule(py::module const& m) {
+void bind_submodule(py::module_ const& m) {
 	m.doc() = "Reward classes for Ecole.";
 
 	auto constant = py::class_<Constant>(m, "Constant", R"(

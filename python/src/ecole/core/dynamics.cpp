@@ -15,7 +15,7 @@ namespace ecole::dynamics {
 
 namespace py = pybind11;
 
-template <typename Dynamics> auto dynamics_class(py::module const& m, char const* name) {
+template <typename Dynamics> auto dynamics_class(py::module_ const& m, char const* name) {
 	return py::class_<Dynamics>(m, name)  //
 		.def("reset_dynamics", &Dynamics::reset_dynamics, py::arg("model"), py::call_guard<py::gil_scoped_release>())
 		.def(
@@ -27,7 +27,7 @@ template <typename Dynamics> auto dynamics_class(py::module const& m, char const
 		.def("set_dynamics_random_state", &Dynamics::set_dynamics_random_state, py::arg("model"), py::arg("random_engine"));
 }
 
-void bind_submodule(pybind11::module const& m) {
+void bind_submodule(pybind11::module_ const& m) {
 	m.doc() = "Ecole collection of environment dynamics.";
 
 	dynamics_class<BranchingDynamics>(m, "BranchingDynamics")  //

@@ -45,7 +45,7 @@ template <typename PyClass, typename... Args> auto def_obtain_observation(PyClas
 /**
  * Observation module bindings definitions.
  */
-void bind_submodule(py::module const& m) {
+void bind_submodule(py::module_ const& m) {
 	m.doc() = "Observation classes for Ecole.";
 
 	xt::import_numpy();

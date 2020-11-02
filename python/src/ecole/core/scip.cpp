@@ -12,7 +12,7 @@ namespace ecole::scip {
 
 namespace py = pybind11;
 
-void bind_submodule(py::module const& m) {
+void bind_submodule(py::module_ const& m) {
 	m.doc() = "Scip wrappers for ecole.";
 
 	py::register_exception<scip::Exception>(m, "Exception");

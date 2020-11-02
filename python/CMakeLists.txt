@@ -14,8 +14,8 @@ endforeach(py_file)
 include(FetchContent)
 FetchContent_Declare(
 	PyBind11
-	GIT_REPOSITORY "https://github.com/pybind/pybind11"
-	GIT_TAG "v2.5.0"
+	URL https://github.com/pybind/pybind11/archive/v2.6.0.tar.gz
+	URL_HASH SHA256=90b705137b69ee3b5fc655eaca66d0dc9862ea1759226f7ccd3098425ae69571
 )
 set(PYBIND11_CPP_STANDARD -std=c++17)
 FetchContent_MakeAvailable(PyBind11)
