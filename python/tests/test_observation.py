@@ -29,10 +29,10 @@ def test_VectorFunction(model):
     assert obs == ["something", "else"]
 
 
-def test_DictFunction(model):
+def test_MapFunction(model):
     """Dispach calls and pack the result in a dict."""
     obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    dict_obs_func = O.DictFunction(name1=obs_func1, name2=obs_func2)
+    dict_obs_func = O.MapFunction(name1=obs_func1, name2=obs_func2)
 
     dict_obs_func.reset(model)
     obs_func1.reset.assert_called_once_with(model)

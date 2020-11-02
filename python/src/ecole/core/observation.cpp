@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/observation/map.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
@@ -47,7 +49,7 @@ template <typename PyClass, typename... Args> auto def_obtain_observation(PyClas
 /**
  * A C++ class to wrap any Python object as an observation function.
  *
- * This is used to bind temaplated types such as MapObservation and VectorObservation
+ * This is used to bind templated types such as MapObservation and VectorObservation
  */
 class PyObservationFunction : observation::ObservationFunction<py::object> {
 public:
@@ -97,6 +99,22 @@ void bind_submodule(py::module_ const& m) {
 			&PyVectorFunction::obtain_observation,
 			py::arg("model"),
 			"Return observation from all functions as a tuple.");
+
+	using PyMapFunction = MapFunction<std::string, PyObservationFunction>;
+	py::class_<PyMapFunction>(m, "MapFunction", "Pack observation functions together and return observations as a dict.")
+		.def(py::init([](py::kwargs const& objects) {
+			auto functions = std::map<std::string, PyObservationFunction>{};
+			for (auto [key, func] : objects) {
+				functions.emplace(key.cast<std::string>(), py::reinterpret_borrow<py::object>(func));
+			}
+			return std::make_unique<PyMapFunction>(std::move(functions));
+		}))
+		.def("reset", &PyMapFunction::reset, py::arg("model"), "Call reset on all observation functions.")
+		.def(
+			"obtain_observation",
+			&PyMapFunction::obtain_observation,
+			py::arg("model"),
+			"Return observation from all functions as a dict.");
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(

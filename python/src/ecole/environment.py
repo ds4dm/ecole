@@ -47,7 +47,7 @@ class Environment:
                 *(cls.__parse_observation_function(fun) for fun in observation_function)
             )
         elif isinstance(observation_function, dict):
-            return ecole.observation.DictFunction(
+            return ecole.observation.MapFunction(
                 **{
                     name: cls.__parse_observation_function(func)
                     for name, func in observation_function.items()
