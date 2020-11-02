@@ -24,6 +24,7 @@ add_executable(
 	src/observation/test-nothing.cpp
 	src/observation/test-tuple.cpp
 	src/observation/test-vector.cpp
+	src/observation/test-map.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
