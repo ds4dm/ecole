@@ -8,8 +8,7 @@
 
 namespace ecole::observation {
 
-template <typename T> void show(T&&);
-
+/** Combine multiple observation into a map of observation. */
 template <typename Key, typename Function>
 class MapFunction : public ObservationFunction<std::map<Key, trait::observation_of_t<Function>>> {
 public:
