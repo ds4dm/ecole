@@ -1,5 +1,7 @@
 #include <catch2/catch.hpp>
 
+#include "ecole/environment/branching.hpp"
+#include "ecole/observation/nothing.hpp"
 #include "ecole/reward/solvingtime.hpp"
 
 #include "conftest.hpp"
@@ -32,9 +34,9 @@ TEST_CASE("Solving time rewards are positive initially", "[reward]") {
 TEST_CASE("Solving time rewards are always strictly positive when used in a Branching environment", "[reward]") {
 	constexpr int max_nnodes = 20;
 	bool wall = GENERATE(true, false);
-	auto env = environment::Branching<observation::Nothing, reward::SolvingTime{wall}>{
+	auto env = environment::Branching<observation::Nothing, reward::SolvingTime>{
 		{},
-		{},
+		{reward::SolvingTime{wall}},
 		{
 			{"presolving/maxrounds", 0},  // just to save time here
 			{"limits/totalnodes", max_nnodes},
