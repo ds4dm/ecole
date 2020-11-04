@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iostream>
 
 #include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
@@ -26,7 +27,7 @@ static auto process_solving_time(scip::Model const& model) {
 	}
 }
 
-void SolvingTime::reset(scip::Model const& model) {
+void SolvingTime::reset(scip::Model& model) {
 	model.set_params({{"timing/clocktype", 1}});
 
 	if (wall) {
@@ -34,11 +35,11 @@ void SolvingTime::reset(scip::Model const& model) {
 			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 		solving_time_offset = static_cast<double>(now_in_ms.count()) / MS_IN_SECONDS;
 	} else {
-		solving_time_offset = static_cast<double>(process_solving_time(model));
+		solving_time_offset = 0.;
 	}
 }
 
-Reward SolvingTime::obtain_reward(scip::Model const& model, bool /* done */) {
+Reward SolvingTime::obtain_reward(scip::Model& model, bool /* done */) {
 	double solving_time_diff;
 
 	if (wall) {
