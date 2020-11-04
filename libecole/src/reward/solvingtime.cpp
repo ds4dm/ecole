@@ -1,12 +1,11 @@
 #include <chrono>
-#include <iostream>
 
 #include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole::reward {
 
-const int MS_IN_SECONDS = 1000;
+const int MUS_IN_SECONDS = 1000000;
 
 static auto process_solving_time(scip::Model const& model) {
 	switch (model.get_stage()) {
@@ -31,9 +30,9 @@ void SolvingTime::reset(scip::Model& model) {
 	model.set_params({{"timing/clocktype", 1}});
 
 	if (wall) {
-		auto now_in_ms =
-			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-		solving_time_offset = static_cast<double>(now_in_ms.count()) / MS_IN_SECONDS;
+		auto now_in_mus = std::chrono::duration_cast<std::chrono::microseconds>(
+			std::chrono::high_resolution_clock::now().time_since_epoch());
+		solving_time_offset = static_cast<double>(now_in_mus.count()) / MUS_IN_SECONDS;
 	} else {
 		solving_time_offset = 0.;
 	}
@@ -43,9 +42,9 @@ Reward SolvingTime::obtain_reward(scip::Model& model, bool /* done */) {
 	double solving_time_diff;
 
 	if (wall) {
-		auto now_in_ms =
-			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-		solving_time_diff = static_cast<double>(now_in_ms.count()) / MS_IN_SECONDS - solving_time_offset;
+		auto now_in_mus = std::chrono::duration_cast<std::chrono::microseconds>(
+			std::chrono::high_resolution_clock::now().time_since_epoch());
+		solving_time_diff = static_cast<double>(now_in_mus.count()) / MUS_IN_SECONDS - solving_time_offset;
 	} else {
 		solving_time_diff = static_cast<double>(process_solving_time(model)) - solving_time_offset;
 	}
