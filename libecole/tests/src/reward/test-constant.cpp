@@ -13,8 +13,8 @@ TEST_CASE("Constant reward unit tests", "[unit][reward]") {
 }
 
 TEST_CASE("Constant reward always return the same value", "[reward]") {
-	auto done = GENERATE(true, false);
-	auto constant = GENERATE(-1., 0., 55);
+	auto const done = GENERATE(true, false);
+	auto const constant = GENERATE(-1., 0., 55);
 	auto reward_func = reward::Constant{constant};
 	auto model = get_solving_model();
 
