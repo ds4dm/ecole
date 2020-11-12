@@ -16,8 +16,9 @@ add_executable(
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
 
-	src/reward/test-lpiterations.cpp
 	src/reward/test-constant.cpp
+	src/reward/test-unary.cpp
+	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp
 
