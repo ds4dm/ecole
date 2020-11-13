@@ -34,7 +34,7 @@ public:
 	/**
 	 * The method called by environments when needing to return an observation.
 	 */
-	virtual Observation obtain_observation(scip::Model& model) = 0;
+	virtual Observation obtain_observation(scip::Model& model, bool done) = 0;
 };
 
 }  // namespace observation

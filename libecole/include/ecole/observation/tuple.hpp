@@ -24,9 +24,9 @@ public:
 	}
 
 	/** Return observation from all functions as a tuple. */
-	ObservationTuple obtain_observation(scip::Model& model) override {
+	ObservationTuple obtain_observation(scip::Model& model, bool done) override {
 		return std::apply(
-			[&model](auto&... functions) { return std::tuple{functions.obtain_observation(model)...}; },
+			[&model, done](auto&... functions) { return std::tuple{functions.obtain_observation(model, done)...}; },
 			observation_functions);
 	}
 

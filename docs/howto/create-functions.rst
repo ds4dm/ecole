@@ -35,7 +35,7 @@ value.
 
    class ScaledNodeBipartite(NodeBipartite):
 
-       def obtain_observation(self, model):
+       def obtain_observation(self, model, done):
            # Call parent method to get the original observation
            obs = super().obtain_observation(model)
            # Apply scaling
@@ -74,8 +74,8 @@ This example shows how the scaling vector can be stored between states.
            self.column_ema = None
            self.row_ema = None
 
-       def obtain_observation(self, model):
-           obs = super().obtain_observation(model)
+       def obtain_observation(self, model, done):
+           obs = super().obtain_observation(model, done)
 
            # Compute max absolute vector for current observation
            column_max_abs = np.abs(obs.column_features).max(0)

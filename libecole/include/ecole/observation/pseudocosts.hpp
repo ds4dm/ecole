@@ -10,7 +10,7 @@ namespace ecole::observation {
 
 class Pseudocosts : public ObservationFunction<std::optional<xt::xtensor<double, 1>>> {
 public:
-	std::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model) override;
+	std::optional<xt::xtensor<double, 1>> obtain_observation(scip::Model& model, bool done) override;
 };
 
 }  // namespace ecole::observation

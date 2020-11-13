@@ -25,7 +25,7 @@ def test_VectorFunction(model):
 
     obs_func1.obtain_observation.return_value = "something"
     obs_func2.obtain_observation.return_value = "else"
-    obs = tuple_obs_func.obtain_observation(model)
+    obs = tuple_obs_func.obtain_observation(model, False)
     assert obs == ["something", "else"]
 
 
@@ -40,7 +40,7 @@ def test_MapFunction(model):
 
     obs_func1.obtain_observation.return_value = "something"
     obs_func2.obtain_observation.return_value = "else"
-    obs = dict_obs_func.obtain_observation(model)
+    obs = dict_obs_func.obtain_observation(model, False)
     assert obs == {"name1": "something", "name2": "else"}
 
 
@@ -75,12 +75,12 @@ def test_reset(observation_function, solving_model):
 def test_obtain_observation(observation_function, solving_model):
     """Obtain observation."""
     observation_function.reset(solving_model)
-    observation_function.obtain_observation(solving_model)
+    observation_function.obtain_observation(solving_model, False)
 
 
 def make_obs(obs_func, model):
     obs_func.reset(model)
-    return obs_func.obtain_observation(model)
+    return obs_func.obtain_observation(model, False)
 
 
 def assert_array(arr, ndim=1, non_empty=True, dtype=np.double):

@@ -109,7 +109,7 @@ class Environment:
             self.reward_function.reset(self.model)
 
             reward_offset = self.reward_function.extract(self.model, done)
-            observation = self.observation_function.obtain_observation(self.model)
+            observation = self.observation_function.obtain_observation(self.model, done)
             return observation, action_set, reward_offset, done
         except Exception as e:
             self.can_transition = False
@@ -162,7 +162,7 @@ class Environment:
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
             reward = self.reward_function.extract(self.model, done)
-            observation = self.observation_function.obtain_observation(self.model)
+            observation = self.observation_function.obtain_observation(self.model, done)
             return observation, action_set, reward, done, {}
         except Exception as e:
             self.can_transition = False

@@ -19,7 +19,7 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 	auto obs_func = observation::NodeBipartite{};
 	auto model = get_solving_model();
 	obs_func.reset(model);
-	auto const optional_obs = obs_func.obtain_observation(model);
+	auto const optional_obs = obs_func.obtain_observation(model, false);
 
 	SECTION("Observation is not empty on non terminal state") { REQUIRE(optional_obs.has_value()); }
 
