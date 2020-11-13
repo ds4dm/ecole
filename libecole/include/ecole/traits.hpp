@@ -7,27 +7,58 @@
 
 namespace ecole::trait {
 
-/***********************
- *  General detection  *
- ***********************/
+/*********************************
+ *  Detection of data functions  *
+ *********************************/
 
-template <typename, typename = std::void_t<>> struct is_observation_function : std::false_type {};
+namespace internal {
 
-template <typename T> struct is_observation_function<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
+template <typename, typename = std::void_t<>> struct has_reset : std::false_type {};
+template <typename T> struct has_reset<T, std::void_t<decltype(&T::reset)>> : std::true_type {};
+template <typename T> inline constexpr bool has_reset_v = has_reset<T>::value;
 
-template <typename T> inline constexpr bool is_observation_function_v = is_observation_function<T>::value;
+template <typename, typename = std::void_t<>> struct has_extract : std::false_type {};
+template <typename T> struct has_extract<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
+template <typename T> inline constexpr bool has_extract_v = has_extract<T>::value;
 
-template <typename, typename = std::void_t<>> struct is_environment : std::false_type {};
+}  // namespace internal
 
-template <typename T> struct is_environment<T, std::void_t<decltype(&T::template step<>)>> : std::true_type {};
+template <typename T> inline constexpr bool is_data_function_v = internal::has_reset_v<T>&& internal::has_extract_v<T>;
+template <typename T> inline constexpr bool is_observation_function_v = is_data_function_v<T>;
 
-template <typename T> inline constexpr bool is_environment_v = is_environment<T>::value;
+/******************************
+ *  Detection of environment  *
+ ******************************/
 
-template <typename, typename = std::void_t<>> struct is_dynamics : std::false_type {};
+namespace internal {
 
-template <typename T> struct is_dynamics<T, std::void_t<decltype(&T::step_dynamics)>> : std::true_type {};
+template <typename, typename = std::void_t<>> struct has_template_step : std::false_type {};
+template <typename T> struct has_template_step<T, std::void_t<decltype(&T::template step<>)>> : std::true_type {};
+template <typename T> inline constexpr bool has_template_step_v = has_template_step<T>::value;
 
-template <typename T> inline constexpr bool is_dynamics_v = is_dynamics<T>::value;
+}  // namespace internal
+
+template <typename T> inline constexpr bool is_environment_v = internal::has_template_step_v<T>;
+
+/***************************
+ *  Detection of dynamics  *
+ ***************************/
+
+namespace internal {
+
+template <typename, typename = std::void_t<>> struct has_step_dynamics : std::false_type {};
+template <typename T> struct has_step_dynamics<T, std::void_t<decltype(&T::step_dynamics)>> : std::true_type {};
+template <typename T> inline constexpr bool has_step_dynamics_v = has_step_dynamics<T>::value;
+
+}  // namespace internal
+
+template <typename T> inline constexpr bool is_dynamics_v = internal::has_step_dynamics_v<T>;
+
+/*********************************
+ *  Detection of extracted data  *
+ *********************************/
+
+template <typename T> using data_of_t = utility::return_t<decltype(&T::extract)>;
 
 /***********************************
  *  Detection of observation type  *
@@ -36,7 +67,7 @@ template <typename T> inline constexpr bool is_dynamics_v = is_dynamics<T>::valu
 template <typename, typename = void> struct observation_of;
 
 template <typename T> struct observation_of<T, std::enable_if_t<is_observation_function_v<T>>> {
-	using type = utility::return_t<decltype(&T::extract)>;
+	using type = data_of_t<T>;
 };
 
 template <typename T> struct observation_of<T, std::enable_if_t<is_environment_v<T>>> {

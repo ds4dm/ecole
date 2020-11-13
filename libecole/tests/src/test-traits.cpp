@@ -37,6 +37,10 @@ TEST_CASE("Detect if dynamics", "[trait]") {
 	}
 }
 
+TEST_CASE("Detect data type", "[trait]") {
+	STATIC_REQUIRE_SAME(trait::data_of_t<observation::Nothing>, ecole::NoneType);
+}
+
 TEST_CASE("Detect observation type", "[trait]") {
 	STATIC_REQUIRE_SAME(trait::observation_of_t<observation::Nothing>, ecole::NoneType);
 	STATIC_REQUIRE_SAME(trait::observation_of_t<environment::Configuring<>>, ecole::NoneType);
