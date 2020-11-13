@@ -72,6 +72,7 @@ PYBIND11_MODULE(core, m) {
 	py::register_exception<ecole::Exception>(m, "Exception");
 
 	scip::bind_submodule(m.def_submodule("scip"));
+	data::bind_submodule(m.def_submodule("data"));
 	observation::bind_submodule(m.def_submodule("observation"));
 	reward::bind_submodule(m.def_submodule("reward"));
 	dynamics::bind_submodule(m.def_submodule("dynamics"));

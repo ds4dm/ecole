@@ -7,12 +7,10 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/observation/map.hpp"
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
-#include "ecole/observation/vector.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
@@ -48,23 +46,6 @@ template <typename PyClass, typename... Args> auto def_extract(PyClass pyclass, 
 }
 
 /**
- * A C++ class to wrap any Python object as an observation function.
- *
- * This is used to bind templated types such as MapObservation and VectorObservation
- */
-class PyObservationFunction : observation::ObservationFunction<py::object> {
-public:
-	PyObservationFunction() noexcept = default;
-	explicit PyObservationFunction(py::object obs_func) noexcept : observation_function(std::move(obs_func)) {}
-
-	void reset(scip::Model& model) final { observation_function.attr("reset")(&model); }
-	py::object extract(scip::Model& model, bool done) final { return observation_function.attr("extract")(&model, done); }
-
-private:
-	py::object observation_function;
-};
-
-/**
  * Observation module bindings definitions.
  */
 void bind_submodule(py::module_ const& m) {
@@ -81,41 +62,6 @@ void bind_submodule(py::module_ const& m) {
 	nothing.def(py::init<>());
 	def_reset(nothing, R"(Do nothing.)");
 	def_extract(nothing, R"(Return None.)");
-
-	using PyVectorFunction = VectorFunction<PyObservationFunction>;
-	py::class_<PyVectorFunction>(
-		m, "VectorFunction", "Pack observation functions together and return observations as list.")
-		.def(py::init([](py::args const& objects) {
-			auto functions = std::vector<PyObservationFunction>{objects.size()};
-			std::transform(objects.begin(), objects.end(), functions.begin(), [](py::handle obj) {
-				return PyObservationFunction{py::reinterpret_borrow<py::object>(obj)};
-			});
-			return std::make_unique<PyVectorFunction>(std::move(functions));
-		}))
-		.def("reset", &PyVectorFunction::reset, py::arg("model"), "Call reset on all observation functions.")
-		.def(
-			"extract",
-			&PyVectorFunction::extract,
-			py::arg("model"),
-			py::arg("done"),
-			"Return observation from all functions as a tuple.");
-
-	using PyMapFunction = MapFunction<std::string, PyObservationFunction>;
-	py::class_<PyMapFunction>(m, "MapFunction", "Pack observation functions together and return observations as a dict.")
-		.def(py::init([](py::kwargs const& objects) {
-			auto functions = std::map<std::string, PyObservationFunction>{};
-			for (auto [key, func] : objects) {
-				functions.emplace(key.cast<std::string>(), py::reinterpret_borrow<py::object>(func));
-			}
-			return std::make_unique<PyMapFunction>(std::move(functions));
-		}))
-		.def("reset", &PyMapFunction::reset, py::arg("model"), "Call reset on all observation functions.")
-		.def(
-			"extract",
-			&PyMapFunction::extract,
-			py::arg("model"),
-			py::arg("done"),
-			"Return observation from all functions as a dict.");
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(

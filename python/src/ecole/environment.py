@@ -43,11 +43,11 @@ class Environment:
         elif observation_function is None:
             return ecole.observation.Nothing()
         elif isinstance(observation_function, tuple):
-            return ecole.observation.VectorFunction(
+            return ecole.data.VectorFunction(
                 *(cls.__parse_observation_function(fun) for fun in observation_function)
             )
         elif isinstance(observation_function, dict):
-            return ecole.observation.MapFunction(
+            return ecole.data.MapFunction(
                 **{
                     name: cls.__parse_observation_function(func)
                     for name, func in observation_function.items()

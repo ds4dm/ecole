@@ -7,41 +7,9 @@ Here,
   - Other tests that observation returned form observation functions are bound to the correct types.
 """
 
-import unittest.mock as mock
-
 import numpy as np
 
 import ecole.observation as O
-
-
-def test_VectorFunction(model):
-    """Dispach calls and pack the result in a list."""
-    obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    tuple_obs_func = O.VectorFunction(obs_func1, obs_func2)
-
-    tuple_obs_func.reset(model)
-    obs_func1.reset.assert_called_once_with(model)
-    obs_func2.reset.assert_called_once_with(model)
-
-    obs_func1.extract.return_value = "something"
-    obs_func2.extract.return_value = "else"
-    obs = tuple_obs_func.extract(model, False)
-    assert obs == ["something", "else"]
-
-
-def test_MapFunction(model):
-    """Dispach calls and pack the result in a dict."""
-    obs_func1, obs_func2 = mock.MagicMock(), mock.MagicMock()
-    dict_obs_func = O.MapFunction(name1=obs_func1, name2=obs_func2)
-
-    dict_obs_func.reset(model)
-    obs_func1.reset.assert_called_once_with(model)
-    obs_func2.reset.assert_called_once_with(model)
-
-    obs_func1.extract.return_value = "something"
-    obs_func2.extract.return_value = "else"
-    obs = dict_obs_func.extract(model, False)
-    assert obs == {"name1": "something", "name2": "else"}
 
 
 def pytest_generate_tests(metafunc):
