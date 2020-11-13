@@ -14,12 +14,12 @@ add_executable(
 	src/data/test-tuple.cpp
 	src/data/test-vector.cpp
 	src/data/test-map.cpp
+	src/data/test-multiary.cpp
 
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
 
 	src/reward/test-constant.cpp
-	src/reward/test-unary.cpp
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp
