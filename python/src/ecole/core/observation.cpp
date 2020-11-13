@@ -42,6 +42,7 @@ template <typename PyClass, typename... Args> auto def_obtain_observation(PyClas
 		"obtain_observation",
 		&PyClass::type::obtain_observation,
 		py::arg("model"),
+		py::arg("done"),
 		py::call_guard<py::gil_scoped_release>(),
 		std::forward<Args>(args)...);
 }
@@ -57,8 +58,8 @@ public:
 	explicit PyObservationFunction(py::object obs_func) noexcept : observation_function(std::move(obs_func)) {}
 
 	void reset(scip::Model& model) final { observation_function.attr("reset")(&model); }
-	py::object obtain_observation(scip::Model& model) final {
-		return observation_function.attr("obtain_observation")(&model);
+	py::object obtain_observation(scip::Model& model, bool done) final {
+		return observation_function.attr("obtain_observation")(&model, done);
 	}
 
 private:
@@ -98,6 +99,7 @@ void bind_submodule(py::module_ const& m) {
 			"obtain_observation",
 			&PyVectorFunction::obtain_observation,
 			py::arg("model"),
+			py::arg("done"),
 			"Return observation from all functions as a tuple.");
 
 	using PyMapFunction = MapFunction<std::string, PyObservationFunction>;
@@ -114,6 +116,7 @@ void bind_submodule(py::module_ const& m) {
 			"obtain_observation",
 			&PyMapFunction::obtain_observation,
 			py::arg("model"),
+			py::arg("done"),
 			"Return observation from all functions as a dict.");
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);

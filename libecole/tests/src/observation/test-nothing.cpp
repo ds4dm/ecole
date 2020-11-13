@@ -12,9 +12,10 @@ TEST_CASE("Nothing unit tests", "[unit][obs]") {
 }
 
 TEST_CASE("Nothing return None as observation", "[obs]") {
+	auto const done = GENERATE(true, false);
 	auto obs_func = observation::Nothing{};
 	auto model = get_model();
 	obs_func.reset(model);
 
-	REQUIRE(obs_func.obtain_observation(model) == ecole::None);
+	REQUIRE(obs_func.obtain_observation(model, done) == ecole::None);
 }

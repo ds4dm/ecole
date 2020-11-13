@@ -28,10 +28,10 @@ public:
 	}
 
 	/** Return observation from all functions as a vector. */
-	ObservationVector obtain_observation(scip::Model& model) override {
+	ObservationVector obtain_observation(scip::Model& model, bool done) override {
 		auto obs = ObservationVector(observation_functions.size());
-		std::transform(observation_functions.begin(), observation_functions.end(), obs.begin(), [&model](auto& func) {
-			return func.obtain_observation(model);
+		std::transform(observation_functions.begin(), observation_functions.end(), obs.begin(), [&model, done](auto& func) {
+			return func.obtain_observation(model, done);
 		});
 		return obs;
 	}

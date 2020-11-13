@@ -18,7 +18,8 @@ template <typename ObsFunc> void unit_tests(ObsFunc&& obs_func) {
 
 	SECTION("reset, obtain observation, and delete") {
 		obs_func.reset(solving_model);
-		obs_func.obtain_observation(solving_model);
+		auto const done = GENERATE(true, false);
+		obs_func.obtain_observation(solving_model, done);
 	}
 }
 
