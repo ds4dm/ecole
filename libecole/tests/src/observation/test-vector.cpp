@@ -20,7 +20,7 @@ template <typename T> struct MockObservationFunction : ObservationFunction<T> {
 	MockObservationFunction(T val_) : val{val_} {}
 
 	void reset(scip::Model& /* model */) override { ++val; };
-	T obtain_observation(scip::Model& /* model */, bool /* done */) override { return val; }
+	T extract(scip::Model& /* model */, bool /* done */) override { return val; }
 };
 
 }  // namespace ecole::observation
@@ -36,7 +36,7 @@ TEST_CASE("Combine observation functions into a vector", "[obs]") {
 	auto model = get_model();
 
 	obs_func.reset(model);
-	auto obs = obs_func.obtain_observation(model, false);
+	auto obs = obs_func.extract(model, false);
 	STATIC_REQUIRE(std::is_same_v<decltype(obs), std::vector<int>>);
 	REQUIRE(obs[0] == 2);
 	REQUIRE(obs[1] == 3);

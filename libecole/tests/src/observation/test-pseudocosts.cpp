@@ -18,7 +18,7 @@ TEST_CASE("Pseudocosts return pseudo costs array", "[obs]") {
 	auto obs_func = observation::Pseudocosts{};
 	auto model = get_solving_model();
 	obs_func.reset(model);
-	auto const obs = obs_func.obtain_observation(model, false);
+	auto const obs = obs_func.extract(model, false);
 
 	REQUIRE(obs.has_value());
 	auto const& costs = obs.value();

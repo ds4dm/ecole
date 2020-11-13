@@ -13,8 +13,7 @@ namespace ecole::trait {
 
 template <typename, typename = std::void_t<>> struct is_observation_function : std::false_type {};
 
-template <typename T>
-struct is_observation_function<T, std::void_t<decltype(&T::obtain_observation)>> : std::true_type {};
+template <typename T> struct is_observation_function<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
 
 template <typename T> inline constexpr bool is_observation_function_v = is_observation_function<T>::value;
 
@@ -37,7 +36,7 @@ template <typename T> inline constexpr bool is_dynamics_v = is_dynamics<T>::valu
 template <typename, typename = void> struct observation_of;
 
 template <typename T> struct observation_of<T, std::enable_if_t<is_observation_function_v<T>>> {
-	using type = utility::return_t<decltype(&T::obtain_observation)>;
+	using type = utility::return_t<decltype(&T::extract)>;
 };
 
 template <typename T> struct observation_of<T, std::enable_if_t<is_environment_v<T>>> {
