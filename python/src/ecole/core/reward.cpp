@@ -25,7 +25,7 @@ class Arithmetic {
 public:
 	Arithmetic(py::object operation, py::list const& functions, py::str repr);
 	void reset(py::object const& model);
-	Reward obtain_reward(py::object const& model, bool done);
+	Reward extract(py::object const& model, bool done);
 	[[nodiscard]] py::str toString() const;
 
 private:
@@ -38,7 +38,7 @@ class Cumulative {
 public:
 	Cumulative(py::object function, py::object reduce_func, Reward init_cumul_, py::str repr);
 	void reset(py::object const& model);
-	Reward obtain_reward(py::object const& model, bool done);
+	Reward extract(py::object const& model, bool done);
 	[[nodiscard]] py::str toString() const;
 
 private:
@@ -53,7 +53,7 @@ private:
  * Helper function to bind common methods.
  */
 template <typename PyClass, typename... Args> void def_reset(PyClass /*pyclass*/, Args&&... /*args*/);
-template <typename PyClass, typename... Args> void def_obtain_reward(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass, typename... Args> void def_extract(PyClass /*pyclass*/, Args&&... /*args*/);
 template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 
 /**
@@ -72,7 +72,7 @@ void bind_submodule(py::module_ const& m) {
 		.def_readonly("constant", &Constant::constant);
 	def_operators(constant);
 	def_reset(constant, "Do nothing.");
-	def_obtain_reward(constant, "Return the constant value.");
+	def_extract(constant, "Return the constant value.");
 
 	auto arithmetic = py::class_<Arithmetic>(m, "Arithmetic", R"(
 		Proxy class for doing arithmetic on reward functions.
@@ -90,10 +90,10 @@ void bind_submodule(py::module_ const& m) {
 		Calls ``reset`` on all reward functions parameters that were used to create this
 		object.
 	)");
-	def_obtain_reward(arithmetic, R"(
+	def_extract(arithmetic, R"(
 		Obtain the reward of result of the operator.
 
-		Calls ``obtain_reward`` on all reward function parameters that were used to create
+		Calls ``extract`` on all reward function parameters that were used to create
 		this object and compute the operation on the results.
 	)");
 
@@ -108,13 +108,13 @@ void bind_submodule(py::module_ const& m) {
 		.def("__repr__", &Cumulative::toString);
 	def_operators(cumulative);
 	def_reset(cumulative, "Reset the wrapped reward function and reset current cumulation.");
-	def_obtain_reward(cumulative, "Obtain the cumulative reward of result of wrapped function.");
+	def_extract(cumulative, "Obtain the cumulative reward of result of wrapped function.");
 
 	auto isdone = py::class_<IsDone>(m, "IsDone", "Single reward on terminal states.");
 	isdone.def(py::init<>());
 	def_operators(isdone);
 	def_reset(isdone, "Do nothing.");
-	def_obtain_reward(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
+	def_extract(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
 		LP Iteration difference.
@@ -125,7 +125,7 @@ void bind_submodule(py::module_ const& m) {
 	lpiterations.def(py::init<>());
 	def_operators(lpiterations);
 	def_reset(lpiterations, "Reset the internal LP iterations count.");
-	def_obtain_reward(lpiterations, R"(
+	def_extract(lpiterations, R"(
 		Update the internal LP iteration count and return the difference.
 
 		The difference in LP iterations is computed in between calls.
@@ -139,7 +139,7 @@ void bind_submodule(py::module_ const& m) {
 	nnodes.def(py::init<>());
 	def_operators(nnodes);
 	def_reset(nnodes, "Reset the internal node count.");
-	def_obtain_reward(nnodes, R"(
+	def_extract(nnodes, R"(
 		Update the internal node count and return the difference.
 
 		The difference in number of nodes is computed in between calls.
@@ -168,10 +168,10 @@ void Arithmetic::reset(py::object const& model) {
 	}
 }
 
-Reward Arithmetic::obtain_reward(py::object const& model, bool done) {
+Reward Arithmetic::extract(py::object const& model, bool done) {
 	py::list rewards{};
 	for (auto obs_func : functions) {
-		rewards.append(obs_func.attr("obtain_reward")(model, done));
+		rewards.append(obs_func.attr("extract")(model, done));
 	}
 	return operation(*rewards).cast<Reward>();
 }
@@ -196,8 +196,8 @@ void Cumulative::reset(py::object const& model) {
 	function.attr("reset")(model);
 }
 
-Reward Cumulative::obtain_reward(py::object const& model, bool done) {
-	auto reward = function.attr("obtain_reward")(model, done);
+Reward Cumulative::extract(py::object const& model, bool done) {
+	auto reward = function.attr("extract")(model, done);
 	cumul = reduce_func(py::cast(cumul), reward).cast<Reward>();
 	return cumul;
 }
@@ -214,13 +214,9 @@ template <typename PyClass, typename... Args> void def_reset(PyClass pyclass, Ar
 	pyclass.def("reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
 }
 
-template <typename PyClass, typename... Args> void def_obtain_reward(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> void def_extract(PyClass pyclass, Args&&... args) {
 	pyclass.def(
-		"obtain_reward",
-		&PyClass::type::obtain_reward,
-		py::arg("model"),
-		py::arg("done") = false,
-		std::forward<Args>(args)...);
+		"extract", &PyClass::type::extract, py::arg("model"), py::arg("done") = false, std::forward<Args>(args)...);
 }
 
 template <typename PyClass> void def_operators(PyClass pyclass) {

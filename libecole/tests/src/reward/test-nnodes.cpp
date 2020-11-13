@@ -24,30 +24,30 @@ TEST_CASE("NNodes returns the difference in the total number of processed nodes 
 
 	SECTION("NNodes is zero before presolving") {
 		reward_func.reset(model);
-		REQUIRE(reward_func.obtain_reward(model) == 0);
+		REQUIRE(reward_func.extract(model) == 0);
 	}
 
 	SECTION("NNodes is one after root node processing") {
 		reward_func.reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
-		REQUIRE(reward_func.obtain_reward(model) == 1);
+		REQUIRE(reward_func.extract(model) == 1);
 	}
 
 	SECTION("NNodes is zero if the model state has not changed") {
 		reward_func.reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
-		REQUIRE(reward_func.obtain_reward(model) >= 0);
-		REQUIRE(reward_func.obtain_reward(model) == 0);
+		REQUIRE(reward_func.extract(model) >= 0);
+		REQUIRE(reward_func.extract(model) == 0);
 	}
 
 	SECTION("Reset NNodes counter") {
 		reward_func.reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
-		auto reward = reward_func.obtain_reward(model);
+		auto reward = reward_func.extract(model);
 		model = get_model();
 		reward_func.reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
-		REQUIRE(reward_func.obtain_reward(model) == reward);
+		REQUIRE(reward_func.extract(model) == reward);
 	}
 }
 

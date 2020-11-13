@@ -10,7 +10,7 @@ public:
 
 	Constant(Reward constant_ = 0.) : constant(constant_) {}
 
-	Reward obtain_reward(scip::Model& /* model */, bool /* done */) override { return constant; };
+	Reward extract(scip::Model& /* model */, bool /* done */) override { return constant; };
 };
 
 }  // namespace ecole::reward

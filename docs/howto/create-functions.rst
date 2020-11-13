@@ -139,9 +139,9 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
        def reset(self, model):
            self.reward_function.reset(model)
 
-       def obtain_reward(self, model, done):
-           # Unconditionally getting reward as reward_funcition.obtain_reward may have side effects
-           reward = self.reward_function.obtain_reward(model, done)
+       def extract(self, model, done):
+           # Unconditionally getting reward as reward_funcition.extract may have side effects
+           reward = self.reward_function.extract(model, done)
            if random.random() < probability:
                return 0.
            else:

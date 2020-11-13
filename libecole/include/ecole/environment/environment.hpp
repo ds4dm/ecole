@@ -101,7 +101,7 @@ public:
 			reward_func().reset(model());
 
 			can_transition = !done;
-			auto const reward_offset = reward_func().obtain_reward(model(), done);
+			auto const reward_offset = reward_func().extract(model(), done);
 			return {obs_func().obtain_observation(model()), std::move(action_set), reward_offset, done};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -143,7 +143,7 @@ public:
 		try {
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
-			auto const reward = reward_func().obtain_reward(model(), done);
+			auto const reward = reward_func().extract(model(), done);
 
 			return {
 				obs_func().obtain_observation(model()),

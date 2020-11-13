@@ -20,8 +20,8 @@ public:
 	void reset(scip::Model& model) override { reward_function.reset(model); }
 
 	/** Extract reward and call the unary operation on it. */
-	Reward obtain_reward(scip::Model& model, bool done = false) override {
-		return unary_function(reward_function.obtain_reward(model, done));
+	Reward extract(scip::Model& model, bool done = false) override {
+		return unary_function(reward_function.extract(model, done));
 	}
 
 private:

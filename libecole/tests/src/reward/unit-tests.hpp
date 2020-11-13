@@ -19,7 +19,7 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 
 	SECTION("reset, obtain reward, and delete") {
 		reward_func.reset(solving_model);
-		reward_func.obtain_reward(solving_model, done);
+		reward_func.extract(solving_model, done);
 	}
 }
 
