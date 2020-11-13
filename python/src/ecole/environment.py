@@ -108,7 +108,7 @@ class Environment:
             self.observation_function.reset(self.model)
             self.reward_function.reset(self.model)
 
-            reward_offset = self.reward_function.obtain_reward(self.model, done)
+            reward_offset = self.reward_function.extract(self.model, done)
             observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, reward_offset, done
         except Exception as e:
@@ -161,7 +161,7 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
-            reward = self.reward_function.obtain_reward(self.model, done)
+            reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, reward, done, {}
         except Exception as e:

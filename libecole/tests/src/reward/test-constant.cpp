@@ -20,7 +20,7 @@ TEST_CASE("Constant reward always return the same value", "[reward]") {
 
 	reward_func.reset(model);
 
-	REQUIRE(reward_func.obtain_reward(model, done) == constant);
+	REQUIRE(reward_func.extract(model, done) == constant);
 
-	SECTION("On successive calls") { REQUIRE(reward_func.obtain_reward(model, done) == constant); }
+	SECTION("On successive calls") { REQUIRE(reward_func.extract(model, done) == constant); }
 }

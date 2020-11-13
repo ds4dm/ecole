@@ -36,10 +36,10 @@ def test_reset(reward_function, model):
 
 
 @pytest.mark.parametrize("done", [True, False])
-def test_obtain_reward(reward_function, done, model):
+def test_extract(reward_function, done, model):
     """Rewards are floats."""
     reward_function.reset(model)
-    reward = reward_function.obtain_reward(model, done)
+    reward = reward_function.extract(model, done)
     assert isinstance(reward, float)
 
 
@@ -47,9 +47,9 @@ def test_obtain_reward(reward_function, done, model):
 def test_reproducability(reward_function, done, model):
     """Same trajectories yield same rewards."""
     reward_function.reset(model)
-    reward1 = reward_function.obtain_reward(model, done)
+    reward1 = reward_function.extract(model, done)
     reward_function.reset(model)
-    reward2 = reward_function.obtain_reward(model, done=done)
+    reward2 = reward_function.extract(model, done=done)
     assert reward1 == reward2
 
 
@@ -67,26 +67,26 @@ def test_reproducability(reward_function, done, model):
 def test_operators(reward_function, model, func_formula, reward_formula):
     """Operators produce operations on rewards."""
     reward_function.reset(model)
-    reward = reward_function.obtain_reward(model)
+    reward = reward_function.extract(model)
     # WARNING reward_function and formula_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     formula_reward_function = func_formula(reward_function)
     formula_reward_function.reset(model)
-    formula_reward = formula_reward_function.obtain_reward(model)
+    formula_reward = formula_reward_function.extract(model)
     assert formula_reward == reward_formula(reward)
 
 
 def test_cumsum(reward_function, model):
     """Operators produce operations on rewards."""
     reward_function.reset(model)
-    reward1 = reward_function.obtain_reward(model)
-    reward2 = reward_function.obtain_reward(model)
+    reward1 = reward_function.extract(model)
+    reward2 = reward_function.extract(model)
     # WARNING reward_function and cum_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     cum_reward_function = reward_function.cumsum()
     cum_reward_function.reset(model)
-    cum_reward1 = cum_reward_function.obtain_reward(model)
-    cum_reward2 = cum_reward_function.obtain_reward(model)
+    cum_reward1 = cum_reward_function.extract(model)
+    cum_reward2 = cum_reward_function.extract(model)
 
     assert cum_reward1 == reward1
     assert cum_reward2 == reward1 + reward2

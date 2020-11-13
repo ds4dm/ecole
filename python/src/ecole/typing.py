@@ -122,7 +122,7 @@ class RewardFunction(Protocol):
         """
         ...
 
-    def obtain_reward(self, model: ecole.scip.Model, done: bool) -> float:
+    def extract(self, model: ecole.scip.Model, done: bool) -> float:
         """Extract reward for arriving on given state.
 
         Extract the reward for arriving on the state given by ``model``.

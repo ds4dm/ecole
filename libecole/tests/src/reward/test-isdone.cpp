@@ -18,7 +18,7 @@ TEST_CASE("IsDone always return one when done", "[reward]") {
 
 	reward_func.reset(model);
 
-	REQUIRE(reward_func.obtain_reward(model, done) == (done ? 1. : 0.));
+	REQUIRE(reward_func.extract(model, done) == (done ? 1. : 0.));
 
-	SECTION("On successive calls") { REQUIRE(reward_func.obtain_reward(model, done) == (done ? 1. : 0.)); }
+	SECTION("On successive calls") { REQUIRE(reward_func.extract(model, done) == (done ? 1. : 0.)); }
 }

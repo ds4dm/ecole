@@ -26,5 +26,5 @@ TEST_CASE("Unary reward always return the same value", "[reward]") {
 
 	reward_func.reset(model);
 
-	REQUIRE(reward_func.obtain_reward(model) == increment(some_constant));
+	REQUIRE(reward_func.extract(model) == increment(some_constant));
 }
