@@ -108,7 +108,7 @@ class EnvironmentComposer:
             self.observation_function.reset(self.model)
             self.reward_function.reset(self.model)
 
-            reward_offset = self.reward_function.obtain_reward(self.model)
+            reward_offset = self.reward_function.obtain_reward(self.model, done)
             observation = self.observation_function.obtain_observation(self.model)
             return observation, action_set, reward_offset, done
         except Exception as e:
