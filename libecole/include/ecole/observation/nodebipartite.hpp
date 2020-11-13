@@ -20,7 +20,7 @@ public:
 
 class NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
 public:
-	std::optional<NodeBipartiteObs> obtain_observation(scip::Model& model, bool done) override;
+	std::optional<NodeBipartiteObs> extract(scip::Model& model, bool done) override;
 };
 
 }  // namespace ecole::observation

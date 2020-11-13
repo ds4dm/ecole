@@ -17,5 +17,5 @@ TEST_CASE("Nothing return None as observation", "[obs]") {
 	auto model = get_model();
 	obs_func.reset(model);
 
-	REQUIRE(obs_func.obtain_observation(model, done) == ecole::None);
+	REQUIRE(obs_func.extract(model, done) == ecole::None);
 }

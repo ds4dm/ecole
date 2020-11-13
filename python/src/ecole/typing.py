@@ -179,7 +179,7 @@ class ObservationFunction(Protocol[Observation]):
         """
         ...
 
-    def obtain_observation(self, model: ecole.scip.Model, done: bool) -> Observation:
+    def extract(self, model: ecole.scip.Model, done: bool) -> Observation:
         """Extract observation on a given state.
 
         The observation describe the state and is used for learning.

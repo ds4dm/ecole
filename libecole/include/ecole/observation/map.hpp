@@ -28,10 +28,10 @@ public:
 	}
 
 	/** Return observation from all functions as a map. */
-	ObservationMap obtain_observation(scip::Model& model, bool done) override {
+	ObservationMap extract(scip::Model& model, bool done) override {
 		auto obs = ObservationMap{};
 		for (auto& [key, func] : observation_functions) {
-			obs.emplace(key, func.obtain_observation(model, done));
+			obs.emplace(key, func.extract(model, done));
 		}
 		return obs;
 	}

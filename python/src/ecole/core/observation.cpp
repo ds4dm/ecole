@@ -35,12 +35,12 @@ template <typename PyClass, typename... Args> auto def_reset(PyClass pyclass, Ar
 }
 
 /**
- * Helper function to bind the `obtain_observation` method of observation functions.
+ * Helper function to bind the `extract` method of observation functions.
  */
-template <typename PyClass, typename... Args> auto def_obtain_observation(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> auto def_extract(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
-		"obtain_observation",
-		&PyClass::type::obtain_observation,
+		"extract",
+		&PyClass::type::extract,
 		py::arg("model"),
 		py::arg("done"),
 		py::call_guard<py::gil_scoped_release>(),
@@ -58,9 +58,7 @@ public:
 	explicit PyObservationFunction(py::object obs_func) noexcept : observation_function(std::move(obs_func)) {}
 
 	void reset(scip::Model& model) final { observation_function.attr("reset")(&model); }
-	py::object obtain_observation(scip::Model& model, bool done) final {
-		return observation_function.attr("obtain_observation")(&model, done);
-	}
+	py::object extract(scip::Model& model, bool done) final { return observation_function.attr("extract")(&model, done); }
 
 private:
 	py::object observation_function;
@@ -82,7 +80,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	nothing.def(py::init<>());
 	def_reset(nothing, R"(Do nothing.)");
-	def_obtain_observation(nothing, R"(Return None.)");
+	def_extract(nothing, R"(Return None.)");
 
 	using PyVectorFunction = VectorFunction<PyObservationFunction>;
 	py::class_<PyVectorFunction>(
@@ -96,8 +94,8 @@ void bind_submodule(py::module_ const& m) {
 		}))
 		.def("reset", &PyVectorFunction::reset, py::arg("model"), "Call reset on all observation functions.")
 		.def(
-			"obtain_observation",
-			&PyVectorFunction::obtain_observation,
+			"extract",
+			&PyVectorFunction::extract,
 			py::arg("model"),
 			py::arg("done"),
 			"Return observation from all functions as a tuple.");
@@ -113,8 +111,8 @@ void bind_submodule(py::module_ const& m) {
 		}))
 		.def("reset", &PyMapFunction::reset, py::arg("model"), "Call reset on all observation functions.")
 		.def(
-			"obtain_observation",
-			&PyMapFunction::obtain_observation,
+			"extract",
+			&PyMapFunction::extract,
 			py::arg("model"),
 			py::arg("done"),
 			"Return observation from all functions as a dict.");
@@ -174,7 +172,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	node_bipartite.def(py::init<>());
 	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
-	def_obtain_observation(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
+	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
 	auto strong_branching_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
 		Strong branching score observation function on branch-and bound node.
@@ -199,7 +197,7 @@ void bind_submodule(py::module_ const& m) {
 			By default psuedo-candidates will be computed.
 	)");
 	def_reset(strong_branching_scores, R"(Do nothing.)");
-	def_obtain_observation(strong_branching_scores, "Extract an array containing strong branching scores.");
+	def_extract(strong_branching_scores, "Extract an array containing strong branching scores.");
 
 	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
 		Pseudocosts observation function on branch-and bound node.
@@ -217,7 +215,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	pseudocosts.def(py::init<>());
 	def_reset(pseudocosts, R"(Do nothing.)");
-	def_obtain_observation(pseudocosts, "Extract an array containing pseudocosts.");
+	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
 }
 
 }  // namespace ecole::observation

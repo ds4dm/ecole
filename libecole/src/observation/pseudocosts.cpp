@@ -31,7 +31,7 @@ auto scip_get_lp_branch_cands(Scip* const scip) noexcept {
 
 }  // namespace
 
-std::optional<xt::xtensor<double, 1>> Pseudocosts::obtain_observation(scip::Model& model, bool /* done */) {
+std::optional<xt::xtensor<double, 1>> Pseudocosts::extract(scip::Model& model, bool /* done */) {
 	if (model.get_stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}

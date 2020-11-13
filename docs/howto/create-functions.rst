@@ -23,7 +23,7 @@ In the following, we will adapt :py:class:`~ecole.observation.NodeBipartite` to 
 to the observation features.
 
 The method that will be called to return an observation is called
-:py:meth:`~ecole.typing.ObservationFunction.obtain_observation`.
+:py:meth:`~ecole.typing.ObservationFunction.extract`.
 Here is how we can create a new observation function that scale the features their maximum absolute
 value.
 
@@ -35,9 +35,9 @@ value.
 
    class ScaledNodeBipartite(NodeBipartite):
 
-       def obtain_observation(self, model, done):
+       def extract(self, model, done):
            # Call parent method to get the original observation
-           obs = super().obtain_observation(model)
+           obs = super().extract(model)
            # Apply scaling
            column_max_abs = np.abs(obs.column_features).max(0)
            obs.column_features[:] /= column_max_abs
@@ -74,8 +74,8 @@ This example shows how the scaling vector can be stored between states.
            self.column_ema = None
            self.row_ema = None
 
-       def obtain_observation(self, model, done):
-           obs = super().obtain_observation(model, done)
+       def extract(self, model, done):
+           obs = super().extract(model, done)
 
            # Compute max absolute vector for current observation
            column_max_abs = np.abs(obs.column_features).max(0)
@@ -102,7 +102,7 @@ return anything.
 This method is called at the begining of the episode by
 :py:meth:`~ecole.environment.Environment.reset` and is used to reintialize the class
 internal attribute on new episodes.
-The :py:meth:`~ecole.typing.ObservationFunction.obtain_observation` is also called during during
+The :py:meth:`~ecole.typing.ObservationFunction.extract` is also called during during
 :py:meth:`~ecole.environment.Environment.reset`, hence the ``if`` else ``else`` condition.
 Both these methods call the parent method to let it do its own initialization/reseting.
 

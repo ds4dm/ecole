@@ -1,12 +1,8 @@
 #pragma once
 
-namespace ecole {
+#include "ecole/data/abstract.hpp"
 
-namespace scip {
-class Model;
-}
-
-namespace observation {
+namespace ecole::observation {
 
 /**
  * Abstract base class for all observation functions.
@@ -20,22 +16,6 @@ namespace observation {
  *
  * @tparam Observation the type of the observation extracted by this class.
  */
-template <typename Observation> class ObservationFunction {
-public:
-	virtual ~ObservationFunction() = default;
+template <typename Observation> using ObservationFunction = data::DataFunction<Observation>;
 
-	/**
-	 * The method called by the environment on the initial state
-	 *
-	 * The method is called at the begining of every episode, and does nothing by default.
-	 */
-	virtual void reset(scip::Model& /* model */) {}
-
-	/**
-	 * The method called by environments when needing to return an observation.
-	 */
-	virtual Observation obtain_observation(scip::Model& model, bool done) = 0;
-};
-
-}  // namespace observation
-}  // namespace ecole
+}  // namespace ecole::observation
