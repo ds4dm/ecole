@@ -11,7 +11,9 @@ add_executable(
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
 
-	src/environment/test-environment.cpp
+	src/data/test-tuple.cpp
+	src/data/test-vector.cpp
+	src/data/test-map.cpp
 
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
@@ -23,12 +25,11 @@ add_executable(
 	src/reward/test-nnodes.cpp
 
 	src/observation/test-nothing.cpp
-	src/observation/test-tuple.cpp
-	src/observation/test-vector.cpp
-	src/observation/test-map.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
+
+	src/environment/test-environment.cpp
 )
 
 target_compile_definitions(
