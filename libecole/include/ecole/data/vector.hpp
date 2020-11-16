@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -29,8 +30,9 @@ public:
 
 	/** Return data extracted from all functions as a vector. */
 	DataVector extract(scip::Model& model, bool done) override {
-		auto data = DataVector(data_functions.size());
-		std::transform(data_functions.begin(), data_functions.end(), data.begin(), [&model, done](auto& func) {
+		auto data = DataVector{};
+		data.reserve(data_functions.size());
+		std::transform(data_functions.begin(), data_functions.end(), std::back_inserter(data), [&model, done](auto& func) {
 			return func.extract(model, done);
 		});
 		return data;

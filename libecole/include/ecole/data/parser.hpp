@@ -33,11 +33,13 @@ template <typename Function, typename Allocator> auto parse(std::vector<Function
 	if constexpr (std::is_same_v<Function, ParsedFunction>) {
 		return VectorFunction{std::move(funcs)};
 	} else {
-		auto parsed_funcs = std::vector<ParsedFunction>(funcs.size());
+		auto parsed_funcs = std::vector<ParsedFunction>{};
+		parsed_funcs.reserve(funcs.size());
 		std::transform(
-			std::move_iterator{funcs.begin()}, std::move_iterator{funcs.end()}, parsed_funcs.begin(), [](Function&& func) {
-				return parse(std::move(func));
-			});
+			std::move_iterator{funcs.begin()},
+			std::move_iterator{funcs.end()},
+			std::back_inserter(parsed_funcs),
+			[](Function&& func) { return parse(std::move(func)); });
 		return parsed_funcs;
 	}
 }
@@ -50,8 +52,7 @@ auto parse(std::map<Key, Function, Compare, Allocator> funcs) {
 	} else {
 		auto parsed_funcs = std::map<Key, ParsedFunction>{};
 		std::for_each(std::move_iterator{funcs.begin()}, std::move_iterator{funcs.end()}, [&parsed_funcs](auto&& key_func) {
-			auto [key, func] = std::forward<decltype(key_func)>(key_func);
-			parsed_funcs.emplace(std::move(key), parse(std::move(func)));
+			parsed_funcs.emplace_hint(parsed_funcs.end(), std::move(key_func.first), parse(std::move(key_func.second)));
 		});
 		return parsed_funcs;
 	}

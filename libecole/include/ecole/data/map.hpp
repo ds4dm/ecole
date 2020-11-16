@@ -31,7 +31,7 @@ public:
 	DataMap extract(scip::Model& model, bool done) override {
 		auto data = DataMap{};
 		for (auto& [key, func] : data_functions) {
-			data.emplace(key, func.extract(model, done));
+			data.emplace_hint(data.end(), key, func.extract(model, done));
 		}
 		return data;
 	}
