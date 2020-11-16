@@ -16,6 +16,7 @@ public:
 
 	/** Store a copy of the functions. */
 	TupleFunction(Functions... functions) : data_functions{std::move(functions)...} {}
+	TupleFunction(std::tuple<Functions...> functions) : data_functions{std::move(functions)} {}
 
 	/** Call reset on all functions. */
 	void reset(scip::Model& model) override {

@@ -16,6 +16,7 @@ add_executable(
 	src/data/test-vector.cpp
 	src/data/test-map.cpp
 	src/data/test-multiary.cpp
+	src/data/test-parser.cpp
 
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
