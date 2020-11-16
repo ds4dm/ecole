@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 
 #include "ecole/data/abstract.hpp"
+#include "ecole/data/constant.hpp"
 #include "ecole/data/map.hpp"
 #include "ecole/data/vector.hpp"
 #include "ecole/scip/model.hpp"
@@ -30,6 +31,12 @@ private:
 
 void bind_submodule(py::module_ const& m) {
 	m.doc() = "Data extraction functions manipulation.";
+
+	using PyConstantFunction = ConstantFunction<py::object>;
+	py::class_<PyConstantFunction>(m, "ConstantFunction", "Always return the given value.")
+		.def(py::init<py::object>())
+		.def("reset", &PyConstantFunction::reset, py::arg("model"), "Do nothing.")
+		.def("extract", &PyConstantFunction::extract, py::arg("model"), py::arg("done"), "Return the constant.");
 
 	using PyVectorFunction = VectorFunction<PyDataFunction>;
 	py::class_<PyVectorFunction>(m, "VectorFunction", "Pack data extraction functions together and return data as list.")
