@@ -5,7 +5,7 @@
 
 namespace ecole::data {
 
-class Nothing : public DataFunction<NoneType> {
+class NoneFunction : public DataFunction<NoneType> {
 public:
 	NoneType extract(scip::Model& /* model */, bool /* done */) override { return ecole::None; }
 };

@@ -12,7 +12,7 @@ add_executable(
 	src/scip/test-model.cpp
 
 	src/data/test-constant.cpp
-	src/data/test-nothing.cpp
+	src/data/test-none.cpp
 	src/data/test-tuple.cpp
 	src/data/test-vector.cpp
 	src/data/test-map.cpp
