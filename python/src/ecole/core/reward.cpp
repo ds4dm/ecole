@@ -150,7 +150,7 @@ void bind_submodule(py::module_ const& m) {
 
 Arithmetic::Arithmetic(py::object operation_, py::list const& functions_, py::str repr_) :
 	operation(std::move(operation_)), repr(std::move(repr_)) {
-	auto const Numbers = py::module::import("numbers").attr("Number");
+	auto const Numbers = py::module_::import("numbers").attr("Number");
 	for (auto func : functions_) {
 		if (py::isinstance(func, Numbers)) {
 			functions.append(py::cast(Constant{func.cast<Reward>()}));
@@ -219,8 +219,8 @@ template <typename PyClass, typename... Args> void def_extract(PyClass pyclass, 
 
 template <typename PyClass> void def_operators(PyClass pyclass) {
 	// Import Python standrad modules
-	auto const builtins = py::module::import("builtins");
-	auto const math = py::module::import("math");
+	auto const builtins = py::module_::import("builtins");
+	auto const math = py::module_::import("math");
 
 	// Return a function that wraps rewards functions inside an ArithmeticReward.
 	// The Arithmetic reward function is a reward function class that will call the wrapped

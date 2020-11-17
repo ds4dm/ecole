@@ -43,7 +43,7 @@ void bind_submodule(py::module_ const& m) {
 		.def(
 			"as_pyscipopt",
 			[](scip::Model const& model) {
-				auto const Model_class = py::module::import("pyscipopt.scip").attr("Model");
+				auto const Model_class = py::module_::import("pyscipopt.scip").attr("Model");
 				auto const cap = py::capsule{reinterpret_cast<void*>(model.get_scip_ptr()), "scip"};
 				return Model_class.attr("from_ptr")(cap, py::arg("take_ownership") = false);
 			},
