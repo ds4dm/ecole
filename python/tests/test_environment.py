@@ -19,7 +19,7 @@ class MockEnvironment(ecole.environment.Environment):
 def test_reset(model):
     """Reset with a model."""
     env = MockEnvironment()
-    _, _, _, _ = env.reset(model)
+    _, _, _, _, _ = env.reset(model)
     env.dynamics.reset_dynamics.assert_called_with(model)
     env.dynamics.set_dynamics_random_state.assert_called()
 

@@ -9,11 +9,13 @@ class Environment:
     __Dynamics__ = None
     __DefaultObservationFunction__ = ecole.observation.Nothing
     __DefaultRewardFunction__ = ecole.reward.IsDone
+    __DefaultInformationFunction__ = ecole.data.MapFunction
 
     def __init__(
         self,
         observation_function="default",
         reward_function="default",
+        information_function="default",
         scip_params=None,
         **dynamics_kwargs
     ) -> None:
@@ -21,6 +23,9 @@ class Environment:
             observation_function, self.__DefaultObservationFunction__()
         )
         self.reward_function = ecole.data.parse(reward_function, self.__DefaultRewardFunction__())
+        self.information_function = ecole.data.parse(
+            information_function, self.__DefaultInformationFunction__()
+        )
         self.scip_params = scip_params if scip_params is not None else {}
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
@@ -61,6 +66,10 @@ class Environment:
         done:
             A boolean flag indicating wether the current state is terminal.
             If this is true, the episode is finished, and :meth:`step` cannot be called.
+        info:
+            A collection of environment specific information about the transition.
+            This is not necessary for the control problem, but is useful to gain
+            insights about the environment.
 
         """
         self.can_transition = True
@@ -78,10 +87,12 @@ class Environment:
             )
             self.observation_function.reset(self.model)
             self.reward_function.reset(self.model)
+            self.information_function.reset(self.model)
 
             reward_offset = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
-            return observation, action_set, reward_offset, done
+            information = self.information_function.extract(self.model, done)
+            return observation, action_set, reward_offset, done, information
         except Exception as e:
             self.can_transition = False
             raise e
@@ -134,7 +145,8 @@ class Environment:
             )
             reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
-            return observation, action_set, reward, done, {}
+            information = self.information_function.extract(self.model, done)
+            return observation, action_set, reward, done, information
         except Exception as e:
             self.can_transition = False
             raise e
