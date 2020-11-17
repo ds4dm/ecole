@@ -1,18 +1,9 @@
 #pragma once
 
-#include <memory>
-
-#include "ecole/none.hpp"
-#include "ecole/observation/abstract.hpp"
-#include "ecole/scip/model.hpp"
+#include "ecole/data/nothing.hpp"
 
 namespace ecole::observation {
 
-class Nothing : public ObservationFunction<NoneType> {
-public:
-	using Base = ObservationFunction<NoneType>;
-
-	NoneType extract(scip::Model& /* model */, bool /* done */) override { return None; }
-};
+using Nothing = data::Nothing;
 
 }  // namespace ecole::observation

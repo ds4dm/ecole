@@ -12,6 +12,7 @@ add_executable(
 	src/scip/test-model.cpp
 
 	src/data/test-constant.cpp
+	src/data/test-nothing.cpp
 	src/data/test-tuple.cpp
 	src/data/test-vector.cpp
 	src/data/test-map.cpp
@@ -22,7 +23,6 @@ add_executable(
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp
 
-	src/observation/test-nothing.cpp
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
