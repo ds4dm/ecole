@@ -1,8 +1,6 @@
 """Ecole collection of environments."""
 
-import ecole.core as core
-import ecole.observation
-import ecole.reward
+import ecole
 from ecole.core.dynamics import *
 
 
@@ -19,42 +17,15 @@ class Environment:
         scip_params=None,
         **dynamics_kwargs
     ) -> None:
-        self.observation_function = self.__parse_observation_function(observation_function)
-        self.reward_function = self.__parse_reward_function(reward_function)
+        self.observation_function = ecole.data.parse(
+            observation_function, self.__DefaultObservationFunction__()
+        )
+        self.reward_function = ecole.data.parse(reward_function, self.__DefaultRewardFunction__())
         self.scip_params = scip_params if scip_params is not None else {}
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
         self.random_engine = ecole.spawn_random_engine()
-
-    @classmethod
-    def __parse_reward_function(cls, reward_function):
-        if reward_function == "default":
-            return cls.__DefaultRewardFunction__()
-        elif reward_function is None:
-            return ecole.reward.Constant(0.0)
-        else:
-            return reward_function
-
-    @classmethod
-    def __parse_observation_function(cls, observation_function):
-        if observation_function == "default":
-            return cls.__DefaultObservationFunction__()
-        elif observation_function is None:
-            return ecole.observation.Nothing()
-        elif isinstance(observation_function, tuple):
-            return ecole.data.VectorFunction(
-                *(cls.__parse_observation_function(fun) for fun in observation_function)
-            )
-        elif isinstance(observation_function, dict):
-            return ecole.data.MapFunction(
-                **{
-                    name: cls.__parse_observation_function(func)
-                    for name, func in observation_function.items()
-                }
-            )
-        else:
-            return observation_function
 
     def reset(self, instance, *dynamics_args, **dynamics_kwargs):
         """Start a new episode.
@@ -94,10 +65,10 @@ class Environment:
         """
         self.can_transition = True
         try:
-            if isinstance(instance, core.scip.Model):
+            if isinstance(instance, ecole.core.scip.Model):
                 self.model = instance
             else:
-                self.model = core.scip.Model.from_file(instance)
+                self.model = ecole.core.scip.Model.from_file(instance)
             self.model.set_params(self.scip_params)
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
@@ -155,7 +126,7 @@ class Environment:
 
         """
         if not self.can_transition:
-            raise core.environment.Exception("Environment need to be reset.")
+            raise ecole.core.environment.Exception("Environment need to be reset.")
 
         try:
             done, action_set = self.dynamics.step_dynamics(
@@ -182,9 +153,9 @@ class Environment:
 
 
 class Branching(Environment):
-    __Dynamics__ = core.dynamics.BranchingDynamics
+    __Dynamics__ = ecole.core.dynamics.BranchingDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
 class Configuring(Environment):
-    __Dynamics__ = core.dynamics.ConfiguringDynamics
+    __Dynamics__ = ecole.core.dynamics.ConfiguringDynamics

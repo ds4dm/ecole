@@ -46,3 +46,50 @@ def test_MapFunction(model, done):
     data_func2.extract.return_value = "else"
     data = dict_data_func.extract(model, done)
     assert data == {"name1": "something", "name2": "else"}
+
+
+def test_parse_None():
+    """None is parsed as NoneFunction."""
+    assert isinstance(ecole.data.parse(None, mock.MagicMock()), ecole.data.NoneFunction)
+
+
+def test_parse_default():
+    """Default return default."""
+    default_func = mock.MagicMock()
+    assert ecole.data.parse("default", default_func) == default_func
+
+
+def test_parse_number():
+    """Number return ConstantFunction."""
+    assert isinstance(ecole.data.parse(1, mock.MagicMock()), ecole.data.ConstantFunction)
+
+
+def test_parse_tuple():
+    """Tuple is parsed as VectorFunction."""
+    aggregate = (mock.MagicMock(), mock.MagicMock())
+    assert isinstance(ecole.data.parse(aggregate, mock.MagicMock()), ecole.data.VectorFunction)
+
+
+def test_parse_dict():
+    """Dict is parsed as MapFunction."""
+    aggregate = {"name1": mock.MagicMock(), "name2": mock.MagicMock()}
+    assert isinstance(ecole.data.parse(aggregate, mock.MagicMock()), ecole.data.MapFunction)
+
+
+def test_parse_recursive(model):
+    """Parsing is recursive."""
+    aggregate = {
+        "name1": mock.MagicMock(),
+        "name2": (mock.MagicMock(), None, 1),
+        "name3": "default",
+    }
+    default_func = mock.MagicMock()
+    default_func.extract.return_value == mock.MagicMock()
+    func = ecole.data.parse(aggregate, default_func)
+    # Using the extract method to inspect the recusive parsing since Vector, Map, Constant functions are private.
+    data = func.extract(model, False)
+    assert isinstance(data, dict)
+    assert isinstance(data["name2"], list)
+    assert data["name2"][1] is None
+    assert data["name2"][2] == 1
+    assert data["name3"] == default_func.extract.return_value
