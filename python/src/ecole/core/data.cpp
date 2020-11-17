@@ -4,8 +4,11 @@
 #include "ecole/data/abstract.hpp"
 #include "ecole/data/constant.hpp"
 #include "ecole/data/map.hpp"
+#include "ecole/data/none.hpp"
 #include "ecole/data/vector.hpp"
 #include "ecole/scip/model.hpp"
+
+#include "core.hpp"
 
 namespace ecole::data {
 
@@ -37,6 +40,11 @@ void bind_submodule(py::module_ const& m) {
 		.def(py::init<py::object>())
 		.def("reset", &PyConstantFunction::reset, py::arg("model"), "Do nothing.")
 		.def("extract", &PyConstantFunction::extract, py::arg("model"), py::arg("done"), "Return the constant.");
+
+	py::class_<NoneFunction>(m, "NoneFunction", "Always retrun None.")
+		.def(py::init<>())
+		.def("reset", &NoneFunction::reset, py::arg("model"), "Do nothing.")
+		.def("extract", &NoneFunction::extract, py::arg("model"), py::arg("done"), "Return None.");
 
 	using PyVectorFunction = VectorFunction<PyDataFunction>;
 	py::class_<PyVectorFunction>(m, "VectorFunction", "Pack data extraction functions together and return data as list.")

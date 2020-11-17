@@ -53,15 +53,7 @@ void bind_submodule(py::module_ const& m) {
 
 	xt::import_numpy();
 
-	auto nothing = py::class_<Nothing>(m, "Nothing", R"(
-		No observation.
-
-		This observation function does nothing and always returns ``None`` as an observation.
-		Convenient for bandit algorithms, or when no learning is performed.
-	)");
-	nothing.def(py::init<>());
-	def_reset(nothing, R"(Do nothing.)");
-	def_extract(nothing, R"(Return None.)");
+	m.attr("Nothing") = py::type::of<Nothing>();
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
 	py::class_<coo_matrix>(m, "coo_matrix", R"(
