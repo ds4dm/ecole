@@ -16,39 +16,6 @@ class MockEnvironment(ecole.environment.Environment):
     __Dynamics__ = MockDynamics
 
 
-def test_observation_function_none(model):
-    """None is parsed as no observation."""
-    env = MockEnvironment(observation_function=None)
-    obs = env.observation_function.extract(model, False)
-    assert obs is None
-
-
-def test_observation_function_vector(model):
-    """Tuple are parsed as tuple of observations"""
-    env = MockEnvironment(observation_function=(mock.MagicMock(), mock.MagicMock()))
-    obs = env.observation_function.extract(model, False)
-    assert isinstance(obs, list)
-    assert len(obs) == 2
-
-
-def test_observation_function_dict(model):
-    """Dict are parsed as dict of observations"""
-    obs_func = {"name1": mock.MagicMock(), "name2": mock.MagicMock()}
-    env = MockEnvironment(observation_function=obs_func)
-    obs = env.observation_function.extract(model, False)
-    assert isinstance(obs, dict)
-    assert len(obs) == 2
-    assert ("name1" in obs) and ("name2" in obs)
-
-
-def test_observation_function_recursive(model):
-    """Parsing is recursive."""
-    obs_func = {"name1": mock.MagicMock(), "name2": (mock.MagicMock(), None)}
-    env = MockEnvironment(observation_function=obs_func)
-    obs = env.observation_function.extract(model, False)
-    assert obs["name2"][1] is None
-
-
 def test_reset(model):
     """Reset with a model."""
     env = MockEnvironment()
