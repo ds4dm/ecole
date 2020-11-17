@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ecole/data/nothing.hpp"
+#include "ecole/data/none.hpp"
 
 namespace ecole::observation {
 
-using Nothing = data::Nothing;
+using Nothing = data::NoneFunction;
 
 }  // namespace ecole::observation
