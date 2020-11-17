@@ -10,11 +10,16 @@
 
 #include "ecole/data/constant.hpp"
 #include "ecole/data/map.hpp"
+#include "ecole/data/none.hpp"
 #include "ecole/data/tuple.hpp"
 #include "ecole/data/vector.hpp"
 #include "ecole/traits.hpp"
 
 namespace ecole::data {
+
+inline auto parse(NoneType /* None */) noexcept {
+	return NoneFunction{};
+}
 
 template <typename Function> constexpr auto parse(Function func) noexcept {
 	if constexpr (trait::is_data_function_v<Function>) {

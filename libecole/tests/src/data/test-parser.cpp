@@ -7,6 +7,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/data/parser.hpp"
+#include "ecole/none.hpp"
 
 #include "conftest.hpp"
 #include "data/mock-function.hpp"
@@ -15,7 +16,7 @@
 using namespace ecole::data;
 
 auto make_function_aggregate() {
-	return std::tuple{std::map<std::string, IntDataFunc>{{"0", {}}}, std::vector{1.0}};
+	return std::tuple{std::map<std::string, IntDataFunc>{{"0", {}}}, std::vector{1.0}, ecole::None};
 }
 
 TEST_CASE("Data function parser passes unit tests", "[unit][data]") {
@@ -30,7 +31,8 @@ TEST_CASE("Recursively parse data functions", "[data]") {
 	auto const aggregate_obs = aggregate_func.extract(model, false);
 
 	using AggregateObs = std::remove_const_t<decltype(aggregate_obs)>;
-	STATIC_REQUIRE(std::is_same_v<AggregateObs, std::tuple<std::map<std::string, int>, std::vector<double>>>);
+	STATIC_REQUIRE(
+		std::is_same_v<AggregateObs, std::tuple<std::map<std::string, int>, std::vector<double>, ecole::NoneType>>);
 	REQUIRE(std::get<0>(aggregate_obs).at("0") == 1);
 	REQUIRE(std::get<1>(aggregate_obs).at(0) == 1.0);
 }
