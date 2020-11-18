@@ -101,6 +101,18 @@ template <typename T> struct observation_of<T, std::enable_if_t<is_environment_v
 
 template <typename T> using observation_of_t = typename observation_of<T>::type;
 
+/***********************************
+ *  Detection of information type  *
+ ***********************************/
+
+template <typename, typename = void> struct information_of;
+
+template <typename T> struct information_of<T, std::enable_if_t<is_information_function_v<T>>> {
+	using type = typename data_of_t<T>::mapped_type;
+};
+
+template <typename T> using information_of_t = typename information_of<T>::type;
+
 /******************************
  *  Detection of action type  *
  ******************************/

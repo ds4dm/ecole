@@ -68,6 +68,10 @@ TEST_CASE("Detect observation type", "[trait]") {
 	STATIC_REQUIRE_SAME(trait::observation_of_t<environment::Configuring<>>, ecole::NoneType);
 }
 
+TEST_CASE("Detect information type", "[trait]") {
+	STATIC_REQUIRE_SAME(trait::information_of_t<information::Nothing>, ecole::NoneType);
+}
+
 TEST_CASE("Detect action type", "[trait]") {
 	STATIC_REQUIRE_SAME(trait::action_of_t<environment::Configuring<>>, dynamics::ParamDict);
 	STATIC_REQUIRE_SAME(trait::action_of_t<dynamics::ConfiguringDynamics>, dynamics::ParamDict);
