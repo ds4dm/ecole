@@ -85,12 +85,15 @@ public:
 	 * @param args Passed to the EnvironmentDynamics.
 	 * @return An observation of the new state, or nothing on terminal states.
 	 * @return An subset of actions accepted on the next transition (call to  step).
+	 * @return A scalar reward from the signal to maximize.
 	 * @return A boolean flag indicating whether the state is terminal.
+	 * @return Any additional information about the transition.
 	 * @post Unless the (initial) state is also terminal, transitioning (using step) is
 	 *       possible.
 	 */
 	template <typename... Args>
-	auto reset(scip::Model&& new_model, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
+	auto reset(scip::Model&& new_model, Args&&... args)
+		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
 		can_transition = true;
 		try {
 			// Create clean new Model
@@ -105,7 +108,7 @@ public:
 
 			can_transition = !done;
 			auto const reward_offset = reward_func().extract(model(), done);
-			return {obs_func().extract(model(), done), std::move(action_set), reward_offset, done};
+			return {obs_func().extract(model(), done), std::move(action_set), reward_offset, done, {}};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -113,12 +116,14 @@ public:
 	}
 
 	template <typename... Args>
-	auto reset(scip::Model const& model, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
+	auto reset(scip::Model const& model, Args&&... args)
+		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
 		return reset(model.copy_orig(), std::forward<Args>(args)...);
 	}
 
 	template <typename... Args>
-	auto reset(std::string const& filename, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool> {
+	auto reset(std::string const& filename, Args&&... args)
+		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
 		return reset(scip::Model::from_file(filename), std::forward<Args>(args)...);
 	}
 
