@@ -4,8 +4,6 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/environment/branching.hpp"
-#include "ecole/observation/nothing.hpp"
 #include "ecole/reward/nnodes.hpp"
 
 #include "conftest.hpp"
