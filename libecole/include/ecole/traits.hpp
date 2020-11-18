@@ -3,6 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "ecole/reward/abstract.hpp"
 #include "ecole/utility/function-traits.hpp"
 
 namespace ecole::trait {
@@ -15,16 +16,28 @@ namespace internal {
 
 template <typename, typename = std::void_t<>> struct has_reset : std::false_type {};
 template <typename T> struct has_reset<T, std::void_t<decltype(&T::reset)>> : std::true_type {};
-template <typename T> inline constexpr bool has_reset_v = has_reset<T>::value;
 
 template <typename, typename = std::void_t<>> struct has_extract : std::false_type {};
 template <typename T> struct has_extract<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
-template <typename T> inline constexpr bool has_extract_v = has_extract<T>::value;
+
+template <typename, typename, typename = std::void_t<>> struct extract_return_is : std::false_type {};
+template <typename T, typename R>
+struct extract_return_is<T, R, std::void_t<decltype(&T::extract)>> :
+	std::is_same<utility::return_t<decltype(&T::extract)>, R> {};
 
 }  // namespace internal
 
-template <typename T> inline constexpr bool is_data_function_v = internal::has_reset_v<T>&& internal::has_extract_v<T>;
-template <typename T> inline constexpr bool is_observation_function_v = is_data_function_v<T>;
+template <typename T> using is_data_function = std::conjunction<internal::has_reset<T>, internal::has_extract<T>>;
+template <typename T> inline constexpr bool is_data_function_v = is_data_function<T>::value;
+
+template <typename T> using is_observation_function = is_data_function<T>;
+template <typename T> inline constexpr bool is_observation_function_v = is_observation_function<T>::value;
+
+template <typename T>
+using is_reward_function = std::conjunction<is_data_function<T>, internal::extract_return_is<T, reward::Reward>>;
+template <typename T> inline constexpr bool is_reward_function_v = is_reward_function<T>::value;
+
+// is_data_function_v<T>&& internal::extract_return_is_v<T, double>;
 
 /******************************
  *  Detection of environment  *

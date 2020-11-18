@@ -4,11 +4,22 @@
 
 #include "ecole/environment/configuring.hpp"
 #include "ecole/observation/nothing.hpp"
+#include "ecole/reward/constant.hpp"
 #include "ecole/traits.hpp"
 
 using namespace ecole;
 
 #define STATIC_REQUIRE_SAME(A, B) STATIC_REQUIRE(std::is_same_v<A, B>)
+
+TEST_CASE("Detect if reward function", "[trait]") {
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_reward_function_v<reward::Constant>); }
+
+	SECTION("Negative tests") {
+		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<ecole::NoneType>);
+		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<observation::Nothing>);
+		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<environment::Configuring<>>);
+	}
+}
 
 TEST_CASE("Detect if observation function", "[trait]") {
 	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_observation_function_v<observation::Nothing>); }
