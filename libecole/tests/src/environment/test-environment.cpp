@@ -69,22 +69,22 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	constexpr double some_action = 3.0;
 
 	SECTION("Call reset, reset, and delete") {
-		auto [obs, action_set, reward, done] = env.reset(problem_file);
-		std::tie(obs, action_set, reward, done) = env.reset(problem_file);
+		auto [obs, action_set, reward, done, info] = env.reset(problem_file);
+		std::tie(obs, action_set, reward, done, info) = env.reset(problem_file);
 	}
 
 	SECTION("Call reset, step, and delete") {
-		auto [obs, action_set, reward, done] = env.reset(problem_file);
-		std::tie(obs, action_set, reward, done, std::ignore) = env.step(some_action);
+		auto [obs, action_set, reward, done, info] = env.reset(problem_file);
+		std::tie(obs, action_set, reward, done, info) = env.step(some_action);
 		REQUIRE(env.dynamics().last_action == some_action);
 	}
 
 	SECTION("Run full episodes") {
 		for (auto i = 0UL; i < 2; ++i) {
-			auto [obs, action_set, reward, done] = env.reset(problem_file);
+			auto [obs, action_set, reward, done, info] = env.reset(problem_file);
 			REQUIRE(env.dynamics().counter == 0UL);
 			while (!done) {
-				std::tie(obs, action_set, reward, done, std::ignore) = env.step(some_action);
+				std::tie(obs, action_set, reward, done, info) = env.step(some_action);
 			}
 			REQUIRE(env.dynamics().counter == env.dynamics().max_counter);
 		}
@@ -93,7 +93,7 @@ TEST_CASE("Environments have MDP API", "[env]") {
 	SECTION("Cannot transition without reseting") { REQUIRE_THROWS_AS(env.step(some_action), Exception); }
 
 	SECTION("Cannot transition past termination") {
-		auto [obs, action_set, reward, done] = env.reset(problem_file);
+		auto [obs, action_set, reward, done, info] = env.reset(problem_file);
 		while (!done) {
 			std::tie(std::ignore, std::ignore, std::ignore, done, std::ignore) = env.step(some_action);
 		}
