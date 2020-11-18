@@ -5,6 +5,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "ecole/data/parser.hpp"
 #include "ecole/dynamics/dynamics.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/information/abstract.hpp"
@@ -59,9 +60,9 @@ public:
 		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		the_dynamics(std::forward<Args>(args)...),
-		the_observation_function(std::move(observation_function)),
-		the_reward_function(std::move(reward_function)),
-		the_information_function(std::move(information_function)),
+		the_observation_function(data::parse(std::move(observation_function))),
+		the_reward_function(data::parse(std::move(reward_function))),
+		the_information_function(data::parse(std::move(information_function))),
 		the_scip_params(std::move(scip_params)),
 		the_random_engine(spawn_random_engine()) {}
 
