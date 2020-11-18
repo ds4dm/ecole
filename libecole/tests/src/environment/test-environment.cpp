@@ -5,6 +5,7 @@
 #include "ecole/dynamics/dynamics.hpp"
 #include "ecole/environment/environment.hpp"
 #include "ecole/exception.hpp"
+#include "ecole/information/nothing.hpp"
 #include "ecole/none.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/constant.hpp"
@@ -43,7 +44,7 @@ struct TestDynamics : EnvironmentDynamics<double, NoneType> {
 
 namespace environment {
 
-using TestEnv = Environment<dynamics::TestDynamics, observation::Nothing, reward::Constant>;
+using TestEnv = Environment<dynamics::TestDynamics, observation::Nothing, reward::Constant, information::Nothing>;
 
 }  // namespace environment
 }  // namespace ecole

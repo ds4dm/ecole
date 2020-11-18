@@ -7,6 +7,7 @@
 
 #include "ecole/dynamics/dynamics.hpp"
 #include "ecole/exception.hpp"
+#include "ecole/information/abstract.hpp"
 #include "ecole/random.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
@@ -14,10 +15,6 @@
 #include "ecole/traits.hpp"
 
 namespace ecole::environment {
-
-using Seed = typename RandomEngine::result_type;
-using Reward = reward::Reward;
-using Info = int;  // FIXME dummy type while the information is not implemented
 
 /**
  * Environment class orchestrating environment dynamics and state functions.
@@ -28,17 +25,23 @@ using Info = int;  // FIXME dummy type while the information is not implemented
  * [OpenAi Gym](https://gym.openai.com/), with some differences nontheless due to the
  * requirements of Ecole.
  *
- * @tparam Dynamics The  ecole::environment::EnvironmentDynamics driving the initial state and transition of the
+ * @tparam Dynamics The ecole::environment::EnvironmentDynamics driving the initial state and transition of the
  *         environment
- * @tparam ObservationFunction The  ecole::observation::ObservationFunction to extract an observation out of the
+ * @tparam ObservationFunction The ecole::observation::ObservationFunction to extract an observation out of the
  *         current state.
- * @tparam RewardFunction The  ecole::reward::RewardFunction to extract the reward of the last transition.
+ * @tparam RewardFunction The ecole::reward::RewardFunction to extract the reward of the last transition.
+ * @tparam InformationFunction The ecole::information::InformationFunction to extract additional informations.
  */
-template <typename Dynamics, typename ObservationFunction, typename RewardFunction> class Environment {
+template <typename Dynamics, typename ObservationFunction, typename RewardFunction, typename InformationFunction>
+class Environment {
 public:
+	using Seed = ecole::Seed;
 	using Observation = trait::observation_of_t<ObservationFunction>;
 	using Action = trait::action_of_t<Dynamics>;
 	using ActionSet = trait::action_set_of_t<Dynamics>;
+	using Reward = reward::Reward;
+	using Information = trait::information_of_t<InformationFunction>;
+	using InformationMap = information::InformationMap<Information>;
 
 	/**
 	 * Default construct everything and seed environment with random value.
@@ -136,7 +139,7 @@ public:
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
 	template <typename... Args>
-	auto step(Action const& action, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool, Info> {
+	auto step(Action const& action, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
 		if (!can_transition) {
 			throw Exception("Environment need to be reset.");
 		}
@@ -150,7 +153,7 @@ public:
 				std::move(action_set),
 				reward,
 				done,
-				Info{},
+				InformationMap{},
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
