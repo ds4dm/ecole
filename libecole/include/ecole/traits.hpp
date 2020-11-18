@@ -3,6 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "ecole/information/abstract.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/utility/function-traits.hpp"
 
@@ -12,6 +13,13 @@ namespace ecole::trait {
  *  Detection of data functions  *
  *********************************/
 
+template <typename T> using is_reward = std::is_same<T, reward::Reward>;
+template <typename T> inline constexpr bool is_reward_v = is_reward<T>::value;
+
+template <typename T> struct is_information_map : std::false_type {};
+template <typename I> struct is_information_map<information::InformationMap<I>> : std::true_type {};
+template <typename T> inline constexpr bool is_information_map_v = is_information_map<T>::value;
+
 namespace internal {
 
 template <typename, typename = std::void_t<>> struct has_reset : std::false_type {};
@@ -20,10 +28,11 @@ template <typename T> struct has_reset<T, std::void_t<decltype(&T::reset)>> : st
 template <typename, typename = std::void_t<>> struct has_extract : std::false_type {};
 template <typename T> struct has_extract<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
 
-template <typename, typename, typename = std::void_t<>> struct extract_return_is : std::false_type {};
-template <typename T, typename R>
-struct extract_return_is<T, R, std::void_t<decltype(&T::extract)>> :
-	std::is_same<utility::return_t<decltype(&T::extract)>, R> {};
+template <typename, template <typename> typename, typename = std::void_t<>>
+struct extract_return_is : std::false_type {};
+template <typename T, template <typename> typename Pred>
+struct extract_return_is<T, Pred, std::void_t<decltype(&T::extract)>> :
+	Pred<utility::return_t<decltype(&T::extract)>> {};
 
 }  // namespace internal
 
@@ -34,10 +43,13 @@ template <typename T> using is_observation_function = is_data_function<T>;
 template <typename T> inline constexpr bool is_observation_function_v = is_observation_function<T>::value;
 
 template <typename T>
-using is_reward_function = std::conjunction<is_data_function<T>, internal::extract_return_is<T, reward::Reward>>;
+using is_reward_function = std::conjunction<is_data_function<T>, internal::extract_return_is<T, is_reward>>;
 template <typename T> inline constexpr bool is_reward_function_v = is_reward_function<T>::value;
 
-// is_data_function_v<T>&& internal::extract_return_is_v<T, double>;
+template <typename T>
+using is_information_function =
+	std::conjunction<is_data_function<T>, internal::extract_return_is<T, is_information_map>>;
+template <typename T> inline constexpr bool is_information_function_v = is_information_function<T>::value;
 
 /******************************
  *  Detection of environment  *
