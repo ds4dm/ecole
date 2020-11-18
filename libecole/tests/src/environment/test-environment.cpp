@@ -58,7 +58,7 @@ using namespace ecole;
 TEST_CASE("Environments accept SCIP parameters", "[env]") {
 	auto constexpr name = "concurrent/paramsetprefix";
 	auto const value = std::string("testname");
-	environment::TestEnv env{{}, {}, {{name, value}}};
+	environment::TestEnv env{{}, {}, {}, {{name, value}}};
 
 	env.reset(problem_file);
 	REQUIRE(env.model().get_param<std::string>(name) == std::string(value));

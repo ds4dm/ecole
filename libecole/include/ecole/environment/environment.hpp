@@ -53,13 +53,15 @@ public:
 	 */
 	template <typename... Args>
 	Environment(
-		ObservationFunction obs_func,
-		RewardFunction reward_func,
-		std::map<std::string, scip::Param> scip_params,
+		ObservationFunction obs_func = {},
+		RewardFunction reward_func = {},
+		InformationFunction info_func = {},
+		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		m_dynamics(std::forward<Args>(args)...),
 		m_obs_func(std::move(obs_func)),
 		m_reward_func(std::move(reward_func)),
+		m_info_func(std::move(info_func)),
 		m_scip_params(std::move(scip_params)),
 		random_engine(spawn_random_engine()) {}
 
@@ -105,10 +107,17 @@ public:
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			obs_func().reset(model());
 			reward_func().reset(model());
+			info_func().reset(model());
 
 			can_transition = !done;
 			auto const reward_offset = reward_func().extract(model(), done);
-			return {obs_func().extract(model(), done), std::move(action_set), reward_offset, done, {}};
+			return {
+				obs_func().extract(model(), done),
+				std::move(action_set),
+				reward_offset,
+				done,
+				info_func().extract(model(), done),
+			};
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -158,7 +167,7 @@ public:
 				std::move(action_set),
 				reward,
 				done,
-				InformationMap{},
+				info_func().extract(model(), done),
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -170,6 +179,7 @@ public:
 	auto& model() { return m_model; }
 	auto& obs_func() { return m_obs_func; }
 	auto& reward_func() { return m_reward_func; }
+	auto& info_func() { return m_info_func; }
 	auto& scip_params() { return m_scip_params; }
 
 private:
@@ -177,6 +187,7 @@ private:
 	scip::Model m_model;
 	ObservationFunction m_obs_func;
 	RewardFunction m_reward_func;
+	InformationFunction m_info_func;
 	std::map<std::string, scip::Param> m_scip_params;
 	RandomEngine random_engine;
 	bool can_transition = false;
