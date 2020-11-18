@@ -3,6 +3,7 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/configuring.hpp"
+#include "ecole/information/nothing.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/reward/constant.hpp"
 #include "ecole/traits.hpp"
@@ -27,6 +28,16 @@ TEST_CASE("Detect if observation function", "[trait]") {
 	SECTION("Negative tests") {
 		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<ecole::NoneType>);
 		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<environment::Configuring<>>);
+	}
+}
+
+TEST_CASE("Detect if information function", "[trait]") {
+	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_information_function_v<information::Nothing>); }
+
+	SECTION("Negative tests") {
+		STATIC_REQUIRE_FALSE(trait::is_information_function_v<ecole::NoneType>);
+		STATIC_REQUIRE_FALSE(trait::is_information_function_v<observation::Nothing>);
+		STATIC_REQUIRE_FALSE(trait::is_information_function_v<environment::Configuring<>>);
 	}
 }
 
