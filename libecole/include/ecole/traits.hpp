@@ -111,6 +111,10 @@ template <typename T> struct information_of<T, std::enable_if_t<is_information_f
 	using type = typename data_of_t<T>::mapped_type;
 };
 
+template <typename T> struct information_of<T, std::enable_if_t<is_environment_v<T>>> {
+	using type = typename std::tuple_element_t<4, utility::return_t<decltype(&T::template step<>)>>::mapped_type;
+};
+
 template <typename T> using information_of_t = typename information_of<T>::type;
 
 /******************************
