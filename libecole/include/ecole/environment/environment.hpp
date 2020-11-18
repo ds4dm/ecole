@@ -46,24 +46,24 @@ public:
 	/**
 	 * Default construct everything and seed environment with random value.
 	 */
-	Environment() : random_engine(spawn_random_engine()) {}
+	Environment() : the_random_engine(spawn_random_engine()) {}
 
 	/**
 	 * Fully customize environment and seed environment with random value.
 	 */
 	template <typename... Args>
 	Environment(
-		ObservationFunction obs_func = {},
-		RewardFunction reward_func = {},
-		InformationFunction info_func = {},
+		ObservationFunction observation_function = {},
+		RewardFunction reward_function = {},
+		InformationFunction information_function = {},
 		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
-		m_dynamics(std::forward<Args>(args)...),
-		m_obs_func(std::move(obs_func)),
-		m_reward_func(std::move(reward_func)),
-		m_info_func(std::move(info_func)),
-		m_scip_params(std::move(scip_params)),
-		random_engine(spawn_random_engine()) {}
+		the_dynamics(std::forward<Args>(args)...),
+		the_observation_function(std::move(observation_function)),
+		the_reward_function(std::move(reward_function)),
+		the_information_function(std::move(information_function)),
+		the_scip_params(std::move(scip_params)),
+		the_random_engine(spawn_random_engine()) {}
 
 	/**
 	 * Set the random seed for the environment, hence making its internals deterministic.
@@ -76,7 +76,7 @@ public:
 	 * sequence of action taken are also unchanged), one has to seed the environment before
 	 * every call to reset.
 	 */
-	void seed(Seed new_seed) { random_engine.seed(new_seed); }
+	void seed(Seed new_seed) { random_engine().seed(new_seed); }
 
 	/**
 	 * Reset the environment to the initial state on the given problem instance.
@@ -101,22 +101,22 @@ public:
 			// Create clean new Model
 			model() = std::move(new_model);
 			model().set_params(scip_params());
-			dynamics().set_dynamics_random_state(model(), random_engine);
+			dynamics().set_dynamics_random_state(model(), random_engine());
 
 			// Bring model to initial state and reset state functions
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
-			obs_func().reset(model());
-			reward_func().reset(model());
-			info_func().reset(model());
+			observation_function().reset(model());
+			reward_function().reset(model());
+			information_function().reset(model());
 
 			can_transition = !done;
-			auto const reward_offset = reward_func().extract(model(), done);
+			auto const reward_offset = reward_function().extract(model(), done);
 			return {
-				obs_func().extract(model(), done),
+				observation_function().extract(model(), done),
 				std::move(action_set),
 				reward_offset,
 				done,
-				info_func().extract(model(), done),
+				information_function().extract(model(), done),
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -160,14 +160,14 @@ public:
 		try {
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
-			auto const reward = reward_func().extract(model(), done);
+			auto const reward = reward_function().extract(model(), done);
 
 			return {
-				obs_func().extract(model(), done),
+				observation_function().extract(model(), done),
 				std::move(action_set),
 				reward,
 				done,
-				info_func().extract(model(), done),
+				information_function().extract(model(), done),
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -175,21 +175,22 @@ public:
 		}
 	}
 
-	auto& dynamics() { return m_dynamics; }
-	auto& model() { return m_model; }
-	auto& obs_func() { return m_obs_func; }
-	auto& reward_func() { return m_reward_func; }
-	auto& info_func() { return m_info_func; }
-	auto& scip_params() { return m_scip_params; }
+	auto& dynamics() { return the_dynamics; }
+	auto& model() { return the_model; }
+	auto& observation_function() { return the_observation_function; }
+	auto& reward_function() { return the_reward_function; }
+	auto& information_function() { return the_information_function; }
+	auto& scip_params() { return the_scip_params; }
+	auto& random_engine() { return the_random_engine; }
 
 private:
-	Dynamics m_dynamics;
-	scip::Model m_model;
-	ObservationFunction m_obs_func;
-	RewardFunction m_reward_func;
-	InformationFunction m_info_func;
-	std::map<std::string, scip::Param> m_scip_params;
-	RandomEngine random_engine;
+	Dynamics the_dynamics;
+	scip::Model the_model;
+	ObservationFunction the_observation_function;
+	RewardFunction the_reward_function;
+	InformationFunction the_information_function;
+	std::map<std::string, scip::Param> the_scip_params;
+	RandomEngine the_random_engine;
 	bool can_transition = false;
 };
 
