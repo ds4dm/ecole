@@ -158,12 +158,12 @@ void bind_submodule(py::module_ const& m) {
 
 		Parameters
 		----------
-		wall : bool, optional
+		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
 	)");
 	def_operators(solvingtime);
-	def_reset(solvingtime, "Reset the internal clock counter.");
-	def_obtain_reward(solvingtime, R"(
+	def_before_reset(solvingtime, "Reset the internal clock counter.");
+	def_extract(solvingtime, R"(
 		Update the internal clock counter and return the difference.
 
 		The difference in solving time is computed in between calls.
