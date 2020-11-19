@@ -18,9 +18,9 @@ public:
 	TupleFunction(Functions... functions) : data_functions{std::move(functions)...} {}
 	TupleFunction(std::tuple<Functions...> functions) : data_functions{std::move(functions)} {}
 
-	/** Call reset on all functions. */
-	void reset(scip::Model& model) override {
-		std::apply([&model](auto&... functions) { ((functions.reset(model)), ...); }, data_functions);
+	/** Call before_reset on all functions. */
+	void before_reset(scip::Model& model) override {
+		std::apply([&model](auto&... functions) { ((functions.before_reset(model)), ...); }, data_functions);
 	}
 
 	/** Return data from all functions as a tuple. */

@@ -17,19 +17,19 @@ Is Done
 ^^^^^^^
 .. autoclass:: ecole.reward.IsDone
    :no-members:
-   :members: reset, extract
+   :members: before_reset, extract
 
 LP Iterations
 ^^^^^^^^^^^^^
 .. autoclass:: ecole.reward.LpIterations
    :no-members:
-   :members: reset, extract
+   :members: before_reset, extract
 
 NNodes
 ^^^^^^
 .. autoclass:: ecole.reward.NNodes
    :no-members:
-   :members: reset, extract
+   :members: before_reset, extract
 
 
 Utilities
@@ -40,10 +40,10 @@ Constant
 ^^^^^^^^
 .. autoclass:: ecole.reward.Constant
    :no-members:
-   :members: reset, extract
+   :members: before_reset, extract
 
 Arithmetic
 ^^^^^^^^^^
 .. autoclass:: ecole.reward.Arithmetic
    :no-members:
-   :members: reset, extract
+   :members: before_reset, extract

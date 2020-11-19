@@ -27,9 +27,9 @@ public:
 	MultiaryFunction(DataCombiner combiner, Functions... functions) :
 		data_functions{std::move(functions)...}, data_combiner{std::move(combiner)} {}
 
-	/** Call reset on all functions. */
-	void reset(scip::Model& model) override {
-		std::apply([&model](auto&... functions) { ((functions.reset(model)), ...); }, data_functions);
+	/** Call before_reset on all functions. */
+	void before_reset(scip::Model& model) override {
+		std::apply([&model](auto&... functions) { ((functions.before_reset(model)), ...); }, data_functions);
 	}
 
 	/** Extract data from all functions and call the multiart operation on it. */

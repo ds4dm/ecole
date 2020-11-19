@@ -19,7 +19,7 @@ TEST_CASE("Combine data extraction functions into a map", "[data]") {
 	auto data_func = MapFunction<std::string, IntDataFunc>{{{"a", {1}}, {"b", {2}}}};
 	auto model = get_model();
 
-	data_func.reset(model);
+	data_func.before_reset(model);
 	auto const data = data_func.extract(model, false);
 	STATIC_REQUIRE(std::is_same_v<std::remove_const_t<decltype(data)>, std::map<std::string, int>>);
 	REQUIRE(data.at("a") == 2);

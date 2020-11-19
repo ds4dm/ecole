@@ -9,7 +9,7 @@ template <typename T> struct MockFunction : DataFunction<T> {
 	MockFunction() = default;
 	MockFunction(T val_) : val{val_} {}
 
-	void reset(scip::Model& /* model */) override { ++val; };
+	void before_reset(scip::Model& /* model */) override { ++val; };
 	T extract(scip::Model& /* model */, bool /* done */) override { return val; }
 };
 

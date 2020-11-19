@@ -11,7 +11,7 @@ import ecole.data
 def test_ConstantFunction(model, done, cste):
     """Always return the same constant."""
     cste_func = ecole.data.ConstantFunction(cste)
-    cste_func.reset(model)
+    cste_func.before_reset(model)
     data = cste_func.extract(model, done)
     assert data == cste
 
@@ -22,9 +22,9 @@ def test_VectorFunction(model, done):
     data_func1, data_func2 = mock.MagicMock(), mock.MagicMock()
     tuple_data_func = ecole.data.VectorFunction(data_func1, data_func2)
 
-    tuple_data_func.reset(model)
-    data_func1.reset.assert_called_once_with(model)
-    data_func2.reset.assert_called_once_with(model)
+    tuple_data_func.before_reset(model)
+    data_func1.before_reset.assert_called_once_with(model)
+    data_func2.before_reset.assert_called_once_with(model)
 
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"
@@ -38,9 +38,9 @@ def test_MapFunction(model, done):
     data_func1, data_func2 = mock.MagicMock(), mock.MagicMock()
     dict_data_func = ecole.data.MapFunction(name1=data_func1, name2=data_func2)
 
-    dict_data_func.reset(model)
-    data_func1.reset.assert_called_once_with(model)
-    data_func2.reset.assert_called_once_with(model)
+    dict_data_func.before_reset(model)
+    data_func1.before_reset.assert_called_once_with(model)
+    data_func2.before_reset.assert_called_once_with(model)
 
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"

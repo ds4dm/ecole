@@ -20,10 +20,10 @@ public:
 	/** Store a copy of the functions. */
 	MapFunction(std::map<Key, Function> functions) : data_functions{std::move(functions)} {}
 
-	/** Call reset on all functions. */
-	void reset(scip::Model& model) override {
+	/** Call before_reset on all functions. */
+	void before_reset(scip::Model& model) override {
 		for (auto& [_, func] : data_functions) {
-			func.reset(model);
+			func.before_reset(model);
 		}
 	}
 

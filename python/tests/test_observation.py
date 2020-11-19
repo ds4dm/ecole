@@ -34,20 +34,20 @@ def test_default_init(observation_function):
     type(observation_function)()
 
 
-def test_reset(observation_function, solving_model):
-    """Successive calls to reset."""
-    observation_function.reset(solving_model)
-    observation_function.reset(solving_model)
+def test_before_reset(observation_function, solving_model):
+    """Successive calls to before_reset."""
+    observation_function.before_reset(solving_model)
+    observation_function.before_reset(solving_model)
 
 
 def test_extract(observation_function, solving_model):
     """Obtain observation."""
-    observation_function.reset(solving_model)
+    observation_function.before_reset(solving_model)
     observation_function.extract(solving_model, False)
 
 
 def make_obs(obs_func, model):
-    obs_func.reset(model)
+    obs_func.before_reset(model)
     return obs_func.extract(model, False)
 
 

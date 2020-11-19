@@ -16,7 +16,7 @@ static auto n_lp_iterations(scip::Model const& model) {
 	}
 }
 
-void LpIterations::reset(scip::Model& /*unused*/) {
+void LpIterations::before_reset(scip::Model& /*unused*/) {
 	last_lp_iter = 0;
 }
 

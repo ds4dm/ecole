@@ -27,7 +27,7 @@ TEST_CASE("Recursively parse data functions", "[data]") {
 	auto aggregate_func = parse(make_function_aggregate());
 	auto model = get_model();
 
-	aggregate_func.reset(model);
+	aggregate_func.before_reset(model);
 	auto const aggregate_obs = aggregate_func.extract(model, false);
 
 	using AggregateObs = std::remove_const_t<decltype(aggregate_obs)>;

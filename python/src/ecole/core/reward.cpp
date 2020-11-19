@@ -24,7 +24,7 @@ namespace ecole::reward {
 class Arithmetic {
 public:
 	Arithmetic(py::object operation, py::list const& functions, py::str repr);
-	void reset(py::object const& model);
+	void before_reset(py::object const& model);
 	Reward extract(py::object const& model, bool done);
 	[[nodiscard]] py::str toString() const;
 
@@ -37,7 +37,7 @@ private:
 class Cumulative {
 public:
 	Cumulative(py::object function, py::object reduce_func, Reward init_cumul_, py::str repr);
-	void reset(py::object const& model);
+	void before_reset(py::object const& model);
 	Reward extract(py::object const& model, bool done);
 	[[nodiscard]] py::str toString() const;
 
@@ -52,7 +52,7 @@ private:
 /**
  * Helper function to bind common methods.
  */
-template <typename PyClass, typename... Args> void def_reset(PyClass /*pyclass*/, Args&&... /*args*/);
+template <typename PyClass, typename... Args> void def_before_reset(PyClass /*pyclass*/, Args&&... /*args*/);
 template <typename PyClass, typename... Args> void def_extract(PyClass /*pyclass*/, Args&&... /*args*/);
 template <typename PyClass> void def_operators(PyClass /*pyclass*/);
 
@@ -69,7 +69,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	constant.def(py::init<Reward>(), py::arg("constant") = 0.);
 	def_operators(constant);
-	def_reset(constant, "Do nothing.");
+	def_before_reset(constant, "Do nothing.");
 	def_extract(constant, "Return the constant value.");
 
 	auto arithmetic = py::class_<Arithmetic>(m, "Arithmetic", R"(
@@ -82,10 +82,10 @@ void bind_submodule(py::module_ const& m) {
 		.def(py::init<py::object, py::list, py::str>())
 		.def("__repr__", &Arithmetic::toString);
 	def_operators(arithmetic);
-	def_reset(arithmetic, R"(
+	def_before_reset(arithmetic, R"(
 		Reset the reward functions of the operator.
 
-		Calls ``reset`` on all reward functions parameters that were used to create this
+		Calls ``before_reset`` on all reward functions parameters that were used to create this
 		object.
 	)");
 	def_extract(arithmetic, R"(
@@ -105,13 +105,13 @@ void bind_submodule(py::module_ const& m) {
 		.def(py::init<py::object, py::object, Reward, py::str>())
 		.def("__repr__", &Cumulative::toString);
 	def_operators(cumulative);
-	def_reset(cumulative, "Reset the wrapped reward function and reset current cumulation.");
+	def_before_reset(cumulative, "Reset the wrapped reward function and reset current cumulation.");
 	def_extract(cumulative, "Obtain the cumulative reward of result of wrapped function.");
 
 	auto isdone = py::class_<IsDone>(m, "IsDone", "Single reward on terminal states.");
 	isdone.def(py::init<>());
 	def_operators(isdone);
-	def_reset(isdone, "Do nothing.");
+	def_before_reset(isdone, "Do nothing.");
 	def_extract(isdone, "Return 1 if the episode is on a terminal state, 0 otherwise.");
 
 	auto lpiterations = py::class_<LpIterations>(m, "LpIterations", R"(
@@ -122,7 +122,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	lpiterations.def(py::init<>());
 	def_operators(lpiterations);
-	def_reset(lpiterations, "Reset the internal LP iterations count.");
+	def_before_reset(lpiterations, "Reset the internal LP iterations count.");
 	def_extract(lpiterations, R"(
 		Update the internal LP iteration count and return the difference.
 
@@ -136,7 +136,7 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	nnodes.def(py::init<>());
 	def_operators(nnodes);
-	def_reset(nnodes, "Reset the internal node count.");
+	def_before_reset(nnodes, "Reset the internal node count.");
 	def_extract(nnodes, R"(
 		Update the internal node count and return the difference.
 
@@ -160,9 +160,9 @@ Arithmetic::Arithmetic(py::object operation_, py::list const& functions_, py::st
 	}
 }
 
-void Arithmetic::reset(py::object const& model) {
+void Arithmetic::before_reset(py::object const& model) {
 	for (auto obs_func : functions) {
-		obs_func.attr("reset")(model);
+		obs_func.attr("before_reset")(model);
 	}
 }
 
@@ -189,9 +189,9 @@ Cumulative::Cumulative(py::object function_, py::object reduce_func_, Reward ini
 	cumul(init_cumul_),
 	repr(std::move(repr_)) {}
 
-void Cumulative::reset(py::object const& model) {
+void Cumulative::before_reset(py::object const& model) {
 	cumul = init_cumul;
-	function.attr("reset")(model);
+	function.attr("before_reset")(model);
 }
 
 Reward Cumulative::extract(py::object const& model, bool done) {
@@ -208,8 +208,8 @@ py::str Cumulative::toString() const {
  *  Definition of helper functions  *
  ************************************/
 
-template <typename PyClass, typename... Args> void def_reset(PyClass pyclass, Args&&... args) {
-	pyclass.def("reset", &PyClass::type::reset, py::arg("model"), std::forward<Args>(args)...);
+template <typename PyClass, typename... Args> void def_before_reset(PyClass pyclass, Args&&... args) {
+	pyclass.def("before_reset", &PyClass::type::before_reset, py::arg("model"), std::forward<Args>(args)...);
 }
 
 template <typename PyClass, typename... Args> void def_extract(PyClass pyclass, Args&&... args) {

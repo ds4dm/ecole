@@ -18,7 +18,7 @@ TEST_CASE("Combine data functions into a tuple", "[data]") {
 	auto data_func = TupleFunction{IntDataFunc{0}, DoubleDataFunc{1}};
 	auto model = get_model();
 
-	data_func.reset(model);
+	data_func.before_reset(model);
 	auto const data = data_func.extract(model, false);
 	STATIC_REQUIRE(std::is_same_v<std::remove_const_t<decltype(data)>, std::tuple<int, double>>);
 	REQUIRE(std::get<0>(data) == 1);

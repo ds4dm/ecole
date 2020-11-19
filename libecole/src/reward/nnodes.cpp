@@ -4,7 +4,7 @@
 
 namespace ecole::reward {
 
-void NNodes::reset(scip::Model& /* model */) {
+void NNodes::before_reset(scip::Model& /* model */) {
 	last_n_nodes = 0;
 }
 

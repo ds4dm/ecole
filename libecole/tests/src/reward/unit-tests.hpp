@@ -12,13 +12,13 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 
 	SECTION("has default constructor") { RewardFunc{}; }
 
-	SECTION("reset, reset, and delete") {
-		reward_func.reset(solving_model);
-		reward_func.reset(solving_model);
+	SECTION("before_reset, before_reset, and delete") {
+		reward_func.before_reset(solving_model);
+		reward_func.before_reset(solving_model);
 	}
 
-	SECTION("reset, obtain reward, and delete") {
-		reward_func.reset(solving_model);
+	SECTION("before_reset, obtain reward, and delete") {
+		reward_func.before_reset(solving_model);
 		reward_func.extract(solving_model, done);
 	}
 }

@@ -11,13 +11,13 @@ template <typename DataFunc> void unit_tests(DataFunc&& data_func) {
 
 	SECTION("has default constructor") { DataFunc{}; }
 
-	SECTION("reset, reset, and delete") {
-		data_func.reset(solving_model);
-		data_func.reset(solving_model);
+	SECTION("before_reset, before_reset, and delete") {
+		data_func.before_reset(solving_model);
+		data_func.before_reset(solving_model);
 	}
 
-	SECTION("reset, obtain observation, and delete") {
-		data_func.reset(solving_model);
+	SECTION("before_reset, obtain observation, and delete") {
+		data_func.before_reset(solving_model);
 		auto const done = GENERATE(true, false);
 		data_func.extract(solving_model, done);
 	}

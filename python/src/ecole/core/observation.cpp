@@ -21,12 +21,12 @@ namespace ecole::observation {
 namespace py = pybind11;
 
 /**
- * Helper function to bind the `reset` method of observation functions.
+ * Helper function to bind the `before_reset` method of observation functions.
  */
-template <typename PyClass, typename... Args> auto def_reset(PyClass pyclass, Args&&... args) {
+template <typename PyClass, typename... Args> auto def_before_reset(PyClass pyclass, Args&&... args) {
 	return pyclass.def(
-		"reset",
-		&PyClass::type::reset,
+		"before_reset",
+		&PyClass::type::before_reset,
 		py::arg("model"),
 		py::call_guard<py::gil_scoped_release>(),
 		std::forward<Args>(args)...);
@@ -109,7 +109,7 @@ void bind_submodule(py::module_ const& m) {
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
 	)");
 	node_bipartite.def(py::init<>());
-	def_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
+	def_before_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
 	auto strong_branching_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
@@ -134,7 +134,7 @@ void bind_submodule(py::module_ const& m) {
 			psuedo-candidate variables if true or LP canidate variables if false.
 			By default psuedo-candidates will be computed.
 	)");
-	def_reset(strong_branching_scores, R"(Do nothing.)");
+	def_before_reset(strong_branching_scores, R"(Do nothing.)");
 	def_extract(strong_branching_scores, "Extract an array containing strong branching scores.");
 
 	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
@@ -152,7 +152,7 @@ void bind_submodule(py::module_ const& m) {
 		a pseudocost is not applicable are filled with NaN.
 	)");
 	pseudocosts.def(py::init<>());
-	def_reset(pseudocosts, R"(Do nothing.)");
+	def_before_reset(pseudocosts, R"(Do nothing.)");
 	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
 }
 
