@@ -58,7 +58,7 @@ class IndependentSetGenerator:
 
         """
 
-        return generate_instance(
+        return self.generate_instance(
             self.n_nodes, self.edge_probability, self.affinity, self.graph_type, self.rng
         )
 
@@ -75,90 +75,88 @@ class IndependentSetGenerator:
         """
         self.rng.seed(seed)
 
+    @staticmethod
+    def generate_instance(
+        n_nodes: int,
+        edge_probability: float,
+        affinity: int,
+        graph_type: str,
+        rng: np.random.RandomState,
+    ):
+        """Generate an instance of an independent set problem.
 
-def generate_instance(
-    n_nodes: int,
-    edge_probability: float,
-    affinity: int,
-    graph_type: str,
-    rng: np.random.RandomState,
-):
-    """
+        This method generates an instance of the independent set problem based on the
+        specified parameters and returns it as an ecole model.
 
-    Generates an instance of an independent set problem.
+        Parameters
+        ----------
+        n_nodes:
+            The number of nodes in the graph.
+        edge_probability:
+            The probability of generating each edge.
+            This parameter must be in the range [0, 1].
+            This parameter will only be used if graph_type = "erdos_renyi".
+        affinity:
+            The number of nodes each new node will be attached to, in the sampling scheme.
+            This parameter must be an integer >= 1.
+            This parameter will only be used if graph_type = "barabasi_albert".
+        graph_type:
+            The method used in which to generate graphs.
+            This parameter must be one of "barabasi_albert" or "erdos_renyi".
+        rng:
+            A random number generator.
 
-    This method generates an instance of the independent set problem based on the
-    specified parameters and returns it as an ecole model.
+        Returns
+        -------
+        model:
+            An ecole model of a independent set instance.
 
-    Parameters
-    ----------
-    n_nodes:
-        The number of nodes in the graph.
-    edge_probability:
-        The probability of generating each edge.
-        This parameter must be in the range [0, 1].
-        This parameter will only be used if graph_type = "erdos_renyi".
-    affinity:
-        The number of nodes each new node will be attached to, in the sampling scheme.
-        This parameter must be an integer >= 1.
-        This parameter will only be used if graph_type = "barabasi_albert".
-    graph_type:
-        The method used in which to generate graphs.
-        This parameter must be one of "barabasi_albert" or "erdos_renyi".
-    rng:
-        A random number generator.
+        """
+        # generate graph
+        if graph_type == "barabasi_albert":
+            graph = Graph.barabasi_albert(n_nodes, affinity, rng)
+        elif graph_type == "erdos_renyi":
+            graph = Graph.erdos_renyi(n_nodes, edge_probability, rng)
+        else:
+            raise Exception("graph_type must be one of 'barabasi_albert' or 'erdos_renyi'")
 
-    Returns
-    -------
-    model:
-        an ecole model of a independent set instance.
+        cliques = graph.greedy_clique_partition()
+        inequalities = set(graph.edges)
+        for clique in cliques:
+            clique = tuple(sorted(clique))
+            for edge in combinations(clique, 2):
+                inequalities.remove(edge)
+            if len(clique) > 1:
+                inequalities.add(clique)
 
-    """
-    # generate graph
-    if graph_type == "barabasi_albert":
-        graph = Graph.barabasi_albert(n_nodes, affinity, rng)
-    elif graph_type == "erdos_renyi":
-        graph = Graph.erdos_renyi(n_nodes, edge_probability, rng)
-    else:
-        raise Exception("graph_type must be one of 'barabasi_albert' or 'erdos_renyi'")
+        # Put trivial inequalities for nodes that didn't appear
+        # in the constraints, otherwise SCIP will complain
+        used_nodes = set()
+        for group in inequalities:
+            used_nodes.update(group)
+        for node in range(10):
+            if node not in used_nodes:
+                inequalities.add((node,))
 
-    cliques = graph.greedy_clique_partition()
-    inequalities = set(graph.edges)
-    for clique in cliques:
-        clique = tuple(sorted(clique))
-        for edge in combinations(clique, 2):
-            inequalities.remove(edge)
-        if len(clique) > 1:
-            inequalities.add(clique)
+        model = ecole.scip.Model.prob_basic()
+        pyscipopt_model = model.as_pyscipopt()
+        pyscipopt_model.setMaximize()
 
-    # Put trivial inequalities for nodes that didn't appear
-    # in the constraints, otherwise SCIP will complain
-    used_nodes = set()
-    for group in inequalities:
-        used_nodes.update(group)
-    for node in range(10):
-        if node not in used_nodes:
-            inequalities.add((node,))
+        var_dict = {}
 
-    model = ecole.scip.Model.prob_basic()
-    pyscipopt_model = model.as_pyscipopt()
-    pyscipopt_model.setMaximize()
+        # add variable for each node
+        for node in range(len(graph)):
+            var_dict[node + 1] = pyscipopt_model.addVar(name=f"x_{node+1}", vtype="B", obj=1.0)
 
-    var_dict = {}
+        # add constraints such that no connect nodes both set to 1
+        for count, group in enumerate(inequalities):
+            vars_to_sum = [var_dict[node + 1] for node in sorted(group)]
+            cons_lhs = 0
+            for var in vars_to_sum:
+                cons_lhs += var
+            pyscipopt_model.addCons(cons_lhs <= 1)
 
-    # add variable for each node
-    for node in range(len(graph)):
-        var_dict[node + 1] = pyscipopt_model.addVar(name=f"x_{node+1}", vtype="B", obj=1.0)
-
-    # add constraints such that no connect nodes both set to 1
-    for count, group in enumerate(inequalities):
-        vars_to_sum = [var_dict[node + 1] for node in sorted(group)]
-        cons_lhs = 0
-        for var in vars_to_sum:
-            cons_lhs += var
-        pyscipopt_model.addCons(cons_lhs <= 1)
-
-    return model
+        return model
 
 
 class Graph:
