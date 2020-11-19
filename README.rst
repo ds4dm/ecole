@@ -35,9 +35,9 @@ meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possi
    instances = ecole.instance.SetCoverGenerator()
 
    for _ in range(10):
-       observation, action_set, reward_offset, done = env.reset(next(instances))
+       obs, action_set, reward_offset, done, info = env.reset(next(instances))
        while not done:
-          observation, action_set, reward, done, info = env.step(action_set[0])
+          obs, action_set, reward, done, info = env.step(action_set[0])
 
 
 Installation
