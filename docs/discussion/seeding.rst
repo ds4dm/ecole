@@ -37,7 +37,7 @@ Reproducible program
 --------------------
 Running this program again will give the same outcome.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 
@@ -55,7 +55,7 @@ Reproducible environments
 -------------------------
 Creating this envionment with same seed anywhere else will give the same outcome.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 
@@ -72,7 +72,7 @@ Reproducible episode
 --------------------
 All episodes run in this snippet are identical.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 

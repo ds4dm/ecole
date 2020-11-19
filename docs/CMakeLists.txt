@@ -29,11 +29,26 @@ add_custom_target(
 	ecole-sphinx
 	COMMAND
 	venv-python -m sphinx -q -W -b html
-		-c "${SPHINX_SOURCE_DIR}"
 		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
 		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
 	BYPRODUCTS "${SPHINX_BUILD_DIR}"
 	DEPENDS ecole-doxygen ecole-venv
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generating documentation with Sphinx"
+)
+
+add_custom_target(
+	ecole-sphinx-check
+	COMMAND
+	venv-python -m sphinx -q -W -b linkcheck
+		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
+		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
+	COMMAND
+	venv-python -m sphinx -q -W -b doctest
+		-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
+		"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
+	BYPRODUCTS "${SPHINX_BUILD_DIR}"
+	DEPENDS ecole-sphinx
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	COMMENT "Checking link and code sample in Sphinx documentation."
 )

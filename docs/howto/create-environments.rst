@@ -52,7 +52,7 @@ The similar method :py:meth:`~ecole.environment.BranchingDynamics.step_dynamics`
 by :py:meth:`~ecole.environment.Environment.step` does not need to be changed in this
 example so we do not override it.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
    from pyscipopt.scip import PY_SCIP_PARAMSETTING
@@ -77,7 +77,7 @@ Now, to use it as a full environent that can manage observations and rewards, we
 :py:class:`~ecole.environment.Environment`.
 
 
-.. code-block:: python
+.. testcode::
 
    class SimpleBranching(ecole.environment.Environment):
        __Dynamics__ = SimpleBranchingDynamics
@@ -90,7 +90,7 @@ Passing parameters
 We can make the previous example more flexible by deciding what we want to disable.
 To do so, we will take parameters in the constructor
 
-.. code-block:: python
+.. testcode::
 
    class SimpleBranchingDynamics(ecole.environment.BranchinDynamics):
 
@@ -114,7 +114,7 @@ To do so, we will take parameters in the constructor
 
 The constructor arguments are forwarded from the :py:meth:`~ecole.environment.EnvironmentComposer.__init__` constructor:
 
-.. code-block:: python
+.. testcode::
 
    env = SimpleBranching(observation_function=None, disable_cuts=False)
 

@@ -106,7 +106,7 @@ jobs:
       - checkout
       - build_ecole:
           cmake_options: "-D ENABLE_DOCUMENTATION=ON -D DOXYGEN_WARN_AS_ERROR=ON"
-          target: "ecole-sphinx"
+          target: "ecole-sphinx-check"
 
   deploy_doc:
     parameters:

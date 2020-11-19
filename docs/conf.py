@@ -31,7 +31,8 @@ release = f"{version_major}.{version_minor}.{version_patch}"
 
 extensions = [
     "sphinx.ext.autodoc",  # Read doc from Python docstrings
-    "sphinx.ext.viewcode",
+    "sphinx.ext.viewcode",  # Show [source] link to source code
+    "sphinx.ext.doctest",  # Test code sample in documentation
 ]
 
 # Math setting

@@ -13,7 +13,7 @@ Using a different observation function is as easy as passing it as a parameter w
 creating an environment.
 For instance with the :py:class:`~ecole.environment.Branching` environment:
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Branching(observation_function=ecole.observation.Nothing())
    >>> env.observation_function
@@ -24,7 +24,7 @@ For instance with the :py:class:`~ecole.environment.Branching` environment:
 
 Environments have an observation function set as default parameter for convenience.
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Branching()
    >>> env.observation_function
@@ -46,7 +46,7 @@ No Observation Function
 To not use any observation function, for instance for a learning with a bandit algorithm,
 explicitly pass ``None`` to the environment constructor.
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.branching(observation_function=None)
    >>> env.observation_function
@@ -59,7 +59,7 @@ Multiple Observation Functions
 ------------------------------
 To use multiple observation functions, wrap them in a ``list`` or ``dict``.
 
-.. code-block:: python
+.. testcode::
 
    >>> obs_func = (
    ...    ecole.observation.NodeBipartite(), ecole.observation.Nothing()
@@ -71,7 +71,7 @@ To use multiple observation functions, wrap them in a ``list`` or ``dict``.
 
 Similarily with a tuple
 
-.. code-block:: python
+.. testcode::
 
    >>> obs_func = {
    ...    "some_name": ecole.observation.NodeBipartite(),

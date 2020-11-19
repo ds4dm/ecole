@@ -8,7 +8,7 @@ and safe prototyping of any ML for CO approach that can be formulated as a contr
 problem (i.e., a Markov Decision Problem), as well as providing reproducible benchmarking protocols
 for comparison to existing approaches.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 

@@ -15,7 +15,7 @@ The object has complete access to the solver and extract the data it needs.
 Using a different reward function is done with another parameter to the environment.
 For instance with the :py:class:`~ecole.environment.Configuring` environment:
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIiterations())
    >>> env.reward_function
@@ -26,7 +26,7 @@ For instance with the :py:class:`~ecole.environment.Configuring` environment:
 
 Environments also have a default reward function.
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Configuring()
    >>> env.reward_function
@@ -51,7 +51,7 @@ For instance, one typically want to minimize the number of
 To achieve this, one would typically use the opposite of the reward.
 Such a reward function can be created by negating the reward function.
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Configuring(reward_function=-ecole.reward.LpIiterations())
    >>> env.reset("path/to/problem")
@@ -60,7 +60,7 @@ Such a reward function can be created by negating the reward function.
 
 Any operation, such as
 
-.. code-block:: python
+.. testcode::
 
    -3.5 * LpIiterations() ** 2.1 + 4.4
 
@@ -69,7 +69,7 @@ are valid.
 Note that this is a full reward *function* object that can be given to an environment.
 it is similar to doing the following
 
-.. code-block:: python
+.. testcode::
 
    >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIiterations())
    >>> env.reset("path/to/problem")
@@ -79,7 +79,7 @@ it is similar to doing the following
 Arithmetic operations on reward functions become exremely powerful when combining mutiple
 rewards functions, such as in
 
-.. code-block:: python
+.. testcode::
 
    4.0 * LpIterations()**2 - 3 * IsDone()
 
@@ -89,7 +89,7 @@ environment.
 
 All operations that are valid between scalars are valid with reward functions
 
-.. code-block:: python
+.. testcode::
 
    - IsDone() ** abs(LpIteration() // 4)
 
@@ -98,19 +98,19 @@ Ecole implements a number of other operations are as methods to reward functions
 For instance, to get the exponential of :py:class:`~ecole.reward.LpIterations`, one can
 use
 
-.. code-block:: python
+.. testcode::
 
    LpIterations().exp()
 
 This also works with rewards functions created from any expression
 
-.. code-block:: python
+.. testcode::
 
    (3 - 2*LpIterations()).exp()
 
 In last resort, reward functions have an ``apply`` method to compose rewards with any
 function
 
-.. code-block:: python
+.. testcode::
 
    LpIterations().apply(lambda reward: math.factorial(round(reward)))

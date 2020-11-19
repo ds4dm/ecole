@@ -16,7 +16,7 @@ started with another call to :py:meth:`~ecole.environment.Environment.reset`.
 For instance, using the :py:class:`~ecole.environment.Branching` environment for branch-and-bound variable selection,
 solving a specific instance once by always selecting the first fractional variable would look as follows.
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 
@@ -87,7 +87,7 @@ Every environment can optionally take a dictionary of
 initialize the solver at every episode.
 For instance, to customize the clique inequalities generated, one could set:
 
-.. code-block:: python
+.. testcode::
 
    env = ecole.environment.Branching(
        scip_params={"separating/clique/freq": 0.5, "separating/clique/maxsepacuts": 5}

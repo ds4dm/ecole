@@ -13,7 +13,7 @@ we can iterate over them using any of Python iterating mechnisms.
 For instance, to generate `set covering problems <https://en.wikipedia.org/wiki/Set_cover_problem>`_, one would use
 :py:class:`~ecole.instance.SetCoverGenerator` in the following fashion:
 
-.. code-block:: python
+.. testcode::
 
    from ecole.instance import SetCoverGenerator
 
@@ -38,7 +38,7 @@ Generators Random States
 An :py:class:`~ecole.typing.InstanceGenerator` holds a random state to generate instance.
 This can be better understood when using the :py:meth:`~ecole.typing.InstanceGenerator.seed` method of the generator.
 
-.. code-block:: python
+.. testcode::
 
    generator_a = SetCoverGenerator(n_rows=100, n_cols=200, density=0.1)
    generator_b = SetCoverGenerator(n_rows=100, n_cols=200, density=0.1)
@@ -62,7 +62,7 @@ The environment :py:meth:`~ecole.environment.EnvironmentComposer.reset` accepts 
 
 A typical example training voer 1000 instances/episodes would look like:
 
-.. code-block:: python
+.. testcode::
 
    import ecole
 
@@ -96,7 +96,7 @@ Combine Multiple Generators
 To learn over multiple problem types, one could build a generator that, for every instance to generate, chooses a
 a problem type at random, and returns it.
 
-.. code-block:: python
+.. testcode::
 
    import random
 
@@ -114,7 +114,7 @@ a problem type at random, and returns it.
 This generator does not have a ``seed`` method.
 If we want to implement it, we have to write the same generator as the equilvalent class.
 
-.. code-block:: python
+.. testcode::
 
    class CombineGenerators:
        def __init__(self, *generators):
@@ -143,7 +143,7 @@ and manually pass a :py:class:`~ecole.RandomEngine`.
 For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
 :py:class:`~ecole.instance.SetCoverGenerator`, one could use
 
-.. code-block:: python
+.. testcode::
 
    import random
    import ecole

@@ -27,7 +27,7 @@ The method that will be called to return an observation is called
 Here is how we can create a new observation function that scale the features their maximum absolute
 value.
 
-.. code-block:: python
+.. testcode::
 
    import numpy as np
    from ecole.observation import NodeBipartite
@@ -59,7 +59,7 @@ We will apply the moving average on states from the same episode, and reset it a
 episode.
 This example shows how the scaling vector can be stored between states.
 
-.. code-block:: python
+.. testcode::
 
    class MovingScaledNodeBipartite(NodeBipartite):
 
@@ -125,7 +125,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
 :py:class:`~ecole.typing.RewardFunction` and with some probability return either the given reward or
 0.
 
-.. code-block:: python
+.. testcode::
 
    import random
 
@@ -150,7 +150,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
 It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations` in a
 :py:class:`~ecole.environment.Branching` environment.
 
-.. code-block:: python
+.. testcode::
 
    >> stochastic_lpiterations = StochaticReward(-ecole.reward.LpIteration, probability=0.1)
    >> env = ecole.environment.Branching(reward_function=stochastic_lpiterations)
