@@ -68,10 +68,10 @@ A typical example training voer 1000 instances/episodes would look like:
 
 
    env = ecole.environment.Branching()
-   gen = ecole.instances.SetCoverGenerator()
+   gen = ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200)
 
    for _ in range(1000):
-       observation, action_set, reward_offset, done = env.reset(next(gen))
+       observation, action_set, reward_offset, done, info = env.reset(next(gen))
        while not done:
            observation, action_set, reward, done, info = env.step(action_set[0])
 
@@ -124,13 +124,13 @@ If we want to implement it, we have to write the same generator as the equilvale
        def __next__(self):
            return next(self.random_engine.choice(self.generators))
 
-      def __iter__(self):
-          return self
+       def __iter__(self):
+           return self
 
-      def seed(self, val):
-          self.random_engine.seed(val)
-          for gen in self.generators:
-              gen.seed(val)
+       def seed(self, val):
+           self.random_engine.seed(val)
+           for gen in self.generators:
+               gen.seed(val)
 
 Generator Random Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -150,7 +150,7 @@ For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
 
 
    class VariableSizeSetCoverGenerator:
-       def __init__(self. n_cols_range, n_rows_range):
+       def __init__(self, n_cols_range, n_rows_range):
            self.n_cols_range = n_cols_range
            self.n_rows_range = n_rows_range
            # A Python radnom state for randint
@@ -166,12 +166,12 @@ For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
                random_engine=self.ecole_random_engine,
            )
 
-      def __iter__(self):
-          return self
+       def __iter__(self):
+           return self
 
-      def seed(self, val):
-          self.py_random_engine.seed(val)
-          self.ecole_random_engine.seed(val)
+       def seed(self, val):
+           self.py_random_engine.seed(val)
+           self.ecole_random_engine.seed(val)
 
 
 See :ref:`the discussion on seeding<seeding-discussion>` for an explanation of :py:func:`ecole.spawn_random_engine`.

@@ -13,28 +13,28 @@ Using a different observation function is as easy as passing it as a parameter w
 creating an environment.
 For instance with the :py:class:`~ecole.environment.Branching` environment:
 
-.. testcode::
+.. doctest::
 
    >>> env = ecole.environment.Branching(observation_function=ecole.observation.Nothing())
-   >>> env.observation_function
+   >>> env.observation_function  # doctest: +SKIP
    ecole.observation.Nothing()
-   >>> obs, _, _, _ = env.reset("path/to/problem")
-   >>> obs
-   None
+   >>> obs, _, _, _, _ = env.reset("path/to/problem")
+   >>> obs is None
+   True
 
 Environments have an observation function set as default parameter for convenience.
 
-.. testcode::
+.. doctest::
 
    >>> env = ecole.environment.Branching()
-   >>> env.observation_function
+   >>> env.observation_function  # doctest: +SKIP
    ecole.observation.NodeBipartite()
-   >>> obs, _, _, _ = env.reset("path/to/problem")
-   >>> obs
-   NodeBipartiteObs(...)
+   >>> obs, _, _, _, _ = env.reset("path/to/problem")
+   >>> obs  # doctest: +SKIP
+   ecole.observation.NodeBipartiteObs(...)
 
 .. TODO Use an observation function that is more intutive than Nothing
-.. TODO Adapt the output to the actual __repr__
+.. TODO Adapt the output to the actual __repr__ and remove #doctest: +SKIP
 
 
 See :ref:`the reference<observation-reference>` for the list of available observation function,
@@ -46,44 +46,48 @@ No Observation Function
 To not use any observation function, for instance for a learning with a bandit algorithm,
 explicitly pass ``None`` to the environment constructor.
 
-.. testcode::
+.. doctest::
 
-   >>> env = ecole.environment.branching(observation_function=None)
-   >>> env.observation_function
+   >>> env = ecole.environment.Branching(observation_function=None)
+   >>> env.observation_function  # doctest: +SKIP
    ecole.observation.nothing()
-   >>> obs, _, _, _ = env.reset("path/to/problem")
+   >>> obs, _, _, _, _= env.reset("path/to/problem")
    >>> obs is None
    True
+
+.. TODO Adapt the output to the actual __repr__ and remove #doctest: +SKIP
 
 Multiple Observation Functions
 ------------------------------
 To use multiple observation functions, wrap them in a ``list`` or ``dict``.
 
-.. testcode::
+.. doctest::
 
    >>> obs_func = (
    ...    ecole.observation.NodeBipartite(), ecole.observation.Nothing()
    ... )
-   >>> env = ecole.environment.branching(observation_function=obs_func)
-   >>> obs, _, _, _ = env.reset("path/to/problem")
-   >>> obs
+   >>> env = ecole.environment.Branching(observation_function=obs_func)
+   >>> obs, _, _, _, _ = env.reset("path/to/problem")
+   >>> obs  # doctest: +SKIP
    [ecole.observation.NodeBipartiteObs(), None]
+
+.. TODO Adapt the output to the actual __repr__ and remove #doctest: +SKIP
 
 Similarily with a tuple
 
-.. testcode::
+.. doctest::
 
    >>> obs_func = {
    ...    "some_name": ecole.observation.NodeBipartite(),
    ...    "other_name": ecole.observation.Nothing(),
    ... }
-   >>> env = ecole.environment.branching(observation_function=obs_func)
-   >>> obs, _, _, _ = env.reset("path/to/problem")
-   >>> obs
+   >>> env = ecole.environment.Branching(observation_function=obs_func)
+   >>> obs, _, _, _, _ = env.reset("path/to/problem")
+   >>> obs  # doctest: +SKIP
    {'some_name': ecole.observation.NodeBipartiteObs(), 'other_name': None}
 
 .. TODO Use an observation function that is more intutive than Nothing
-.. TODO Adapt the output to the actual __repr__
+.. TODO Adapt the output to the actual __repr__ and remove #doctest: +SKIP
 
 .. [#observation] We chose to use *observation*, according to the Partially Observable
    Markov Decision Process, because the state is really the whole state of the solver.

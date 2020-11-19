@@ -24,7 +24,7 @@ solving a specific instance once by always selecting the first fractional variab
    env.seed(42)
 
    for _ in range(10):
-       observation, action_set, reward_offset, done = env.reset("path/to/instance")
+       observation, action_set, reward_offset, done, info = env.reset("path/to/instance")
        while not done:
            observation, action_set, reward, done, info = env.step(action_set[0])
 
@@ -172,5 +172,3 @@ determinism, without re-using the same seed repeatedly.
 
 See the reference section for the exact documentation of
 :py:meth:`~ecole.environment.Environment.seed`.
-
-.. TODO document this and explain the seeding behavior

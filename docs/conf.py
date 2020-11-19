@@ -32,8 +32,21 @@ release = f"{version_major}.{version_minor}.{version_patch}"
 extensions = [
     "sphinx.ext.autodoc",  # Read doc from Python docstrings
     "sphinx.ext.viewcode",  # Show [source] link to source code
-    "sphinx.ext.doctest",  # Test code sample in documentation
 ]
+
+# Test code sample in documentation
+extensions += ["sphinx.ext.doctest"]
+# Patching ecole.scip.Model.from_file and write_problem globally to be able to put fake paths
+doctest_global_setup = """
+import unittest.mock
+import ecole
+
+generator = ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200)
+read_patcher = unittest.mock.patch("ecole.core.scip.Model.from_file", side_effect=generator)
+read_patcher.start()
+write_patcher = unittest.mock.patch("ecole.core.scip.Model.write_problem", side_effect=generator)
+write_patcher.start()
+"""
 
 # Math setting
 extensions += ["sphinx.ext.mathjax"]

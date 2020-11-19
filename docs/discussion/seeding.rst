@@ -43,10 +43,10 @@ Running this program again will give the same outcome.
 
    ecole.seed(754)
 
-   environment = ecole.environment.Branching()
+   env = ecole.environment.Branching()
 
    for _ in range(10):
-       observation, action_set, reward_offset, done = env.reset("path/to/problem")
+       observation, action_set, reward_offset, done, info = env.reset("path/to/problem")
        while not done:
            obs, action_set, reward, done, info = env.step(action_set[0])
 
@@ -63,7 +63,7 @@ Creating this envionment with same seed anywhere else will give the same outcome
    env.seed(8462)
 
    for _ in range(10):
-       observation, action_set, reward_offset, done = env.reset("path/to/problem")
+       observation, action_set, reward_offset, done, info = env.reset("path/to/problem")
        while not done:
            obs, action_set, reward, done, info = env.step(action_set[0])
 
@@ -80,6 +80,6 @@ All episodes run in this snippet are identical.
 
    for _ in range(10):
        env.seed(81)
-       observation, action_set, reward_offset, done = env.reset("path/to/problem")
+       observation, action_set, reward_offset, done, info = env.reset("path/to/problem")
        while not done:
            obs, action_set, reward, done, info = env.step(action_set[0])

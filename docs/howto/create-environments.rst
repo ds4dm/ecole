@@ -58,7 +58,7 @@ example so we do not override it.
    from pyscipopt.scip import PY_SCIP_PARAMSETTING
 
 
-   class SimpleBranchingDynamics(ecole.environment.BranchinDynamics):
+   class SimpleBranchingDynamics(ecole.environment.BranchingDynamics):
 
        def reset_dynamics(self, model):
            # Share memory with Ecole model
@@ -92,9 +92,10 @@ To do so, we will take parameters in the constructor
 
 .. testcode::
 
-   class SimpleBranchingDynamics(ecole.environment.BranchinDynamics):
+   class SimpleBranchingDynamics(ecole.environment.BranchingDynamics):
 
-       def __init__(self, disable_presolve=True, disable_cuts=True):
+       def __init__(self, disable_presolve=True, disable_cuts=True, *args, **kwargs):
+           super().__init__(*args, **kwargs)
            self.disable_presolve = disable_presolve
            self.disable_cuts = disable_cuts
 
@@ -110,6 +111,10 @@ To do so, we will take parameters in the constructor
            # Let the parent class get the model to the root node and return
            # the done flag / action_set
            return super().reset_dynamics(model)
+
+
+   class SimpleBranching(ecole.environment.Environment):
+       __Dynamics__ = SimpleBranchingDynamics
 
 
 The constructor arguments are forwarded from the :py:meth:`~ecole.environment.EnvironmentComposer.__init__` constructor:

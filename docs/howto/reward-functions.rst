@@ -15,24 +15,25 @@ The object has complete access to the solver and extract the data it needs.
 Using a different reward function is done with another parameter to the environment.
 For instance with the :py:class:`~ecole.environment.Configuring` environment:
 
-.. testcode::
+.. doctest::
 
-   >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIiterations())
-   >>> env.reward_function
+   >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIterations())
+   >>> env.reward_function  # doctest: +SKIP
    ecole.reward.LpIterations()
-   >>> env.reset("path/to/problem")
-   >>> _, _, reward, _, _ = env.step({})
-   4560.0
+   >>> env.reset("path/to/problem")  # doctest: +ELLIPSIS
+   (..., ..., 0.0, ..., ...)
+   >>> env.step({})  # doctest: +SKIP
+   (..., ..., 45.0, ..., ...)
 
 Environments also have a default reward function.
 
-.. testcode::
+.. doctest::
 
    >>> env = ecole.environment.Configuring()
-   >>> env.reward_function
+   >>> env.reward_function  # doctest: +SKIP
    ecole.reward.IsDone()
 
-.. TODO Adapt the output to the actual __repr__
+.. TODO Adapt the output to the actual __repr__ and remove #doctest: +SKIP
 
 See :ref:`the reference<reward-reference>` for the list of available reward function,
 as well as :ref:`the documention<create-new-functions>` for explanation on how to create one.
@@ -51,28 +52,32 @@ For instance, one typically want to minimize the number of
 To achieve this, one would typically use the opposite of the reward.
 Such a reward function can be created by negating the reward function.
 
-.. testcode::
+.. doctest::
 
-   >>> env = ecole.environment.Configuring(reward_function=-ecole.reward.LpIiterations())
-   >>> env.reset("path/to/problem")
-   >>> _, _, reward, _, _ = env.step({})
-   -4560.0
+   >>> env = ecole.environment.Configuring(reward_function=-ecole.reward.LpIterations())
+   >>> env.reset("path/to/problem")  # doctest: +ELLIPSIS
+   (..., ..., -0.0, ..., ...)
+   >>> env.step({})  # doctest: +SKIP
+   (..., ..., -45.0, ..., ...)
 
 Any operation, such as
 
 .. testcode::
 
-   -3.5 * LpIiterations() ** 2.1 + 4.4
+   from ecole.reward import LpIterations
+
+   -3.5 * LpIterations() ** 2.1 + 4.4
 
 are valid.
 
 Note that this is a full reward *function* object that can be given to an environment.
 it is similar to doing the following
 
-.. testcode::
+.. doctest::
 
-   >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIiterations())
-   >>> env.reset("path/to/problem")
+   >>> env = ecole.environment.Configuring(reward_function=ecole.reward.LpIterations())
+   >>> env.reset("path/to/problem")  # doctest: +ELLIPSIS
+   (..., ..., ..., ..., ...)
    >>> _, _, lp_iter_reward, _, _ = env.step({})
    >>> reward = -3.5 * lp_iter_reward ** 2.1 + 4.4
 
@@ -80,6 +85,8 @@ Arithmetic operations on reward functions become exremely powerful when combinin
 rewards functions, such as in
 
 .. testcode::
+
+   from ecole.reward import LpIterations, IsDone
 
    4.0 * LpIterations()**2 - 3 * IsDone()
 
@@ -91,7 +98,7 @@ All operations that are valid between scalars are valid with reward functions
 
 .. testcode::
 
-   - IsDone() ** abs(LpIteration() // 4)
+   - IsDone() ** abs(LpIterations() // 4)
 
 Not all mathematical operations have a dedicated Python operator.
 Ecole implements a number of other operations are as methods to reward functions.

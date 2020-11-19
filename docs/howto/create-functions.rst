@@ -150,7 +150,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
 It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations` in a
 :py:class:`~ecole.environment.Branching` environment.
 
-.. testcode::
+.. doctest::
 
    >> stochastic_lpiterations = StochaticReward(-ecole.reward.LpIteration, probability=0.1)
    >> env = ecole.environment.Branching(reward_function=stochastic_lpiterations)
