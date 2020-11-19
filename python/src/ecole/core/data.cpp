@@ -24,7 +24,7 @@ public:
 	PyDataFunction() noexcept = default;
 	explicit PyDataFunction(py::object data_func) noexcept : data_function(std::move(data_func)) {}
 
-	void reset(scip::Model& model) final { data_function.attr("reset")(&model); }
+	void before_reset(scip::Model& model) final { data_function.attr("before_reset")(&model); }
 
 	py::object extract(scip::Model& model, bool done) final { return data_function.attr("extract")(&model, done); }
 
@@ -38,12 +38,12 @@ void bind_submodule(py::module_ const& m) {
 	using PyConstantFunction = ConstantFunction<py::object>;
 	py::class_<PyConstantFunction>(m, "ConstantFunction", "Always return the given value.")
 		.def(py::init<py::object>())
-		.def("reset", &PyConstantFunction::reset, py::arg("model"), "Do nothing.")
+		.def("before_reset", &PyConstantFunction::before_reset, py::arg("model"), "Do nothing.")
 		.def("extract", &PyConstantFunction::extract, py::arg("model"), py::arg("done"), "Return the constant.");
 
 	py::class_<NoneFunction>(m, "NoneFunction", "Always retrun None.")
 		.def(py::init<>())
-		.def("reset", &NoneFunction::reset, py::arg("model"), "Do nothing.")
+		.def("before_reset", &NoneFunction::before_reset, py::arg("model"), "Do nothing.")
 		.def("extract", &NoneFunction::extract, py::arg("model"), py::arg("done"), "Return None.");
 
 	using PyVectorFunction = VectorFunction<PyDataFunction>;
@@ -55,7 +55,11 @@ void bind_submodule(py::module_ const& m) {
 			});
 			return std::make_unique<PyVectorFunction>(std::move(functions));
 		}))
-		.def("reset", &PyVectorFunction::reset, py::arg("model"), "Call reset on all data extraction functions.")
+		.def(
+			"before_reset",
+			&PyVectorFunction::before_reset,
+			py::arg("model"),
+			"Call before_reset on all data extraction functions.")
 		.def(
 			"extract",
 			&PyVectorFunction::extract,
@@ -72,7 +76,11 @@ void bind_submodule(py::module_ const& m) {
 			}
 			return std::make_unique<PyMapFunction>(std::move(functions));
 		}))
-		.def("reset", &PyMapFunction::reset, py::arg("model"), "Call reset on all data extraction functions.")
+		.def(
+			"before_reset",
+			&PyMapFunction::before_reset,
+			py::arg("model"),
+			"Call before_reset on all data extraction functions.")
 		.def(
 			"extract",
 			&PyMapFunction::extract,

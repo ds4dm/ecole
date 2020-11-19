@@ -16,7 +16,7 @@ TEST_CASE("IsDone always return one when done", "[reward]") {
 	auto reward_func = reward::IsDone{};
 	auto model = get_solving_model();
 
-	reward_func.reset(model);
+	reward_func.before_reset(model);
 
 	REQUIRE(reward_func.extract(model, done) == (done ? 1. : 0.));
 

@@ -25,7 +25,7 @@ public:
 	 *
 	 * The method is called at the begining of every episode, and does nothing by default.
 	 */
-	virtual void reset(scip::Model& /* model */) {}
+	virtual void before_reset(scip::Model& /* model */) {}
 
 	/**
 	 * The method called by environments when needing to extract data.

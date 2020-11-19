@@ -18,7 +18,7 @@ TEST_CASE("Constant reward always return the same value", "[data]") {
 	auto data_func = data::ConstantFunction{constant};
 	auto model = get_solving_model();
 
-	data_func.reset(model);
+	data_func.before_reset(model);
 
 	REQUIRE(data_func.extract(model, done) == constant);
 

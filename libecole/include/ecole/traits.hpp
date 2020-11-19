@@ -22,8 +22,8 @@ template <typename T> inline constexpr bool is_information_map_v = is_informatio
 
 namespace internal {
 
-template <typename, typename = std::void_t<>> struct has_reset : std::false_type {};
-template <typename T> struct has_reset<T, std::void_t<decltype(&T::reset)>> : std::true_type {};
+template <typename, typename = std::void_t<>> struct has_before_reset : std::false_type {};
+template <typename T> struct has_before_reset<T, std::void_t<decltype(&T::before_reset)>> : std::true_type {};
 
 template <typename, typename = std::void_t<>> struct has_extract : std::false_type {};
 template <typename T> struct has_extract<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
@@ -36,7 +36,8 @@ struct extract_return_is<T, Pred, std::void_t<decltype(&T::extract)>> :
 
 }  // namespace internal
 
-template <typename T> using is_data_function = std::conjunction<internal::has_reset<T>, internal::has_extract<T>>;
+template <typename T>
+using is_data_function = std::conjunction<internal::has_before_reset<T>, internal::has_extract<T>>;
 template <typename T> inline constexpr bool is_data_function_v = is_data_function<T>::value;
 
 template <typename T> using is_observation_function = is_data_function<T>;

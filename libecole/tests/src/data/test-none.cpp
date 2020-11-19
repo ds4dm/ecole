@@ -15,7 +15,7 @@ TEST_CASE("NoneFunction return None as data", "[data]") {
 	auto const done = GENERATE(true, false);
 	auto data_func = NoneFunction{};
 	auto model = get_model();
-	data_func.reset(model);
+	data_func.before_reset(model);
 
 	REQUIRE(data_func.extract(model, done) == ecole::None);
 }

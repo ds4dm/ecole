@@ -107,7 +107,7 @@ class RewardFunction(Protocol):
     to extract the reward used for learning.
     """
 
-    def reset(self, model: ecole.scip.Model) -> None:
+    def before_reset(self, model: ecole.scip.Model) -> None:
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes
@@ -164,7 +164,7 @@ class ObservationFunction(Protocol[Observation]):
     next action.
     """
 
-    def reset(self, model: ecole.scip.Model) -> None:
+    def before_reset(self, model: ecole.scip.Model) -> None:
         """Reset internal data at the start of episodes.
 
         The method is called on new episodes

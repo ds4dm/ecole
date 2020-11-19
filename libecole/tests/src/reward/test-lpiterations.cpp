@@ -16,29 +16,29 @@ TEST_CASE("LpIterations returns the difference in LP iterations between two stat
 	auto model = get_model();  // a non-trivial instance is loaded
 
 	SECTION("LP iterations is zero before presolving") {
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		REQUIRE(reward_func.extract(model) == 0);
 	}
 
 	SECTION("LP iterations is stricly positive after root node processing") {
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
 		REQUIRE(reward_func.extract(model) > 0);
 	}
 
 	SECTION("LP iterations is zero if the model state has not changed") {
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
 		reward_func.extract(model);
 		REQUIRE(reward_func.extract(model) == 0);
 	}
 
 	SECTION("Reset LP iteration counter") {
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
 		auto reward = reward_func.extract(model);
 		model = get_model();
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		model.solve_iter();  // presolve and stop at the root node before branching
 		REQUIRE(reward_func.extract(model) == reward);
 	}
@@ -52,7 +52,7 @@ TEST_CASE("LpIterations returns the difference in LP iterations between two stat
 			{"limits/totalnodes", 1},
 		});
 		model.solve_iter();
-		reward_func.reset(model);
+		reward_func.before_reset(model);
 		REQUIRE(reward_func.extract(model) == 0);
 	}
 }

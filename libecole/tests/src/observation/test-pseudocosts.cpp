@@ -17,7 +17,7 @@ TEST_CASE("Pseudocosts unit tests", "[unit][obs]") {
 TEST_CASE("Pseudocosts return pseudo costs array", "[obs]") {
 	auto obs_func = observation::Pseudocosts{};
 	auto model = get_solving_model();
-	obs_func.reset(model);
+	obs_func.before_reset(model);
 	auto const obs = obs_func.extract(model, false);
 
 	REQUIRE(obs.has_value());

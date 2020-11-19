@@ -68,8 +68,8 @@ This example shows how the scaling vector can be stored between states.
            super().__init__(*args, **kwargs)
            self.alpha = alpha
 
-       def reset(self, model):
-           super().reset(model)
+       def before_reset(self, model):
+           super().before_reset(model)
            # Reset exponential moving average (ema) on new episode
            self.column_ema = None
            self.row_ema = None
@@ -97,7 +97,7 @@ This example shows how the scaling vector can be stored between states.
 
 Here, you can notice how we used the constructor to be able to customize the coefficient of the
 exponential moving average.
-We also inherited the :py:meth:`~ecole.typing.ObservationFunction.reset` method which does not
+We also inherited the :py:meth:`~ecole.typing.ObservationFunction.before_reset` method which does not
 return anything.
 This method is called at the begining of the episode by
 :py:meth:`~ecole.environment.Environment.reset` and is used to reintialize the class
@@ -136,8 +136,8 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
            self.reward_function = reward_function
            self.probability = probability
 
-       def reset(self, model):
-           self.reward_function.reset(model)
+       def before_reset(self, model):
+           self.reward_function.before_reset(model)
 
        def extract(self, model, done):
            # Unconditionally getting reward as reward_funcition.extract may have side effects

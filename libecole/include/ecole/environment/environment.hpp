@@ -104,18 +104,17 @@ public:
 			model().set_params(scip_params());
 			dynamics().set_dynamics_random_state(model(), random_engine());
 
-			// Bring model to initial state and reset state functions
+			// Reset data extraction function and bring model to initial state.
+			observation_function().before_reset(model());
+			reward_function().before_reset(model());
+			information_function().before_reset(model());
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
-			observation_function().reset(model());
-			reward_function().reset(model());
-			information_function().reset(model());
 
 			can_transition = !done;
-			auto const reward_offset = reward_function().extract(model(), done);
 			return {
 				observation_function().extract(model(), done),
 				std::move(action_set),
-				reward_offset,
+				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
 			};
@@ -161,12 +160,11 @@ public:
 		try {
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
-			auto const reward = reward_function().extract(model(), done);
 
 			return {
 				observation_function().extract(model(), done),
 				std::move(action_set),
-				reward,
+				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
 			};
