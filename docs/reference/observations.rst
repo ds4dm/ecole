@@ -3,9 +3,12 @@
 Observations
 ============
 
-Protocol
---------
-The protocol expected to define a valid observation function is given below.
+Interface
+---------
+The interface expected to define a valid observation function is given below.
+It is not necessary to inherit from this class, as observation functions are defined by
+`structural subtyping <https://mypy.readthedocs.io/en/stable/protocols.html>`_.
+It is exists to support Python type hints.
 
 .. autoclass:: ecole.typing.ObservationFunction
 
@@ -13,6 +16,10 @@ The protocol expected to define a valid observation function is given below.
 Listing
 -------
 The list of observation functions relevant to users is given below.
+
+Nothing
+^^^^^^^
+.. autoclass:: ecole.observation.Nothing
 
 Node Bipartite
 ^^^^^^^^^^^^^^
@@ -26,19 +33,3 @@ Strong Branching Scores
 Pseudocosts
 ^^^^^^^^^^^
 .. autoclass:: ecole.observation.Pseudocosts
-
-Utilities
----------
-The following observation functions are used internally by Ecole.
-
-Nothing
-^^^^^^^
-.. autoclass:: ecole.observation.Nothing
-
-List of Observations
-^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: ecole.observation.VectorFunction
-
-Dictionnary of Observations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: ecole.observation.MapFunction
