@@ -148,18 +148,17 @@ void bind_submodule(py::module_ const& m) {
 		Solving time difference.
 
 		The reward is defined as the amount of time spent solving the instance since the previous state.
-        The solving time is maintained internally by SCIP and is specific to the operating system: it
-        includes presolving and time spent waiting on the agent.
-
-        N.B. Using this reward function will overwrite the `timing/clocktype` SCIP parameter.
+		The solving time is specific to the operating system: it includes time spent in
+		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	solvingtime.def(py::init<bool>(), py::arg("wall") = false, R"(
-		Constructor for SolvingTime.
+		Create a SolvingTime reward function.
 
 		Parameters
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+
 	)");
 	def_operators(solvingtime);
 	def_before_reset(solvingtime, "Reset the internal clock counter.");
