@@ -105,8 +105,8 @@ jobs:
     steps:
       - checkout
       - build_ecole:
-          cmake_options: "-D ENABLE_DOCUMENTATION=ON -D DOXYGEN_WARN_AS_ERROR=ON"
-          target: "ecole-sphinx-check"
+          cmake_options: "-D ENABLE_DOCUMENTATION=ON -D DOC_WARNINGS_AS_ERRORS=ON -D ENABLE_DOCUMENTATION_TESTING=ON"
+          target: "ecole-sphinx"
 
   deploy_doc:
     parameters:
@@ -120,7 +120,7 @@ jobs:
       - checkout
       # Easier/faster to rebuild than to share a workspace
       - build_ecole:
-          cmake_options: "-D ENABLE_DOCUMENTATION=ON -D DOXYGEN_WARN_AS_ERROR=ON"
+          cmake_options: "-D ENABLE_DOCUMENTATION=ON"
           target: "ecole-sphinx"
       - deploy_github:
           build_dir: build/docs/sphinx/html

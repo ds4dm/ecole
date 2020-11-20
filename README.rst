@@ -102,7 +102,7 @@ generate documentation etc. These are more than the dependencies to only use Eco
 
 CMake
 ~~~~~
-`CMake <https://cmake.org/>`_ is a meta-build tool, used for configuring other build tools
+`CMake <https://cmake.org>`_ is a meta-build tool, used for configuring other build tools
 (*e.g.* Make) or IDE's.
 The whole build of Ecole can be done with CMake.
 A one-time configuration is necessary for CMake to find dependencies, detect system

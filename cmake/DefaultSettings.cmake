@@ -44,6 +44,7 @@ macro(set_developer_defaults)
 	endif()
 
 	option(ENABLE_DOCUMENTATION "Build documentation with Doxygen and Sphinx" ON)
+	option(ENABLE_DOCUMENTATION_TESTING "Enable documentation testing" ON)
 
 endmacro()
 
