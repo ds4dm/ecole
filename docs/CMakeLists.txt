@@ -46,10 +46,10 @@ if(ENABLE_DOCUMENTATION_TESTING)
 			"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
 		COMMAND venv-python -m sphinx -q "${SPHINX_WARNINGS_AS_ERRORS}" -b linkcheck
 			-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
-			"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
+			"${SPHINX_SOURCE_DIR}" "${SPHINX_BUILD_DIR}"
 		COMMAND venv-python -m sphinx -q "${SPHINX_WARNINGS_AS_ERRORS}" -b doctest
 			-D breathe_projects.libecole="${DOXYGEN_OUTPUT_DIRECTORY}/xml"
-			"${SPHINX_SOURCE_DIR}" "${SPHINX_HTML_DIR}"
+			"${SPHINX_SOURCE_DIR}" "${SPHINX_BUILD_DIR}"
 		BYPRODUCTS "${SPHINX_BUILD_DIR}"
 		DEPENDS ecole-doxygen ecole-venv
 		COMMENT "Generating documentation with Sphinx"
