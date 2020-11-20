@@ -30,6 +30,7 @@ pybind11_add_module(
 	src/ecole/core/data.cpp
 	src/ecole/core/observation.cpp
 	src/ecole/core/reward.cpp
+	src/ecole/core/information.cpp
 	src/ecole/core/dynamics.cpp
 )
 
@@ -72,7 +73,7 @@ endif()
 set(
 	PYTHON_FILES
 	"py.typed" "typing.py" "version.py"
-	"data.py" "observation.py" "reward.py" "scip.py" "environment.py"
+	"data.py" "observation.py" "reward.py" "information.py" "scip.py" "environment.py"
 	"_set_cover_generator.py"
 	"_combinatorial_auction_generator.py"
 	"_capacitated_facility_location_generator.py"

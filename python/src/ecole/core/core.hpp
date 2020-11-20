@@ -22,6 +22,10 @@ namespace reward {
 void bind_submodule(pybind11::module_ const& m);
 }
 
+namespace information {
+void bind_submodule(pybind11::module_ const& m);
+}
+
 namespace dynamics {
 void bind_submodule(pybind11::module_ const& m);
 }

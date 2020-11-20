@@ -75,5 +75,6 @@ PYBIND11_MODULE(core, m) {
 	data::bind_submodule(m.def_submodule("data"));
 	observation::bind_submodule(m.def_submodule("observation"));
 	reward::bind_submodule(m.def_submodule("reward"));
+	information::bind_submodule(m.def_submodule("information"));
 	dynamics::bind_submodule(m.def_submodule("dynamics"));
 }
