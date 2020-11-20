@@ -37,7 +37,7 @@ value.
 
        def extract(self, model, done):
            # Call parent method to get the original observation
-           obs = super().extract(model)
+           obs = super().extract(model, done)
            # Apply scaling
            column_max_abs = np.abs(obs.column_features).max(0)
            obs.column_features[:] /= column_max_abs
