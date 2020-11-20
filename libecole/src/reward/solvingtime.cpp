@@ -2,34 +2,37 @@
 #include <ctime>
 
 #include "ecole/reward/solvingtime.hpp"
-#include "ecole/scip/model.hpp"
 
 namespace ecole::reward {
 
-const int MUS_IN_SECONDS = 1000000;
+namespace {
+
+auto wall_clock() {
+	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch())
+		.count();
+}
+
+}  // namespace
 
 void SolvingTime::before_reset(scip::Model& /* model */) {
-
 	if (wall) {
-		solving_time_offset =
-			std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch())
-				.count();
+		solving_time_offset = wall_clock();
 	} else {
-		solving_time_offset = std::clock();
+		solving_time_offset = static_cast<long>(std::clock());
 	}
 }
 
 Reward SolvingTime::extract(scip::Model& /* model */, bool /* done */) {
-	double solving_time_diff;
-	long now;
+	double solving_time_diff = 0.0;
+	long now = 0;
 
 	if (wall) {
-		now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch())
-						.count();
-		solving_time_diff = double(now - solving_time_offset) / MUS_IN_SECONDS;
+		static auto constexpr mus_per_seconds = 1000 * 1000;
+		now = wall_clock();
+		solving_time_diff = static_cast<double>(now - solving_time_offset) / mus_per_seconds;
 	} else {
-		now = std::clock();
-		solving_time_diff = double(now - solving_time_offset) / CLOCKS_PER_SEC;
+		now = static_cast<long>(std::clock());
+		solving_time_diff = static_cast<double>(now - solving_time_offset) / CLOCKS_PER_SEC;
 	}
 	solving_time_offset = now;
 	return solving_time_diff;
