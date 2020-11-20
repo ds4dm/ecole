@@ -129,7 +129,7 @@ void bind_submodule(py::module_ const& m) {
 
 		Parameters
 		----------
-		pseudo_candidates : bool
+		pseudo_candidates :
 			The parameter determines if strong branching scores are computed for
 			psuedo-candidate variables if true or LP canidate variables if false.
 			By default psuedo-candidates will be computed.
