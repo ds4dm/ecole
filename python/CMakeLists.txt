@@ -84,16 +84,16 @@ list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecol
 set(PYTHON_COPIED_FILES ${PYTHON_FILES})
 list(TRANSFORM PYTHON_COPIED_FILES PREPEND "${CMAKE_CURRENT_BINARY_DIR}/src/ecole/")
 
-add_custom_command(
-	TARGET ecole-python POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
+add_custom_target(
+	ecole-python-files
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
 	COMMENT "Copying Python files"
 )
 
 if(ENABLE_PYTHON_VENV)
 	add_custom_command(
 		OUTPUT "${CMAKE_BINARY_DIR}/venv"
-		DEPENDS ecole-python
+		DEPENDS ecole-python ecole-python-files
 		COMMAND venv-python -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
 		COMMENT "Installing ecole in virtual environment"
 	)
