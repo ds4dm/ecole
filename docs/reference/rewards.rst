@@ -3,10 +3,8 @@
 Rewards
 =======
 
-Protocol
---------
-The protocol expected to define a valid reward function is given below.
-
+Interface
+---------
 .. autoclass:: ecole.typing.RewardFunction
 
 Listing

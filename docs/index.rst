@@ -85,6 +85,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    reference/environments.rst
    reference/observations.rst
    reference/rewards.rst
+   reference/information.rst
    reference/scip-interface.rst
    reference/instances.rst
    reference/utilities.rst

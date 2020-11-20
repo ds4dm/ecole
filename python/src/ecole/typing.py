@@ -5,7 +5,7 @@ Ecole flexibility relies on
 and therefore requires to explicit the structures at hand.
 """
 
-from typing import TypeVar, Tuple, Iterator, Any, overload
+from typing import TypeVar, Tuple, Dict, Iterator, Any, overload
 
 try:
     from typing import Protocol
@@ -100,47 +100,59 @@ class Dynamics(Protocol[Action, ActionSet]):
         ...
 
 
-class RewardFunction(Protocol):
-    """Class repsonsible for extracting rewards.
+Data = TypeVar("Data")
 
-    Reward functions are objects given to the :py:class:`~ecole.environment.Environment`
-    to extract the reward used for learning.
+
+class DataFunction(Protocol[Data]):
+    """The parent class of all function extracting data from the environment.
+
+    Data functions are a generic alias for :py:class:`~ecole.typing.ObservationFunction`,
+    :py:class:`~ecole.typing.RewardFunction`, and :py:class:`~ecole.typing.InformationFunction`
+    with different data types, such as float for rewards.
+
+    Having a similar interface between them makes it easier to combine them in various ways, such
+    as creating :py:class:`~ecole.typing.ObservationFunction` or :py:class:`~ecole.typing.InformationFunction`
+    from a dictionnary of :py:class:`~ecole.typing.RewardFunction`.
+
+    This class is meant to represent a function of the whole state trajectory/history.
+    However, because it is not feasible to keep all the previous states in memory, this equivalent
+    implementation as a class let the object store information from one transition to another.
+
+    See Also
+    --------
+    RewardFunction
+
     """
 
     def before_reset(self, model: ecole.scip.Model) -> None:
         """Reset internal data at the start of episodes.
 
-        The method is called on new episodes
-        :py:meth:`~ecole.environment.Environment.reset` on the initial state.
-        It can is usually used to reset the observation function internal data.
+        The method is called on new episodes :py:meth:`~ecole.environment.Environment.reset` right before
+        the MDP is actually reset, that is right before the environment calls
+        :py:meth:`~ecole.typing.Dynamics.reset_dynamics`.
+
+        It is usually used to reset the internal data.
 
         Parameters
         ----------
         model:
-            The SCIP model defining the current state of the solver.
+            The :py:class:`~ecole.scip.Model`, model defining the current state of the solver.
 
         """
         ...
 
-    def extract(self, model: ecole.scip.Model, done: bool) -> float:
-        """Extract reward for arriving on given state.
+    def extract(self, model: ecole.scip.Model, done: bool) -> Data:
+        """Extract the data on the given state.
 
-        Extract the reward for arriving on the state given by ``model``.
-        A reward is typically computed by transitioning from a state ``S1`` to a state ``S2``.
-        For perfomance reasons, intermediate states are not kept.
-        The reward function is reponsible for keeping track of relevant information from previous
-        states.
-        This can safely be done in this method as it will only be called *once per state*
-        *i.e.*, this method is not a getter and can have side effects.
-
-        Note that the method is also called on
-        :py:meth:`~ecole.environment.Environment.reset`, after :py:meth:`reset`, to obtain
-        the ``reward_offset``.
+        Extract the data  after transitionning on the new state given by ``model``.
+        The function is reponsible for keeping track of relevant information from previous states.
+        This can safely be done in this method as it will only be called *once per state* *i.e.*,
+        this method is not a getter and can have side effects.
 
         Parameters
         ----------
         model:
-            The SCIP model defining the current state of the solver.
+            The :py:class:`~ecole.scip.Model`, model defining the current state of the solver.
         done:
             A flag indicating wether the state is terminal (as decided by the environment).
 
@@ -153,50 +165,112 @@ class RewardFunction(Protocol):
         ...
 
 
+def _set_docstring(doc):
+    """Decorator to dynamically set docstring."""
+
+    def decorator(func):
+        func.__doc__ = doc
+        return func
+
+    return decorator
+
+
 Observation = TypeVar("Observation")
 
 
-class ObservationFunction(Protocol[Observation]):
+class ObservationFunction(DataFunction[Observation], Protocol[Observation]):
     """Class repsonsible for extracting observations.
 
-    Observation functions are objects given to the
-    :py:class:`~ecole.environment.Environment` to extract the observations used to take the
-    next action.
+    Observation functions are objects given to the :py:class:`~ecole.environment.Environment` to
+    extract the observations used to take the next action.
+
+    This class presents the interface expected to define a valid observation function.
+    It is not necessary to inherit from this class, as observation functions are defined by
+    `structural subtyping <https://mypy.readthedocs.io/en/stable/protocols.html>`_.
+    It is exists to support Python type hints.
+
+    See Also
+    --------
+    DataFunction :
+        Observation function are equivalent to the generic data function, that is a function to
+        extact an arbitrary type of data.
+
     """
 
+    @_set_docstring(DataFunction.before_reset.__doc__)
     def before_reset(self, model: ecole.scip.Model) -> None:
-        """Reset internal data at the start of episodes.
-
-        The method is called on new episodes
-        :py:meth:`~ecole.environment.Environment.reset` on the initial state.
-        It can is usually used to reset the observation function internal data.
-
-        Parameters
-        ----------
-        model:
-            The SCIP model defining the current state of the solver.
-
-        """
         ...
 
+    @_set_docstring(DataFunction.extract.__doc__.replace("data", "observation"))
     def extract(self, model: ecole.scip.Model, done: bool) -> Observation:
-        """Extract observation on a given state.
+        ...
 
-        The observation describe the state and is used for learning.
-        This method will only be called *once per state* *i.e.*, this method is not a getter and
-        can have side effects.
 
-        Parameters
-        ----------
-        model:
-            The SCIP model defining the current state of the solver.
+class RewardFunction(DataFunction[float], Protocol):
+    """Class responsible for extracting rewards.
 
-        Returns
-        -------
-        :
-            The return is passed to the user by the environment.
+    Reward functions are objects given to the :py:class:`~ecole.environment.Environment`
+    to extract the reward used for learning.
 
-        """
+    This class presents the interface expected to define a valid reward function.
+    It is not necessary to inherit from this class, as reward functions are defined by
+    `structural subtyping <https://mypy.readthedocs.io/en/stable/protocols.html>`_.
+    It is exists to support Python type hints.
+
+    Note
+    ----
+    Rewards, or rather reward offset, are also extracted on :py:meth:`~ecole.environment.Environment.reset`.
+    This has no use for learning (since not action has been taken), but is useful when using the cumulative
+    reward sum as a metric.
+
+    See Also
+    --------
+    DataFunction :
+        Reward function are a specific type of generic data function where the data extracted are reward
+        of type ``float``.
+
+    """
+
+    @_set_docstring(DataFunction.before_reset.__doc__)
+    def before_reset(self, model: ecole.scip.Model) -> None:
+        ...
+
+    @_set_docstring(DataFunction.extract.__doc__.replace("data", "reward"))
+    def extract(self, model: ecole.scip.Model, done: bool) -> float:
+        ...
+
+
+Information = TypeVar("Information")
+
+
+class InformationFunction(DataFunction[Dict[str, Information]], Protocol[Information]):
+    """Class repsonsible for extracting the the information dictionnary.
+
+    Information functions are objects given to the :py:class:`~ecole.environment.Environment` to
+    extract the addtional information about the environment.
+
+    A common pattern is use additional :py:class:`ecole.typing.RewardFunction` and
+    :py:class:`ecole.typing.ObservationFunction` to easily create information functions.
+
+    This class presents the interface expected to define a valid information function.
+    It is not necessary to inherit from this class, as information functions are defined by
+    `structural subtyping <https://mypy.readthedocs.io/en/stable/protocols.html>`_.
+    It is exists to support Python type hints.
+
+    See Also
+    --------
+    DataFunction :
+        Information function are a specific type of generic data function where the data extracted
+        are dictionnary of string to any type.
+
+    """
+
+    @_set_docstring(DataFunction.before_reset.__doc__)
+    def before_reset(self, model: ecole.scip.Model) -> None:
+        ...
+
+    @_set_docstring(DataFunction.extract.__doc__.replace("data", "information"))
+    def extract(self, model: ecole.scip.Model, done: bool) -> Dict[str, Information]:
         ...
 
 
