@@ -53,6 +53,7 @@ by :py:meth:`~ecole.environment.Environment.step` does not need to be changed in
 example so we do not override it.
 
 .. testcode::
+   :skipif: pyscipopt is None
 
    import ecole
    from pyscipopt.scip import PY_SCIP_PARAMSETTING
@@ -78,6 +79,7 @@ Now, to use it as a full environent that can manage observations and rewards, we
 
 
 .. testcode::
+   :skipif: pyscipopt is None
 
    class SimpleBranching(ecole.environment.Environment):
        __Dynamics__ = SimpleBranchingDynamics
@@ -91,6 +93,7 @@ We can make the previous example more flexible by deciding what we want to disab
 To do so, we will take parameters in the constructor
 
 .. testcode::
+   :skipif: pyscipopt is None
 
    class SimpleBranchingDynamics(ecole.environment.BranchingDynamics):
 
@@ -120,6 +123,7 @@ To do so, we will take parameters in the constructor
 The constructor arguments are forwarded from the :py:meth:`~ecole.environment.EnvironmentComposer.__init__` constructor:
 
 .. testcode::
+   :skipif: pyscipopt is None
 
    env = SimpleBranching(observation_function=None, disable_cuts=False)
 

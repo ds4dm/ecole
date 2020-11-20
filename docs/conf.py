@@ -37,15 +37,21 @@ extensions = [
 # Test code sample in documentation
 extensions += ["sphinx.ext.doctest"]
 # Patching ecole.scip.Model.from_file and write_problem globally to be able to put fake paths
+#  Also try import pyscipopt for disable test if it is not available
 doctest_global_setup = """
 import unittest.mock
 import ecole
 
-generator = ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200)
-read_patcher = unittest.mock.patch("ecole.core.scip.Model.from_file", side_effect=generator)
-read_patcher.start()
-write_patcher = unittest.mock.patch("ecole.core.scip.Model.write_problem", side_effect=generator)
-write_patcher.start()
+_generator = ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200)
+_read_patcher = unittest.mock.patch("ecole.core.scip.Model.from_file", side_effect=_generator)
+_read_patcher.start()
+_write_patcher = unittest.mock.patch("ecole.core.scip.Model.write_problem")
+_write_patcher.start()
+
+try:
+    import pyscipopt
+except ImportError:
+    pyscipopt = None
 """
 
 # Math setting
