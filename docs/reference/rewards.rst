@@ -29,6 +29,12 @@ NNodes
    :no-members:
    :members: before_reset, extract
 
+Solving Time
+^^^^^^^^^^^^
+.. autoclass:: ecole.reward.SolvingTime
+   :no-members:
+   :members: before_reset, extract
+
 
 Utilities
 ---------
