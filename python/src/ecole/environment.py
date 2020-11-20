@@ -9,7 +9,7 @@ class Environment:
     __Dynamics__ = None
     __DefaultObservationFunction__ = ecole.observation.Nothing
     __DefaultRewardFunction__ = ecole.reward.IsDone
-    __DefaultInformationFunction__ = ecole.data.MapFunction
+    __DefaultInformationFunction__ = ecole.information.Nothing
 
     def __init__(
         self,
