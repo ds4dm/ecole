@@ -90,6 +90,7 @@ add_custom_target(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
 	COMMENT "Copying Python files"
 )
+add_dependencies(ecole-python ecole-python-files)
 
 if(ENABLE_PYTHON_VENV)
 	add_custom_command(
