@@ -19,6 +19,7 @@ repos:
         args: [--style=file, -i]
       - id: clang-tidy
         args: [--fix, --fix-errors]
+        require_serial: true  # Set parallelism to one otherwise it gwt out of memory on CircleCI.
   - repo: https://github.com/psf/black
     rev: 19.10b0
     hooks:

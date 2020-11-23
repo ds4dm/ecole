@@ -196,6 +196,7 @@ commands:
           environment:
             PRE_COMMIT_HOME: &pre_commit_cache_dir /cache/precommit
           name: "Run pre-commit checks"
+          no_output_timeout: 30m
           command: python -m pre_commit run --all-files
       - save_cache:
           key: *pre_commit_cache_key
