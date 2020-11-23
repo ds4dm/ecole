@@ -194,6 +194,8 @@ commands:
             - precommit-v1.1-{{ arch }}-
       - run:
           environment:
+            # Remove parallelism for clang-tidy that goes out of memory otherwise
+            PRE_COMMIT_NO_CONCURRENCY: "True"
             PRE_COMMIT_HOME: &pre_commit_cache_dir /cache/precommit
           name: "Run pre-commit checks"
           no_output_timeout: 30m
