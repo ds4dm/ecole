@@ -21,6 +21,7 @@ public:
 		double budget_factor = 1.5;      // NOLINT(readability-magic-numbers)
 		double resale_factor = 0.5;      // NOLINT(readability-magic-numbers)
 		double integers = false;         // NOLINT(readability-magic-numbers)
+		bool warnings = false;			 // NOLINT(readability-magic-numbers)
 	};
 
 	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);

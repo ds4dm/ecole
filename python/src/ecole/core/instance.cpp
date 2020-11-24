@@ -160,6 +160,7 @@ void bind_submodule(py::module const& m) {
 		Member{"budget_factor", &CombinatorialAuctionGenerator::Parameters::budget_factor},
 		Member{"resale_factor", &CombinatorialAuctionGenerator::Parameters::resale_factor},
 		Member{"integers", &CombinatorialAuctionGenerator::Parameters::integers},
+		Member{"warnings", &CombinatorialAuctionGenerator::Parameters::warnings},
 	};
 	// Bind CombinatorialAuctionGenerator and remove intermediate Parameter class
 	auto combinatorial_auction_gen = py::class_<CombinatorialAuctionGenerator>{m, "CombinatorialAuctionGenerator"};
@@ -197,6 +198,8 @@ void bind_submodule(py::module const& m) {
 			The resale factor for each bidder, relative to their initial bid's resale value.
 		integers:
 			Determines if the bid prices should be integral.
+		warnings:
+			Determines if warnings should be printed when invalid bundles are skipped in instance generation.  
 		random_engine:
 			The random number generator used to peform all sampling.
 
