@@ -36,6 +36,7 @@ void CombinatorialAuctionGenerator::seed(Seed seed) {
 namespace {
 
 using std::size_t;
+using vector = std::vector<size_t>;
 using xvector = xt::xtensor<double, 1>;
 using xvector_size_t = xt::xtensor<size_t, 1>;
 using xmatrix = xt::xtensor<double, 2>;
@@ -60,6 +61,7 @@ auto arg_choice_without_replacement(size_t n_samples, xvector weights, RandomEng
 		for (size_t j = 0; j < n_items - 1; ++j) {
 			if (samples[i] >= weights_cumsum[j] && samples[i] <= weights_cumsum[j + 1]) {
 				index = j;
+				break;
 			}
 		}
 		indices[i] = index;
@@ -96,11 +98,11 @@ auto add_var(SCIP* scip, size_t i, double price) {
 /** Adds all constraints to the SCIP model.
  *
  */
-auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<std::vector<size_t>> bids_per_item) {
+auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<vector> bids_per_item) {
 
 	for (size_t i = 0; i < bids_per_item.size(); ++i) {
 
-		std::vector<size_t> item_bids = bids_per_item[i];
+		vector item_bids = bids_per_item[i];
 
 		if (item_bids.size() > 0) {
 			auto cons_vars = xt::xtensor<SCIP_VAR*, 1>{{item_bids.size()}};
@@ -125,9 +127,6 @@ auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<std
 
 scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
 
-	// TODO: implement logging.
-	bool log = false;
-
 	assert(parameters.min_value >= 0 && parameters.max_value >= parameters.min_value);
 	assert(parameters.add_item_prob >= 0 && parameters.add_item_prob <= 1);
 
@@ -145,7 +144,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	size_t n_dummy_items = 0;
 	size_t bid_index = 0;
 
-	std::vector<std::vector<size_t>> bids_bundle;
+	std::vector<vector> bids_bundle;
 	std::vector<double> bids_price;
 
 	while (bid_index < parameters.n_bids) {
@@ -155,7 +154,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		xvector private_values = values + parameters.max_value * parameters.value_deviation * (2 * private_interests - 1);
 
 		// substitutable bids of this bidder
-		std::map<std::vector<size_t>, double> bidder_bids = {};
+		std::map<vector, double> bidder_bids = {};
 
 		// generate initial bundle, choose first item according to bidder interests
 		xvector probs = private_interests / xt::sum(private_interests);
@@ -167,7 +166,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		// add additional items, according to bidder interests and item compatibilities
 		while (true) {
 			double sampled_prob = xt::random::rand({1}, 0.0, 1.0, random_engine)[0];
-			if (sampled_prob > parameters.add_item_prob) {
+			if (sampled_prob >= parameters.add_item_prob) {
 				break;
 			}
 
@@ -180,7 +179,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			bundle_mask(item) = 1;
 		}
 
-		auto bundle = xt::nonzero(bundle_mask)[0];
+		vector bundle = xt::nonzero(bundle_mask)[0];
 
 		// get price of bundle
 		xvector private_values_slice = xt::index_view(private_values, bundle);
@@ -192,16 +191,18 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			price = floor(price);
 		}
 
-		if (log && price < 0) {
-			// TODO: Logger implementation
-			std::cout << "log: price < 0 **" << std::endl;
+		// restart bid if price < 0
+		if (price < 0) {
+			if (parameters.warnings) {
+				std::cout << "warning: negatively priced bundle avoided" << std::endl;
+			}
+			continue;
 		}
 
-		std::vector<size_t> bundle_vector(bundle.begin(), bundle.end());
-		bidder_bids[bundle_vector] = price;
+		bidder_bids[bundle] = price;
 
 		// get sub-bundles
-		std::vector<std::vector<size_t>> sub_candidates_bundle;
+		std::vector<vector> sub_candidates_bundle;
 		std::vector<double> sub_candidates_price;
 
 		for (size_t i = 0; i < bundle.size(); ++i) {
@@ -215,7 +216,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			// add additional items, according to bidder interests and item compatibilities
 			while (true) {
 				size_t sub_mask_sum = static_cast<size_t>(xt::sum(sub_bundle_mask)());
-				if (sub_mask_sum > bundle.size()) {
+				if (sub_mask_sum >= bundle.size()) {
 					break;
 				}
 
@@ -223,8 +224,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 				sub_bundle_mask(sub_item) = 1;
 			}
 
-			auto sub_bundle = xt::nonzero(sub_bundle_mask)[0];
-			std::vector<size_t> sub_bundle_vector(sub_bundle.begin(), sub_bundle.end());
+			vector sub_bundle = xt::nonzero(sub_bundle_mask)[0];
 
 			// get price of sub-bundle
 			xvector sub_private_values_slice = xt::index_view(private_values, sub_bundle);
@@ -236,11 +236,10 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 				sub_price = floor(sub_price);
 			}
 
-			sub_candidates_bundle.push_back(sub_bundle_vector);
+			sub_candidates_bundle.push_back(sub_bundle);
 			sub_candidates_price.push_back(sub_price);
 		}
 
-		//
 		double budget = parameters.budget_factor * price;
 
 		xvector value_slice = xt::index_view(values, bundle);
@@ -250,42 +249,47 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		xvector price_tensor = xt::adapt(sub_candidates_price, {sub_candidates_price.size()});
 		xvector_size_t sorted_indices = xt::argsort(price_tensor);
 
-		for (size_t i = 0; i < sorted_indices.size(); ++i) {
-			auto bundle_i = sub_candidates_bundle[sorted_indices(i)];
-			auto price_i = sub_candidates_price[sorted_indices(i)];
+		// get XOR bids, higher priced candidates first
+		for (size_t i = 0; i < sorted_indices.size() ; ++i) {
+			size_t idx = sorted_indices.size() - i - 1;
+			auto bundle_i = sub_candidates_bundle[sorted_indices(idx)];
+			auto price_i = sub_candidates_price[sorted_indices(idx)];
 
 			if (bidder_bids.size() >= parameters.max_n_sub_bids + 1 || bid_index + bidder_bids.size() >= parameters.n_bids) {
 				break;
 			}
 
-			if (log && price_i < 0) {
-				// TODO: Logger implementation
-				std::cout << "log: price < 0" << std::endl;
+			if (price_i < 0) {
+				if (parameters.warnings) {
+					std::cout << "warning: negatively priced substitutable bundle avoided" << std::endl;
+				}
 				continue;
 			}
 
-			if (log && price_i > budget) {
-				// TODO: Logger implementation
-				std::cout << "log: price > budget" << std::endl;
+			if (price_i > budget) {
+				if (parameters.warnings) {
+					std::cout << "warning: over priced substitutable bundle avoided" << std::endl;
+				}
 				continue;
 			}
 
 			xvector value_slice_i = xt::index_view(values, bundle_i);
 			double value_slice_sum_i = xt::sum(value_slice)();
-			if (log && value_slice_sum_i < min_resale_value) {
-				// TODO: Logger implementation
-				std::cout << "log: sum < min_resale_value" << std::endl;
+			if (value_slice_sum_i < min_resale_value) {
+				if (parameters.warnings) {
+					std::cout << "warning: substitutable bundle below min resale value avoided" << std::endl;
+				}
 				continue;
 			}
 
-			std::vector<size_t> bundle_vector_i(bundle_i.begin(), bundle_i.end());
-			if (log && bidder_bids.count(bundle_vector_i)) {
-				// TODO: Logger implementation
-				std::cout << "log: duplicate bid" << std::endl;
+			if (bidder_bids.count(bundle_i)) { // REPL
+				if (parameters.warnings) {
+					std::cout << "warning: duplicated substitutable bundle avoided" << std::endl;
+				}
 				continue;
 			}
 
-			bidder_bids[bundle_vector_i] = price_i;
+			bidder_bids[bundle_i] = price_i;
 		}
 
 		size_t dummy_item = 0;
@@ -295,9 +299,9 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		}
 
 		// add bids
-		std::map<std::vector<size_t>, double>::iterator it;
+		std::map<vector, double>::iterator it;
 		for (it = bidder_bids.begin(); it != bidder_bids.end(); ++it) {
-			std::vector<size_t> bund = it->first;
+			vector bund = it->first;
 			if (dummy_item) {
 				bund.push_back(dummy_item);
 			}
@@ -314,16 +318,16 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	scip::call(SCIPsetObjsense, scip, SCIP_OBJSENSE_MAXIMIZE);
 
 	//  initialize bids_per_item vector
-	std::vector<std::vector<size_t>> bids_per_item;
+	std::vector<vector> bids_per_item;
 	for (size_t i = 0; i < parameters.n_items + n_dummy_items; ++i) {
-		std::vector<size_t> bids_per_item_i;
+		vector bids_per_item_i;
 		bids_per_item.push_back(bids_per_item_i);
 	}
 
 	// add variables
 	auto vars = xt::xtensor<SCIP_VAR*, 1>{{bids_bundle.size()}};
 	for (size_t i = 0; i < bids_bundle.size(); ++i) {
-		std::vector<size_t> bundle_i = bids_bundle[i];
+		vector bundle_i = bids_bundle[i];
 		double price_i = bids_price[i];
 
 		// add variable to pyscipopt
