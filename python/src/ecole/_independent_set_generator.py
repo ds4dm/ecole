@@ -19,7 +19,7 @@ class IndependentSetGenerator:
         The parameters passed in this constructor will be used when a user calls next() or iterates
         over the object.
 
-        Parameters:
+        Parameters
         ----------
         n_nodes:
             The number of nodes in the graph.
@@ -171,7 +171,7 @@ class Graph:
 
         The parameters passed are identify a graph.
 
-        Parameters:
+        Parameters
         ----------
         n_nodes:
             The number of nodes in the graph.

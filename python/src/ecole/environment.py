@@ -5,6 +5,11 @@ from ecole.core.dynamics import *
 
 
 class Environment:
+    """Ecole Partially Observable Markov Decision Process (POMDP).
+
+    Similar to OpenAI Gym, environments represent the environment that an agent is supposed to solved.
+    For maximum customizability, different components are composed/orchestrated in this class.
+    """
 
     __Dynamics__ = None
     __DefaultObservationFunction__ = ecole.observation.Nothing
@@ -19,6 +24,26 @@ class Environment:
         scip_params=None,
         **dynamics_kwargs
     ) -> None:
+        """Create a new environment object.
+
+        Parameters
+        ----------
+        observation_function:
+            An object of type :py:class:`~ecole.observation.ObservationFunction` used to custotize what
+            observation are returned in :meth:`reset` and :meth:`step`.
+        reward_function:
+            An object of type :py:class:`~ecole.reward.RewardFunction` used to customize what reward
+            are returned in :meth:`reset` and :meth:`step`.
+        information_function:
+            An object of type :py:class:`~ecole.information.InformationFunction` used to customize what
+            additional information are returned in :meth:`reset` and :meth:`step`.
+        scip_params:
+            Parameters set on the underlying :py:class:`~ecole.scip.Model` on every episode.
+        **dynamics_kwargs:
+            Other arguments are passed to the constructor of the :py:class:`~ecole.typing.Dynamics`.
+
+        """
+
         self.observation_function = ecole.data.parse(
             observation_function, self.__DefaultObservationFunction__()
         )
@@ -42,7 +67,7 @@ class Environment:
         Parameters
         ----------
         instance:
-            The combinatorial optimization problem to tackle during the newly started
+            The combinatorial optimization problem to tackle during the newly startedre
             episode.
             Either a file path to an instance that can be read by SCIP, or a `Model` whose problem
             definition data will be copied.

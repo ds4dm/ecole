@@ -10,7 +10,7 @@ class CapacitatedFacilityLocationGenerator:
         The parameters passed in this constructor will be used when a user calls next() or iterates
         over the object.
 
-        Parameters:
+        Parameters
         ----------
         n_customers
             The number of customers.

@@ -29,10 +29,10 @@ version_major, version_minor, version_patch = read_version(PROJECT_DIR / "VERSIO
 version = f"{version_major}.{version_minor}"
 release = f"{version_major}.{version_minor}.{version_patch}"
 
-extensions = [
-    "sphinx.ext.autodoc",  # Read doc from Python docstrings
-    "sphinx.ext.viewcode",  # Show [source] link to source code
-]
+extensions = []
+
+# Show [source] link to source code
+extensions += ["sphinx.ext.viewcode"]
 
 # Test code sample in documentation
 extensions += ["sphinx.ext.doctest"]
@@ -88,6 +88,7 @@ templates_path = ["_templates"]
 extensions += ["sphinx.ext.autodoc"]
 autodoc_default_options = {
     "members": True,  # Document all members
+    "special-members": "__init__",  # Document these dunder methods
     "undoc-members": True,
 }
 
