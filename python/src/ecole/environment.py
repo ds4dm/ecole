@@ -44,6 +44,8 @@ class Environment:
         instance:
             The combinatorial optimization problem to tackle during the newly started
             episode.
+            Either a file path to an instance that can be read by SCIP, or a `Model` whose problem
+            definition data will be copied.
         dynamics_args:
             Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
         dynamics_kwargs:
@@ -75,7 +77,7 @@ class Environment:
         self.can_transition = True
         try:
             if isinstance(instance, ecole.core.scip.Model):
-                self.model = instance
+                self.model = instance.copy_orig()
             else:
                 self.model = ecole.core.scip.Model.from_file(instance)
             self.model.set_params(self.scip_params)
