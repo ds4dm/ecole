@@ -9,6 +9,7 @@
 
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/row.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
@@ -122,41 +123,13 @@ auto extract_col_feat(scip::Model const& model) {
 	return col_feat;
 }
 
-/******************************************
- *  Column features extraction functions  *
- ******************************************/
+/***************************************
+ *  Row features extraction functions  *
+ ***************************************/
 
 scip::real row_l2_norm(scip::Row* const row) noexcept {
 	auto const norm = SCIProwGetNorm(row);
 	return norm > 0 ? norm : 1.;
-}
-
-std::optional<scip::real> left_hand_side(Scip* const scip, scip::Row* const row) noexcept {
-	auto const lhs_val = SCIProwGetLhs(row);
-	if (SCIPisInfinity(scip, std::abs(lhs_val))) {
-		return {};
-	}
-	return lhs_val - SCIProwGetConstant(row);
-}
-
-std::optional<scip::real> right_hand_side(Scip* const scip, scip::Row* const row) noexcept {
-	auto const rhs_val = SCIProwGetRhs(row);
-	if (SCIPisInfinity(scip, std::abs(rhs_val))) {
-		return {};
-	}
-	return rhs_val - SCIProwGetConstant(row);
-}
-
-bool is_at_lhs(Scip* const scip, scip::Row* const row) noexcept {
-	auto const activity = SCIPgetRowLPActivity(scip, row);
-	auto const lhs_val = SCIProwGetLhs(row);
-	return SCIPisEQ(scip, activity, lhs_val);
-}
-
-bool is_at_rhs(Scip* const scip, scip::Row* const row) noexcept {
-	auto const activity = SCIPgetRowLPActivity(scip, row);
-	auto const rhs_val = SCIProwGetRhs(row);
-	return SCIPisEQ(scip, activity, rhs_val);
 }
 
 scip::real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
@@ -176,8 +149,8 @@ std::size_t n_ineq_rows(scip::Model const& model) {
 	auto* const scip = model.get_scip_ptr();
 	std::size_t count = 0;
 	for (auto* row : model.lp_rows()) {
-		count += static_cast<std::size_t>(left_hand_side(scip, row).has_value());
-		count += static_cast<std::size_t>(right_hand_side(scip, row).has_value());
+		count += static_cast<std::size_t>(scip::get_unshifted_lhs(scip, row).has_value());
+		count += static_cast<std::size_t>(scip::get_unshifted_rhs(scip, row).has_value());
 	}
 	return count;
 }
@@ -194,11 +167,11 @@ auto extract_row_feat(scip::Model const& model) {
 		value_type const sign = lhs ? -1. : 1.;
 		auto row_norm = static_cast<value_type>(row_l2_norm(row));
 		if (lhs) {
-			*(iter++) = sign * left_hand_side(scip, row).value() / row_norm;
-			*(iter++) = static_cast<value_type>(is_at_lhs(scip, row));
+			*(iter++) = sign * scip::get_unshifted_lhs(scip, row).value() / row_norm;
+			*(iter++) = static_cast<value_type>(scip::is_at_lhs(scip, row));
 		} else {
-			*(iter++) = sign * right_hand_side(scip, row).value() / row_norm;
-			*(iter++) = static_cast<value_type>(is_at_rhs(scip, row));
+			*(iter++) = sign * scip::get_unshifted_rhs(scip, row).value() / row_norm;
+			*(iter++) = static_cast<value_type>(scip::is_at_rhs(scip, row));
 		}
 		*(iter++) = static_cast<value_type>(SCIProwGetAge(row)) / (n_lps + cste);
 		*(iter++) = sign * obj_cos_sim(scip, row);
@@ -208,10 +181,10 @@ auto extract_row_feat(scip::Model const& model) {
 	auto* iter_ = row_feat.begin();
 	for (auto* const row_ : model.lp_rows()) {
 		// Rows are counted once per rhs and once per lhs
-		if (left_hand_side(scip, row_).has_value()) {
+		if (scip::get_unshifted_lhs(scip, row_).has_value()) {
 			extract_row(iter_, row_, true);
 		}
-		if (right_hand_side(scip, row_).has_value()) {
+		if (scip::get_unshifted_rhs(scip, row_).has_value()) {
 			extract_row(iter_, row_, false);
 		}
 	}
@@ -236,10 +209,10 @@ auto matrix_nnz(scip::Model const& model) {
 	std::size_t nnz = 0;
 	for (auto* row : model.lp_rows()) {
 		auto const row_size = static_cast<std::size_t>(SCIProwGetNLPNonz(row));
-		if (left_hand_side(scip, row).has_value()) {
+		if (scip::get_unshifted_lhs(scip, row).has_value()) {
 			nnz += row_size;
 		}
-		if (right_hand_side(scip, row).has_value()) {
+		if (scip::get_unshifted_rhs(scip, row).has_value()) {
 			nnz += row_size;
 		}
 	}
@@ -260,7 +233,7 @@ utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
 		auto* const row_cols = SCIProwGetCols(row);
 		auto const* const row_vals = SCIProwGetVals(row);
 		auto const row_nnz = static_cast<std::size_t>(SCIProwGetNLPNonz(row));
-		if (left_hand_side(scip, row).has_value()) {
+		if (scip::get_unshifted_lhs(scip, row).has_value()) {
 			for (std::size_t k = 0; k < row_nnz; ++k) {
 				indices(0, j + k) = i;
 				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetLPPos(row_cols[k]));
@@ -269,7 +242,7 @@ utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
 			j += row_nnz;
 			i++;
 		}
-		if (right_hand_side(scip, row).has_value()) {
+		if (scip::get_unshifted_rhs(scip, row).has_value()) {
 			for (std::size_t k = 0; k < row_nnz; ++k) {
 				indices(0, j + k) = i;
 				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetLPPos(row_cols[k]));

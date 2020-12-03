@@ -4,10 +4,13 @@ add_library(
 	libecole
 	src/version.cpp
 	src/random.cpp
+	src/exception.cpp
+	src/utility/reverse-control.cpp
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
 	src/scip/exception.cpp
-	src/utility/reverse-control.cpp
+	src/scip/row.cpp
+
 	src/reward/isdone.cpp
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
@@ -17,7 +20,6 @@ add_library(
 	src/observation/pseudocosts.cpp
 	src/dynamics/branching.cpp
 	src/dynamics/configuring.cpp
-	src/exception.cpp
 )
 set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 
