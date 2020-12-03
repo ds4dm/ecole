@@ -226,7 +226,7 @@ class CombinatorialAuctionGenerator:
 
             # drop negativaly priced bundles
             if price < 0:
-                logger.warning("Negatively priced bundle avoided")
+                logger.debug("Negatively priced bundle avoided")
                 continue
 
             # bid on initial bundle
@@ -269,19 +269,19 @@ class CombinatorialAuctionGenerator:
                     break
 
                 if price < 0:
-                    logger.warning("Negatively priced substitutable bundle avoided")
+                    logger.debug("Negatively priced substitutable bundle avoided")
                     continue
 
                 if price > budget:
-                    logger.warning("Over priced substitutable bundle avoided")
+                    logger.debug("Over priced substitutable bundle avoided")
                     continue
 
                 if values[bundle].sum() < min_resale_value:
-                    logger.warning("Substitutable bundle below min resale value avoided")
+                    logger.debug("Substitutable bundle below min resale value avoided")
                     continue
 
                 if frozenset(bundle) in bidder_bids:
-                    logger.warning("Duplicated substitutable bundle avoided")
+                    logger.debug("Duplicated substitutable bundle avoided")
                     continue
 
                 bidder_bids[frozenset(bundle)] = price
