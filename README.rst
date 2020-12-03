@@ -87,7 +87,7 @@ Install everything in a development (named ``ecole``) environment using
 
 .. code-block:: bash
 
-   conda env create -n ecole -f conda-dev.yml
+   conda env create -n ecole -f dev/conda.yaml
 
 For the following, the ``ecole`` environment always needs to be activated.
 
