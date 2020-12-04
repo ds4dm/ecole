@@ -38,7 +38,16 @@ workflows:
             branches:
               only:
                 - "master"
-                - '/^v\d+\.\d+\.x/'
+                - '/^v\d+\.\d+\.x/'  # E.g. v4.13.x
+
+  release:
+    jobs:
+      - check_version:
+          filters:  # Only runs on tag such as v3.0.23
+            branches:
+              ignore: '/.*/'
+            tags:
+              only: '/^v\d+\.\d+\.\d+/'
 
 
 # Execute a set of commands in a clean image
@@ -130,6 +139,21 @@ jobs:
           git_user: "BotEcole"
           git_email: "BotEcole@users.noreply.github.com"
           ssh_fingerprints: "a9:13:fc:02:79:6c:60:8a:72:b1:c3:87:6c:5e:06:32"
+
+  check_version:
+    docker:
+      - image: "cimg/base:2020.12"
+        auth: *dockerhub_auth
+    steps:
+      - checkout
+      - run:
+          name: "Verifiying version file matches tag"
+          command: |
+            for part in 1 2 3 ; do
+              tag_part="$( echo $CIRCLE_TAG | sed s/v// | cut -d '.' -f $part )"
+              file_part="$( sed $part'q;d' VERSION |  cut -d ' ' -f 2 )"
+              [ $tag_part -eq $file_part ]
+            done
 
 
 # Reusable set of instructions to be used in jobs
