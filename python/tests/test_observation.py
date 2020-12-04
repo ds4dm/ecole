@@ -72,6 +72,10 @@ def test_NodeBipartite_observation(solving_model):
     assert_array(obs.edge_features.values)
     assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
 
+    # Check that there are enums describing feeatures
+    assert len(O.NodeBipartiteObs.ColumnFeatures.__members__) == 19
+    assert len(O.NodeBipartiteObs.RowFeatures.__members__) == 5
+
 
 def test_StrongBranchingScores_observation(solving_model):
     """Observation of StrongBranchingScores is a numpy array."""
