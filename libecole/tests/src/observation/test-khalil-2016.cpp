@@ -28,8 +28,8 @@ TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 
 	auto obs_func = observation::Khalil2016{};
 	auto model = get_solving_model();
-	obs_func.reset(model);
-	auto const optional_obs = obs_func.obtain_observation(model);
+	obs_func.before_reset(model);
+	auto const optional_obs = obs_func.extract(model, false);
 
 	SECTION("Observation is not empty on non terminal state") { REQUIRE(optional_obs.has_value()); }
 
