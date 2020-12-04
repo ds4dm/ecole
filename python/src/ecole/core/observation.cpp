@@ -199,7 +199,7 @@ void bind_submodule(py::module_ const& m) {
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
 	)");
 	khalil_2016.def(py::init<>());
-	def_reset(khalil_2016, R"(Precompute static features for all varaible columns.)");
+	def_before_reset(khalil_2016, R"(Precompute static features for all varaible columns.)");
 	def_extract(khalil_2016, "Extract the observation matrix.");
 }
 

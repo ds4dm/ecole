@@ -793,11 +793,11 @@ auto extract_all_features(scip::Model const& model, xt::xtensor<value_type, 2> c
  *  Observation extracting function  *
  *************************************/
 
-void Khalil2016::reset(scip::Model& model) {
+void Khalil2016::before_reset(scip::Model& model) {
 	static_features = extract_static_features(model);
 }
 
-auto Khalil2016::obtain_observation(scip::Model& model) -> std::optional<Khalil2016Obs> {
+auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<Khalil2016Obs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		return extract_all_features(model, static_features);
 	}

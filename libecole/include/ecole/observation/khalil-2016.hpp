@@ -108,8 +108,9 @@ public:
 		};
 	};
 
-	void reset(scip::Model& model) override;
-	std::optional<Khalil2016Obs> obtain_observation(scip::Model& model) override;
+	void before_reset(scip::Model& model) override;
+
+	std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
 
 private:
 	xt::xtensor<Khalil2016Obs::value_type, 2> static_features;
