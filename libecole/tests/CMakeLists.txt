@@ -44,6 +44,8 @@ add_executable(
 	src/dynamics/test-configuring.cpp
 
 	src/environment/test-environment.cpp
+
+	src/utility/test-sparse-matrix.cpp
 )
 
 target_compile_definitions(
