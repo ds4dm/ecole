@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <string>
 
 namespace ecole {
 
@@ -24,5 +25,15 @@ auto seed(Seed val) -> void;
  * in a non deterministic order.
  */
 auto spawn_random_engine() -> RandomEngine;
+
+/**
+ * Convert the state of the random engine to a string.
+ */
+auto serialize(RandomEngine const& engine) -> std::string;
+
+/**
+ * Convert a string representing the state of a random engine to a random engine.
+ */
+auto deserialize(std::string const& data) -> RandomEngine;
 
 }  // namespace ecole

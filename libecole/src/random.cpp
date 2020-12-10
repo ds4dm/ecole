@@ -1,4 +1,6 @@
+#include <locale>
 #include <mutex>
+#include <sstream>
 
 #include "ecole/random.hpp"
 
@@ -31,6 +33,27 @@ auto seed(Seed val) -> void {
 auto spawn_random_engine() -> RandomEngine {
 	return RandomEngineManager::get().spawn();
 }
+
+// Not efficient, but operator<< is the only thing we have
+auto serialize(RandomEngine const& engine) -> std::string {
+	auto osstream = std::ostringstream{};
+	osstream.imbue(std::locale("C"));
+	osstream << engine;
+	return std::move(osstream).str();
+}
+
+// Not efficient, but operator>> is the only thing we have
+auto deserialize(std::string const& data) -> RandomEngine {
+	auto engine = RandomEngine{};  // NOLINT need not be seeded since we set its state
+	auto isstream = std::istringstream{data};
+	isstream.imbue(std::locale("C"));
+	std::move(isstream) >> engine;
+	return engine;
+}
+
+/*******************************************
+ *  Implementation of RandomEngineManager  *
+ *******************************************/
 
 namespace {
 
