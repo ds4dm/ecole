@@ -1,6 +1,7 @@
 #define FORCE_IMPORT_ARRAY
 
 #include <limits>
+#include <memory>
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -63,8 +64,16 @@ PYBIND11_MODULE(core, m) {
 
 			The state of the engine is advanced by one position.
 		)")
-		.def(py::self == py::self)   // NOLINT(misc-redundant-expression)  pybind specific syntax
-		.def(py::self != py::self);  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(py::self == py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(py::self != py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def("__copy__", [](const RandomEngine& self) { return std::make_unique<RandomEngine>(self); })
+		.def(
+			"__deepcopy__",
+			[](const RandomEngine& self, py::dict const& /* memo */) { return std::make_unique<RandomEngine>(self); },
+			py::arg("memo"))
+		.def(py::pickle(
+			[](RandomEngine const& self) { return serialize(self); },
+			[](std::string const& data) { return std::make_unique<RandomEngine>(deserialize(data)); }));
 
 	m.def("seed", &ecole::seed, py::arg("val"), "Seed the global source of randomness in Ecole.");
 	m.def("spawn_random_engine", &ecole::spawn_random_engine, R"(
