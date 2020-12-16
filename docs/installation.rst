@@ -3,17 +3,23 @@ Installation
 
 Conda
 -----
-.. include:: ../README.rst
-   :start-after: CONDA_INSTALL_START
-   :end-before: CONDA_INSTALL_END
+.. code-block:: bash
 
+   conda install -c scipopt -c conda-forge ecole
+
+`PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is not required but is the main SCIP
+interface to develop new Ecole components from Python
+
+.. code-block:: bash
+
+   conda install -c scipopt -c conda-forge ecole pyscipopt
+
+Currenlty, conda packages are only available for Linux and MacOS.
 
 Pip
 ---
-We plan to deploy builds on PyPI.
+Currently unavailable.
 
 From Source
 -----------
-.. include:: ../README.rst
-   :start-after: SOURCE_INSTALL_START
-   :end-before: SOURCE_INSTALL_END
+Source builds currently require following the contributing instructions.
