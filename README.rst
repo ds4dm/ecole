@@ -40,8 +40,13 @@ meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possi
           obs, action_set, reward, done, info = env.step(action_set[0])
 
 
-- Consult the `user Documentation <https://doc.ecole.ai>`_ for tutorials, examples, and library reference.
-- Head to `Github Discussions <https://github.com/ds4dm/ecole/discussions>`_ for interaction with the community: give
+Documentation
+-------------
+Consult the `user Documentation <https://doc.ecole.ai>`_ for tutorials, examples, and library reference.
+
+Discussions and help
+--------------------
+Head to `Github Discussions <https://github.com/ds4dm/ecole/discussions>`_ for interaction with the community: give
   and recieve help, discuss intresting envirnoment, rewards function, and instances generators.
 
 Installation
