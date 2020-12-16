@@ -72,7 +72,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    howto/instances.rst
 
 .. toctree::
-   :caption: Tutorials
+   :caption: Practical Tutorials
    :hidden:
 
    Configuring the Solver with Bandits <https://github.com/ds4dm/ecole/tree/master/examples/configuring-bandits.ipynb>

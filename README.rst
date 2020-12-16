@@ -73,8 +73,22 @@ Pip
 Currently unavailable
 
 From Source
-^^^^^^^^^^^
-Source builds currently require following the contributing instructions.
+-----------
+Source builds currently require ``conda`` to fetch the dependencies.
+
+.. code-block:: bash
+
+   conda env create -n ecole -f dev/conda.yaml
+   conda activate ecole
+   cmake -B build/
+   cmake --build build/ --parallel
+   python -m pip install build/python
+
+
+.. warning::
+
+   This mode of installation is not mature.
+   In particular, the scip library may not be found when installed outside of the ``ecole`` environemnt.
 
 
 Use It, Cite It
