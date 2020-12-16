@@ -97,3 +97,9 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    discussion/gym-differences.rst
    discussion/seeding.rst
    discussion/theory.rst
+
+.. toctree::
+   :caption: Developer Zone
+   :hidden:
+
+   contributing.rst
