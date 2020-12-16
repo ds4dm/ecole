@@ -1,7 +1,7 @@
 .. image:: docs/_static/images/ecole-logo.svg
    :target: https://www.ecole.ai
    :alt: Ecole logo
-   :width: 40 %
+   :width: 30 %
    :align: right
 
 Ecole
@@ -39,6 +39,11 @@ meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possi
        while not done:
           obs, action_set, reward, done, info = env.step(action_set[0])
 
+
+- Checkout the `installation instructions <#Installation>`_ (on this page).
+- Consult the `user Documentation <https://doc.ecole.ai>`_ for tutorials, examples, and library reference.
+- Head to `Github Discussions <https://github.com/ds4dm/ecole/discussions>`_ for interaction with the community: give
+  and recieve help, discuss intresting envirnoment, rewards function, and instances generators.
 
 Installation
 ------------
