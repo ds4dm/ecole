@@ -70,3 +70,18 @@ Currently unavailable
 From Source
 ^^^^^^^^^^^
 Source builds currently require following the contributing instructions.
+
+
+Use It, Cite It
+---------------
+If you use Ecole in a scientific publication, please cite the
+`Ecole publication <https://arxiv.org/abs/2011.06069>`_.
+
+.. code-block:: text
+
+   @article{prouvost2020ecole,
+     title={Ecole: A Gym-like Library for Machine Learning in Combinatorial Optimization Solvers},
+     author={Prouvost, Antoine and Dumouchelle, Justin and Scavuzzo, Lara and Gasse, Maxime and Ch{\'e}telat, Didier and Lodi, Andrea},
+     journal={arXiv preprint arXiv:2011.06069},
+     year={2020}
+   }
