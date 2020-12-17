@@ -406,7 +406,7 @@ auto pseudocosts(Scip* const scip, scip::Var* const var) noexcept {
  * children (during data collection).
  */
 auto infeasibility_statistics(scip::Var* const var) noexcept {
-	// FIXME N.B. replaced by left, right infeasibility
+	// N.B. replaced by left, right infeasibility
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
 	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
@@ -466,22 +466,24 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
 	value_type negative_rhs_ratio_min = 1.;
 
 	auto rhs_ratio_updates = [&](auto const coef, auto const rhs) {
-		if (!SCIPisInfinity(scip, std::abs(rhs))) {
-			auto const ratio_val = safe_div(coef, std::abs(coef) + std::abs(rhs));
-			if (rhs >= 0) {
-				positive_rhs_ratio_max = std::max(positive_rhs_ratio_max, ratio_val);
-				positive_rhs_ratio_min = std::min(positive_rhs_ratio_min, ratio_val);
-			} else {
-				negative_rhs_ratio_max = std::max(negative_rhs_ratio_max, ratio_val);
-				negative_rhs_ratio_min = std::min(negative_rhs_ratio_min, ratio_val);
-			}
+		auto const ratio_val = safe_div(coef, std::abs(coef) + std::abs(rhs));
+		if (rhs >= 0) {
+			positive_rhs_ratio_max = std::max(positive_rhs_ratio_max, ratio_val);
+			positive_rhs_ratio_min = std::min(positive_rhs_ratio_min, ratio_val);
+		} else {
+			negative_rhs_ratio_max = std::max(negative_rhs_ratio_max, ratio_val);
+			negative_rhs_ratio_min = std::min(negative_rhs_ratio_min, ratio_val);
 		}
 	};
 
 	for (auto const [row, coef] : views::zip(rows, coefficients)) {
-		rhs_ratio_updates(coef, SCIProwGetRhs(row));
-		// FIXME Should it not be -coeff given that we multiply by -1 to get a lhs into a rhs
-		rhs_ratio_updates(coef, -SCIProwGetLhs(row));
+		if (auto const rhs = SCIProwGetRhs(row); !SCIPisInfinity(scip, std::abs(rhs))) {
+			rhs_ratio_updates(coef, rhs);
+		}
+		if (auto const lhs = SCIProwGetLhs(row); !SCIPisInfinity(scip, std::abs(lhs))) {
+			// lhs constraints are multiply by -1 to be considered as rhs constraints.
+			rhs_ratio_updates(-coef, -lhs);
+		}
 	}
 
 	return std::tuple{
