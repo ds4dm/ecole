@@ -363,39 +363,35 @@ auto extract_static_features(scip::Model const& model) {
  */
 
 /**
- * Slack and ceil distances.
+ * Slack, ceil distances, and Pseudocosts.
  *
- * min{xij−floor(xij),ceil(xij) −xij} and ceil(xij) −xij
+ * This function combines two feature sets from Khalil et al.
+ *
+ * Slack and ceil distance:
+ *     min{xij−floor(xij),ceil(xij) −xij} and ceil(xij) −xij
+ *
+ * Pseudocosts:
+ *     Upwards and downwards values, and their corresponding ratio, sum and product, weighted by the
+ *     fractionality of xj.
  */
-auto slack_ceil_distances(Scip* const scip, scip::Col* const col) noexcept {
+auto slack_ceil_and_pseudocosts(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
 	auto const solval = SCIPcolGetPrimsol(col);
 	auto const floor_distance = SCIPfeasFrac(scip, solval);
 	auto const ceil_distance = 1. - floor_distance;
+	auto const weighted_pseudocost_up = ceil_distance * SCIPgetVarPseudocost(scip, var, SCIP_BRANCHDIR_UPWARDS);
+	auto const weighted_pseudocost_down = floor_distance * SCIPgetVarPseudocost(scip, var, SCIP_BRANCHDIR_DOWNWARDS);
+	auto constexpr epsilon = 1e-5;
+	auto const wpu_approx = std::max(weighted_pseudocost_up, epsilon);
+	auto const wpd_approx = std::max(weighted_pseudocost_down, epsilon);
+	auto const weighted_pseudocost_ratio = safe_div(std::min(wpu_approx, wpd_approx), std::max(wpu_approx, wpd_approx));
 	return std::tuple{
 		FeatureValue<Dynamic::slack>{std::min(floor_distance, ceil_distance)},
 		FeatureValue<Dynamic::ceil_dist>{ceil_distance},
-	};
-}
-
-/**
- * Pseudocosts.
- *
- * Upwards and downwards values, and their corresponding ratio, sum and product, weighted by the
- * fractionality of xj.
- */
-auto pseudocosts(Scip* const scip, scip::Var* const var) noexcept {
-	// FIXME how do we compute the ratio ? What about the weighting ?
-	auto const pseudocost_up = SCIPgetVarPseudocost(scip, var, SCIP_BRANCHDIR_UPWARDS);
-	auto const pseudocost_down = SCIPgetVarPseudocost(scip, var, SCIP_BRANCHDIR_DOWNWARDS);
-	auto const pseudocost_sum = pseudocost_up + pseudocost_down;
-	auto const pseudocost_ratio = pseudocost_up != 0. ? pseudocost_up / pseudocost_sum : 0.;
-	auto const pseudocost_product = pseudocost_up * pseudocost_down;
-	return std::tuple{
-		FeatureValue<Dynamic::pseudocost_up>{pseudocost_up},
-		FeatureValue<Dynamic::pseudocost_down>{pseudocost_down},
-		FeatureValue<Dynamic::pseudocost_ratio>{pseudocost_ratio},
-		FeatureValue<Dynamic::pseudocost_sum>{pseudocost_sum},
-		FeatureValue<Dynamic::pseudocost_product>{pseudocost_product},
+		FeatureValue<Dynamic::pseudocost_up>{weighted_pseudocost_up},
+		FeatureValue<Dynamic::pseudocost_down>{weighted_pseudocost_down},
+		FeatureValue<Dynamic::pseudocost_ratio>{weighted_pseudocost_ratio},
+		FeatureValue<Dynamic::pseudocost_sum>{weighted_pseudocost_up + weighted_pseudocost_down},
+		FeatureValue<Dynamic::pseudocost_product>{weighted_pseudocost_up * weighted_pseudocost_down},
 	};
 }
 
@@ -404,9 +400,10 @@ auto pseudocosts(Scip* const scip, scip::Var* const var) noexcept {
  *
  * Number and fraction of nodes for which applying SB to variable xj led to one (two) infeasible
  * children (during data collection).
+ *
+ * N.B. replaced by left, right infeasibility.
  */
 auto infeasibility_statistics(scip::Var* const var) noexcept {
-	// N.B. replaced by left, right infeasibility
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
 	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
@@ -734,8 +731,7 @@ auto extract_dynamic_features(
 	auto const coefficients = scip_col_get_vals(col);
 
 	auto features = std::tuple_cat(
-		slack_ceil_distances(scip, col),
-		pseudocosts(scip, var),
+		slack_ceil_and_pseudocosts(scip, var, col),
 		infeasibility_statistics(var),
 		dynamic_stats_for_constraint_degree(rows, root_deg_stats),
 		min_max_for_ratios_constraint_coeffs_rhs(scip, rows, coefficients),
