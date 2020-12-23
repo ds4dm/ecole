@@ -98,9 +98,11 @@ If you use Ecole in a scientific publication, please cite the
 
 .. code-block:: text
 
-   @article{prouvost2020ecole,
-     title={Ecole: A Gym-like Library for Machine Learning in Combinatorial Optimization Solvers},
-     author={Prouvost, Antoine and Dumouchelle, Justin and Scavuzzo, Lara and Gasse, Maxime and Ch{\'e}telat, Didier and Lodi, Andrea},
-     journal={arXiv preprint arXiv:2011.06069},
-     year={2020}
+   @inproceedings{
+       prouvost2020ecole,
+       title={Ecole: A Gym-like Library for Machine Learning in Combinatorial Optimization Solvers},
+       author={Antoine Prouvost and Justin Dumouchelle and Lara Scavuzzo and Maxime Gasse and Didier Ch{\'e}telat and Andrea Lodi},
+       booktitle={Learning Meets Combinatorial Algorithms at NeurIPS2020},
+       year={2020},
+       url={https://openreview.net/forum?id=IVc9hqgibyB}
    }
