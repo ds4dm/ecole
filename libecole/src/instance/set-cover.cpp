@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <map>
+
 #include <xtensor/xrandom.hpp>
 #include <xtensor/xsort.hpp>
 #include <xtensor/xtensor.hpp>
@@ -13,9 +14,9 @@
 
 namespace ecole::instance {
 
-/**************************************************
+/*************************************
  *  SetCoverGenerator methods  *
- **************************************************/
+ *************************************/
 
 SetCoverGenerator::SetCoverGenerator(RandomEngine random_engine_, Parameters parameters_) :
 	random_engine{random_engine_}, parameters{parameters_} {}
@@ -42,9 +43,8 @@ using xvector = xt::xtensor<size_t, 1>;
  * vector b.  Vector b should be of size (end_index - start_index).
  */
 auto set_slice(xvector& a, xvector& b, size_t start_index, size_t end_index) {
-	for (size_t i = 0; i < end_index - start_index; ++i) {
-		a(start_index + i) = b(i);
-	}
+	auto slice = xt::view(a, xt::range(start_index, end_index));
+	slice = b;
 }
 
 /** Gets a slice of a 1-D xtensor.
@@ -52,45 +52,20 @@ auto set_slice(xvector& a, xvector& b, size_t start_index, size_t end_index) {
  * Gets the the slice from start_index to end_index of vector a.
  */
 auto get_slice(xvector& a, size_t start_index, size_t end_index) -> xvector {
-	xvector slice({end_index - start_index}, 0);
-	for (size_t i = 0; i < end_index - start_index; ++i) {
-		slice(i) = a(i + start_index);
-	}
+	auto slice = xt::view(a, xt::range(start_index, end_index));
 	return slice;
-}
-
-/** Gets a 1-D xtensor in a specified range.
- *
- * Gets the 1-D xtensor from start to end
- * incremeneted by incremenet.
- */
-auto get_range(size_t start, size_t end, size_t increment) -> xvector {
-	xvector range = xt::arange<size_t>(start, end, increment);
-	return range;
 }
 
 /** Gets the counts of each element in a 1-D xtensor.
  *
- * This method is specifically designed in the case where
- * we know each element is in the range [0, n_cols].
+ * This method is specifically for the case where
+ * each each element is in the range [0, n_cols].
  */
-auto get_counts(xvector& indices) -> xvector {
-
-	// get count for each unique element
-	std::map<size_t, size_t> unique_count_map;
+auto get_counts(xvector& indices, size_t n_cols) -> xvector {
+	xvector counts({n_cols}, 0);
 	for (size_t i = 0; i < indices.size(); ++i) {
-		if (!unique_count_map.count(indices(i))) {
-			unique_count_map[indices(i)] = 1;
-		} else {
-			++unique_count_map[indices(i)];
-		}
+		++counts(indices[i]);
 	}
-
-	xvector counts({unique_count_map.size()}, 0);
-	for (size_t i = 0; i < unique_count_map.size(); ++i) {
-		counts(i) = unique_count_map[i];
-	}
-
 	return counts;
 }
 
@@ -100,7 +75,7 @@ auto get_counts(xvector& indices) -> xvector {
  * end_index.
  */
 auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_samples, RandomEngine& random_engine) -> xvector {
-	xvector choices = get_range(start_index, end_index, 1);
+	xvector choices = xt::arange<size_t>(start_index, end_index, 1);
 	xvector samples = xt::random::choice(choices, num_samples, false, random_engine);
 	return samples;
 }
@@ -170,12 +145,12 @@ auto convert_csc_to_csr(
 	xvector& indices, 
 	xvector& indptr, 
 	size_t n_rows, 
-	size_t n_cols, 
-	size_t nnzrs, 
-	xvector& indptr_csr, 
-	xvector& indices_csr) {
+	size_t n_cols) {
 
-	for (size_t j = 0; j < nnzrs; ++j) {
+	xvector indptr_csr({n_rows + 1}, 0);
+	xvector indices_csr({indices.size()}, 0);
+
+	for (size_t j = 0; j < indices.size(); ++j) {
 		indptr_csr(indices(j) + 1) += 1;
 	}
 	indptr_csr = xt::cumsum(indptr_csr);
@@ -190,32 +165,32 @@ auto convert_csc_to_csr(
 
 	size_t last = 0;
 	for (size_t row = 0; row <= n_rows; ++row) {
-		size_t temp = indptr_csr[row];
-		indptr_csr(row) = last;
-		last = temp;
+		std::swap(last, indptr_csr[row]);
 	}
-	return;
+
+	return std::make_tuple(indptr_csr, indices_csr);
 }
 
 }  // namespace
 
-/*************************************************************
+
+/******************************************
  *  SetCoverGenerator::generate_instance  *
- *************************************************************/
+ ******************************************/
 
 scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
 
-	auto n_rows = static_cast<size_t>(parameters.n_rows);
-	auto n_cols = static_cast<size_t>(parameters.n_cols);
-	auto density = parameters.density;
-	auto max_coef = static_cast<size_t>(parameters.max_coef);
+	auto const n_rows = parameters.n_rows;
+	auto const n_cols = parameters.n_cols;
+	auto const density = parameters.density;
+	auto const max_coef = static_cast<size_t>(parameters.max_coef);
 
-	auto nnzrs = static_cast<size_t>(static_cast<double>(n_rows * n_cols) * density);
+	auto const nnzrs = static_cast<size_t>(static_cast<double>(n_rows * n_cols) * density);
 
 	xvector indices({nnzrs}, 0);
 
 	// force at least 2 rows per col
-	xvector first_indices = get_range(0, 2 * n_cols, 1) % n_cols;
+	xvector first_indices =  xt::arange<size_t>(0, 2 * n_cols, 1) % n_cols;
 	set_slice(indices, first_indices, 0, 2 * n_cols);
 
 	// assign remaining column indexes at random
@@ -223,10 +198,10 @@ scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Pa
 	set_slice(indices, samples, 2 * n_cols, nnzrs);
 
 	// get counts of unique elements
-	xvector col_n_rows = get_counts(indices);
+	auto col_n_rows = get_counts(indices, n_cols);
 
 	// ensure at least 1 column per row
-	xvector perm = xt::random::permutation<size_t>(n_rows, random_engine);
+	auto perm = xt::random::permutation<size_t>(n_rows, random_engine);
 	set_slice(indices, perm, 0, n_rows);
 
 	size_t i = 0;
@@ -238,13 +213,13 @@ scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Pa
 
 		if (i + n <= n_rows) {
 		} else if (i >= n_rows) {
-			xvector samples1 = get_choice_in_range(0, n_rows, n, random_engine);
-			set_slice(indices, samples1, i, i + n);
+			xvector sampled_rows = get_choice_in_range(0, n_rows, n, random_engine);
+			set_slice(indices, sampled_rows, i, i + n);
 
-		} else if (i + n > n_rows) {
-			xvector remaining_rows = xt::setdiff1d(get_range(0, n_rows, 1), get_slice(indices, i, n_rows));
-			xvector choices_ = xt::random::choice(remaining_rows, i + n - n_rows, false, random_engine);
-			set_slice(indices, choices_, n_rows, i + n);
+		} else if (i + n > n_rows) {		
+			auto remaining_rows = xt::setdiff1d(xt::arange<size_t>(0, n_rows, 1), get_slice(indices, i, n_rows));
+			xvector choices = xt::random::choice(remaining_rows, i + n - n_rows, false, random_engine);
+			set_slice(indices, choices, n_rows, i + n);
 		}
 
 		i += n;
@@ -253,9 +228,7 @@ scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Pa
 	}
 
 	// convert csc indices/ptrs to csr
-	xvector indptr_csr({n_rows + 1}, 0);
-	xvector indices_csr({nnzrs}, 0);
-	convert_csc_to_csr(indices, indptr, n_rows, n_cols, nnzrs, indptr_csr, indices_csr);
+	auto [indptr_csr, indices_csr] = convert_csc_to_csr(indices, indptr, n_rows, n_cols);
 
 	// sample coefficients
 	xt::xtensor<scip::real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, random_engine);
