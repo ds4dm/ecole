@@ -785,18 +785,26 @@ auto extract_all_features(scip::Model const& model, xt::xtensor<value_type, 2> c
 	return observation;
 }
 
+auto is_on_root_node(scip::Model const& model) -> bool {
+	auto* const scip = model.get_scip_ptr();
+	return SCIPgetCurrentNode(scip) == SCIPgetRootNode(scip);
+}
+
 }  // namespace
 
 /*************************************
  *  Observation extracting function  *
  *************************************/
 
-void Khalil2016::before_reset(scip::Model& model) {
-	static_features = extract_static_features(model);
+void Khalil2016::before_reset(scip::Model& /* model */) {
+	static_features = decltype(static_features){};
 }
 
 auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<Khalil2016Obs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
+		if (is_on_root_node(model)) {
+			static_features = extract_static_features(model);
+		}
 		return extract_all_features(model, static_features);
 	}
 	return {};
