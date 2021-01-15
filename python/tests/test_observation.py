@@ -10,7 +10,6 @@ Here,
 import numpy as np
 
 import ecole
-import ecole.observation as O
 
 
 def pytest_generate_tests(metafunc):
@@ -21,12 +20,12 @@ def pytest_generate_tests(metafunc):
     """
     if "observation_function" in metafunc.fixturenames:
         all_observation_functions = (
-            O.Nothing(),
-            O.NodeBipartite(),
-            O.StrongBranchingScores(True),
-            O.StrongBranchingScores(False),
-            O.Pseudocosts(),
-            O.Khalil2016(),
+            ecole.observation.Nothing(),
+            ecole.observation.NodeBipartite(),
+            ecole.observation.StrongBranchingScores(True),
+            ecole.observation.StrongBranchingScores(False),
+            ecole.observation.Pseudocosts(),
+            ecole.observation.Khalil2016(),
         )
         metafunc.parametrize("observation_function", all_observation_functions)
 
@@ -71,36 +70,36 @@ def assert_array(arr, ndim=1, non_empty=True, dtype=np.double):
 
 def test_Nothing_observation(model):
     """Observation of Nothing is None."""
-    assert make_obs(O.Nothing(), model) is None
+    assert make_obs(ecole.observation.Nothing(), model) is None
 
 
 def test_NodeBipartite_observation(model):
     """Observation of NodeBipartite is a type with array attributes."""
-    obs = make_obs(O.NodeBipartite(), model)
-    assert isinstance(obs, O.NodeBipartiteObs)
+    obs = make_obs(ecole.observation.NodeBipartite(), model)
+    assert isinstance(obs, ecole.observation.NodeBipartiteObs)
     assert_array(obs.column_features, ndim=2)
     assert_array(obs.row_features, ndim=2)
     assert_array(obs.edge_features.values)
     assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
 
     # Check that there are enums describing feeatures
-    assert len(O.NodeBipartiteObs.ColumnFeatures.__members__) == 19
-    assert len(O.NodeBipartiteObs.RowFeatures.__members__) == 5
+    assert len(ecole.observation.NodeBipartiteObs.ColumnFeatures.__members__) == 19
+    assert len(ecole.observation.NodeBipartiteObs.RowFeatures.__members__) == 5
 
 
 def test_StrongBranchingScores_observation(model):
     """Observation of StrongBranchingScores is a numpy array."""
-    obs = make_obs(O.StrongBranchingScores(), model)
+    obs = make_obs(ecole.observation.StrongBranchingScores(), model)
     assert_array(obs)
 
 
 def test_Pseudocosts_observation(model):
     """Observation of Pseudocosts is a numpy array."""
-    obs = make_obs(O.Pseudocosts(), model)
+    obs = make_obs(ecole.observation.Pseudocosts(), model)
     assert_array(obs)
 
 
 def test_Khalil2016_observatio(model):
     """Observation of Khalil2016 is a numpy matrix."""
-    obs = make_obs(O.Khalil2016(), model)
+    obs = make_obs(ecole.observation.Khalil2016(), model)
     assert_array(obs, ndim=2)

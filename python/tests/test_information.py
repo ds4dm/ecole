@@ -10,7 +10,6 @@ Here,
 import numpy as np
 
 import ecole
-import ecole.information as I
 
 
 def pytest_generate_tests(metafunc):
@@ -20,7 +19,7 @@ def pytest_generate_tests(metafunc):
     `information_function` as input.
     """
     if "information_function" in metafunc.fixturenames:
-        all_information_functions = (I.Nothing(),)
+        all_information_functions = (ecole.information.Nothing(),)
         metafunc.parametrize("information_function", all_information_functions)
 
 
@@ -57,6 +56,6 @@ def make_info(info_func, model):
 
 def test_Nothing_information(model):
     """Observation of Nothing is None."""
-    info = make_info(I.Nothing(), model)
+    info = make_info(ecole.information.Nothing(), model)
     assert isinstance(info, dict)
     assert len(info) == 0

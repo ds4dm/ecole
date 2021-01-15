@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 import ecole
-import ecole.instance as I
 
 
 requires_pyscipopt = pytest.mark.skipif(
@@ -26,10 +25,10 @@ def pytest_generate_tests(metafunc):
     """
     if "instance_generator" in metafunc.fixturenames:
         all_instance_generators = (
-            I.SetCoverGenerator(n_rows=100, n_cols=200),
-            I.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
-            I.CapacitatedFacilityLocationGenerator(n_customers=60, n_facilities=50),
-            I.IndependentSetGenerator(n_nodes=100),
+            ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200),
+            ecole.instance.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
+            ecole.instance.CapacitatedFacilityLocationGenerator(n_customers=60, n_facilities=50),
+            ecole.instance.IndependentSetGenerator(n_nodes=100),
         )
         metafunc.parametrize("instance_generator", all_instance_generators)
 

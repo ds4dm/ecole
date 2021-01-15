@@ -11,7 +11,6 @@ import math
 import pytest
 
 import ecole
-import ecole.reward as R
 
 
 def pytest_generate_tests(metafunc):
@@ -21,7 +20,11 @@ def pytest_generate_tests(metafunc):
     `reward_function` as input.
     """
     if "reward_function" in metafunc.fixturenames:
-        all_reward_functions = (R.Constant(), R.IsDone(), R.LpIterations())
+        all_reward_functions = (
+            ecole.reward.Constant(),
+            ecole.reward.IsDone(),
+            ecole.reward.LpIterations(),
+        )
         metafunc.parametrize("reward_function", all_reward_functions)
 
 
