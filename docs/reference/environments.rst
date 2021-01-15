@@ -14,9 +14,9 @@ Listing
 Branching
 ^^^^^^^^^
 .. autoclass:: ecole.environment.Branching
-.. autoclass:: ecole.environment.BranchingDynamics
+.. autoclass:: ecole.dynamics.BranchingDynamics
 
 Configuring
 ^^^^^^^^^^^
 .. autoclass:: ecole.environment.Configuring
-.. autoclass:: ecole.environment.ConfiguringDynamics
+.. autoclass:: ecole.dynamics.ConfiguringDynamics

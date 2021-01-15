@@ -34,7 +34,7 @@ Reset and Step
 Creating dynamics is very similar to
 :ref:`creating reward and observation functions<create-new-functions>`.
 It can be done from scratch or by inheriting an existing one.
-The following examples shows how we can inherit :py:class:`~ecole.environment.BranchingDynamics` to
+The following examples shows how we can inherit :py:class:`~ecole.dynamics.BranchingDynamics` to
 deactivate cutting plane and presolve.
 
 .. note::
@@ -46,9 +46,9 @@ Given that there is a large number of parameters to change, we want to use one o
 by calling ``SCIPsetPresolving`` and ``SCIPsetSeparating`` through PyScipOpt
 (`SCIP doc <https://www.scipopt.org/doc/html/group__ParameterMethods.php>`_).
 
-We will do so by overriding :py:meth:`~ecole.environment.BranchingDynamics.reset_dynamics`, which
+We will do so by overriding :py:meth:`~ecole.dynamics.BranchingDynamics.reset_dynamics`, which
 get called by :py:meth:`~ecole.environment.Environment.reset`.
-The similar method :py:meth:`~ecole.environment.BranchingDynamics.step_dynamics`, which is called
+The similar method :py:meth:`~ecole.dynamics.BranchingDynamics.step_dynamics`, which is called
 by :py:meth:`~ecole.environment.Environment.step` does not need to be changed in this
 example so we do not override it.
 
@@ -59,7 +59,7 @@ example so we do not override it.
    from pyscipopt.scip import PY_SCIP_PARAMSETTING
 
 
-   class SimpleBranchingDynamics(ecole.environment.BranchingDynamics):
+   class SimpleBranchingDynamics(ecole.dynamics.BranchingDynamics):
 
        def reset_dynamics(self, model):
            # Share memory with Ecole model
@@ -95,7 +95,7 @@ To do so, we will take parameters in the constructor
 .. testcode::
    :skipif: pyscipopt is None
 
-   class SimpleBranchingDynamics(ecole.environment.BranchingDynamics):
+   class SimpleBranchingDynamics(ecole.dynamics.BranchingDynamics):
 
        def __init__(self, disable_presolve=True, disable_cuts=True, *args, **kwargs):
            super().__init__(*args, **kwargs)

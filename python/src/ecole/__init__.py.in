@@ -8,4 +8,5 @@ import ecole.reward
 import ecole.information
 import ecole.scip
 import ecole.instance
+import ecole.dynamics
 import ecole.environment

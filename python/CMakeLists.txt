@@ -73,7 +73,7 @@ endif()
 set(
 	PYTHON_FILES
 	"py.typed" "typing.py" "version.py"
-	"data.py" "observation.py" "reward.py" "information.py" "scip.py" "environment.py"
+	"data.py" "observation.py" "reward.py" "information.py" "scip.py" "dynamics.py" "environment.py"
 	"_set_cover_generator.py"
 	"_combinatorial_auction_generator.py"
 	"_capacitated_facility_location_generator.py"

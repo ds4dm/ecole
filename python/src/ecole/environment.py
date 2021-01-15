@@ -1,7 +1,6 @@
 """Ecole collection of environments."""
 
 import ecole
-from ecole.core.dynamics import *
 
 
 class Environment:
@@ -192,9 +191,9 @@ class Environment:
 
 
 class Branching(Environment):
-    __Dynamics__ = ecole.core.dynamics.BranchingDynamics
+    __Dynamics__ = ecole.dynamics.BranchingDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
 class Configuring(Environment):
-    __Dynamics__ = ecole.core.dynamics.ConfiguringDynamics
+    __Dynamics__ = ecole.dynamics.ConfiguringDynamics

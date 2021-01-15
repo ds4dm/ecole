@@ -8,7 +8,7 @@ import ecole
 
 def advance_to_root_node(model):
     """Utility to advance a model to the root node."""
-    dyn = ecole.environment.BranchingDynamics()
+    dyn = ecole.dynamics.BranchingDynamics()
     dyn.reset_dynamics(model)
     return model
 

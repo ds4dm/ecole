@@ -63,7 +63,7 @@ class TestBranching(DynamicsUnitTests):
         assert action_set.dtype == np.uint64
 
     def setup_method(self, method):
-        self.dynamics = ecole.environment.BranchingDynamics(False)
+        self.dynamics = ecole.dynamics.BranchingDynamics(False)
         self.policy = lambda action_set: action_set[0]
         self.bad_action = 1 << 31
 
@@ -77,7 +77,7 @@ class TestBranchingPseudocost(DynamicsUnitTests):
         assert action_set.dtype == np.uint64
 
     def setup_method(self, method):
-        self.dynamics = ecole.environment.BranchingDynamics(True)
+        self.dynamics = ecole.dynamics.BranchingDynamics(True)
         self.policy = lambda action_set: action_set[0]
         self.bad_action = 1 << 31
 
@@ -88,7 +88,7 @@ class TestConfiguring(DynamicsUnitTests):
         assert action_set is None
 
     def setup_method(self, method):
-        self.dynamics = ecole.environment.ConfiguringDynamics()
+        self.dynamics = ecole.dynamics.ConfiguringDynamics()
         self.policy = lambda _: {
             "branching/scorefunc": "s",
             "branching/scorefac": 0.1,
