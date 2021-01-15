@@ -14,7 +14,7 @@ constexpr auto problem_file = (TEST_DATA_DIR "/bppc8-02.mps");
  */
 ecole::scip::Model get_model();
 
-/**
- * Return a Model that is in stage solving.
+/*
+ * Advance an unsolved Model to the root node.
  */
-ecole::scip::Model get_solving_model();
+void advance_to_root_node(ecole::scip::Model& model);

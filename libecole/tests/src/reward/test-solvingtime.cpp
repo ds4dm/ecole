@@ -24,7 +24,7 @@ TEST_CASE("Solving time rewards are positive initially", "[reward]") {
 
 	SECTION("Solving time is stricly positive after root node processing") {
 		reward_func.before_reset(model);
-		model.solve_iter();  // presolve and stop at the root node before branching
+		advance_to_root_node(model);
 		REQUIRE(reward_func.extract(model) > 0);
 	}
 }

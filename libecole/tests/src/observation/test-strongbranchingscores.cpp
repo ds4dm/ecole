@@ -17,8 +17,9 @@ TEST_CASE("StrongBranchingScores unit tests", "[unit][obs]") {
 TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
 	bool pseudo_candidates = GENERATE(true, false);
 	auto obs_func = observation::StrongBranchingScores{pseudo_candidates};
-	auto model = get_solving_model();
+	auto model = get_model();
 	obs_func.before_reset(model);
+	advance_to_root_node(model);
 	auto const obs = obs_func.extract(model, true);
 
 	REQUIRE(obs.has_value());

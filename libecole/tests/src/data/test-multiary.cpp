@@ -22,18 +22,20 @@ TEST_CASE("BinaryFunction unit tests", "[unit][data]") {
 
 TEST_CASE("UnaryFunction negate the number", "[data]") {
 	auto reward_func = MultiaryFunction{std::negate{}, IntDataFunc{}};
-	auto model = get_solving_model();
+	auto model = get_model();
 
 	reward_func.before_reset(model);
+	advance_to_root_node(model);
 
 	REQUIRE(reward_func.extract(model) < 0);
 }
 
 TEST_CASE("BinaryFunction substract two numbers", "[data]") {
 	auto reward_func = MultiaryFunction{std::minus{}, IntDataFunc{}, IntDataFunc{}};
-	auto model = get_solving_model();
+	auto model = get_model();
 
 	reward_func.before_reset(model);
+	advance_to_root_node(model);
 
 	REQUIRE(reward_func.extract(model) == 0);
 }

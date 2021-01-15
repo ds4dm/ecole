@@ -7,19 +7,20 @@
 namespace ecole::data {
 
 template <typename DataFunc> void unit_tests(DataFunc&& data_func) {
-	auto solving_model = get_solving_model();
-
 	SECTION("has default constructor") { DataFunc{}; }
 
 	SECTION("before_reset, before_reset, and delete") {
-		data_func.before_reset(solving_model);
-		data_func.before_reset(solving_model);
+		auto model = get_model();
+		data_func.before_reset(model);
+		data_func.before_reset(model);
 	}
 
 	SECTION("before_reset, obtain observation, and delete") {
-		data_func.before_reset(solving_model);
+		auto model = get_model();
+		data_func.before_reset(model);
+		advance_to_root_node(model);
 		auto const done = GENERATE(true, false);
-		data_func.extract(solving_model, done);
+		data_func.extract(model, done);
 	}
 }
 
