@@ -10,6 +10,7 @@ import math
 
 import pytest
 
+import ecole
 import ecole.reward as R
 
 
@@ -22,6 +23,13 @@ def pytest_generate_tests(metafunc):
     if "reward_function" in metafunc.fixturenames:
         all_reward_functions = (R.Constant(), R.IsDone(), R.LpIterations())
         metafunc.parametrize("reward_function", all_reward_functions)
+
+
+def advance_to_root_node(model):
+    """Utility to advance a model to the root node."""
+    dyn = ecole.environment.BranchingDynamics()
+    dyn.reset_dynamics(model)
+    return model
 
 
 def test_default_init(reward_function):
@@ -39,17 +47,22 @@ def test_before_reset(reward_function, model):
 def test_extract(reward_function, done, model):
     """Rewards are floats."""
     reward_function.before_reset(model)
+    advance_to_root_node(model)
     reward = reward_function.extract(model, done)
     assert isinstance(reward, float)
 
 
 @pytest.mark.parametrize("done", [True, False])
-def test_reproducability(reward_function, done, model):
+def test_reproducability(reward_function, done, model, model_copy):
     """Same trajectories yield same rewards."""
     reward_function.before_reset(model)
+    advance_to_root_node(model)
     reward1 = reward_function.extract(model, done)
-    reward_function.before_reset(model)
-    reward2 = reward_function.extract(model, done=done)
+
+    reward_function.before_reset(model_copy)
+    advance_to_root_node(model_copy)
+    reward2 = reward_function.extract(model_copy, done=done)
+
     assert reward1 == reward2
 
 
@@ -64,29 +77,33 @@ def test_reproducability(reward_function, done, model):
         [lambda rf: rf.apply(lambda r: r + 2), lambda r: r + 2],
     ],
 )
-def test_operators(reward_function, model, func_formula, reward_formula):
+def test_operators(reward_function, model, model_copy, func_formula, reward_formula):
     """Operators produce operations on rewards."""
     reward_function.before_reset(model)
+    advance_to_root_node(model)
     reward = reward_function.extract(model)
     # WARNING reward_function and formula_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     formula_reward_function = func_formula(reward_function)
-    formula_reward_function.before_reset(model)
-    formula_reward = formula_reward_function.extract(model)
+    formula_reward_function.before_reset(model_copy)
+    advance_to_root_node(model_copy)
+    formula_reward = formula_reward_function.extract(model_copy)
     assert formula_reward == reward_formula(reward)
 
 
-def test_cumsum(reward_function, model):
+def test_cumsum(reward_function, model, model_copy):
     """Operators produce operations on rewards."""
     reward_function.before_reset(model)
+    advance_to_root_node(model)
     reward1 = reward_function.extract(model)
     reward2 = reward_function.extract(model)
     # WARNING reward_function and cum_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     cum_reward_function = reward_function.cumsum()
-    cum_reward_function.before_reset(model)
-    cum_reward1 = cum_reward_function.extract(model)
-    cum_reward2 = cum_reward_function.extract(model)
+    cum_reward_function.before_reset(model_copy)
+    advance_to_root_node(model_copy)
+    cum_reward1 = cum_reward_function.extract(model_copy)
+    cum_reward2 = cum_reward_function.extract(model_copy)
 
     assert cum_reward1 == reward1
     assert cum_reward2 == reward1 + reward2

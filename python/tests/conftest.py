@@ -47,7 +47,6 @@ def model(problem_file):
 
 
 @pytest.fixture
-def solving_model(model):
-    env = ecole.environment.Branching()
-    env.reset(model)
-    return env.model
+def model_copy(model):
+    """Return a Model object with a valid problem."""
+    return model.copy_orig()

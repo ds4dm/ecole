@@ -9,6 +9,7 @@ Here,
 
 import numpy as np
 
+import ecole
 import ecole.observation as O
 
 
@@ -30,25 +31,34 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("observation_function", all_observation_functions)
 
 
+def advance_to_root_node(model):
+    """Utility to advance a model to the root node."""
+    dyn = ecole.environment.BranchingDynamics()
+    dyn.reset_dynamics(model)
+    return model
+
+
 def test_default_init(observation_function):
     """Construct with default arguments."""
     type(observation_function)()
 
 
-def test_before_reset(observation_function, solving_model):
+def test_before_reset(observation_function, model):
     """Successive calls to before_reset."""
-    observation_function.before_reset(solving_model)
-    observation_function.before_reset(solving_model)
+    observation_function.before_reset(model)
+    observation_function.before_reset(model)
 
 
-def test_extract(observation_function, solving_model):
+def test_extract(observation_function, model):
     """Obtain observation."""
-    observation_function.before_reset(solving_model)
-    observation_function.extract(solving_model, False)
+    observation_function.before_reset(model)
+    advance_to_root_node(model)
+    observation_function.extract(model, False)
 
 
 def make_obs(obs_func, model):
     obs_func.before_reset(model)
+    advance_to_root_node(model)
     return obs_func.extract(model, False)
 
 
@@ -64,9 +74,9 @@ def test_Nothing_observation(model):
     assert make_obs(O.Nothing(), model) is None
 
 
-def test_NodeBipartite_observation(solving_model):
+def test_NodeBipartite_observation(model):
     """Observation of NodeBipartite is a type with array attributes."""
-    obs = make_obs(O.NodeBipartite(), solving_model)
+    obs = make_obs(O.NodeBipartite(), model)
     assert isinstance(obs, O.NodeBipartiteObs)
     assert_array(obs.column_features, ndim=2)
     assert_array(obs.row_features, ndim=2)
@@ -78,19 +88,19 @@ def test_NodeBipartite_observation(solving_model):
     assert len(O.NodeBipartiteObs.RowFeatures.__members__) == 5
 
 
-def test_StrongBranchingScores_observation(solving_model):
+def test_StrongBranchingScores_observation(model):
     """Observation of StrongBranchingScores is a numpy array."""
-    obs = make_obs(O.StrongBranchingScores(), solving_model)
+    obs = make_obs(O.StrongBranchingScores(), model)
     assert_array(obs)
 
 
-def test_Pseudocosts_observation(solving_model):
+def test_Pseudocosts_observation(model):
     """Observation of Pseudocosts is a numpy array."""
-    obs = make_obs(O.Pseudocosts(), solving_model)
+    obs = make_obs(O.Pseudocosts(), model)
     assert_array(obs)
 
 
-def test_Khalil2016_observatio(solving_model):
+def test_Khalil2016_observatio(model):
     """Observation of Khalil2016 is a numpy matrix."""
-    obs = make_obs(O.Khalil2016(), solving_model)
+    obs = make_obs(O.Khalil2016(), model)
     assert_array(obs, ndim=2)

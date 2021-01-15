@@ -3,7 +3,14 @@ import unittest.mock as mock
 
 import pytest
 
-import ecole.data
+import ecole
+
+
+def advance_to_root_node(model):
+    """Utility to advance a model to the root node."""
+    dyn = ecole.environment.BranchingDynamics()
+    dyn.reset_dynamics(model)
+    return model
 
 
 @pytest.mark.parametrize("done", (True, False))
@@ -12,6 +19,7 @@ def test_ConstantFunction(model, done, cste):
     """Always return the same constant."""
     cste_func = ecole.data.ConstantFunction(cste)
     cste_func.before_reset(model)
+    advance_to_root_node(model)
     data = cste_func.extract(model, done)
     assert data == cste
 
@@ -26,6 +34,7 @@ def test_VectorFunction(model, done):
     data_func1.before_reset.assert_called_once_with(model)
     data_func2.before_reset.assert_called_once_with(model)
 
+    advance_to_root_node(model)
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"
     data = tuple_data_func.extract(model, done)
@@ -42,6 +51,7 @@ def test_MapFunction(model, done):
     data_func1.before_reset.assert_called_once_with(model)
     data_func2.before_reset.assert_called_once_with(model)
 
+    advance_to_root_node(model)
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"
     data = dict_data_func.extract(model, done)
