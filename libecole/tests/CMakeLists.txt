@@ -8,6 +8,8 @@ add_executable(
 	src/test-traits.cpp
 	src/test-random.cpp
 
+	src/utility/test-chrono.cpp
+
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
 
