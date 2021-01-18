@@ -24,6 +24,7 @@ add_executable(
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp
+	src/reward/test-solvingtime.cpp
 
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
