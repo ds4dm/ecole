@@ -6,6 +6,7 @@ add_library(
 	src/random.cpp
 	src/exception.cpp
 	src/utility/reverse-control.cpp
+	src/utility/chrono.cpp
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
 	src/scip/exception.cpp
