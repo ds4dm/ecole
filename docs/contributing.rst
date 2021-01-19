@@ -107,7 +107,7 @@ you can use the ones from ananconda.
 
 .. code-block:: bash
 
-   conda install gxx_linux-64  # Linux
+   conda install cxx-compiler
 
 And start again the configuring of Ecole.
 
