@@ -22,7 +22,8 @@ void SolvingTime::before_reset(scip::Model& /* model */) {
 
 Reward SolvingTime::extract(scip::Model& /* model */, bool /* done */) {
 	auto const now = time_now(wall);
-	auto const solving_time_diff = static_cast<double>((now - solving_time_offset).count());
+	// Casting to seconds represented as a Reward (no ratio).
+	auto const solving_time_diff = std::chrono::duration<Reward>{now - solving_time_offset}.count();
 	solving_time_offset = now;
 	return solving_time_diff;
 }
