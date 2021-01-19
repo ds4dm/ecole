@@ -147,7 +147,7 @@ void bind_submodule(py::module_ const& m) {
 	auto solvingtime = py::class_<SolvingTime>(m, "SolvingTime", R"(
 		Solving time difference.
 
-		The reward is defined as the amount of time spent solving the instance since the previous state.
+		The reward is defined as the number of seconds spent solving the instance since the previous state.
 		The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
