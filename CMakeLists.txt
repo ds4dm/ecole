@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
+# Adapt compiler flags if using Conda compiler packages. Before project so they are not modified.
+include(cmake/Conda.cmake)
+
+# Read the version from file
 include(cmake/Version.cmake)
 read_version("${CMAKE_SOURCE_DIR}/VERSION" Ecole_VERSION)
 
