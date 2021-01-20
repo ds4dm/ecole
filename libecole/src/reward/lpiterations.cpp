@@ -3,7 +3,7 @@
 
 namespace ecole::reward {
 
-static auto n_lp_iterations(scip::Model const& model) {
+static auto n_lp_iterations(scip::Model& model) {
 	switch (model.get_stage()) {
 	// Only stages when the following call is authorized
 	case SCIP_STAGE_PRESOLVING:

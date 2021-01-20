@@ -51,7 +51,8 @@ public:
 	 * Ownership of the pointer is however not released by the Model.
 	 * This function is meant to use the original C API of SCIP.
 	 */
-	[[nodiscard]] SCIP* get_scip_ptr() const noexcept;
+	[[nodiscard]] SCIP* get_scip_ptr() noexcept;
+	[[nodiscard]] SCIP const* get_scip_ptr() const noexcept;
 
 	[[nodiscard]] Model copy_orig() const;
 
@@ -69,7 +70,7 @@ public:
 	/**
 	 * Constuct an empty problem with empty data structures.
 	 */
-	static Model prob_basic();
+	static Model prob_basic(std::string const& name = "Model");
 
 	/**
 	 * Writes the Model into a file.
@@ -79,7 +80,10 @@ public:
 	/**
 	 * Read a problem file into the Model.
 	 */
-	void read_prob(std::string const& filename) const;
+	void read_problem(std::string const& filename);
+
+	[[nodiscard]] std::string name() const noexcept;
+	void set_name(std::string const& name);
 
 	[[nodiscard]] Stage get_stage() const noexcept;
 
@@ -107,15 +111,15 @@ public:
 	void set_params(std::map<std::string, Param> name_values);
 	[[nodiscard]] std::map<std::string, Param> get_params() const;
 
-	void disable_presolve() const;
-	void disable_cuts() const;
+	void disable_presolve();
+	void disable_cuts();
 
 	/**
 	 * Transform, presolve, and solve problem.
 	 */
-	void transform_prob() const;
-	void presolve() const;
-	void solve() const;
+	void transform_prob();
+	void presolve();
+	void solve();
 	[[nodiscard]] bool is_solved() const noexcept;
 
 	void solve_iter();

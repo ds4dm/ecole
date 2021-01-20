@@ -30,7 +30,10 @@ Model::~Model() = default;
 
 Model& Model::operator=(Model&&) noexcept = default;
 
-SCIP* Model::get_scip_ptr() const noexcept {
+SCIP* Model::get_scip_ptr() noexcept {
+	return scimpl->get_scip_ptr();
+}
+SCIP const* Model::get_scip_ptr() const noexcept {
 	return scimpl->get_scip_ptr();
 }
 
@@ -48,30 +51,38 @@ bool Model::operator!=(Model const& other) const noexcept {
 
 Model Model::from_file(const std::string& filename) {
 	auto model = Model{};
-	model.read_prob(filename);
+	model.read_problem(filename);
 	return model;
 }
 
-Model Model::prob_basic() {
+Model Model::prob_basic(std::string const& name) {
 	auto model = Model{};
-	scip::call(SCIPcreateProbBasic, model.get_scip_ptr(), "Model");
+	scip::call(SCIPcreateProbBasic, model.get_scip_ptr(), name.c_str());
 	return model;
 }
 
 void Model::write_problem(const std::string& filename) const {
-	scip::call(SCIPwriteOrigProblem, get_scip_ptr(), filename.c_str(), nullptr, true);
+	scip::call(SCIPwriteOrigProblem, const_cast<SCIP*>(get_scip_ptr()), filename.c_str(), nullptr, true);
 }
 
-void Model::read_prob(std::string const& filename) const {
+void Model::read_problem(std::string const& filename) {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
 }
 
+std::string Model::name() const noexcept {
+	return SCIPgetProbName(const_cast<SCIP*>(get_scip_ptr()));
+}
+
+void Model::set_name(std::string const& name) {
+	scip::call(SCIPsetProbName, get_scip_ptr(), name.c_str());
+}
+
 Stage Model::get_stage() const noexcept {
-	return SCIPgetStage(get_scip_ptr());
+	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr()));
 }
 
 ParamType Model::get_param_type(std::string const& name) const {
-	auto* scip_param = SCIPgetParam(get_scip_ptr(), name.c_str());
+	auto* scip_param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	if (scip_param == nullptr) {
 		throw scip::Exception(fmt::format("parameter <{}> unknown", name));
 	}
@@ -116,32 +127,32 @@ template <> void Model::set_param<ParamType::String>(std::string const& name, st
 
 template <> bool Model::get_param<ParamType::Bool>(std::string const& name) const {
 	SCIP_Bool value{};
-	scip::call(SCIPgetBoolParam, get_scip_ptr(), name.c_str(), &value);
+	scip::call(SCIPgetBoolParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return static_cast<bool>(value);
 }
 template <> int Model::get_param<ParamType::Int>(std::string const& name) const {
 	int value{};
-	scip::call(SCIPgetIntParam, get_scip_ptr(), name.c_str(), &value);
+	scip::call(SCIPgetIntParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
 template <> long_int Model::get_param<ParamType::LongInt>(std::string const& name) const {
 	SCIP_Longint value{};
-	scip::call(SCIPgetLongintParam, get_scip_ptr(), name.c_str(), &value);
+	scip::call(SCIPgetLongintParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
 template <> real Model::get_param<ParamType::Real>(std::string const& name) const {
 	SCIP_Real value{};
-	scip::call(SCIPgetRealParam, get_scip_ptr(), name.c_str(), &value);
+	scip::call(SCIPgetRealParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
 template <> char Model::get_param<ParamType::Char>(std::string const& name) const {
 	char value{};
-	scip::call(SCIPgetCharParam, get_scip_ptr(), name.c_str(), &value);
+	scip::call(SCIPgetCharParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
 template <> std::string Model::get_param<ParamType::String>(std::string const& name) const {
 	char* ptr{};
-	scip::call(SCIPgetStringParam, get_scip_ptr(), name.c_str(), &ptr);
+	scip::call(SCIPgetStringParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &ptr);
 	return ptr;
 }
 
@@ -154,7 +165,7 @@ void Model::set_params(std::map<std::string, Param> name_values) {
 namespace {
 
 nonstd::span<SCIP_PARAM*> get_params_span(Model const& model) noexcept {
-	auto* const scip = model.get_scip_ptr();
+	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
 	return {SCIPgetParams(scip), static_cast<std::size_t>(SCIPgetNParams(scip))};
 }
 
@@ -170,20 +181,20 @@ std::map<std::string, Param> Model::get_params() const {
 	return name_values;
 }
 
-void Model::transform_prob() const {
+void Model::transform_prob() {
 	scip::call(SCIPtransformProb, get_scip_ptr());
 }
 
-void Model::presolve() const {
+void Model::presolve() {
 	scip::call(SCIPpresolve, get_scip_ptr());
 }
 
-void Model::solve() const {
+void Model::solve() {
 	scip::call(SCIPsolve, get_scip_ptr());
 }
 
 bool Model::is_solved() const noexcept {
-	return SCIPgetStage(get_scip_ptr()) == SCIP_STAGE_SOLVED;
+	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr())) == SCIP_STAGE_SOLVED;
 }
 
 void Model::solve_iter() {
@@ -202,34 +213,35 @@ bool Model::solve_iter_is_done() {
 	return scimpl->solve_iter_is_done();
 }
 
-void Model::disable_presolve() const {
+void Model::disable_presolve() {
 	scip::call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
-void Model::disable_cuts() const {
+void Model::disable_cuts() {
 	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
 nonstd::span<Var*> Model::variables() const noexcept {
-	auto* const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	return {SCIPgetVars(scip_ptr), static_cast<std::size_t>(SCIPgetNVars(scip_ptr))};
 }
 
 nonstd::span<Var*> Model::lp_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
-	scip::call(SCIPgetLPBranchCands, get_scip_ptr(), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
+	scip::call(
+		SCIPgetLPBranchCands, const_cast<SCIP*>(get_scip_ptr()), &vars, nullptr, nullptr, &n_vars, nullptr, nullptr);
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
 nonstd::span<Var*> Model::pseudo_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
-	scip::call(SCIPgetPseudoBranchCands, get_scip_ptr(), &vars, &n_vars, nullptr);
+	scip::call(SCIPgetPseudoBranchCands, const_cast<SCIP*>(get_scip_ptr()), &vars, &n_vars, nullptr);
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
 nonstd::span<Col*> Model::lp_columns() const {
-	auto* const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP columns are only available during solving");
 	}
@@ -237,12 +249,12 @@ nonstd::span<Col*> Model::lp_columns() const {
 }
 
 nonstd::span<Cons*> Model::constraints() const noexcept {
-	auto* const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	return {SCIPgetConss(scip_ptr), static_cast<std::size_t>(SCIPgetNConss(scip_ptr))};
 }
 
 nonstd::span<Row*> Model::lp_rows() const {
-	auto* const scip_ptr = get_scip_ptr();
+	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP rows are only available during solving");
 	}
