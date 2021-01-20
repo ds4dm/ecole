@@ -89,7 +89,7 @@ std::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip
 	return SCIPfeasFrac(scip, SCIPcolGetPrimsol(col));
 }
 
-auto extract_col_feat(scip::Model const& model) {
+auto extract_col_feat(scip::Model& model) {
 	auto constexpr n_col_feat = 11 + scip::enum_size_v<scip::var_type> + scip::enum_size_v<scip::base_stat>;
 	auto* const scip = model.get_scip_ptr();
 	tensor col_feat{{model.lp_columns().size(), n_col_feat}, 0.};
@@ -145,7 +145,7 @@ scip::real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
  *
  * Row are counted once per right hand side and once per left hand side.
  */
-std::size_t n_ineq_rows(scip::Model const& model) {
+std::size_t n_ineq_rows(scip::Model& model) {
 	auto* const scip = model.get_scip_ptr();
 	std::size_t count = 0;
 	for (auto* row : model.lp_rows()) {
@@ -155,7 +155,7 @@ std::size_t n_ineq_rows(scip::Model const& model) {
 	return count;
 }
 
-auto extract_row_feat(scip::Model const& model) {
+auto extract_row_feat(scip::Model& model) {
 	auto constexpr n_row_feat = 5;
 	auto* const scip = model.get_scip_ptr();
 	tensor row_feat{{n_ineq_rows(model), n_row_feat}, 0.};
@@ -204,7 +204,7 @@ auto extract_row_feat(scip::Model const& model) {
  *
  * Row are counted once per right hand side and once per left hand side.
  */
-auto matrix_nnz(scip::Model const& model) {
+auto matrix_nnz(scip::Model& model) {
 	auto* const scip = model.get_scip_ptr();
 	std::size_t nnz = 0;
 	for (auto* row : model.lp_rows()) {
@@ -219,7 +219,7 @@ auto matrix_nnz(scip::Model const& model) {
 	return nnz;
 }
 
-utility::coo_matrix<value_type> extract_edge_feat(scip::Model const& model) {
+utility::coo_matrix<value_type> extract_edge_feat(scip::Model& model) {
 	auto* const scip = model.get_scip_ptr();
 
 	using coo_matrix = utility::coo_matrix<value_type>;

@@ -337,7 +337,7 @@ auto extract_static_features(scip::Col* const col) {
 /**
  * Extract the static features for all LP columns in a Model.
  */
-auto extract_static_features(scip::Model const& model) {
+auto extract_static_features(scip::Model& model) {
 	auto const columns = model.lp_columns();
 	xt::xtensor<value_type, 2> static_features{{columns.size(), Feature::n_static}, 0.};
 
@@ -565,7 +565,7 @@ auto row_is_active(Scip* const scip, scip::Row* const row) noexcept -> bool {
  * Weights for non activate rows are left as NaN and ununsed.
  * This is equivalent to an unsafe/unchecked masked tensor.
  */
-auto stats_for_active_constraint_coefficients_weights(scip::Model const& model) {
+auto stats_for_active_constraint_coefficients_weights(scip::Model& model) {
 	auto* const scip = model.get_scip_ptr();
 	auto const lp_rows = model.lp_rows();
 	auto const branch_candidates = model.pseudo_branch_cands() | ranges::to<std::set>();
@@ -758,7 +758,7 @@ template <typename Tensor> auto extract_reused_static_features(Tensor const& ten
 	};
 }
 
-auto extract_all_features(scip::Model const& model, xt::xtensor<value_type, 2> const& static_features) {
+auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& static_features) {
 
 	xt::xtensor<value_type, 2> observation{
 		{model.pseudo_branch_cands().size(), Feature::n_static + Feature::n_dynamic},
@@ -785,7 +785,7 @@ auto extract_all_features(scip::Model const& model, xt::xtensor<value_type, 2> c
 	return observation;
 }
 
-auto is_on_root_node(scip::Model const& model) -> bool {
+auto is_on_root_node(scip::Model& model) -> bool {
 	auto* const scip = model.get_scip_ptr();
 	return SCIPgetCurrentNode(scip) == SCIPgetRootNode(scip);
 }
