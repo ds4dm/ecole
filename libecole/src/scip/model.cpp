@@ -236,6 +236,11 @@ nonstd::span<Col*> Model::lp_columns() const {
 	return {SCIPgetLPCols(scip_ptr), static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr))};
 }
 
+nonstd::span<Cons*> Model::constraints() const noexcept {
+	auto* const scip_ptr = get_scip_ptr();
+	return {SCIPgetConss(scip_ptr), static_cast<std::size_t>(SCIPgetNConss(scip_ptr))};
+}
+
 nonstd::span<Row*> Model::lp_rows() const {
 	auto* const scip_ptr = get_scip_ptr();
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
