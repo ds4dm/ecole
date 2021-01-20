@@ -8,18 +8,8 @@ foreach(py_file "setup.py" "src/ecole/__init__.py")
 	)
 endforeach(py_file)
 
-
-# Temporary override pybind11 version to 2.5 otherwise pinned down by xtensor-python
-# Until https://github.com/conda-forge/xtensor-python-feedstock/pull/65 is merged
-include(FetchContent)
-FetchContent_Declare(
-	PyBind11
-	URL https://github.com/pybind/pybind11/archive/v2.6.0.tar.gz
-	URL_HASH SHA256=90b705137b69ee3b5fc655eaca66d0dc9862ea1759226f7ccd3098425ae69571
-)
 set(PYBIND11_CPP_STANDARD -std=c++17)
-FetchContent_MakeAvailable(PyBind11)
-# find_package(pybind11 REQUIRED)
+find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
 
