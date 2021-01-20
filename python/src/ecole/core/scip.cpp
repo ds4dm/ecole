@@ -19,7 +19,7 @@ void bind_submodule(py::module_ const& m) {
 
 	py::class_<Model, std::shared_ptr<Model>>(m, "Model")  //
 		.def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
-		.def_static("prob_basic", &Model::prob_basic)
+		.def_static("prob_basic", &Model::prob_basic, py::arg("name") = "Model")
 		.def_static(
 			"from_pyscipopt",
 			[](py::object const& pyscipopt_model) {
