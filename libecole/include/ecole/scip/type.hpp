@@ -48,6 +48,7 @@ constexpr Seed max_seed = 2147483647;
 using Stage = SCIP_STAGE;
 using Var = SCIP_VAR;
 using Col = SCIP_COL;
+using Cons = SCIP_CONS;
 using Row = SCIP_ROW;
 
 /**
