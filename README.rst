@@ -7,10 +7,16 @@
 Ecole
 =====
 
-.. image:: https://circleci.com/gh/ds4dm/ecole.svg?style=svg
+.. image:: https://img.shields.io/circleci/build/github/ds4dm/ecole/master?logo=circleci
    :target: https://circleci.com/gh/ds4dm/ecole
    :alt: CircleCI
-
+.. image:: https://img.shields.io/conda/v/scipopt/ecole
+   :target: https://anaconda.org/scipopt/ecole
+   :alt: Conda Version
+.. image:: https://img.shields.io/conda/pn/scipopt/ecole?label=conda%7Cscipopt
+   :target: https://anaconda.org/scipopt/ecole
+   :alt: Conda Platforms
+   
 
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
