@@ -20,7 +20,7 @@ RUN apt-get update && \
 # Still getting cmake... to make sure it finds scip and other conda packages
 RUN conda install --channel scipopt --channel conda-forge \
         cmake make conan \
-        scip pyscipopt python="${python_version}" pybind11 numpy xtensor-python \
+        scip pyscipopt python="${python_version}" pybind11>=2.6 numpy xtensor-python \
         pytest pytest-cov && \
     conda clean --all --yes
 WORKDIR /app

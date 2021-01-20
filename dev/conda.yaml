@@ -22,7 +22,7 @@ dependencies:
   - scip
   # Build time Python dependencies
   - python>=3.6
-  - pybind11
+  - pybind11>=2.6
   - numpy>=1.4
   - xtensor-python
   # Python runtime dependency
