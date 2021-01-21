@@ -24,7 +24,7 @@ def pytest_generate_tests(metafunc):
             ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200),
             ecole.instance.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
             ecole.instance.IndependentSetGenerator(n_nodes=100),
-            ecole.instance.CapacitatedFacilityLocationGenerator(),
+            ecole.instance.CapacitatedFacilityLocationGenerator(n_customers=60, n_facilities=50),
         )
         metafunc.parametrize("instance_generator", all_instance_generators)
 

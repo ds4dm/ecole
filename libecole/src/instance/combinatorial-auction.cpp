@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <map>
 
 #include <fmt/format.h>
@@ -37,51 +38,41 @@ void CombinatorialAuctionGenerator::seed(Seed seed) {
 namespace {
 
 using vector = std::vector<std::size_t>;
-using xvector = xt::xtensor<double, 1>;
-using xvector_size_t = xt::xtensor<std::size_t, 1>;
-using xmatrix = xt::xtensor<double, 2>;
+template <typename T> using xvector = xt::xtensor<T, 1>;
+template <typename T> using xmatric = xt::xtensor<T, 2>;
 
-/** Sample with replacement based on weights given by a probability or weight vector.
+/**
+ * Sample with replacement based on weights given by a probability or weight vector.
  *
  * Samples n_samples values from a weighted distribution defined by the weights.
  * The values are in the range of [1, weights.size()].
  */
-auto arg_choice_without_replacement(std::size_t n_samples, xvector weights, RandomEngine& random_engine)
-	-> xvector_size_t {
+auto arg_choice_without_replacement(std::size_t n_samples, xvector<double> weights, RandomEngine& random_engine)
+	-> xvector<std::size_t> {
+	auto const wc = xt::eval(xt::cumsum(weights));
+	auto weight_dist = std::uniform_real_distribution<double>{0, wc[wc.size() - 1]};
 
-	auto const weight_sum = xt::sum(weights)();
-	auto const weights_cumsum = xt::eval(xt::cumsum(weights));
-
-	auto const samples = xt::eval(xt::random::rand({n_samples}, 0.0, weight_sum, random_engine));
-	xvector_size_t indices({n_samples});
-
-	for (std::size_t i = 0; i < n_samples; ++i) {
-		for (std::size_t j = 0; j < weights.size() - 1; ++j) {
-			if (samples[i] < weights_cumsum[j]) {
-				indices[i] = j;
-				break;
-			}
-		}
+	xvector<std::size_t> indices({n_samples});
+	for (auto& idx : indices) {
+		const auto u = weight_dist(random_engine);
+		idx = static_cast<std::size_t>(std::upper_bound(wc.cbegin(), wc.cend(), u) - wc.cbegin());
 	}
-
 	return indices;
 }
 
 /** Choose the next item to be added to the bundle/sub-bundle. */
 auto choose_next_item(
 	xt::xtensor<int, 1> const& bundle_mask,
-	xvector const& interests,
-	xmatrix const& compats,
+	xvector<double> const& interests,
+	xmatric<double> const& compats,
 	RandomEngine& random_engine) {
-	auto compats_masked = xt::index_view(compats, bundle_mask);
-	auto compats_masked_mean = xt::sum(compats_masked, 0);
-	xvector probs = (1 - bundle_mask) * interests * compats_masked_mean;
+	auto const compats_masked = xt::index_view(compats, bundle_mask);
+	auto const compats_masked_mean = xt::sum(compats_masked, 0);
+	auto const probs = xt::eval((1 - bundle_mask) * interests * compats_masked_mean);
 	return arg_choice_without_replacement(1, probs, random_engine)(0);
 }
 
-/** Adds a single variable with the coefficient price
- *
- */
+/** Adds a single variable with the coefficient price. */
 auto add_var(SCIP* scip, std::size_t i, double price) {
 	auto const name = fmt::format("x_{}", i);
 	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., price, SCIP_VARTYPE_BINARY);
@@ -123,16 +114,15 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	assert(parameters.min_value >= 0 && parameters.max_value >= parameters.min_value);
 	assert(parameters.add_item_prob >= 0 && parameters.add_item_prob <= 1);
 
-	// get values
-	xvector rand_val = xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine);
-	xvector values = parameters.min_value + (parameters.max_value - parameters.min_value) * rand_val;
+	auto const rand_val = xt::eval(xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine));
+	auto const values = xt::eval(parameters.min_value + (parameters.max_value - parameters.min_value) * rand_val);
 
 	// get compatibilities
-	xmatrix compats_rand = xt::random::rand({parameters.n_items, parameters.n_items}, 0.0, 1.0, random_engine);
-	xmatrix compats = xt::triu(compats_rand, 1);
-	xmatrix compats_T = xt::transpose(compats);
-	compats = compats + compats_T;
-	compats = compats / xt::sum(compats, 1);
+	auto const compats_rand =
+		xt::eval(xt::random::rand({parameters.n_items, parameters.n_items}, 0.0, 1.0, random_engine));
+	auto compats = xt::eval(xt::triu(compats_rand, 1));
+	compats += xt::transpose(compats);
+	compats /= xt::sum(compats, 1);
 
 	std::size_t n_dummy_items = 0;
 	std::size_t bid_index = 0;
@@ -143,8 +133,9 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	while (bid_index < parameters.n_bids) {
 
 		// bidder item values (buy price) and interests
-		xvector private_interests = xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine);
-		xvector private_values = values + parameters.max_value * parameters.value_deviation * (2 * private_interests - 1);
+		auto const private_interests = xt::eval(xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine));
+		auto const private_values =
+			xt::eval(values + parameters.max_value * parameters.value_deviation * (2 * private_interests - 1));
 
 		// substitutable bids of this bidder
 		std::map<vector, double> bidder_bids = {};
@@ -173,10 +164,9 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		vector bundle = xt::nonzero(bundle_mask)[0];
 
 		// get price of bundle
-		xvector private_values_slice = xt::index_view(private_values, bundle);
-		double private_value_slice_sum = xt::sum(private_values_slice)();
-		double bundle_power = std::pow(static_cast<double>(bundle.size()), 1.0 + parameters.additivity);
-		double price = private_value_slice_sum + bundle_power;
+		auto const private_values_slice = xt::index_view(private_values, bundle);
+		auto const bundle_power = std::pow(static_cast<double>(bundle.size()), 1.0 + parameters.additivity);
+		auto price = xt::sum(private_values_slice)() + bundle_power;
 
 		if (parameters.integers) {
 			price = floor(price);
@@ -185,7 +175,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		// restart bid if price < 0
 		if (price < 0) {
 			if (parameters.warnings) {
-				std::cout << "warning: negatively priced bundle avoided" << std::endl;
+				std::clog << "warning: negatively priced bundle avoided\n";
 			}
 			continue;
 		}
@@ -218,10 +208,9 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			vector sub_bundle = xt::nonzero(sub_bundle_mask)[0];
 
 			// get price of sub-bundle
-			xvector sub_private_values_slice = xt::index_view(private_values, sub_bundle);
-			double sub_private_value_slice_sum = xt::sum(sub_private_values_slice)();
-			double sub_bundle_power = std::pow(static_cast<double>(sub_bundle.size()), 1.0 + parameters.additivity);
-			double sub_price = sub_private_value_slice_sum + sub_bundle_power;
+			auto const sub_private_values_slice = xt::index_view(private_values, sub_bundle);
+			auto const sub_bundle_power = std::pow(static_cast<double>(sub_bundle.size()), 1.0 + parameters.additivity);
+			auto sub_price = xt::sum(sub_private_values_slice)() + sub_bundle_power;
 
 			if (parameters.integers) {
 				sub_price = floor(sub_price);
@@ -231,14 +220,13 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			sub_candidates_price.push_back(sub_price);
 		}
 
-		double budget = parameters.budget_factor * price;
+		auto const budget = parameters.budget_factor * price;
 
-		xvector value_slice = xt::index_view(values, bundle);
-		double value_slice_sum = xt::sum(value_slice)();
-		double min_resale_value = parameters.resale_factor * value_slice_sum;
+		auto const value_slice = xt::index_view(values, bundle);
+		auto const min_resale_value = parameters.resale_factor * xt::sum(value_slice)();
 
-		xvector price_tensor = xt::adapt(sub_candidates_price, {sub_candidates_price.size()});
-		xvector_size_t sorted_indices = xt::argsort(price_tensor);
+		auto const price_tensor = xt::adapt(sub_candidates_price, {sub_candidates_price.size()});
+		auto const sorted_indices = xt::argsort(price_tensor);
 
 		// get XOR bids, higher priced candidates first
 		for (std::size_t i = 0; i < sorted_indices.size(); ++i) {
@@ -252,30 +240,30 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 			if (price_i < 0) {
 				if (parameters.warnings) {
-					std::cout << "warning: negatively priced substitutable bundle avoided" << std::endl;
+					std::clog << "warning: negatively priced substitutable bundle avoided\n";
 				}
 				continue;
 			}
 
 			if (price_i > budget) {
 				if (parameters.warnings) {
-					std::cout << "warning: over priced substitutable bundle avoided" << std::endl;
+					std::clog << "warning: over priced substitutable bundle avoided\n";
 				}
 				continue;
 			}
 
-			xvector value_slice_i = xt::index_view(values, bundle_i);
+			// FIXME unused  xvector value_slice_i = xt::index_view(values, bundle_i);
 			double value_slice_sum_i = xt::sum(value_slice)();
 			if (value_slice_sum_i < min_resale_value) {
 				if (parameters.warnings) {
-					std::cout << "warning: substitutable bundle below min resale value avoided" << std::endl;
+					std::clog << "warning: substitutable bundle below min resale value avoided\n";
 				}
 				continue;
 			}
 
 			if (bidder_bids.count(bundle_i)) {  // REPL
 				if (parameters.warnings) {
-					std::cout << "warning: duplicated substitutable bundle avoided" << std::endl;
+					std::cout << "warning: duplicated substitutable bundle avoided\n";
 				}
 				continue;
 			}
