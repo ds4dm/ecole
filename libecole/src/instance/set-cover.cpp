@@ -74,7 +74,8 @@ auto get_counts(xvector& indices, size_t n_cols) -> xvector {
  * Samples num_samples values in the range from start_index to
  * end_index.
  */
-auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_samples, RandomEngine& random_engine) -> xvector {
+auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_samples, RandomEngine& random_engine)
+	-> xvector {
 	xvector choices = xt::arange<size_t>(start_index, end_index, 1);
 	xvector samples = xt::random::choice(choices, num_samples, false, random_engine);
 	return samples;
@@ -109,12 +110,7 @@ auto add_vars(SCIP* scip, xt::xtensor<scip::real, 1> const& c) -> xt::xtensor<SC
  *
  * For each set, at least one element is required to the solution.
  */
-auto add_constaints(
-	SCIP* scip, 
-	xt::xtensor<SCIP_VAR*, 1> vars,
-	xvector& indices,
-	xvector& indptr,
-	size_t n_rows) {
+auto add_constaints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, xvector& indices, xvector& indptr, size_t n_rows) {
 
 	for (size_t i = 0; i < n_rows; ++i) {
 
@@ -141,11 +137,7 @@ auto add_constaints(
  * tuple of the indices and index pointers in CSR format are
  * returned.
  */
-auto convert_csc_to_csr(
-	xvector& indices, 
-	xvector& indptr, 
-	size_t n_rows, 
-	size_t n_cols) {
+auto convert_csc_to_csr(xvector& indices, xvector& indptr, size_t n_rows, size_t n_cols) {
 
 	xvector indptr_csr({n_rows + 1}, 0);
 	xvector indices_csr({indices.size()}, 0);
@@ -173,7 +165,6 @@ auto convert_csc_to_csr(
 
 }  // namespace
 
-
 /******************************************
  *  SetCoverGenerator::generate_instance  *
  ******************************************/
@@ -190,7 +181,7 @@ scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Pa
 	xvector indices({nnzrs}, 0);
 
 	// force at least 2 rows per col
-	xvector first_indices =  xt::arange<size_t>(0, 2 * n_cols, 1) % n_cols;
+	xvector first_indices = xt::arange<size_t>(0, 2 * n_cols, 1) % n_cols;
 	set_slice(indices, first_indices, 0, 2 * n_cols);
 
 	// assign remaining column indexes at random
@@ -216,7 +207,7 @@ scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Pa
 			xvector sampled_rows = get_choice_in_range(0, n_rows, n, random_engine);
 			set_slice(indices, sampled_rows, i, i + n);
 
-		} else if (i + n > n_rows) {		
+		} else if (i + n > n_rows) {
 			auto remaining_rows = xt::setdiff1d(xt::arange<size_t>(0, n_rows, 1), get_slice(indices, i, n_rows));
 			xvector choices = xt::random::choice(remaining_rows, i + n - n_rows, false, random_engine);
 			set_slice(indices, choices, n_rows, i + n);
