@@ -178,11 +178,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - &conan_cache_key >-
-              conan-v1.1-{{
-              arch }}-{{
-              checksum "libecole/conanfile.txt" }}-{{
-              checksum "libecole/tests/conanfile.txt" }}
+            - &conan_cache_key conan-v1.1-{{ arch }}-{{ checksum "libecole/conanfile.txt" }}
             - conan-v1.1-{{ arch }}-
       - run:
           name: "CMake configure"
