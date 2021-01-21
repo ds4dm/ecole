@@ -199,7 +199,7 @@ void bind_submodule(py::module const& m) {
 		integers:
 			Determines if the bid prices should be integral.
 		warnings:
-			Determines if warnings should be printed when invalid bundles are skipped in instance generation.  
+			Determines if warnings should be printed when invalid bundles are skipped in instance generation.
 		random_engine:
 			The random number generator used to peform all sampling.
 

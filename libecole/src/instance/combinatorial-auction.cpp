@@ -1,6 +1,6 @@
-#include <fmt/format.h>
 #include <map>
 
+#include <fmt/format.h>
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xindex_view.hpp>
 #include <xtensor/xrandom.hpp>
@@ -36,10 +36,9 @@ void CombinatorialAuctionGenerator::seed(Seed seed) {
 
 namespace {
 
-using std::size_t;
-using vector = std::vector<size_t>;
+using vector = std::vector<std::size_t>;
 using xvector = xt::xtensor<double, 1>;
-using xvector_size_t = xt::xtensor<size_t, 1>;
+using xvector_size_t = xt::xtensor<std::size_t, 1>;
 using xmatrix = xt::xtensor<double, 2>;
 
 /** Sample with replacement based on weights given by a probability or weight vector.
@@ -47,16 +46,17 @@ using xmatrix = xt::xtensor<double, 2>;
  * Samples n_samples values from a weighted distribution defined by the weights.
  * The values are in the range of [1, weights.size()].
  */
-auto arg_choice_without_replacement(size_t n_samples, xvector weights, RandomEngine& random_engine) -> xvector_size_t {
+auto arg_choice_without_replacement(std::size_t n_samples, xvector weights, RandomEngine& random_engine)
+	-> xvector_size_t {
 
 	auto const weight_sum = xt::sum(weights)();
-	xvector weights_cumsum = xt::cumsum(weights);
+	auto const weights_cumsum = xt::eval(xt::cumsum(weights));
 
-	xvector samples = xt::random::rand({n_samples}, 0.0, weight_sum, random_engine);
+	auto const samples = xt::eval(xt::random::rand({n_samples}, 0.0, weight_sum, random_engine));
 	xvector_size_t indices({n_samples});
 
-	for (size_t i = 0; i < n_samples; ++i) {
-		for (size_t j = 0; j < weights.size() - 1; ++j) {			
+	for (std::size_t i = 0; i < n_samples; ++i) {
+		for (std::size_t j = 0; j < weights.size() - 1; ++j) {
 			if (samples[i] < weights_cumsum[j]) {
 				indices[i] = j;
 				break;
@@ -67,12 +67,11 @@ auto arg_choice_without_replacement(size_t n_samples, xvector weights, RandomEng
 	return indices;
 }
 
-/** Choose the next item to be added to the bundle/sub-bundle.
- */
+/** Choose the next item to be added to the bundle/sub-bundle. */
 auto choose_next_item(
-	xt::xtensor<int, 1> bundle_mask,
-	xvector interests,
-	xmatrix compats,
+	xt::xtensor<int, 1> const& bundle_mask,
+	xvector const& interests,
+	xmatrix const& compats,
 	RandomEngine& random_engine) {
 	auto compats_masked = xt::index_view(compats, bundle_mask);
 	auto compats_masked_mean = xt::sum(compats_masked, 0);
@@ -83,7 +82,7 @@ auto choose_next_item(
 /** Adds a single variable with the coefficient price
  *
  */
-auto add_var(SCIP* scip, size_t i, double price) {
+auto add_var(SCIP* scip, std::size_t i, double price) {
 	auto const name = fmt::format("x_{}", i);
 	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., price, SCIP_VARTYPE_BINARY);
 	auto* var_ptr = unique_var.get();
@@ -91,19 +90,17 @@ auto add_var(SCIP* scip, size_t i, double price) {
 	return var_ptr;
 }
 
-/** Adds all constraints to the SCIP model.
- *
- */
+/** Adds all constraints to the SCIP model.  */
 auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<vector> bids_per_item) {
 
-	for (size_t i = 0; i < bids_per_item.size(); ++i) {
+	for (std::size_t i = 0; i < bids_per_item.size(); ++i) {
 
-		vector item_bids = bids_per_item[i];
+		auto const item_bids = bids_per_item[i];
 
-		if (item_bids.size() > 0) {
+		if (!item_bids.empty()) {
 			auto cons_vars = xt::xtensor<SCIP_VAR*, 1>{{item_bids.size()}};
 			auto coefs = xt::xtensor<scip::real, 1>(cons_vars.shape(), 1.);
-			for (size_t j = 0; j < item_bids.size(); ++j) {
+			for (std::size_t j = 0; j < item_bids.size(); ++j) {
 				cons_vars(j) = vars(item_bids[j]);
 			}
 			auto name = fmt::format("c_{}", i);
@@ -137,8 +134,8 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	compats = compats + compats_T;
 	compats = compats / xt::sum(compats, 1);
 
-	size_t n_dummy_items = 0;
-	size_t bid_index = 0;
+	std::size_t n_dummy_items = 0;
+	std::size_t bid_index = 0;
 
 	std::vector<vector> bids_bundle{};
 	std::vector<double> bids_price{};
@@ -153,7 +150,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		std::map<vector, double> bidder_bids = {};
 
 		// generate initial bundle, choose first item according to bidder interests
-		size_t item = arg_choice_without_replacement(1, private_interests, random_engine)(0);
+		auto item = arg_choice_without_replacement(1, private_interests, random_engine)(0);
 
 		xt::xtensor<int, 1> bundle_mask = xt::zeros<int>({parameters.n_items});
 		bundle_mask(item) = 1;
@@ -165,8 +162,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 				break;
 			}
 
-			size_t mask_sum = static_cast<size_t>(xt::sum(bundle_mask)());
-			if (mask_sum == parameters.n_items) {
+			if (static_cast<std::size_t>(xt::sum(bundle_mask)()) == parameters.n_items) {
 				break;
 			}
 
@@ -202,7 +198,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 		for (size_t i = 0; i < bundle.size(); ++i) {
 
-			size_t sub_item = bundle[i];
+			std::size_t sub_item = bundle[i];
 
 			// at least one item must be shared with initial bundle
 			xt::xtensor<int, 1> sub_bundle_mask = xt::zeros<int>({parameters.n_items});
@@ -210,7 +206,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 			// add additional items, according to bidder interests and item compatibilities
 			while (true) {
-				size_t sub_mask_sum = static_cast<size_t>(xt::sum(sub_bundle_mask)());
+				size_t sub_mask_sum = static_cast<std::size_t>(xt::sum(sub_bundle_mask)());
 				if (sub_mask_sum >= bundle.size()) {
 					break;
 				}
@@ -245,8 +241,8 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		xvector_size_t sorted_indices = xt::argsort(price_tensor);
 
 		// get XOR bids, higher priced candidates first
-		for (size_t i = 0; i < sorted_indices.size() ; ++i) {
-			size_t idx = sorted_indices.size() - i - 1;
+		for (std::size_t i = 0; i < sorted_indices.size(); ++i) {
+			std::size_t idx = sorted_indices.size() - i - 1;
 			auto bundle_i = sub_candidates_bundle[sorted_indices(idx)];
 			auto price_i = sub_candidates_price[sorted_indices(idx)];
 
@@ -277,7 +273,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 				continue;
 			}
 
-			if (bidder_bids.count(bundle_i)) { // REPL
+			if (bidder_bids.count(bundle_i)) {  // REPL
 				if (parameters.warnings) {
 					std::cout << "warning: duplicated substitutable bundle avoided" << std::endl;
 				}
@@ -287,7 +283,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			bidder_bids[bundle_i] = price_i;
 		}
 
-		size_t dummy_item = 0;
+		std::size_t dummy_item = 0;
 		if (bidder_bids.size() > 2) {
 			dummy_item = parameters.n_items + n_dummy_items;
 			++n_dummy_items;
@@ -314,23 +310,21 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 	//  initialize bids_per_item vector
 	std::vector<vector> bids_per_item;
-	for (size_t i = 0; i < parameters.n_items + n_dummy_items; ++i) {
+	for (std::size_t i = 0; i < parameters.n_items + n_dummy_items; ++i) {
 		vector bids_per_item_i;
 		bids_per_item.push_back(bids_per_item_i);
 	}
 
 	// add variables
 	auto vars = xt::xtensor<SCIP_VAR*, 1>{{bids_bundle.size()}};
-	for (size_t i = 0; i < bids_bundle.size(); ++i) {
+	for (std::size_t i = 0; i < bids_bundle.size(); ++i) {
 		vector bundle_i = bids_bundle[i];
 		double price_i = bids_price[i];
 
-		// add variable to pyscipopt
 		vars(i) = add_var(scip, i, price_i);
 
-		// add to bids_per_item
-		for (size_t j = 0; j < bundle_i.size(); ++j) {
-			bids_per_item[bundle_i[j]].push_back(i);
+		for (auto const j : bundle_i) {
+			bids_per_item[j].push_back(i);
 		}
 	}
 
