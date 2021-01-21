@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <map>
+
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xindex_view.hpp>
 #include <xtensor/xrandom.hpp>
@@ -15,9 +16,9 @@
 
 namespace ecole::instance {
 
-/**************************************************
+/*******************************************
  *  CombinatorialAuctionGenerator methods  *
- **************************************************/
+ *******************************************/
 
 CombinatorialAuctionGenerator::CombinatorialAuctionGenerator(RandomEngine random_engine_, Parameters parameters_) :
 	random_engine{random_engine_}, parameters{parameters_} {}
@@ -48,29 +49,25 @@ using xmatrix = xt::xtensor<double, 2>;
  */
 auto arg_choice_without_replacement(size_t n_samples, xvector weights, RandomEngine& random_engine) -> xvector_size_t {
 
-	auto const n_items = weights.size();
-
-	auto weight_sum = xt::sum(weights)();
+	auto const weight_sum = xt::sum(weights)();
 	xvector weights_cumsum = xt::cumsum(weights);
 
 	xvector samples = xt::random::rand({n_samples}, 0.0, weight_sum, random_engine);
 	xvector_size_t indices({n_samples});
 
 	for (size_t i = 0; i < n_samples; ++i) {
-		size_t index = n_items - 1;
-		for (size_t j = 0; j < n_items - 1; ++j) {
-			if (samples[i] >= weights_cumsum[j] && samples[i] <= weights_cumsum[j + 1]) {
-				index = j;
+		for (size_t j = 0; j < weights.size() - 1; ++j) {			
+			if (samples[i] < weights_cumsum[j]) {
+				indices[i] = j;
 				break;
 			}
 		}
-		indices[i] = index;
 	}
+
 	return indices;
 }
 
 /** Choose the next item to be added to the bundle/sub-bundle.
- *
  */
 auto choose_next_item(
 	xt::xtensor<int, 1> bundle_mask,
@@ -80,7 +77,6 @@ auto choose_next_item(
 	auto compats_masked = xt::index_view(compats, bundle_mask);
 	auto compats_masked_mean = xt::sum(compats_masked, 0);
 	xvector probs = (1 - bundle_mask) * interests * compats_masked_mean;
-	probs = probs / xt::sum(probs);
 	return arg_choice_without_replacement(1, probs, random_engine)(0);
 }
 
@@ -121,9 +117,9 @@ auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<vec
 
 }  // namespace
 
-/*************************************************************
+/******************************************************
  *  CombinatorialAuctionGenerator::generate_instance  *
- *************************************************************/
+ ******************************************************/
 
 scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
 
@@ -144,8 +140,8 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 	size_t n_dummy_items = 0;
 	size_t bid_index = 0;
 
-	std::vector<vector> bids_bundle;
-	std::vector<double> bids_price;
+	std::vector<vector> bids_bundle{};
+	std::vector<double> bids_price{};
 
 	while (bid_index < parameters.n_bids) {
 
@@ -157,8 +153,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		std::map<vector, double> bidder_bids = {};
 
 		// generate initial bundle, choose first item according to bidder interests
-		xvector probs = private_interests / xt::sum(private_interests);
-		size_t item = arg_choice_without_replacement(1, probs, random_engine)(0);
+		size_t item = arg_choice_without_replacement(1, private_interests, random_engine)(0);
 
 		xt::xtensor<int, 1> bundle_mask = xt::zeros<int>({parameters.n_items});
 		bundle_mask(item) = 1;
