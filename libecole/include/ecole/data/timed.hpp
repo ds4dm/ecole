@@ -45,4 +45,4 @@ private:
 	bool wall = false;
 };
 
-};  // namespace ecole::data
+}  // namespace ecole::data
