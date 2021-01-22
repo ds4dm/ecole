@@ -16,7 +16,6 @@ Ecole
 .. image:: https://img.shields.io/conda/pn/scipopt/ecole?label=conda%7Cscipopt
    :target: https://anaconda.org/scipopt/ecole
    :alt: Conda Platforms
-   
 
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
