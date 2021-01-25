@@ -278,12 +278,13 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		}
 
 		// add bids
-		for (auto& [bundle, price] : bidder_bids) {
+		for (auto const& [b, p] : bidder_bids) {
+			auto bund_copy = b;
 			if (dummy_item) {
-				bundle.push_back(dummy_item);
+				bund_copy.push_back(dummy_item);
 			}
-			bids_bundle.push_back(bundle);
-			bids_price.push_back(price);
+			bids_bundle.push_back(bund_copy);
+			bids_price.push_back(p);
 			++bid_index;
 		}
 
