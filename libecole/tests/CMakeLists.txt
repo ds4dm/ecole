@@ -1,5 +1,6 @@
 add_executable(
 	test-libecole
+
 	src/main.cpp
 	src/conftest.cpp
 
@@ -13,6 +14,13 @@ add_executable(
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
 
+	src/instance/unit-tests.cpp
+	src/instance/test-set-cover.cpp
+	src/instance/test-independent-set.cpp
+	src/instance/test-independent-set-graph.cpp
+	src/instance/test-combinatorial-auction.cpp
+	src/instance/test-capacitated-facility-location.cpp
+
 	src/data/test-constant.cpp
 	src/data/test-none.cpp
 	src/data/test-tuple.cpp
@@ -21,13 +29,6 @@ add_executable(
 	src/data/test-multiary.cpp
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
-
-	src/instance/unit-tests.cpp
-	src/instance/test-set-cover.cpp
-	src/instance/test-independent-set.cpp
-	src/instance/test-independent-set-graph.cpp
-	src/instance/test-combinatorial-auction.cpp
-	src/instance/test-capacitated-facility-location.cpp
 
 	src/reward/test-lpiterations.cpp
 	src/reward/test-isdone.cpp
