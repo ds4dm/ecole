@@ -86,8 +86,3 @@ if(ENABLE_PYTHON_VENV)
 
 	add_custom_target(ecole-venv ALL DEPENDS "${CMAKE_BINARY_DIR}/venv")
 endif()
-
-# Add test if this is the main project and testing is enabled
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-	add_subdirectory(tests)
-endif()
