@@ -103,6 +103,17 @@ auto add_constraints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, std::vector<vec
 	}
 }
 
+/**
+ * Placeholder warning function.
+ *
+ * Ideally we should manage logging and warnings properly.
+ */
+template <typename String> void warning(String&& message, bool do_log) {
+	if (do_log) {
+		std::clog << "Warning: " << message << '\n';
+	}
+}
+
 }  // namespace
 
 /******************************************************
@@ -174,9 +185,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 		// restart bid if price < 0
 		if (price < 0) {
-			if (parameters.warnings) {
-				std::clog << "warning: negatively priced bundle avoided\n";
-			}
+			warning("Negatively priced bundle avoided", parameters.warnings);
 			continue;
 		}
 
@@ -196,7 +205,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 			// add additional items, according to bidder interests and item compatibilities
 			while (true) {
-				size_t sub_mask_sum = static_cast<std::size_t>(xt::sum(sub_bundle_mask)());
+				auto const sub_mask_sum = static_cast<std::size_t>(xt::sum(sub_bundle_mask)());
 				if (sub_mask_sum >= bundle.size()) {
 					break;
 				}
@@ -230,7 +239,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 
 		// get XOR bids, higher priced candidates first
 		for (std::size_t i = 0; i < sorted_indices.size(); ++i) {
-			std::size_t idx = sorted_indices.size() - i - 1;
+			auto const idx = sorted_indices.size() - i - 1;
 			auto bundle_i = sub_candidates_bundle[sorted_indices(idx)];
 			auto price_i = sub_candidates_price[sorted_indices(idx)];
 
@@ -239,32 +248,23 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 			}
 
 			if (price_i < 0) {
-				if (parameters.warnings) {
-					std::clog << "warning: negatively priced substitutable bundle avoided\n";
-				}
-				continue;
+				warning("Negatively priced substitutable bundle avoided", parameters.warnings);
 			}
 
 			if (price_i > budget) {
-				if (parameters.warnings) {
-					std::clog << "warning: over priced substitutable bundle avoided\n";
-				}
+				warning("Over priced substitutable bundle avoided", parameters.warnings);
 				continue;
 			}
 
 			// FIXME unused  xvector value_slice_i = xt::index_view(values, bundle_i);
 			double value_slice_sum_i = xt::sum(value_slice)();
 			if (value_slice_sum_i < min_resale_value) {
-				if (parameters.warnings) {
-					std::clog << "warning: substitutable bundle below min resale value avoided\n";
-				}
+				warning("Substitutable bundle below min resale value avoided", parameters.warnings);
 				continue;
 			}
 
 			if (bidder_bids.count(bundle_i)) {  // REPL
-				if (parameters.warnings) {
-					std::cout << "warning: duplicated substitutable bundle avoided\n";
-				}
+				warning("Duplicated substitutable bundle avoided", parameters.warnings);
 				continue;
 			}
 
@@ -278,14 +278,12 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& rando
 		}
 
 		// add bids
-		std::map<vector, double>::iterator it;
-		for (it = bidder_bids.begin(); it != bidder_bids.end(); ++it) {
-			vector bund = it->first;
+		for (auto& [bundle, price] : bidder_bids) {
 			if (dummy_item) {
-				bund.push_back(dummy_item);
+				bundle.push_back(dummy_item);
 			}
-			bids_bundle.push_back(bund);
-			bids_price.push_back(it->second);
+			bids_bundle.push_back(bundle);
+			bids_price.push_back(price);
 			++bid_index;
 		}
 
