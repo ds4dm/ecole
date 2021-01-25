@@ -57,12 +57,9 @@ endif()
 
 set(
 	PYTHON_FILES
-	"py.typed" "typing.py" "version.py"
-	"data.py" "observation.py" "reward.py" "information.py" "scip.py" "dynamics.py" "environment.py"
-	"_set_cover_generator.py"
-	"_combinatorial_auction_generator.py"
-	"_independent_set_generator.py"
-	"instance.py"
+	"py.typed" "typing.py"
+	"version.py" "scip.py" "instance.py"
+	"data.py" "observation.py" "reward.py" "information.py" "dynamics.py" "environment.py"
 )
 set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
 list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
