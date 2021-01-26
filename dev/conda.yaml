@@ -30,6 +30,7 @@ dependencies:
   - clang-tools=10
   - ccache
   - catch2
+  - nlohmann_json
   # Python dev tools
   - pytest
   - black
