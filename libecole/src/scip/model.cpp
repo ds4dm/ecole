@@ -261,6 +261,10 @@ nonstd::span<Row*> Model::lp_rows() const {
 	return {SCIPgetLPRows(scip_ptr), static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr))};
 }
 
+std::size_t Model::nnz() const noexcept {
+	return static_cast<std::size_t>(SCIPgetNNZs(const_cast<SCIP*>(get_scip_ptr())));
+}
+
 namespace internal {
 
 template <> std::string Caster<std::string, char>::cast(char val) {

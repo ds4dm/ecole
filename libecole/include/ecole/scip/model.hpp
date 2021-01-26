@@ -133,6 +133,7 @@ public:
 	[[nodiscard]] nonstd::span<Col*> lp_columns() const;
 	[[nodiscard]] nonstd::span<Cons*> constraints() const noexcept;
 	[[nodiscard]] nonstd::span<Row*> lp_rows() const;
+	[[nodiscard]] std::size_t nnz() const noexcept;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;
