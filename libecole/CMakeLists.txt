@@ -154,3 +154,5 @@ target_compile_features(libecole PUBLIC cxx_std_17)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
 	add_subdirectory(tests)
 endif()
+
+add_subdirectory(benchmarks)
