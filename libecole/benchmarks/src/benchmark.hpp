@@ -2,6 +2,8 @@
 
 #include <map>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 #include "ecole/scip/model.hpp"
 
@@ -27,5 +29,10 @@ struct Run {
 	Instance instance;
 	std::map<std::string, Metrics> metrics;
 };
+
+using Competitor = std::add_pointer_t<Metrics(scip::Model)>;
+
+auto run(std::map<std::string, Competitor> const& competitors, scip::Model model) -> Run;
+auto run(std::map<std::string, Competitor> const& competitors, std::vector<scip::Model> models) -> std::vector<Run>;
 
 }  // namespace ecole::benchmark
