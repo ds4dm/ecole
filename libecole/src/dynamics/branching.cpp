@@ -36,7 +36,11 @@ std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, 
 
 auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
 	model.solve_iter();
-	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
+	auto const done = model.solve_iter_is_done();
+	if (done) {
+		return {done, {}};
+	}
+	return {done, action_set(model, pseudo_candidates)};
 }
 
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& action) -> std::tuple<bool, ActionSet> {
