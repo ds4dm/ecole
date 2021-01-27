@@ -86,7 +86,7 @@ void Scimpl::solve_iter() {
 			scip::call(
 				SCIPincludeObjBranchrule,
 				scip_ptr,
-				new ReverseBranchrule(scip_ptr, weak_executor),  // NOLINT
+				new ReverseBranchrule(scip_ptr, std::move(weak_executor)),  // NOLINT
 				true);
 			scip::call(SCIPsolve, scip_ptr);  // NOLINT
 		});
