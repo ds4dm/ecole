@@ -25,7 +25,7 @@ TEST_CASE("BranchingDynamics unit tests", "[unit][dynamics]") {
 
 TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 	bool const pseudo_candidates = GENERATE(true, false);
-	dynamics::BranchingDynamics dyn{pseudo_candidates};
+	auto dyn = dynamics::BranchingDynamics{pseudo_candidates};
 	auto model = get_model();
 
 	SECTION("Return valid action set") {
@@ -54,5 +54,27 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		REQUIRE(action_set.has_value());
 		auto const action = model.lp_columns().size() + 1;
 		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::exception);
+	}
+}
+
+TEST_CASE("BranchingDynamics handles limits", "[dynamics]") {
+	bool const pseudo_candidates = GENERATE(true, false);
+	auto dyn = dynamics::BranchingDynamics{pseudo_candidates};
+	auto model = get_model();
+
+	SECTION("Node limit") {
+		auto const node_limit = GENERATE(0, 1, 2);
+		model.set_param("limits/totalnodes", node_limit);
+	}
+
+	SECTION("Time limit") {
+		auto const time_limit = GENERATE(0, 1, 2);
+		model.set_param("limits/time", time_limit);
+	}
+
+	auto [done, action_set] = dyn.reset_dynamics(model);
+	while (!done) {
+		REQUIRE(action_set.has_value());
+		std::tie(done, action_set) = dyn.step_dynamics(model, action_set.value()[0]);
 	}
 }

@@ -16,6 +16,7 @@ struct VersionInfo {
  */
 inline constexpr VersionInfo get_version() noexcept {
 	return {
+		// NOLINTNEXTLINE(readability-magic-numbers)
 		@Ecole_VERSION_MAJOR@, @Ecole_VERSION_MINOR@, @Ecole_VERSION_PATCH@, "@GIT_REVISION@"
 	};
 }
