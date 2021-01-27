@@ -50,7 +50,11 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& act
 	}
 	model.solve_iter_branch(SCIPcolGetVar(lp_cols[action]));
 
-	return {model.solve_iter_is_done(), action_set(model, pseudo_candidates)};
+	auto const done = model.solve_iter_is_done();
+	if (done) {
+		return {done, {}};
+	}
+	return {done, action_set(model, pseudo_candidates)};
 }
 
 }  // namespace ecole::dynamics
