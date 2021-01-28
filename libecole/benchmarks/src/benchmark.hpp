@@ -34,15 +34,19 @@ using CompetirorId = std::string;
 using Competitor = std::add_pointer_t<Metrics(scip::Model)>;
 using CompetitorMap = std::map<CompetirorId, Competitor>;
 using MetricsMap = std::map<CompetirorId, Metrics>;
+using Tags = std::vector<std::string>;
 
 struct Result {
 	InstanceFeatures instance;
 	MetricsMap metrics;
+	Tags tags;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Result, instance, metrics);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Result, instance, metrics, tags);
 };
 
+auto run(CompetitorMap const& competitors, scip::Model model, Tags tags) -> Result;
 auto run(CompetitorMap const& competitors, scip::Model model) -> Result;
+auto run(CompetitorMap const& competitors, std::vector<scip::Model> models, Tags tags) -> std::vector<Result>;
 auto run(CompetitorMap const& competitors, std::vector<scip::Model> models) -> std::vector<Result>;
 
 template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model>;
