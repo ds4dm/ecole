@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <string>
 #include <type_traits>
@@ -31,7 +32,7 @@ struct Metrics {
 };
 
 using CompetirorId = std::string;
-using Competitor = std::add_pointer_t<Metrics(scip::Model)>;
+using Competitor = std::function<Metrics(scip::Model)>;
 using CompetitorMap = std::map<CompetirorId, Competitor>;
 using MetricsMap = std::map<CompetirorId, Metrics>;
 using Tags = std::vector<std::string>;
@@ -44,12 +45,11 @@ struct Result {
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Result, instance, metrics, tags);
 };
 
-auto run(CompetitorMap const& competitors, scip::Model model, Tags tags) -> Result;
-auto run(CompetitorMap const& competitors, scip::Model model) -> Result;
-auto run(CompetitorMap const& competitors, std::vector<scip::Model> models, Tags tags) -> std::vector<Result>;
-auto run(CompetitorMap const& competitors, std::vector<scip::Model> models) -> std::vector<Result>;
-
 template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model>;
+
+auto benchmark_lambda(CompetitorMap const& competitors, scip::Model model, Tags tags = {}) -> Result;
+auto benchmark_lambda(CompetitorMap const& competitors, std::vector<scip::Model> models, Tags tags = {})
+	-> std::vector<Result>;
 
 /********************
  *  Implementation  *

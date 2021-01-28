@@ -15,7 +15,7 @@ namespace ecole::benchmark {
 
 namespace {
 
-template <typename Func> auto benchmark_on_model(Func&& func_to_bench, scip::Model model) -> Metrics {
+template <typename Func> auto measure_on_model(Func&& func_to_bench, scip::Model model) -> Metrics {
 	auto const cpu_time_before = utility::cpu_clock::now();
 	auto const wall_time_before = std::chrono::steady_clock::now();
 	func_to_bench(model);
@@ -32,8 +32,8 @@ template <typename Func> auto benchmark_on_model(Func&& func_to_bench, scip::Mod
 
 }  // namespace
 
-auto benchmark_branching_dynamics(scip::Model model) -> Metrics {
-	return benchmark_on_model(
+auto measure_branching_dynamics(scip::Model model) -> Metrics {
+	return measure_on_model(
 		[](scip::Model& m) {
 			auto dyn = dynamics::BranchingDynamics{};
 			auto [done, action_set] = dyn.reset_dynamics(m);
@@ -44,8 +44,8 @@ auto benchmark_branching_dynamics(scip::Model model) -> Metrics {
 		std::move(model));
 }
 
-auto benchmark_branching_rule(scip::Model model) -> Metrics {
-	return benchmark_on_model(
+auto measure_branching_rule(scip::Model model) -> Metrics {
+	return measure_on_model(
 		[](scip::Model& m) {
 			auto* branch_rule = new ecole::scip::IndexBranchrule{m.get_scip_ptr(), "FirstVarBranching", 0UL};
 			SCIPincludeObjBranchrule(m.get_scip_ptr(), branch_rule, true);
@@ -53,6 +53,20 @@ auto benchmark_branching_rule(scip::Model model) -> Metrics {
 			m.solve();
 		},
 		std::move(model));
+}
+
+auto benchmark_branching(scip::Model model, Tags tags) -> Result {
+	return benchmark_lambda(
+		{{"branching_rule", &measure_branching_rule}, {"branching_dynamics", &measure_branching_dynamics}},
+		std::move(model),
+		std::move(tags));
+}
+
+auto benchmark_branching(std::vector<scip::Model> models, Tags tags) -> std::vector<Result> {
+	return benchmark_lambda(
+		{{"branching_rule", &measure_branching_rule}, {"braching_dynamics", &measure_branching_dynamics}},
+		std::move(models),
+		std::move(tags));
 }
 
 }  // namespace ecole::benchmark
