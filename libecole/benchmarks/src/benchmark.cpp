@@ -21,15 +21,11 @@ auto benchmark_lambda(CompetitorMap const& competitors, scip::Model model, Tags 
 	return result;
 }
 
-auto benchmark_lambda(CompetitorMap const& competitors, std::vector<scip::Model> models, Tags tags)
+auto benchmark_lambda(CompetitorMap const& competitors, ModelGenerator gen, std::size_t n, Tags tags)
 	-> std::vector<Result> {
 	auto results = std::vector<Result>{};
-	results.reserve(models.size());
-	std::transform(
-		std::make_move_iterator(models.begin()),
-		std::make_move_iterator(models.end()),
-		std::back_inserter(results),
-		[&](scip::Model&& model) { return benchmark_lambda(competitors, std::move(model), tags); });
+	results.reserve(n);
+	std::generate_n(std::back_inserter(results), n, [&]() { return benchmark_lambda(competitors, gen(), tags); });
 	return results;
 }
 

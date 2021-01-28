@@ -47,21 +47,9 @@ struct Result {
 
 template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model>;
 
+using ModelGenerator = std::function<scip::Model()>;
 auto benchmark_lambda(CompetitorMap const& competitors, scip::Model model, Tags tags = {}) -> Result;
-auto benchmark_lambda(CompetitorMap const& competitors, std::vector<scip::Model> models, Tags tags = {})
+auto benchmark_lambda(CompetitorMap const& competitors, ModelGenerator gen, std::size_t n, Tags tags = {})
 	-> std::vector<Result>;
-
-/********************
- *  Implementation  *
- ********************/
-
-template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model> {
-	auto instances = std::vector<scip::Model>{};
-	instances.reserve(n);
-	for (std::size_t i = 0; i < n; ++i) {
-		instances.emplace_back(gen.next());
-	}
-	return instances;
-}
 
 }  // namespace ecole::benchmark

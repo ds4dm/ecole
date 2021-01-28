@@ -62,10 +62,11 @@ auto benchmark_branching(scip::Model model, Tags tags) -> Result {
 		std::move(tags));
 }
 
-auto benchmark_branching(std::vector<scip::Model> models, Tags tags) -> std::vector<Result> {
+auto benchmark_branching(ModelGenerator gen, std::size_t n, Tags tags) -> std::vector<Result> {
 	return benchmark_lambda(
 		{{"branching_rule", &measure_branching_rule}, {"braching_dynamics", &measure_branching_dynamics}},
-		std::move(models),
+		std::move(gen),
+		n,
 		std::move(tags));
 }
 
