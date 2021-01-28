@@ -45,4 +45,19 @@ struct Result {
 auto run(CompetitorMap const& competitors, scip::Model model) -> Result;
 auto run(CompetitorMap const& competitors, std::vector<scip::Model> models) -> std::vector<Result>;
 
+template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model>;
+
+/********************
+ *  Implementation  *
+ ********************/
+
+template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model> {
+	auto instances = std::vector<scip::Model>{};
+	instances.reserve(n);
+	for (std::size_t i = 0; i < n; ++i) {
+		instances.emplace_back(gen.next());
+	}
+	return instances;
+}
+
 }  // namespace ecole::benchmark
