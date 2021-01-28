@@ -11,15 +11,14 @@
 
 namespace ecole::benchmark {
 
-struct Instance {
-	std::string name = "unknown-model";
+struct InstanceFeatures {
 	std::size_t n_vars = 0;
 	std::size_t n_cons = 0;
 	std::size_t n_nonzero = 0;
 
-	static auto from_model(scip::Model const& model) -> Instance;
+	static auto from_model(scip::Model const& model) -> InstanceFeatures;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Instance, name, n_vars, n_cons, n_nonzero);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(InstanceFeatures, n_vars, n_cons, n_nonzero);
 };
 
 struct Metrics {
@@ -31,16 +30,19 @@ struct Metrics {
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Metrics, wall_time_s, cpu_time_s, n_nodes, n_lp_iterations);
 };
 
-struct Run {
-	Instance instance;
-	std::map<std::string, Metrics> metrics;
+using CompetirorId = std::string;
+using Competitor = std::add_pointer_t<Metrics(scip::Model)>;
+using CompetitorMap = std::map<CompetirorId, Competitor>;
+using MetricsMap = std::map<CompetirorId, Metrics>;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Run, instance, metrics);
+struct Result {
+	InstanceFeatures instance;
+	MetricsMap metrics;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Result, instance, metrics);
 };
 
-using Competitor = std::add_pointer_t<Metrics(scip::Model)>;
-
-auto run(std::map<std::string, Competitor> const& competitors, scip::Model model) -> Run;
-auto run(std::map<std::string, Competitor> const& competitors, std::vector<scip::Model> models) -> std::vector<Run>;
+auto run(CompetitorMap const& competitors, scip::Model model) -> Result;
+auto run(CompetitorMap const& competitors, std::vector<scip::Model> models) -> std::vector<Result>;
 
 }  // namespace ecole::benchmark
