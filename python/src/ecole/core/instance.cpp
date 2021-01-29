@@ -301,14 +301,14 @@ void def_generate_instance_impl(PyClass& py_class, char const* docstring, Member
 	py_class.def_static(
 		"generate_instance",
 		// Get the type of each parameter and add it to the Python function parameters
-		[](RandomEngine& random_engine, utility::return_t<decltype(members.value)>... params) {
+		[](utility::return_t<decltype(members.value)>... params, RandomEngine& random_engine) {
 			// Call the C++ static function with a Parameter struct
-			return Generator::generate_instance(random_engine, Parameters{params...});
+			return Generator::generate_instance(Parameters{params...}, random_engine);
 		},
-		py::arg("random_engine"),
 		// Set name for all function parameters.
 		// Fetch default value on the default parameters
 		(py::arg(members.name) = std::invoke(members.value, default_params))...,
+		py::arg("random_engine"),
 		py::call_guard<py::gil_scoped_release>(),
 		docstring);
 }
@@ -336,18 +336,18 @@ template <typename PyClass, typename... Members> void def_init_impl(PyClass& py_
 	// Bind a constructor that takes as input all parameters
 	py_class.def(
 		// Get the type of each parameter and add it to the Python constructor
-		py::init([](RandomEngine const* random_engine, utility::return_t<decltype(members.value)>... params) {
+		py::init([](utility::return_t<decltype(members.value)>... params, RandomEngine const* random_engine) {
 			// Dispatch to the C++ constructors with a Parameter struct
 			if (random_engine == nullptr) {
 				return std::make_unique<Generator>(Parameters{params...});
 			}
-			return std::make_unique<Generator>(*random_engine, Parameters{params...});
+			return std::make_unique<Generator>(Parameters{params...}, *random_engine);
 		}),
-		// None as nullptr are allowed
-		py::arg("random_engine").none(true) = py::none(),
 		// Set name for all constructor parameters.
 		// Fetch default value on the default parameters
-		(py::arg(members.name) = std::invoke(members.value, default_params))...);
+		(py::arg(members.name) = std::invoke(members.value, default_params))...,
+		// None as nullptr are allowed
+		py::arg("random_engine").none(true) = py::none());
 }
 
 template <typename PyClass, typename MemberTuple> void def_init(PyClass& py_class, MemberTuple&& members_tuple) {

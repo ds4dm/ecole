@@ -18,14 +18,14 @@ namespace ecole::instance {
  *  SetCoverGenerator methods  *
  *************************************/
 
-SetCoverGenerator::SetCoverGenerator(RandomEngine random_engine_, Parameters parameters_) :
+SetCoverGenerator::SetCoverGenerator(Parameters parameters_, RandomEngine random_engine_) :
 	random_engine{random_engine_}, parameters{parameters_} {}
 SetCoverGenerator::SetCoverGenerator(Parameters parameters_) :
-	SetCoverGenerator{ecole::spawn_random_engine(), parameters_} {}
+	SetCoverGenerator{parameters_, ecole::spawn_random_engine()} {}
 SetCoverGenerator::SetCoverGenerator() : SetCoverGenerator(Parameters{}) {}
 
 scip::Model SetCoverGenerator::next() {
-	return generate_instance(random_engine, parameters);
+	return generate_instance(parameters, random_engine);
 }
 
 void SetCoverGenerator::seed(Seed seed) {
@@ -169,7 +169,7 @@ auto convert_csc_to_csr(xvector& indices, xvector& indptr, size_t n_rows, size_t
  *  SetCoverGenerator::generate_instance  *
  ******************************************/
 
-scip::Model SetCoverGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
+scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
 
 	auto const n_rows = parameters.n_rows;
 	auto const n_cols = parameters.n_cols;

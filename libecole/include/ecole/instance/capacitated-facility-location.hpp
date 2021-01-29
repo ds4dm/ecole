@@ -21,9 +21,9 @@ public:
 		std::pair<int, int> fixed_cost_scale_interval = {100, 110 + 1};  // NOLINT(readability-magic-numbers)
 	};
 
-	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);
+	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
 
-	CapacitatedFacilityLocationGenerator(RandomEngine random_engine, Parameters parameters);
+	CapacitatedFacilityLocationGenerator(Parameters parameters, RandomEngine random_engine);
 	CapacitatedFacilityLocationGenerator(Parameters parameters);
 	CapacitatedFacilityLocationGenerator();
 

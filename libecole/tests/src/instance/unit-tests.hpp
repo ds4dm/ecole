@@ -22,7 +22,7 @@ template <typename Generator> void unit_tests(Generator&& generator) {
 		// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
 		auto const original_random_engine = RandomEngine{};
 		auto random_engine = original_random_engine;
-		auto model = Generator::generate_instance(random_engine, Parameters{});
+		auto model = Generator::generate_instance(Parameters{}, random_engine);
 		STATIC_REQUIRE(std::is_same_v<decltype(model), scip::Model>);
 		REQUIRE(random_engine != original_random_engine);
 	}
@@ -33,7 +33,7 @@ template <typename Generator> void unit_tests(Generator&& generator) {
 
 	SECTION("Has parameter and random engine constructor") {
 		// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
-		Generator{RandomEngine{}, Parameters{}};
+		Generator{Parameters{}, RandomEngine{}};
 	}
 
 	SECTION("Generate instances in loop") {

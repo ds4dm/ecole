@@ -24,9 +24,9 @@ public:
 		bool warnings = false;           // NOLINT(readability-magic-numbers)
 	};
 
-	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);
+	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
 
-	CombinatorialAuctionGenerator(RandomEngine random_engine, Parameters parameters);
+	CombinatorialAuctionGenerator(Parameters parameters, RandomEngine random_engine);
 	CombinatorialAuctionGenerator(Parameters parameters);
 	CombinatorialAuctionGenerator();
 
