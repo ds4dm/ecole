@@ -98,9 +98,9 @@ void bind_submodule(py::module const& m) {
 	// The Independent Set parameters used in constructor, generate_instance, and attributes
 	auto constexpr independent_set_params = std::tuple{
 		Member{"n_nodes", &IndependentSetGenerator::Parameters::n_nodes},
+		Member{"graph_type", &IndependentSetGenerator::Parameters::graph_type},
 		Member{"edge_probability", &IndependentSetGenerator::Parameters::edge_probability},
 		Member{"affinity", &IndependentSetGenerator::Parameters::affinity},
-		Member{"graph_type", &IndependentSetGenerator::Parameters::graph_type},
 	};
 	// Create class for IndependenSetGenerator
 	auto independent_set_gen = py::class_<IndependentSetGenerator>{m, "IndependentSetGenerator"};
@@ -128,6 +128,9 @@ void bind_submodule(py::module const& m) {
 		----------
 		n_nodes:
 			The number of nodes in the graph, and therefore of variable.
+		graph_type:
+			The method used in which to generate graphs.
+			One of "barabasi_albert" or "erdos_renyi"
 		edge_probability:
 			The probability of generating each edge.
 			This parameter must be in the range [0, 1].
@@ -136,9 +139,6 @@ void bind_submodule(py::module const& m) {
 			The number of nodes each new node will be attached to, in the sampling scheme.
 			This parameter must be an integer >= 1.
 			This parameter will only be used if `graph_type == "barabasi_albert"`.
-		graph_type:
-			The method used in which to generate graphs.
-			One of "barabasi_albert" or "erdos_renyi"
 		random_engine:
 			The random number generator used to peform all sampling.
 	)");
