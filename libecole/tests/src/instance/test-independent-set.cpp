@@ -16,13 +16,14 @@ using Params = instance::IndependentSetGenerator::Parameters;
 TEST_CASE("IndependentSetGenerator unit test", "[unit][instance]") {
 	// Keep problem size reasonable for tests
 	std::size_t constexpr n_nodes = 100;
-	instance::unit_tests(instance::IndependentSetGenerator{{n_nodes, Params::erdos_renyi}});
-	instance::unit_tests(instance::IndependentSetGenerator{{n_nodes, Params::barabasi_albert}});
+	instance::unit_tests(instance::IndependentSetGenerator{{n_nodes, Params::GraphType::erdos_renyi}});
+	instance::unit_tests(instance::IndependentSetGenerator{{n_nodes, Params::GraphType::barabasi_albert}});
 }
 
 TEST_CASE("Instances generated are independent set instances", "[instance]") {
 	std::size_t constexpr n_nodes = 100;
-	auto const params = GENERATE(Params{n_nodes, Params::erdos_renyi}, Params{n_nodes, Params::barabasi_albert});
+	auto const params =
+		GENERATE(Params{n_nodes, Params::GraphType::erdos_renyi}, Params{n_nodes, Params::GraphType::barabasi_albert});
 	auto generator = IndependentSetGenerator{params};
 	auto model = generator.next();
 	auto* const scip_ptr = model.get_scip_ptr();

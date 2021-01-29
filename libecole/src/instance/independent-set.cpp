@@ -46,9 +46,9 @@ namespace {
 /** Make a graph according to the IndependentSetGenerator parameters specifications. */
 auto make_graph(IndependentSetGenerator::Parameters parameters, RandomEngine& random_engine) -> Graph {
 	switch (parameters.graph_type) {
-	case IndependentSetGenerator::Parameters::erdos_renyi:
+	case IndependentSetGenerator::Parameters::GraphType::erdos_renyi:
 		return Graph::erdos_renyi(parameters.n_nodes, parameters.edge_probability, random_engine);
-	case IndependentSetGenerator::Parameters::barabasi_albert:
+	case IndependentSetGenerator::Parameters::GraphType::barabasi_albert:
 		return Graph::barabasi_albert(parameters.n_nodes, parameters.affinity, random_engine);
 	default:
 		assert(false);  // All enum value should be handled

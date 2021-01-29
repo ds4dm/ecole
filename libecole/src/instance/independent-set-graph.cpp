@@ -94,7 +94,7 @@ auto Graph::barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEng
 	// Other node grow the graph one by one
 	for (Node n = affinity + 1; n < n_nodes; ++n) {
 		// They are linked to `affinity` existing node with probability proportional to degree
-		for (auto neighbor : utility::arg_choice(affinity, get_degrees(affinity), random_engine)) {
+		for (auto neighbor : utility::arg_choice(affinity, get_degrees(n), random_engine)) {
 			graph.add_edge({n, neighbor});
 		}
 	}
