@@ -23,14 +23,14 @@ namespace ecole::instance {
  *  IndependentSetGenerator methods  *
  *************************************/
 
-IndependentSetGenerator::IndependentSetGenerator(RandomEngine random_engine_, Parameters parameters_) :
+IndependentSetGenerator::IndependentSetGenerator(Parameters parameters_, RandomEngine random_engine_) :
 	random_engine{random_engine_}, parameters{parameters_} {}
 IndependentSetGenerator::IndependentSetGenerator(Parameters parameters_) :
-	IndependentSetGenerator{ecole::spawn_random_engine(), parameters_} {}
+	IndependentSetGenerator{parameters_, ecole::spawn_random_engine()} {}
 IndependentSetGenerator::IndependentSetGenerator() : IndependentSetGenerator(Parameters{}) {}
 
 scip::Model IndependentSetGenerator::next() {
-	return generate_instance(random_engine, parameters);
+	return generate_instance(parameters, random_engine);
 }
 
 void IndependentSetGenerator::seed(Seed seed) {
@@ -137,7 +137,7 @@ private:
 
 }  // namespace
 
-scip::Model IndependentSetGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
+scip::Model IndependentSetGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
 	auto const graph = make_graph(parameters, random_engine);
 	auto model = scip::Model::prob_basic();
 	auto* const scip = model.get_scip_ptr();

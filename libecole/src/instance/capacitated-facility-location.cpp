@@ -24,17 +24,17 @@ namespace ecole::instance {
  **************************************************/
 
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
-	RandomEngine random_engine_,
-	CapacitatedFacilityLocationGenerator::Parameters parameters_) :
+	CapacitatedFacilityLocationGenerator::Parameters parameters_,
+	RandomEngine random_engine_) :
 	random_engine{random_engine_}, parameters{std::move(parameters_)} {}
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
 	CapacitatedFacilityLocationGenerator::Parameters parameters_) :
-	CapacitatedFacilityLocationGenerator{ecole::spawn_random_engine(), parameters_} {}
+	CapacitatedFacilityLocationGenerator{parameters_, ecole::spawn_random_engine()} {}
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator() :
 	CapacitatedFacilityLocationGenerator(Parameters{}) {}
 
 scip::Model CapacitatedFacilityLocationGenerator::next() {
-	return generate_instance(random_engine, parameters);
+	return generate_instance(parameters, random_engine);
 }
 
 void CapacitatedFacilityLocationGenerator::seed(Seed seed) {
@@ -212,8 +212,8 @@ auto add_tightening_cons(
 }  // namespace
 
 scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
-	RandomEngine& random_engine,
-	CapacitatedFacilityLocationGenerator::Parameters parameters) {
+	CapacitatedFacilityLocationGenerator::Parameters parameters,
+	RandomEngine& random_engine) {
 
 	// Sample 1D integers array in the given interval (xtensor lazy).
 	// We sample as integer as it is generally preferred by integer programming reseachers.

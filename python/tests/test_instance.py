@@ -42,7 +42,7 @@ def test_random_engine_init(instance_generator):
 def test_generate_instance(instance_generator):
     """Use stateless instance generating function."""
     InstanceGenerator = type(instance_generator)
-    model = InstanceGenerator.generate_instance(ecole.RandomEngine())
+    model = InstanceGenerator.generate_instance(random_engine=ecole.RandomEngine())
     assert isinstance(model, ecole.scip.Model)
 
 

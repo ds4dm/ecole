@@ -21,14 +21,14 @@ namespace ecole::instance {
  *  CombinatorialAuctionGenerator methods  *
  *******************************************/
 
-CombinatorialAuctionGenerator::CombinatorialAuctionGenerator(RandomEngine random_engine_, Parameters parameters_) :
+CombinatorialAuctionGenerator::CombinatorialAuctionGenerator(Parameters parameters_, RandomEngine random_engine_) :
 	random_engine{random_engine_}, parameters{parameters_} {}
 CombinatorialAuctionGenerator::CombinatorialAuctionGenerator(Parameters parameters_) :
-	CombinatorialAuctionGenerator{ecole::spawn_random_engine(), parameters_} {}
+	CombinatorialAuctionGenerator{parameters_, ecole::spawn_random_engine()} {}
 CombinatorialAuctionGenerator::CombinatorialAuctionGenerator() : CombinatorialAuctionGenerator(Parameters{}) {}
 
 scip::Model CombinatorialAuctionGenerator::next() {
-	return generate_instance(random_engine, parameters);
+	return generate_instance(parameters, random_engine);
 }
 
 void CombinatorialAuctionGenerator::seed(Seed seed) {
@@ -120,7 +120,7 @@ template <typename String> void warning(String&& message, bool do_log) {
  *  CombinatorialAuctionGenerator::generate_instance  *
  ******************************************************/
 
-scip::Model CombinatorialAuctionGenerator::generate_instance(RandomEngine& random_engine, Parameters parameters) {
+scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
 
 	assert(parameters.min_value >= 0 && parameters.max_value >= parameters.min_value);
 	assert(parameters.add_item_prob >= 0 && parameters.add_item_prob <= 1);

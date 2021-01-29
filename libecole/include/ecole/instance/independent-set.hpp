@@ -18,9 +18,9 @@ public:
 		std::size_t affinity = 5;        // NOLINT(readability-magic-numbers)
 	};
 
-	static scip::Model generate_instance(RandomEngine& random_engine, Parameters parameters);
+	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
 
-	IndependentSetGenerator(RandomEngine random_engine, Parameters parameters);
+	IndependentSetGenerator(Parameters parameters, RandomEngine random_engine);
 	IndependentSetGenerator(Parameters parameters);
 	IndependentSetGenerator();
 
