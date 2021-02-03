@@ -50,7 +50,15 @@ struct Result {
 template <typename Generator> auto generate(Generator gen, std::size_t n) -> std::vector<scip::Model>;
 
 using ModelGenerator = std::function<scip::Model()>;
+
+/**
+ * Run the competitors functions on the model, collect intance feature, and set tags.
+ */
 auto benchmark_lambda(CompetitorMap const& competitors, scip::Model model, Tags tags = {}) -> Result;
+
+/**
+ * Run the competitors functions on n generated models, collect intance feature, and set tags.
+ */
 auto benchmark_lambda(CompetitorMap const& competitors, ModelGenerator gen, std::size_t n, Tags tags = {})
 	-> std::vector<Result>;
 
