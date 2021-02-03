@@ -31,6 +31,7 @@ dependencies:
   - ccache
   - catch2
   - nlohmann_json
+  - cli11
   # Python dev tools
   - pytest
   - black
