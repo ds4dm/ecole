@@ -34,6 +34,8 @@ template <typename... T> auto concat(std::vector<T>... vecs) {
 template <typename Generator> auto make_generator(Generator generator, std::size_t n_nodes) {
 	auto result = [generator = std::move(generator), n_nodes]() mutable {
 		auto model = generator.next();
+		model.disable_presolve();
+		model.disable_cuts();
 		model.set_param("limits/totalnodes", n_nodes);
 		return model;
 	};
