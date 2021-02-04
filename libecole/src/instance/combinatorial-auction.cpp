@@ -441,6 +441,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 
 	// create scip model
 	auto model = scip::Model::prob_basic();
+	model.set_name(fmt::format("CombinatorialAuction-{}-{}", parameters.n_items, parameters.n_bids));
 	auto* const scip = model.get_scip_ptr();
 	scip::call(SCIPsetObjsense, scip, SCIP_OBJSENSE_MAXIMIZE);
 
