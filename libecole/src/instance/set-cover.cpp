@@ -226,6 +226,7 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEn
 
 	// create scip model
 	auto model = scip::Model::prob_basic();
+	model.set_name(fmt::format("SetCover-{}-{}", parameters.n_rows, parameters.n_cols));
 	auto* const scip = model.get_scip_ptr();
 	scip::call(SCIPsetObjsense, scip, SCIP_OBJSENSE_MINIMIZE);
 

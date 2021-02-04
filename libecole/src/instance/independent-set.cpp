@@ -140,6 +140,7 @@ private:
 scip::Model IndependentSetGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
 	auto const graph = make_graph(parameters, random_engine);
 	auto model = scip::Model::prob_basic();
+	model.set_name(fmt::format("IndependentSet-{}", parameters.n_nodes));
 	auto* const scip = model.get_scip_ptr();
 	scip::call(SCIPsetObjsense, scip, SCIP_OBJSENSE_MAXIMIZE);
 
