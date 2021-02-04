@@ -29,15 +29,16 @@ auto InstanceFeatures::from_model(scip::Model model) -> InstanceFeatures {
 		model.constraints().size(),
 		model.nnz(),
 		model.lp_columns().size(),
-		model.lp_rows().size()};
+		model.lp_rows().size(),
+		model.name()};
 }
 
 auto InstanceFeatures::csv_title() -> std::string {
-	return make_csv("n_vars", "n_cons", "root_nnz", "root_n_cols", "root_n_rows");
+	return make_csv("n_vars", "n_cons", "root_nnz", "root_n_cols", "root_n_rows", "name");
 }
 
 auto InstanceFeatures::csv() -> std::string {
-	return make_csv(n_vars, n_cons, root_nnz, root_n_cols, root_n_rows);
+	return make_csv(n_vars, n_cons, root_nnz, root_n_cols, root_n_rows, name);
 }
 
 auto Metrics::csv_title(std::string_view prefix) -> std::string {

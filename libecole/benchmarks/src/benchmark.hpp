@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <string_view>  //>
+#include <string_view>
 
 #include "ecole/scip/model.hpp"
 
@@ -13,6 +13,7 @@ struct InstanceFeatures {
 	std::size_t root_nnz = 0;
 	std::size_t root_n_cols = 0;
 	std::size_t root_n_rows = 0;
+	std::string name = "";
 
 	static auto from_model(scip::Model model) -> InstanceFeatures;
 
