@@ -6,7 +6,6 @@ add_executable(
 )
 
 target_include_directories(benchmark-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-find_package(nlohmann_json REQUIRED)
 find_package(CLI11 REQUIRED)
 
 target_link_libraries(
@@ -15,8 +14,8 @@ target_link_libraries(
 		Ecole::libecole
 		Ecole::warnings
 		Ecole::sanitizers
-		nlohmann_json::nlohmann_json
 		CLI11::CLI11
+		fmt::fmt
 )
 
 set_target_properties(

@@ -2,6 +2,7 @@
 #include <tuple>
 #include <utility>
 
+#include <fmt/format.h>
 #include <scip/scip.h>
 
 #include "ecole/dynamics/branching.hpp"
@@ -10,6 +11,7 @@
 
 #include "bench-branching.hpp"
 #include "branching/index-branchrule.hpp"
+#include "csv.hpp"
 
 namespace ecole::benchmark {
 
@@ -29,8 +31,6 @@ template <typename Func> auto measure_on_model(Func&& func_to_bench, scip::Model
 		static_cast<std::size_t>(SCIPgetNLPIterations(model.get_scip_ptr())),
 	};
 }
-
-}  // namespace
 
 auto measure_branching_dynamics(scip::Model model) -> Metrics {
 	return measure_on_model(
@@ -55,19 +55,23 @@ auto measure_branching_rule(scip::Model model) -> Metrics {
 		std::move(model));
 }
 
-auto benchmark_branching(scip::Model model, Tags tags) -> Result {
-	return benchmark_lambda(
-		{{"branching_rule", &measure_branching_rule}, {"branching_dynamics", &measure_branching_dynamics}},
-		std::move(model),
-		std::move(tags));
+}  // namespace
+
+auto BranchingResult::csv_title() -> std::string {
+	return merge_csv(
+		InstanceFeatures::csv_title(), Metrics::csv_title("branching_dynamics:"), Metrics::csv_title("branching_rule:"));
 }
 
-auto benchmark_branching(ModelGenerator gen, std::size_t n, Tags tags) -> std::vector<Result> {
-	return benchmark_lambda(
-		{{"branching_rule", &measure_branching_rule}, {"branching_dynamics", &measure_branching_dynamics}},
-		std::move(gen),
-		n,
-		std::move(tags));
+auto BranchingResult::csv() -> std::string {
+	return merge_csv(instance.csv(), branching_dynamics_metrics.csv(), branching_rule_metrics.csv());
+}
+
+auto benchmark_branching(scip::Model const& model) -> BranchingResult {
+	return {
+		InstanceFeatures::from_model(model.copy_orig()),
+		measure_branching_dynamics(model.copy_orig()),
+		measure_branching_rule(model.copy_orig()),
+	};
 }
 
 }  // namespace ecole::benchmark

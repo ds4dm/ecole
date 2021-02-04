@@ -3,10 +3,13 @@
 #include <iterator>
 #include <utility>
 
+#include <fmt/format.h>
+
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "benchmark.hpp"
+#include "csv.hpp"
 
 namespace ecole::benchmark {
 
@@ -29,20 +32,24 @@ auto InstanceFeatures::from_model(scip::Model model) -> InstanceFeatures {
 		model.lp_rows().size()};
 }
 
-auto benchmark_lambda(CompetitorMap const& competitors, scip::Model model, Tags tags) -> Result {
-	auto metrics = MetricsMap{};
-	for (auto const& [name, competitor] : competitors) {
-		metrics[name] = std::invoke(competitor, model.copy_orig());
-	}
-	return {InstanceFeatures::from_model(std::move(model)), std::move(metrics), std::move(tags)};
+auto InstanceFeatures::csv_title() -> std::string {
+	return make_csv("n_vars", "n_cons", "root_nnz", "root_n_cols", "root_n_rows");
 }
 
-auto benchmark_lambda(CompetitorMap const& competitors, ModelGenerator gen, std::size_t n, Tags tags)
-	-> std::vector<Result> {
-	auto results = std::vector<Result>{};
-	results.reserve(n);
-	std::generate_n(std::back_inserter(results), n, [&]() { return benchmark_lambda(competitors, gen(), tags); });
-	return results;
+auto InstanceFeatures::csv() -> std::string {
+	return make_csv(n_vars, n_cons, root_nnz, root_n_cols, root_n_rows);
+}
+
+auto Metrics::csv_title(std::string_view prefix) -> std::string {
+	return make_csv(
+		fmt::format("{}{}", prefix, "wall_time_s"),
+		fmt::format("{}{}", prefix, "cpu_time_s"),
+		fmt::format("{}{}", prefix, "n_nodes"),
+		fmt::format("{}{}", prefix, "n_lp_iterations"));
+}
+
+auto Metrics::csv() -> std::string {
+	return make_csv(wall_time_s, cpu_time_s, n_nodes, n_lp_iterations);
 }
 
 }  // namespace ecole::benchmark
