@@ -20,8 +20,8 @@ public:
 		double additivity = 0.2;         // NOLINT(readability-magic-numbers)
 		double budget_factor = 1.5;      // NOLINT(readability-magic-numbers)
 		double resale_factor = 0.5;      // NOLINT(readability-magic-numbers)
-		bool integers = false;           // NOLINT(readability-magic-numbers)
-		bool warnings = false;           // NOLINT(readability-magic-numbers)
+		bool integers = false;
+		bool warnings = false;
 	};
 
 	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
