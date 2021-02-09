@@ -53,7 +53,7 @@ Consult the `user Documentation <https://doc.ecole.ai>`_ for tutorials, examples
 Discussions and help
 --------------------
 Head to `Github Discussions <https://github.com/ds4dm/ecole/discussions>`_ for interaction with the community: give
-  and recieve help, discuss intresting envirnoment, rewards function, and instances generators.
+and recieve help, discuss intresting envirnoment, rewards function, and instances generators.
 
 Installation
 ------------
