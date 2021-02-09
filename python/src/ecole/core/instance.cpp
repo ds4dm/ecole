@@ -88,7 +88,7 @@ void bind_submodule(py::module const& m) {
 			.. [Balas1980]
 				Egon Balas and Andrew Ho.
 				"Set covering algorithms using cutting planes, heuristics, and subgradient optimization: A computational study".
-				*Mathematical Programming*, 12, 37-60. 1980.
+				*Mathematical Programming*, 12, pp. 37-60. 1980.
 	)");
 	def_init(set_cover_gen, set_cover_params);
 	def_attributes(set_cover_gen, set_cover_params);
@@ -122,7 +122,8 @@ void bind_submodule(py::module const& m) {
 		found.
 		The maximization problem is unwheighted, that is all objective coefficients are equal to one.
 
-		Random sampling is perfomed by sampling a graph for the formulation.
+		The problem are generated using the procedure from [Bergman2016]_, and the graphs are sampled following
+		[Erdos1959]_ and [Barabasi1999]_.
 
 		Parameters
 		----------
@@ -141,6 +142,21 @@ void bind_submodule(py::module const& m) {
 			This parameter will only be used if `graph_type == "barabasi_albert"`.
 		random_engine:
 			The random number generator used to peform all sampling.
+
+		References
+		----------
+			.. [Bergman2016]
+				David Bergman, Andre A. Cire, Willem-Jan Van Hoeve, and John Hooker.
+				"Decision diagrams for optimization", Section 4.6.4.
+				*Springer International Publishing*, 2016.
+			.. [Erdos1959]
+				Paul Erdos and Alfréd Renyi.
+				"On Random Graph"
+				*Publicationes Mathematicae*, pp. 290-297, 1959.
+			.. [Barabasi1999]
+				Albert-László Barabási and Réka Albert.
+				"Emergence of scaling in random networks"
+				*Science* vol. 286, num. 5439, pp. 509-512, 1999.
 	)");
 	def_init(independent_set_gen, independent_set_params);
 	def_attributes(independent_set_gen, independent_set_params);
@@ -208,8 +224,8 @@ void bind_submodule(py::module const& m) {
 		.. [LeytonBrown2000]
 			Kevin Leyton-Brown, Mark Pearson, and Yoav Shoham.
 			"Towards a universal test suite for combinatorial auction algorithms".
-			*Proceedings of ACM Conference on Electronic Commerce* (EC01) 66-76.
-			section 4.3., the 'arbitrary' scheme. 2000.
+			*Proceedings of ACM Conference on Electronic Commerce* (EC01) pp. 66-76.
+			Section 4.3., the 'arbitrary' scheme. 2000.
 	)");
 	def_init(combinatorial_auction_gen, combinatorial_auction_params);
 	def_attributes(combinatorial_auction_gen, combinatorial_auction_params);
@@ -274,7 +290,7 @@ void bind_submodule(py::module const& m) {
 		.. [Cornuejols1991]
 			Cornuejols G, Sridharan R, Thizy J-M.
 			"A Comparison of Heuristics and Relaxations for the Capacitated Plant Location Problem".
-			*European Journal of Operations Research* 50:280-297. 1991.
+			*European Journal of Operations Research* 50, pp. 280-297. 1991.
 	)");
 	def_init(capacitated_facility_location_gen, capacitated_facility_location_params);
 	def_attributes(capacitated_facility_location_gen, capacitated_facility_location_params);
