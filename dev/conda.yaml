@@ -1,15 +1,8 @@
 channels:
-  - scipopt
   - conda-forge
   - defaults
 
 dependencies:
-  # General convenience
-  - wget
-  - git
-  # Conda build tools
-  - conda-build
-  - conda-verify
   # General dev tools
   - pre-commit
   # C++ dev tools
@@ -30,8 +23,6 @@ dependencies:
   # Python dev tools
   - ipython
   - pytest
-  - pytest-benchmark
-  - pytest-cov
   - black
   # Documentation
   - doxygen
