@@ -42,7 +42,7 @@ using Param = std::variant<
 	param_t<ParamType::String>>;
 
 using Seed = int;
-constexpr Seed min_seed = 0;
+constexpr Seed min_seed = 1;  // 0 might be used for default.
 constexpr Seed max_seed = 2147483647;
 
 using Stage = SCIP_STAGE;

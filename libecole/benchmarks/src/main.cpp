@@ -10,6 +10,7 @@
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
 #include "ecole/random.hpp"
+#include "ecole/scip/type.hpp"
 
 #include "bench-branching.hpp"
 #include "benchmark.hpp"
@@ -20,6 +21,15 @@ using namespace ecole::instance;
 /** Apply func on each element of the tuple. */
 template <typename... Args, typename Func> void for_each(std::tuple<Args...>& t, Func&& func) {
 	std::apply([&func](auto&&... t_elem) { ((func(std::forward<decltype(t_elem)>(t_elem))), ...); }, t);
+}
+
+void seed_model(ecole::scip::Model& model, ecole::RandomEngine& random_engine) {
+	std::uniform_int_distribution<ecole::scip::Seed> seed_distrib{ecole::scip::min_seed, ecole::scip::max_seed};
+	model.set_param("randomization/permuteconss", true);
+	model.set_param("randomization/permutevars", true);
+	model.set_param("randomization/permutationseed", seed_distrib(random_engine));
+	model.set_param("randomization/randomseedshift", seed_distrib(random_engine));
+	model.set_param("randomization/lpseed", seed_distrib(random_engine));
 }
 
 /** The generators used to benchmark branching dynamics. */
@@ -39,21 +49,25 @@ auto benchmark_branching(std::size_t n_instances, std::size_t n_nodes) {
 		IndependentSetGenerator{{1000, GraphType::erdos_renyi}},  // NOLINT(readability-magic-numbers)
 		IndependentSetGenerator{{1500, GraphType::erdos_renyi}},  // NOLINT(readability-magic-numbers)
 	};
+	auto random_engine = ecole::spawn_random_engine();
 
 	std::cout << BranchingResult::csv_title() << '\n';
 	for (std::size_t i = 0; i < n_instances; ++i) {
-		auto benchmark_and_print = [n_nodes](auto& gen) {
-			auto model = gen.next();
-			model.disable_presolve();
-			model.disable_cuts();
-			model.set_param("limits/totalnodes", n_nodes);
-			std::cout << benchmark_branching(model).csv() << '\n';
+		auto benchmark_and_print = [&](auto& gen) noexcept {
+			try {
+				auto model = gen.next();
+				model.disable_presolve();
+				model.disable_cuts();
+				model.set_param("limits/totalnodes", n_nodes);
+				seed_model(model, random_engine);
+				std::cout << benchmark_branching(model).csv() << '\n';
+			} catch (std::exception const& e) {
+				std::cerr << "Error when benchmarking an instance: " << e.what() << '\n';
+			}
 		};
 		for_each(generators, benchmark_and_print);
 	}
 }
-
-template <typename T> void show(T);
 
 int main(int argc, char** argv) {
 	try {
