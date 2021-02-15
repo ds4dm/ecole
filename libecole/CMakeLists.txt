@@ -93,6 +93,12 @@ target_link_libraries(
 		CONAN_PKG::range-v3
 )
 
+# System CPU time, silently ignored if LibRT is not present
+find_library(LIBRT rt)
+if(LIBRT)
+	target_link_libraries(libecole PRIVATE "${LIBRT}")
+endif()
+
 # Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
 get_target_property(SCIP_LOCATION libscip LOCATION)
 get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
