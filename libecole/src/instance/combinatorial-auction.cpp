@@ -264,7 +264,7 @@ auto add_dummy_item(std::size_t& n_dummy_items, std::map<Bundle, Price> bidder_b
 
 /** Adds bids from bidder_bids to bids.  Adds dummy item to each bid. */
 auto add_bids(
-	std::vector<std::tuple<Bundle, double>>& bids,
+	std::vector<std::tuple<Bundle, Price>>& bids,
 	std::map<Bundle, Price> bidder_bids,
 	std::size_t& bid_index,
 	std::size_t dummy_item) {
@@ -298,7 +298,7 @@ auto get_bids(
 
 	std::size_t n_dummy_items = 0;
 	std::size_t bid_index = 0;
-	std::vector<std::tuple<Bundle, double>> bids{n_bids};
+	std::vector<std::tuple<Bundle, Price>> bids{n_bids};
 
 	while (bid_index < n_bids) {
 
@@ -307,7 +307,7 @@ auto get_bids(
 		auto const private_values = xt::eval(values + max_value * value_deviation * (2 * private_interests - 1));
 
 		// substitutable bids of this bidder
-		std::map<Bundle, double> bidder_bids = {};
+		std::map<Bundle, Price> bidder_bids = {};
 
 		auto [bundle, price] = get_bundle(
 			compats, private_interests, private_values, n_items, integers, additivity, add_item_prob, random_engine);
