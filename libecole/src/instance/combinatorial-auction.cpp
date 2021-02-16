@@ -147,7 +147,7 @@ auto get_bundle(
 
 	auto price = get_bundle_price(bundle, private_values, integers, additivity);
 
-	return std::make_tuple(bundle, price);
+	return std::tuple{std::move(bundle), price};
 }
 
 /** Generate the set of subsitue bundles */
@@ -251,7 +251,7 @@ auto add_bundles(
 }
 
 /** Determines if a dummy item is required.  If so, n_dummy_items is incremented */
-auto add_dummy_item(std::size_t& n_dummy_items, std::map<Bundle, Price> bidder_bids, std::size_t n_items) {
+auto add_dummy_item(std::size_t& n_dummy_items, std::map<Bundle, Price> const& bidder_bids, std::size_t n_items) {
 
 	std::size_t dummy_item = 0;
 	if (bidder_bids.size() > 2) {
@@ -265,7 +265,7 @@ auto add_dummy_item(std::size_t& n_dummy_items, std::map<Bundle, Price> bidder_b
 /** Adds bids from bidder_bids to bids.  Adds dummy item to each bid. */
 auto add_bids(
 	std::vector<std::tuple<Bundle, Price>>& bids,
-	std::map<Bundle, Price> bidder_bids,
+	std::map<Bundle, Price> const& bidder_bids,
 	std::size_t& bid_index,
 	std::size_t dummy_item) {
 
@@ -274,15 +274,15 @@ auto add_bids(
 		if (dummy_item) {
 			bund_copy.push_back(dummy_item);
 		}
-		bids[bid_index] = std::make_tuple(std::move(bund_copy), p);
+		bids[bid_index] = std::tuple{std::move(bund_copy), p};
 		++bid_index;
 	}
 }
 
 /** Gets all bids. */
 auto get_bids(
-	xvector<double> values,
-	xmatrix<double> compats,
+	const xvector<double>& values,
+	const xmatrix<double>& compats,
 	unsigned int max_value,
 	std::size_t n_items,
 	std::size_t n_bids,
@@ -347,7 +347,7 @@ auto get_bids(
 
 	}  // loop to get bids
 
-	return std::make_tuple(bids, n_dummy_items);
+	return std::tuple{bids, n_dummy_items};
 }
 
 /** Adds a single variable with the coefficient price. */
@@ -400,12 +400,12 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 
 	// check that parameters are valid
 	if (!(parameters.max_value >= parameters.min_value)) {
-		throw std::invalid_argument(
-			"Parameters max_value and min_value must be defined such that: min_value <= max_value.");
+		throw std::invalid_argument{
+			"Parameters max_value and min_value must be defined such that: min_value <= max_value."};
 	}
 
 	if (!(parameters.add_item_prob >= 0 && parameters.add_item_prob <= 1)) {
-		throw std::invalid_argument("Parameter add_item_prob must be in range [0,1].");
+		throw std::invalid_argument{"Parameter add_item_prob must be in range [0,1]."};
 	}
 
 	// initialize logger for warnings
