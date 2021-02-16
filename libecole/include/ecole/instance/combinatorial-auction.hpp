@@ -12,8 +12,8 @@ public:
 	struct Parameters {
 		std::size_t n_items = 100;       // NOLINT(readability-magic-numbers)
 		std::size_t n_bids = 500;        // NOLINT(readability-magic-numbers)
-		int min_value = 1;               // NOLINT(readability-magic-numbers)
-		int max_value = 100;             // NOLINT(readability-magic-numbers)
+		unsigned int min_value = 1;      // NOLINT(readability-magic-numbers)
+		unsigned int max_value = 100;    // NOLINT(readability-magic-numbers)
 		double value_deviation = 0.5;    // NOLINT(readability-magic-numbers)
 		double add_item_prob = 0.9;      // NOLINT(readability-magic-numbers)
 		std::size_t max_n_sub_bids = 5;  // NOLINT(readability-magic-numbers)
