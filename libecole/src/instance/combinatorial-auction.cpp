@@ -75,20 +75,13 @@ private:
  * The values are in the range of [1, weights.size()].
  */
 auto arg_choice_without_replacement(std::size_t n_samples, xvector<double> weights, RandomEngine& random_engine) {
+	auto const wc = xt::eval(xt::cumsum(weights));
+	auto weight_dist = std::uniform_real_distribution<double>{0, wc[wc.size() - 1]};
 
-	auto const weight_sum = xt::sum(weights)();
-	xvector<double> weights_cumsum = xt::cumsum(weights);
-
-	xvector<double> samples = xt::random::rand({n_samples}, 0.0, weight_sum, random_engine);
 	xvector<std::size_t> indices({n_samples});
-
-	for (std::size_t i = 0; i < n_samples; ++i) {
-		for (std::size_t j = 0; j < weights.size() - 1; ++j) {
-			if (samples[i] < weights_cumsum[j]) {
-				indices[i] = j;
-				break;
-			}
-		}
+	for (auto& idx : indices) {
+		const auto u = weight_dist(random_engine);
+		idx = static_cast<std::size_t>(std::upper_bound(wc.cbegin(), wc.cend(), u) - wc.cbegin());
 	}
 	return indices;
 }
@@ -207,7 +200,7 @@ auto add_bundles(
 	std::vector<std::tuple<Bundle, Price>> sub_bundles,
 	const xvector<double>& values,
 	const Bundle& bundle,
-	double price,
+	Price price,
 	std::size_t bid_index,
 	Logger logger,
 	double budget_factor,
@@ -257,8 +250,108 @@ auto add_bundles(
 	}
 }
 
+/** Determines if a dummy item is required.  If so, n_dummy_items is incremented */
+auto add_dummy_item(std::size_t& n_dummy_items, std::map<Bundle, Price> bidder_bids, std::size_t n_items) {
+
+	std::size_t dummy_item = 0;
+	if (bidder_bids.size() > 2) {
+		dummy_item = n_items + n_dummy_items;
+		++n_dummy_items;
+	}
+
+	return dummy_item;
+}
+
+/** Adds bids from bidder_bids to bids.  Adds dummy item to each bid. */
+auto add_bids(
+	std::vector<std::tuple<Bundle, double>>& bids,
+	std::map<Bundle, Price> bidder_bids,
+	std::size_t& bid_index,
+	std::size_t dummy_item) {
+
+	for (auto const& [b, p] : bidder_bids) {
+		auto bund_copy = b;
+		if (dummy_item) {
+			bund_copy.push_back(dummy_item);
+		}
+		bids[bid_index] = std::make_tuple(std::move(bund_copy), p);
+		++bid_index;
+	}
+}
+
+/** Gets all bids. */
+auto get_bids(
+	xvector<double> values,
+	xmatrix<double> compats,
+	unsigned int max_value,
+	std::size_t n_items,
+	std::size_t n_bids,
+	std::size_t max_n_sub_bids,
+	bool integers,
+	double value_deviation,
+	double additivity,
+	double add_item_prob,
+	double budget_factor,
+	double resale_factor,
+	Logger logger,
+	RandomEngine& random_engine) {
+
+	std::size_t n_dummy_items = 0;
+	std::size_t bid_index = 0;
+	std::vector<std::tuple<Bundle, double>> bids{n_bids};
+
+	while (bid_index < n_bids) {
+
+		// bidder item values (buy price) and interests
+		auto const private_interests = xt::eval(xt::random::rand({n_items}, 0.0, 1.0, random_engine));
+		auto const private_values = xt::eval(values + max_value * value_deviation * (2 * private_interests - 1));
+
+		// substitutable bids of this bidder
+		std::map<Bundle, double> bidder_bids = {};
+
+		auto [bundle, price] = get_bundle(
+			compats, private_interests, private_values, n_items, integers, additivity, add_item_prob, random_engine);
+
+		// restart bid if price < 0
+		if (price < 0) {
+			logger.log("warning, negatively priced bundle avoided");
+			continue;
+		}
+
+		// add bid to bidder_bids
+		bidder_bids[bundle] = price;
+
+		// get substitute bundles
+		auto substitute_bundles = get_substitute_bundles(
+			bundle, compats, private_interests, private_values, n_items, integers, additivity, random_engine);
+
+		// add bundles to bidder_bids
+		add_bundles(
+			bidder_bids,
+			substitute_bundles,
+			values,
+			bundle,
+			price,
+			bid_index,
+			logger,
+			budget_factor,
+			resale_factor,
+			max_n_sub_bids,
+			n_bids);
+
+		// get dummy item if required
+		auto dummy_item = add_dummy_item(n_dummy_items, bidder_bids, n_items);
+
+		// add all bids to bids
+		add_bids(bids, bidder_bids, bid_index, dummy_item);
+
+	}  // loop to get bids
+
+	return std::make_tuple(bids, n_dummy_items);
+}
+
 /** Adds a single variable with the coefficient price. */
-auto add_var(SCIP* scip, std::size_t i, double price) {
+auto add_var(SCIP* scip, std::size_t i, Price price) {
 	auto const name = fmt::format("x_{}", i);
 	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., price, SCIP_VARTYPE_BINARY);
 	auto* var_ptr = unique_var.get();
@@ -267,7 +360,7 @@ auto add_var(SCIP* scip, std::size_t i, double price) {
 }
 
 /** Add all variables associated with the bundles. */
-auto add_vars(SCIP* scip, std::vector<std::tuple<Bundle, double>> const& bids) {
+auto add_vars(SCIP* scip, std::vector<std::tuple<Bundle, Price>> const& bids) {
 	auto vars = xvector<SCIP_VAR*>{{bids.size()}};
 	std::size_t i = 0;
 	for (auto [_, price] : bids) {
@@ -306,9 +399,9 @@ auto add_constraints(SCIP* scip, xvector<SCIP_VAR*> vars, std::vector<Bundle> co
 scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
 
 	// check that parameters are valid
-	if (!(parameters.min_value >= 0 && parameters.max_value >= parameters.min_value)) {
+	if (!(parameters.max_value >= parameters.min_value)) {
 		throw std::invalid_argument(
-			"Parameters max_value and min_value must be defined such that: 0 <= min_value <= max_value.");
+			"Parameters max_value and min_value must be defined such that: min_value <= max_value.");
 	}
 
 	if (!(parameters.add_item_prob >= 0 && parameters.add_item_prob <= 1)) {
@@ -318,6 +411,7 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 	// initialize logger for warnings
 	auto logger = Logger(parameters.warnings);
 
+	// get values
 	auto const rand_val = xt::eval(xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine));
 	auto const values = xt::eval(parameters.min_value + (parameters.max_value - parameters.min_value) * rand_val);
 
@@ -328,80 +422,22 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 	compats += xt::transpose(compats);
 	compats /= xt::sum(compats, 1);
 
-	std::size_t n_dummy_items = 0;
-	std::size_t bid_index = 0;
-	std::vector<std::tuple<Bundle, double>> bids{parameters.n_bids};
-
-	while (bid_index < parameters.n_bids) {
-
-		// bidder item values (buy price) and interests
-		auto const private_interests = xt::eval(xt::random::rand({parameters.n_items}, 0.0, 1.0, random_engine));
-		auto const private_values =
-			xt::eval(values + parameters.max_value * parameters.value_deviation * (2 * private_interests - 1));
-
-		// substitutable bids of this bidder
-		std::map<Bundle, double> bidder_bids = {};
-
-		auto [bundle, price] = get_bundle(
-			compats,
-			private_interests,
-			private_values,
-			parameters.n_items,
-			parameters.integers,
-			parameters.additivity,
-			parameters.add_item_prob,
-			random_engine);
-
-		// restart bid if price < 0
-		if (price < 0) {
-			logger.log("warning, negatively priced bundle avoided");
-			continue;
-		}
-
-		// add bid to bidder_bids
-		bidder_bids[bundle] = price;
-
-		// get substitute bundles
-		auto substitute_bundles = get_substitute_bundles(
-			bundle,
-			compats,
-			private_interests,
-			private_values,
-			parameters.n_items,
-			parameters.integers,
-			parameters.additivity,
-			random_engine);
-
-		// add XOR bundles to bidder_bids
-		add_bundles(
-			bidder_bids,
-			substitute_bundles,
-			values,
-			bundle,
-			price,
-			bid_index,
-			logger,
-			parameters.budget_factor,
-			parameters.resale_factor,
-			parameters.max_n_sub_bids,
-			parameters.n_bids);
-
-		// get dummy item if required
-		std::size_t dummy_item = 0;
-		if (bidder_bids.size() > 2) {
-			dummy_item = parameters.n_items + n_dummy_items;
-			++n_dummy_items;
-		}
-
-		for (auto const& [b, p] : bidder_bids) {
-			auto bund_copy = b;
-			if (dummy_item) {
-				bund_copy.push_back(dummy_item);
-			}
-			bids[bid_index] = std::make_tuple(bund_copy, p);
-			++bid_index;
-		}
-	}  // loop to get bids
+	// get all bids
+	auto [bids, n_dummy_items] = get_bids(
+		values,
+		compats,
+		parameters.max_value,
+		parameters.n_items,
+		parameters.n_bids,
+		parameters.max_n_sub_bids,
+		parameters.integers,
+		parameters.value_deviation,
+		parameters.additivity,
+		parameters.add_item_prob,
+		parameters.budget_factor,
+		parameters.resale_factor,
+		logger,
+		random_engine);
 
 	// create scip model
 	auto model = scip::Model::prob_basic();
