@@ -6,13 +6,12 @@ foreach(py_file "setup.py" "src/ecole/__init__.py")
 	)
 endforeach(py_file)
 
-set(PYBIND11_CPP_STANDARD -std=c++17)
 find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-python REQUIRED)
 
 pybind11_add_module(
-	ecole-python SYSTEM
+	ecole-python
 	src/ecole/core/core.cpp
 	src/ecole/core/scip.cpp
 	src/ecole/core/instance.cpp
