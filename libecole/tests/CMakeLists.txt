@@ -67,9 +67,3 @@ target_link_libraries(
 		CONAN_PKG::catch2
 		libscip
 )
-
-set_target_properties(test-libecole PROPERTIES
-	# Compiling with hidden visibility
-	CXX_VISIBILITY_PRESET hidden
-	VISIBILITY_INLINES_HIDDEN ON
-)

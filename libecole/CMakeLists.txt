@@ -106,15 +106,6 @@ list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
 
 target_compile_features(libecole PUBLIC cxx_std_17)
 
-set_target_properties(libecole PROPERTIES
-	# All code ending in a shared library should be made PIC
-	POSITION_INDEPENDENT_CODE ON
-	# Compiling with hidden visibility
-	# FIXME use CMAKE_GENERATE_EXPORT_HEADER when supporting building shared library
-	CXX_VISIBILITY_PRESET hidden
-	VISIBILITY_INLINES_HIDDEN ON
-)
-
 # Add test if this is the main project and testing is enabled
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
 	add_subdirectory(tests)
