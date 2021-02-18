@@ -29,8 +29,8 @@ include(cmake/Sanitizers.cmake)
 # Define a target Ecole::coverage with coverage options.
 include(cmake/Coverage.cmake)
 
-# Activate the Conan CMake wrapper (download if necessary).
-include(cmake/Conan.cmake)
+# Utilities to automatically download missing dependencies
+include(cmake/Dependencies.cmake)
 
 # Find Python and create virtual environment for Ecole
 include(cmake/Python.cmake)

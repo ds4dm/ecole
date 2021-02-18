@@ -64,33 +64,70 @@ target_include_directories(
 
 find_package(SCIP 7 REQUIRED)
 find_package(Threads REQUIRED)
-find_package(xtl REQUIRED)
-find_package(xtensor REQUIRED)
 
-conan_cmake_run(
-	CONANFILE conanfile.txt
-	BASIC_SETUP
-	CMAKE_TARGETS
-	NO_OUTPUT_DIRS
-	SKIP_STD
-	KEEP_RPATHS
-	BUILD missing
-	ENV CONAN_CMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}"
-	OUTPUT_QUIET
+option(XTENSOR_USE_XSIMD "Use xsimd with xtensor" ON)
+find_or_download_package(
+	NAME xtl
+	URL https://github.com/xtensor-stack/xtl/archive/0.7.2.tar.gz
+	URL_HASH SHA256=95c221bdc6eaba592878090916383e5b9390a076828552256693d5d97f78357c
+	CONFIGURE_ARGS -D BUILD_TESTS=OFF
 )
+find_or_download_package(
+	NAME xsimd
+	URL https://github.com/xtensor-stack/xsimd/archive/7.4.9.tar.gz
+	URL_HASH SHA256=f6601ffb002864ec0dc6013efd9f7a72d756418857c2d893be0644a2f041874e
+	CONFIGURE_ARGS -D BUILD_TESTS=OFF
+)
+find_or_download_package(
+	NAME xtensor
+	URL https://github.com/xtensor-stack/xtensor/archive/0.23.1.tar.gz
+	URL_HASH SHA256=b9bceea49db240ab64eede3776d0103bb0503d9d1f3ce5b90b0f06a0d8ac5f08
+	CONFIGURE_ARGS -D BUILD_TESTS=OFF
+)
+
+find_or_download_package(
+	NAME span-lite
+	URL https://github.com/martinmoene/span-lite/archive/v0.9.0.tar.gz
+	URL_HASH SHA256=cdb5f86e5f5e679d63700a56de734c44fe22a574a17347d09dbaaef80619af91
+	CONFIGURE_ARGS
+		-D SPAN_LITE_OPT_BUILD_TESTS=OFF
+		-D SPAN_LITE_OPT_BUILD_EXAMPLES=OFF
+)
+find_or_download_package(
+	NAME range-v3
+	URL https://github.com/ericniebler/range-v3/archive/0.11.0.tar.gz
+	URL_HASH SHA256=376376615dbba43d3bef75aa590931431ecb49eb36d07bb726a19f680c75e20c
+	CONFIGURE_ARGS
+		-D RANGE_V3_TESTS=OFF
+		-D RANGE_V3_EXAMPLES=OFF
+		-D RANGE_V3_PERF=OFF
+		-D RANGE_V3_DOCS=OFF
+)
+find_or_download_package(
+	NAME fmt
+	URL https://github.com/fmtlib/fmt/archive/7.1.3.tar.gz
+	URL_HASH SHA256=5cae7072042b3043e12d53d50ef404bbb76949dad1de368d7f993a15c8c05ecc
+	CONFIGURE_ARGS
+		-D FMT_TEST=OFF
+		-D FMT_DOC=OFF
+		-D FMT_INSTALL=ON
+		-D CMAKE_BUILD_TYPE=Release
+		-D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+)
+
 target_link_libraries(
 	libecole
 	PUBLIC
 		libscip
-		xtensor  # xtensor::optimize and xtensor::use_simd are hardware dependent
-		CONAN_PKG::span-lite
+		xtensor
+		nonstd::span-lite
 	PRIVATE
 		Ecole::warnings
 		Ecole::sanitizers
 		Ecole::coverage
 		Threads::Threads
-		CONAN_PKG::fmt
-		CONAN_PKG::range-v3
+		fmt::fmt
+		range-v3::range-v3
 )
 
 # System CPU time, silently ignored if LibRT is not present
