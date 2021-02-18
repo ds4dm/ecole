@@ -8,26 +8,23 @@ set -o pipefail  # Error if error in pipe
 __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # St on Dockerhub but this and the CWD seem to be unreliable
-DOCKERFILE_PATH="${__DIR__}/../Dockerfile"
+DOCKERFILE_DIR="${__DIR__}/.."
+DOCKERFILE_PATH="${DOCKERFILE_DIR}/Dockerfile"
 # Set on DockerHub but set default value to use script locally
 DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
 function build-image {
-	local -r target="$1"
-	local -r compiler="${2:-clang10}"
-	local -r python_version="${3:-3.6}"
+	local -r compiler="${1:-clang10}"
+	local -r python_version="${2:-3.6}"
 
 	cat "${DOCKERFILE_PATH}" | docker build \
 		--build-arg compiler="${compiler}" \
 		--build-arg python_version="${python_version}" \
-		--target "${target}" \
-		--tag "${DOCKER_REPO}-${target}-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" -
+		--tag "${DOCKER_REPO}-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
 }
 
 for compiler in "gcc9" "clang10" ; do
 	for python_version in "3.6" "3.7" "3.8" ; do
-		build-image builder "${compiler}" "${python_version}"
+		build-image "${compiler}" "${python_version}"
 	done
 done
-build-image checker clang10 3.6
-build-image documenter clang10 3.6
