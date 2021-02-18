@@ -65,7 +65,7 @@ jobs:
         type: string
         default: ""
     docker:
-      - image: "ecoleai/ci-builder-<<parameters.compiler>>-py<<parameters.python>>"
+      - image: "ecoleai/ci-<<parameters.compiler>>-py<<parameters.python>>"
         auth: &dockerhub_auth
           username: "$DOCKERHUB_USERNAME"
           password: "$DOCKERHUB_PASSWORD"
@@ -86,7 +86,7 @@ jobs:
         type: enum
         enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
     docker:
-      - image: "ecoleai/ci-builder-clang10-py3.6"
+      - image: "ecoleai/ci-clang10-py3.6"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -99,7 +99,7 @@ jobs:
 
   code_checker:
     docker:
-      - image: "ecoleai/ci-checker-clang10-py3.6"
+      - image: "ecoleai/ci-clang10-py3.6"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -109,7 +109,7 @@ jobs:
 
   build_doc:
     docker:
-      - image: "ecoleai/ci-documenter-clang10-py3.6"
+      - image: "ecoleai/ci-clang10-py3.6"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -123,7 +123,7 @@ jobs:
         type: string
         default: "${CIRCLE_BRANCH}"
     docker:
-      - image: "ecoleai/ci-documenter-clang10-py3.6"
+      - image: "ecoleai/ci-clang10-py3.6"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -176,14 +176,8 @@ commands:
         default: all
     description: "Compiling the Ecole project"
     steps:
-      - restore_cache:
-          keys:
-            - &conan_cache_key conan-v1.1-{{ arch }}-{{ checksum "libecole/conanfile.txt" }}
-            - conan-v1.1-{{ arch }}-
       - run:
           name: "CMake configure"
-          environment:
-            CONAN_USER_HOME: &conan_cache_dir /cache/conan
           command: >
             cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
             -Wdev -Werror=dev
@@ -196,13 +190,9 @@ commands:
       - run:
           name: "Symlink compilation database"
           command: ln -s "<<parameters.build_dir>>/compile_commands.json"
-      - save_cache:
-          key: *conan_cache_key
-          paths:
-            - *conan_cache_dir
       - run:
           name: "CMake build"
-          command: "cmake --build build --target <<parameters.target>>"
+          command: "cmake --build build --target <<parameters.target>> --parallel"
 
   run_pre_commit:
     description: "Run pre-commit checks"
