@@ -4,8 +4,7 @@ ARG compiler=clang10
 FROM conanio/${compiler}
 USER root
 
-# Install minimal dependencies for a CircleCI image, install miniconda, and install Ecole
-# dependencies.
+# Install minimal dependencies for a CircleCI image.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates && \
     apt-get clean
@@ -36,6 +35,6 @@ RUN version_regex='^[[:blank:]]*'"$(echo ${python_version} | sed 's/\./\\./')"'\
     pyenv install ${python_full_version} && \
     pyenv global ${python_full_version} && \
     python -m pip install --no-cache-dir --upgrade pip && \
-    python -m pip install --no-cache-dir numpy
+    python -m pip install --no-cache-dir cmake numpy
 
 WORKDIR /app
