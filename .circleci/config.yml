@@ -6,31 +6,31 @@ workflows:
     jobs:
       - code_checker
       - build_test:
-          name: build_py36
-          python: "3.6"
+          name: build_py3.6
+          image: "ecoleai/ci-linux-conda-gcc-py3.6"
       - build_test:
-          name: build_py38
-          python: "3.8"
+          name: build_py3.7
+          image: "ecoleai/ci-linux-conda-gcc-py3.7"
           requires:
-            - build_py36
+            - build_py3.6
       - build_test:
-          name: build_py37
-          python: "3.7"
+          name: build_py3.8
+          image: "ecoleai/ci-linux-conda-gcc-py3.8"
           requires:
-            - build_py36
+            - build_py3.6
       - build_test:
           name: build_clang
-          compiler: clang10
+          image: "ecoleai/ci-linux-src-clang10-py3.8"
           requires:
-            - build_py36
+            - build_py3.6
       - sanitize:
           name: build_asan
           sanitizer: "ADDRESS"
           requires:
-            - build_py36
+            - build_py3.6
       - build_doc:
           requires:
-            - build_py36
+            - build_py3.6
       - deploy_doc:
           requires:
             - build_doc
@@ -55,17 +55,14 @@ jobs:
 
   build_test:
     parameters:
-      python:
+      image:
         type: string
-        default: "3.6"
-      compiler:
-        type: string
-        default: "gcc9"
+        default: "ecoleai/ci-linux-conda-gcc-py3.8"
       cmake_options:
         type: string
         default: ""
     docker:
-      - image: "ecoleai/ci-<<parameters.compiler>>-py<<parameters.python>>"
+      - image: "<<parameters.image>>"
         auth: &dockerhub_auth
           username: "$DOCKERHUB_USERNAME"
           password: "$DOCKERHUB_PASSWORD"
@@ -86,7 +83,7 @@ jobs:
         type: enum
         enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
     docker:
-      - image: "ecoleai/ci-clang10-py3.6"
+      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -99,7 +96,7 @@ jobs:
 
   code_checker:
     docker:
-      - image: "ecoleai/ci-clang10-py3.6"
+      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -109,7 +106,7 @@ jobs:
 
   build_doc:
     docker:
-      - image: "ecoleai/ci-clang10-py3.6"
+      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -123,7 +120,7 @@ jobs:
         type: string
         default: "${CIRCLE_BRANCH}"
     docker:
-      - image: "ecoleai/ci-clang10-py3.6"
+      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
         auth: *dockerhub_auth
     steps:
       - checkout
@@ -192,7 +189,7 @@ commands:
           command: ln -s "<<parameters.build_dir>>/compile_commands.json"
       - run:
           name: "CMake build"
-          command: "cmake --build build --target <<parameters.target>> --parallel"
+          command: "cmake --build build --target <<parameters.target>>"
 
   run_pre_commit:
     description: "Run pre-commit checks"
