@@ -22,7 +22,7 @@ RUN wget --no-verbose https://scip.zib.de/download/release/scipoptsuite-${scip_v
         -D GCG=OFF \
         -D ZIMPL=OFF \
         -D BOOST=OFF && \
-    cmake --build build --parallel && \
+    cmake --build build && \
     cmake --install build && \
     rm -rf build/ scipoptsuite-${scip_version} scipoptsuite-${scip_version}.tgz
 
