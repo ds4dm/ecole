@@ -72,8 +72,6 @@ interface to develop new Ecole components from Python
 
 Currenlty, conda packages are only available for Linux and MacOS.
 
-Checkout the `installation instructions <#Installation>`_ (on this page).
-
 Pip
 ^^^
 Currently unavailable
