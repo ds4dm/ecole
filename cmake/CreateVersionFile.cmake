@@ -22,24 +22,22 @@ if(NOT Ecole_VERSION_PATCH)
 	set(Ecole_VERSION_PATCH 0)
 endif()
 
-message(STATUS "Resolving Git Version")
-
-set(GIT_REVISION "unknown")
-
-find_package(Git)
-if(GIT_FOUND)
-	execute_process(
-		COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
-		WORKING_DIRECTORY "${WORKING_DIR}"
-		OUTPUT_VARIABLE GIT_REVISION
-		ERROR_QUIET
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	message(STATUS "Git revision: ${GIT_REVISION}")
-else()
-	message(STATUS "Git not found")
+if(NOT Ecole_VERSION_REVISION)
+	message(STATUS "Resolving Git Version")
+	set(Ecole_VERSION_REVISION "unknown")
+	find_package(Git)
+	if(GIT_FOUND)
+		execute_process(
+			COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
+			WORKING_DIRECTORY "${WORKING_DIR}"
+			OUTPUT_VARIABLE Ecole_VERSION_REVISION
+			ERROR_QUIET
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
+		message(STATUS "Git revision: ${Ecole_VERSION_REVISION}")
+	else()
+		message(STATUS "Git not found")
+	endif()
 endif()
-
-string(TIMESTAMP BUILD_TIMESTAMP)
 
 configure_file("${SOURCE_FILE}" "${TARGET_FILE}" @ONLY)

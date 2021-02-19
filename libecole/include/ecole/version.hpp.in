@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include <scip/config.h>
 
 namespace ecole {
@@ -8,7 +10,11 @@ struct VersionInfo {
 	unsigned int major;
 	unsigned int minor;
 	unsigned int patch;
-	const char* git_revision;
+	std::string_view revision = "unknown";
+	std::string_view build_type = "unknown";
+	std::string_view build_os = "unknown";
+	std::string_view build_time = "unknown";
+	std::string_view build_compiler = "unknown";
 };
 
 /**
@@ -16,8 +22,14 @@ struct VersionInfo {
  */
 inline constexpr VersionInfo get_version() noexcept {
 	return {
-		// NOLINTNEXTLINE(readability-magic-numbers)
-		@Ecole_VERSION_MAJOR@, @Ecole_VERSION_MINOR@, @Ecole_VERSION_PATCH@, "@GIT_REVISION@"
+		@Ecole_VERSION_MAJOR@,  // NOLINT(readability-magic-numbers)
+		@Ecole_VERSION_MINOR@,  // NOLINT(readability-magic-numbers)
+		@Ecole_VERSION_PATCH@,  // NOLINT(readability-magic-numbers)
+		"@Ecole_VERSION_REVISION@",
+		"@Ecole_BUILD_TYPE@",
+		"@Ecole_BUILD_OS@",
+		"@Ecole_BUILD_TIME@",
+		"@Ecole_BUILD_COMPILER@",
 	};
 }
 
@@ -33,7 +45,7 @@ VersionInfo get_build_version() noexcept;
  * SCIP version, as per heder files.
  */
 inline constexpr VersionInfo get_scip_version() noexcept {
-	return {SCIP_VERSION_MAJOR, SCIP_VERSION_MINOR, SCIP_VERSION_PATCH, ""};
+	return {SCIP_VERSION_MAJOR, SCIP_VERSION_MINOR, SCIP_VERSION_PATCH};
 }
 
 /**

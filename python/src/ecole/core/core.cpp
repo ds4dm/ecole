@@ -29,7 +29,11 @@ PYBIND11_MODULE(core, m) {
 		.def_readwrite("major", &VersionInfo::major)
 		.def_readwrite("minor", &VersionInfo::minor)
 		.def_readwrite("patch", &VersionInfo::patch)
-		.def_readwrite("git_revision", &VersionInfo::git_revision);
+		.def_readwrite("revision", &VersionInfo::revision)
+		.def_readwrite("build_type", &VersionInfo::build_type)
+		.def_readwrite("build_os", &VersionInfo::build_os)
+		.def_readwrite("build_time", &VersionInfo::build_time)
+		.def_readwrite("build_compiler", &VersionInfo::build_compiler);
 
 	m.def("get_build_version", &get_build_version);
 	m.def("get_build_scip_version", &get_build_scip_version);

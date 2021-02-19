@@ -39,6 +39,7 @@ set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
 add_library(Ecole::libecole ALIAS libecole)
 
 # Unconditionally generate version file at build time
+string(TIMESTAMP Ecole_BUILD_TIME)
 add_custom_target(
 	ecole-version
 	COMMAND ${CMAKE_COMMAND}
@@ -47,6 +48,11 @@ add_custom_target(
 		-D Ecole_VERSION_MAJOR="${Ecole_VERSION_MAJOR}"
 		-D Ecole_VERSION_MINOR="${Ecole_VERSION_MINOR}"
 		-D Ecole_VERSION_PATCH="${Ecole_VERSION_PATCH}"
+		-D Ecole_VERSION_REVISION="${Ecole_VERSION_REVISION}"  # Not defined by default, but let if override for conda
+		-D Ecole_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+		-D Ecole_BUILD_OS="${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}"
+		-D Ecole_BUILD_TIME="${Ecole_BUILD_TIME}"
+		-D Ecole_BUILD_COMPILER="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
 		-P "${CMAKE_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
 )
 add_dependencies(libecole ecole-version)

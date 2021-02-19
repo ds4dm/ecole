@@ -7,7 +7,11 @@ def test_version():
     assert isinstance(version.major, int)
     assert isinstance(version.minor, int)
     assert isinstance(version.patch, int)
-    assert isinstance(version.git_revision, str)
+    assert isinstance(version.revision, str)
+    assert isinstance(version.build_type, str)
+    assert isinstance(version.build_os, str)
+    assert isinstance(version.build_time, str)
+    assert isinstance(version.build_compiler, str)
 
 
 def test_scip_version():
