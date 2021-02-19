@@ -9,22 +9,24 @@ __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # St on Dockerhub but this and the CWD seem to be unreliable
 DOCKERFILE_DIR="${__DIR__}/.."
-DOCKERFILE_PATH="${DOCKERFILE_DIR}/Dockerfile"
 # Set on DockerHub but set default value to use script locally
 DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
-function build-image {
-	local -r compiler="${1:-clang10}"
-	local -r python_version="${2:-3.6}"
+for python_version in "3.6" "3.7" "3.8" "3.9" ; do
 
-	cat "${DOCKERFILE_PATH}" | docker build \
-		--build-arg compiler="${compiler}" \
+	# Default conda images
+	docker build \
+		--file "${DOCKERFILE_DIR}/Dockerfile.conda" \
 		--build-arg python_version="${python_version}" \
-		--tag "${DOCKER_REPO}-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
-}
+		--tag "${DOCKER_REPO}-linux-conda-gcc-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
 
-for compiler in "gcc9" "clang10" ; do
-	for python_version in "3.6" "3.7" "3.8" ; do
-		build-image "${compiler}" "${python_version}"
+	# Source images with given compiler
+	for compiler in "gcc9" "clang10" ; do
+		docker build \
+			--file "${DOCKERFILE_DIR}/Dockerfile.src" \
+			--build-arg python_version="${python_version}" \
+			--build-arg compiler="${compiler}" \
+			--tag "${DOCKER_REPO}-linux-src-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
 	done
+
 done

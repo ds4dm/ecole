@@ -1,0 +1,17 @@
+# Matrix built with different python versions.
+ARG python_version=3.6
+
+FROM mambaorg/micromamba:latest
+COPY conda.yaml /root/conda.yaml
+
+# Install minimal dependencies for a CircleCI image, install miniconda, and install Ecole
+# dependencies.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates && \
+    apt-get clean
+
+RUN micromamba install -y -n base -f /root/conda.yaml && \
+    micromamba  install --channel conda-forge python="${python_version}" compilers && \
+    rm /opt/conda/pkgs/cache/*
+
+WORKDIR /app

@@ -1,0 +1,41 @@
+# Matrix built with different compilers (e.g. gcc9, clang10) and python versions.
+ARG compiler=clang10
+
+FROM conanio/${compiler}
+USER root
+
+# Install minimal dependencies for a CircleCI image, install miniconda, and install Ecole
+# dependencies.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates && \
+    apt-get clean
+
+# Install SCIP from source.
+# We do not need a very "complete" scip, just the bare minimum.
+ARG scip_version=7.0.2
+RUN wget --no-verbose https://scip.zib.de/download/release/scipoptsuite-${scip_version}.tgz && \
+    tar -xzf scipoptsuite-${scip_version}.tgz && \
+    cmake -B build/ -S scipoptsuite-${scip_version} \
+        -D CMAKE_BUILD_TYPE=Release \
+        -D PARASCIP=ON \
+        -D PAPILO=OFF \
+        -D GCG=OFF \
+        -D ZIMPL=OFF \
+        -D BOOST=OFF && \
+    cmake --build build --parallel && \
+    cmake --install build && \
+    rm -rf build/ scipoptsuite-${scip_version} scipoptsuite-${scip_version}.tgz
+
+
+# Install Python and NumPy
+# Pyenv needs a full version (e.g 3.7.10) so we search for the latest bug fix release
+ARG python_version=3.6
+RUN version_regex='^[[:blank:]]*'"$(echo ${python_version} | sed 's/\./\\./')"'\.[[:digit:]]+[[:blank:]]*$' && \
+    python_version_fix=$(pyenv install --list | grep -E "${version_regex}" | cut -d'.' -f 3 | sort -n | tail -1) && \
+    python_full_version=${python_version}.${python_version_fix} && \
+    pyenv install ${python_full_version} && \
+    pyenv global ${python_full_version} && \
+    python -m pip install --no-cache-dir --upgrade pip && \
+    python -m pip install --no-cache-dir numpy
+
+WORKDIR /app
