@@ -1,7 +1,6 @@
 #include <cmath>
 #include <limits>
 #include <set>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -147,84 +146,6 @@ auto scip_row_get_vals(scip::Row* const row) noexcept -> nonstd::span<scip::real
 	return {SCIProwGetVals(row), static_cast<std::size_t>(n_cols)};
 }
 
-/****************************
- *  Feature data structure  *
- ****************************/
-
-/**
- * Strongly type feature value.
- *
- * The value of a feature is wrapped in a type that encode the name of the feature.
- *
- * This make it possible to have strong guarantees that features are not accidentally read/written
- * in the wrong column while minimizing overhead (because the name is known at compile time);
- */
-template <auto feature_name> struct FeatureValue {
-	constexpr static auto name = feature_name;
-	value_type value;
-};
-
-/************************************
- *  Feature compile time functions  *
- ************************************/
-
-/**
- * Get the value of a given feature in a feature tuple.
- */
-template <auto feature_name, typename... FeatVal> auto get_feature_value(std::tuple<FeatVal...> const& feature_tuple) {
-	return std::get<FeatureValue<feature_name>>(feature_tuple).value;
-}
-
-template <typename... Features, std::size_t... I>
-constexpr auto
-features_tuple_to_tensor_impl(std::tuple<Features...> const& features, std::index_sequence<I...> /* tuple_indices */) {
-	constexpr auto n_features = sizeof...(Features);
-	return xt::xtensor_fixed<value_type, xt::xshape<n_features>>{std::get<I>(features).value...};
-}
-
-/**
- * Compile time convertion of a tuple of Feature to a xt::xfixed_tensor.
- *
- * The type of features is a @ref FeatureValue that wraps a value with its associated name.
- */
-template <typename... Features> constexpr auto features_tuple_to_tensor(std::tuple<Features...> const& features) {
-	constexpr auto n_features = sizeof...(Features);
-	return features_tuple_to_tensor_impl(features, std::make_index_sequence<n_features>{});
-}
-
-/**
- * Check that a tuple of feature is contiguous.
- *
- * With this compile time check other functions can bypass individually setting each feature by its
- * index and directy assign a whole tensor.
- */
-template <typename... Features> constexpr auto is_contiguous(std::tuple<Features...> /* unused */) {
-	constexpr auto n_features = sizeof...(Features);
-	constexpr std::array<std::size_t, n_features> arr = {static_cast<std::size_t>(Features::name)...};
-
-	for (std::size_t i = 0; i < arr.size(); ++i) {
-		if ((i > 0) && (arr[i] != arr[i - 1] + 1)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-/**
- * Return at compile time the feature index of the first feature in a tuple.
- */
-template <typename... Features, typename Tuple = std::tuple<Features...>> constexpr auto first_index(Tuple /*unused*/) {
-	return static_cast<std::size_t>(std::tuple_element_t<0, Tuple>::name);
-}
-
-/**
- * Return at compile time the feature index of the last feature in a tuple.
- */
-template <typename... Features, typename Tuple = std::tuple<Features...>> constexpr auto last_index(Tuple /*unused*/) {
-	constexpr auto last_index = std::tuple_size<Tuple>::value - 1;
-	return static_cast<std::size_t>(std::tuple_element_t<last_index, Tuple>::name);
-}
-
 /******************************************
  *  Static features extraction functions  *
  ******************************************/
@@ -240,13 +161,11 @@ template <typename... Features, typename Tuple = std::tuple<Features...>> conste
  *
  * Value of the coefficient (raw, positive only, negative only).
  */
-auto objective_function_coefficient(scip::Col* const col) noexcept {
+template <typename Features> void set_objective_function_coefficient(Features&& out, scip::Col* const col) noexcept {
 	auto const obj = SCIPcolGetObj(col);
-	return std::tuple{
-		FeatureValue<Static::obj_coef>{obj},
-		FeatureValue<Static::obj_coef_pos_part>{std::max(obj, 0.)},
-		FeatureValue<Static::obj_coef_neg_part>{std::min(obj, 0.)},
-	};
+	out[static_cast<std::size_t>(Static::obj_coef)] = obj;
+	out[static_cast<std::size_t>(Static::obj_coef_pos_part)] = std::max(obj, 0.);
+	out[static_cast<std::size_t>(Static::obj_coef_neg_part)] = std::min(obj, 0.);
 }
 
 /**
@@ -254,8 +173,8 @@ auto objective_function_coefficient(scip::Col* const col) noexcept {
  *
  * Number of constraints that the variable participates in (with a non-zero coefficient).
  */
-auto number_constraints(scip::Col* const col) noexcept {
-	return std::tuple{FeatureValue<Static::n_rows>{static_cast<value_type>(SCIPcolGetNNonz(col))}};
+template <typename Features> void set_number_constraints(Features&& out, scip::Col* const col) noexcept {
+	out[static_cast<std::size_t>(Static::n_rows)] = static_cast<value_type>(SCIPcolGetNNonz(col));
 }
 
 /**
@@ -266,15 +185,14 @@ auto number_constraints(scip::Col* const col) noexcept {
  * degrees are used.
  * The constraint degree is computed on the root LP (mean, stdev., min, max)
  */
-auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noexcept {
+template <typename Features>
+void set_static_stats_for_constraint_degree(Features&& out, nonstd::span<scip::Row*> const rows) noexcept {
 	auto row_get_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
 	auto const stats = compute_stats(rows | ranges::views::transform(row_get_nnz));
-	return std::tuple{
-		FeatureValue<Static::rows_deg_mean>{stats.mean},
-		FeatureValue<Static::rows_deg_stddev>{stats.stddev},
-		FeatureValue<Static::rows_deg_min>{stats.min},
-		FeatureValue<Static::rows_deg_max>{stats.max},
-	};
+	out[static_cast<std::size_t>(Static::rows_deg_mean)] = stats.mean;
+	out[static_cast<std::size_t>(Static::rows_deg_stddev)] = stats.stddev;
+	out[static_cast<std::size_t>(Static::rows_deg_min)] = stats.min;
+	out[static_cast<std::size_t>(Static::rows_deg_max)] = stats.max;
 }
 
 /**
@@ -283,15 +201,16 @@ auto static_stats_for_constraint_degree(nonstd::span<scip::Row*> const rows) noe
  * A variable's positive coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-auto stats_for_constraint_positive_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
+template <typename Features>
+void set_stats_for_constraint_positive_coefficients(
+	Features&& out,
+	nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
-	return std::tuple{
-		FeatureValue<Static::rows_pos_coefs_count>{stats.count},
-		FeatureValue<Static::rows_pos_coefs_mean>{stats.mean},
-		FeatureValue<Static::rows_pos_coefs_stddev>{stats.stddev},
-		FeatureValue<Static::rows_pos_coefs_min>{stats.min},
-		FeatureValue<Static::rows_pos_coefs_max>{stats.max},
-	};
+	out[static_cast<std::size_t>(Static::rows_pos_coefs_count)] = stats.count;
+	out[static_cast<std::size_t>(Static::rows_pos_coefs_mean)] = stats.mean;
+	out[static_cast<std::size_t>(Static::rows_pos_coefs_stddev)] = stats.stddev;
+	out[static_cast<std::size_t>(Static::rows_pos_coefs_min)] = stats.min;
+	out[static_cast<std::size_t>(Static::rows_pos_coefs_max)] = stats.max;
 }
 
 /**
@@ -300,38 +219,30 @@ auto stats_for_constraint_positive_coefficients(nonstd::span<scip::real> const c
  * A variable's negative coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-auto stats_for_constraint_negative_coefficients(nonstd::span<scip::real> const coefficients) noexcept {
+template <typename Features>
+void set_stats_for_constraint_negative_coefficients(
+	Features&& out,
+	nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
-	return std::tuple{
-		FeatureValue<Static::rows_neg_coefs_count>{stats.count},
-		FeatureValue<Static::rows_neg_coefs_mean>{stats.mean},
-		FeatureValue<Static::rows_neg_coefs_stddev>{stats.stddev},
-		FeatureValue<Static::rows_neg_coefs_min>{stats.min},
-		FeatureValue<Static::rows_neg_coefs_max>{stats.max},
-	};
+	out[static_cast<std::size_t>(Static::rows_neg_coefs_count)] = stats.count;
+	out[static_cast<std::size_t>(Static::rows_neg_coefs_mean)] = stats.mean;
+	out[static_cast<std::size_t>(Static::rows_neg_coefs_stddev)] = stats.stddev;
+	out[static_cast<std::size_t>(Static::rows_neg_coefs_min)] = stats.min;
+	out[static_cast<std::size_t>(Static::rows_neg_coefs_max)] = stats.max;
 }
 
 /**
- * Extract the static features for a single columns.
+ * Extract the static features for a single LP columns.
  */
-auto extract_static_features(scip::Col* const col) {
+template <typename Features> void set_static_features(Features&& out, scip::Col* const col) {
 	auto const rows = scip_col_get_rows(col);
 	auto const coefficients = scip_col_get_vals(col);
 
-	auto features = std::tuple_cat(
-		objective_function_coefficient(col),
-		number_constraints(col),
-		static_stats_for_constraint_degree(rows),
-		stats_for_constraint_positive_coefficients(coefficients),
-		stats_for_constraint_negative_coefficients(coefficients)  //
-	);
-	return features_tuple_to_tensor(features);
-
-	// Make sure at compile time that features are returned in correct order
-	using Tuple = decltype(features);
-	static_assert(is_contiguous(Tuple{}), "Static features are permuted");
-	static_assert(first_index(Tuple{}) == 0, "Static features must start at 0");
-	static_assert(last_index(Tuple{}) == Feature::n_static - 1, "Missing static features");
+	set_objective_function_coefficient(out, col);
+	set_number_constraints(out, col);
+	set_static_stats_for_constraint_degree(out, rows);
+	set_stats_for_constraint_positive_coefficients(out, coefficients);
+	set_stats_for_constraint_negative_coefficients(out, coefficients);
 }
 
 /**
@@ -341,12 +252,9 @@ auto extract_static_features(scip::Model& model) {
 	auto const columns = model.lp_columns();
 	xt::xtensor<value_type, 2> static_features{{columns.size(), Feature::n_static}, 0.};
 
-	// Similar to the following but slice iteration not working on xt::xtensor
-	// std::transform(columns, xt::axis_slice_begin(features, 1), return extract_static_features)
-	// https://github.com/xtensor-stack/xtensor/issues/2116
 	auto const n_columns = columns.size();
 	for (std::size_t i = 0; i < n_columns; ++i) {
-		xt::row(static_features, static_cast<std::ptrdiff_t>(i)) = extract_static_features(columns[i]);
+		set_static_features(xt::row(static_features, static_cast<std::ptrdiff_t>(i)), columns[i]);
 	}
 
 	return static_features;
@@ -374,7 +282,12 @@ auto extract_static_features(scip::Model& model) {
  *     Upwards and downwards values, and their corresponding ratio, sum and product, weighted by the
  *     fractionality of xj.
  */
-auto slack_ceil_and_pseudocosts(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
+template <typename Features>
+void set_slack_ceil_and_pseudocosts(
+	Features&& out,
+	Scip* const scip,
+	scip::Var* const var,
+	scip::Col* const col) noexcept {
 	auto const solval = SCIPcolGetPrimsol(col);
 	auto const floor_distance = SCIPfeasFrac(scip, solval);
 	auto const ceil_distance = 1. - floor_distance;
@@ -384,15 +297,13 @@ auto slack_ceil_and_pseudocosts(Scip* const scip, scip::Var* const var, scip::Co
 	auto const wpu_approx = std::max(weighted_pseudocost_up, epsilon);
 	auto const wpd_approx = std::max(weighted_pseudocost_down, epsilon);
 	auto const weighted_pseudocost_ratio = safe_div(std::min(wpu_approx, wpd_approx), std::max(wpu_approx, wpd_approx));
-	return std::tuple{
-		FeatureValue<Dynamic::slack>{std::min(floor_distance, ceil_distance)},
-		FeatureValue<Dynamic::ceil_dist>{ceil_distance},
-		FeatureValue<Dynamic::pseudocost_up>{weighted_pseudocost_up},
-		FeatureValue<Dynamic::pseudocost_down>{weighted_pseudocost_down},
-		FeatureValue<Dynamic::pseudocost_ratio>{weighted_pseudocost_ratio},
-		FeatureValue<Dynamic::pseudocost_sum>{weighted_pseudocost_up + weighted_pseudocost_down},
-		FeatureValue<Dynamic::pseudocost_product>{weighted_pseudocost_up * weighted_pseudocost_down},
-	};
+	out[static_cast<std::size_t>(Dynamic::slack)] = std::min(floor_distance, ceil_distance);
+	out[static_cast<std::size_t>(Dynamic::ceil_dist)] = ceil_distance;
+	out[static_cast<std::size_t>(Dynamic::pseudocost_up)] = weighted_pseudocost_up;
+	out[static_cast<std::size_t>(Dynamic::pseudocost_down)] = weighted_pseudocost_down;
+	out[static_cast<std::size_t>(Dynamic::pseudocost_ratio)] = weighted_pseudocost_ratio;
+	out[static_cast<std::size_t>(Dynamic::pseudocost_sum)] = weighted_pseudocost_up + weighted_pseudocost_down;
+	out[static_cast<std::size_t>(Dynamic::pseudocost_product)] = weighted_pseudocost_up * weighted_pseudocost_down;
 }
 
 /**
@@ -403,17 +314,15 @@ auto slack_ceil_and_pseudocosts(Scip* const scip, scip::Var* const var, scip::Co
  *
  * N.B. replaced by left, right infeasibility.
  */
-auto infeasibility_statistics(scip::Var* const var) noexcept {
+template <typename Features> void set_infeasibility_statistics(Features&& out, scip::Var* const var) noexcept {
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
 	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
 	auto const n_branchings_down = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_DOWNWARDS));
-	return std::tuple{
-		FeatureValue<Dynamic::n_cutoff_up>{n_infeasibles_up},
-		FeatureValue<Dynamic::n_cutoff_down>{n_infeasibles_down},
-		FeatureValue<Dynamic::n_cutoff_up_ratio>{safe_div(n_infeasibles_up, n_branchings_up)},
-		FeatureValue<Dynamic::n_cutoff_down_ratio>{safe_div(n_infeasibles_down, n_branchings_down)},
-	};
+	out[static_cast<std::size_t>(Dynamic::n_cutoff_up)] = n_infeasibles_up;
+	out[static_cast<std::size_t>(Dynamic::n_cutoff_down)] = n_infeasibles_down;
+	out[static_cast<std::size_t>(Dynamic::n_cutoff_up_ratio)] = safe_div(n_infeasibles_up, n_branchings_up);
+	out[static_cast<std::size_t>(Dynamic::n_cutoff_down_ratio)] = safe_div(n_infeasibles_down, n_branchings_down);
 }
 
 /**
@@ -427,24 +336,20 @@ auto infeasibility_statistics(scip::Var* const var) noexcept {
  * The precomputed static features given as input parameters are wrapped in their strong type to
  * avoid passing the wrong ones.
  */
-template <typename... FeatVal>
-auto dynamic_stats_for_constraint_degree(
-	nonstd::span<scip::Row*> const rows,
-	std::tuple<FeatVal...> const& root_deg_stats) noexcept {
+template <typename Features>
+void set_dynamic_stats_for_constraint_degree(Features&& out, nonstd::span<scip::Row*> const rows) noexcept {
 	auto row_get_lp_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
 	auto const stats = compute_stats(rows | views::transform(row_get_lp_nnz));
-	auto const root_deg_mean = get_feature_value<Static::rows_deg_mean>(root_deg_stats);
-	auto const root_deg_min = get_feature_value<Static::rows_deg_min>(root_deg_stats);
-	auto const root_deg_max = get_feature_value<Static::rows_deg_max>(root_deg_stats);
-	return std::tuple{
-		FeatureValue<Dynamic::rows_deg_mean>{stats.mean},
-		FeatureValue<Dynamic::rows_deg_stddev>{stats.stddev},
-		FeatureValue<Dynamic::rows_deg_min>{stats.min},
-		FeatureValue<Dynamic::rows_deg_max>{stats.max},
-		FeatureValue<Dynamic::rows_deg_mean_ratio>{safe_div(stats.mean, root_deg_mean + stats.mean)},
-		FeatureValue<Dynamic::rows_deg_min_ratio>{safe_div(stats.min, root_deg_min + stats.min)},
-		FeatureValue<Dynamic::rows_deg_max_ratio>{safe_div(stats.max, root_deg_max + stats.max)},
-	};
+	auto const root_deg_mean = out[static_cast<std::size_t>(Static::rows_deg_mean)];
+	auto const root_deg_min = out[static_cast<std::size_t>(Static::rows_deg_min)];
+	auto const root_deg_max = out[static_cast<std::size_t>(Static::rows_deg_max)];
+	out[static_cast<std::size_t>(Dynamic::rows_deg_mean)] = stats.mean;
+	out[static_cast<std::size_t>(Dynamic::rows_deg_stddev)] = stats.stddev;
+	out[static_cast<std::size_t>(Dynamic::rows_deg_min)] = stats.min;
+	out[static_cast<std::size_t>(Dynamic::rows_deg_max)] = stats.max;
+	out[static_cast<std::size_t>(Dynamic::rows_deg_mean_ratio)] = safe_div(stats.mean, root_deg_mean + stats.mean);
+	out[static_cast<std::size_t>(Dynamic::rows_deg_min_ratio)] = safe_div(stats.min, root_deg_min + stats.min);
+	out[static_cast<std::size_t>(Dynamic::rows_deg_max_ratio)] = safe_div(stats.max, root_deg_max + stats.max);
 }
 
 /**
@@ -452,7 +357,9 @@ auto dynamic_stats_for_constraint_degree(
  *
  * Minimum and maximum ratios across positive and negative right-hand-sides (RHS).
  */
-auto min_max_for_ratios_constraint_coeffs_rhs(
+template <typename Features>
+void set_min_max_for_ratios_constraint_coeffs_rhs(
+	Features&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients) noexcept {
@@ -483,12 +390,10 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
 		}
 	}
 
-	return std::tuple{
-		FeatureValue<Dynamic::coef_pos_rhs_ratio_min>{positive_rhs_ratio_min},
-		FeatureValue<Dynamic::coef_pos_rhs_ratio_max>{positive_rhs_ratio_max},
-		FeatureValue<Dynamic::coef_neg_rhs_ratio_min>{negative_rhs_ratio_min},
-		FeatureValue<Dynamic::coef_neg_rhs_ratio_max>{negative_rhs_ratio_max},
-	};
+	out[static_cast<std::size_t>(Dynamic::coef_pos_rhs_ratio_min)] = positive_rhs_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::coef_pos_rhs_ratio_max)] = positive_rhs_ratio_max;
+	out[static_cast<std::size_t>(Dynamic::coef_neg_rhs_ratio_min)] = negative_rhs_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::coef_neg_rhs_ratio_max)] = negative_rhs_ratio_max;
 }
 
 /**
@@ -499,7 +404,9 @@ auto min_max_for_ratios_constraint_coeffs_rhs(
  * Four versions of these ratios are considered: positive (negative) coefficient to sum of
  * positive (negative) coefficients.
  */
-auto min_max_for_one_to_all_coefficient_ratios(
+template <typename Features>
+void set_min_max_for_one_to_all_coefficient_ratios(
+	Features&& out,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients) noexcept {
 
@@ -531,16 +438,14 @@ auto min_max_for_one_to_all_coefficient_ratios(
 		}
 	}
 
-	return std::tuple{
-		FeatureValue<Dynamic::pos_coef_pos_coef_ratio_min>{positive_positive_ratio_min},
-		FeatureValue<Dynamic::pos_coef_pos_coef_ratio_max>{positive_positive_ratio_max},
-		FeatureValue<Dynamic::pos_coef_neg_coef_ratio_min>{positive_negative_ratio_min},
-		FeatureValue<Dynamic::pos_coef_neg_coef_ratio_max>{positive_negative_ratio_max},
-		FeatureValue<Dynamic::neg_coef_pos_coef_ratio_min>{negative_positive_ratio_min},
-		FeatureValue<Dynamic::neg_coef_pos_coef_ratio_max>{negative_positive_ratio_max},
-		FeatureValue<Dynamic::neg_coef_neg_coef_ratio_min>{negative_negative_ratio_min},
-		FeatureValue<Dynamic::neg_coef_neg_coef_ratio_max>{negative_negative_ratio_max},
-	};
+	out[static_cast<std::size_t>(Dynamic::pos_coef_pos_coef_ratio_min)] = positive_positive_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::pos_coef_pos_coef_ratio_max)] = positive_positive_ratio_max;
+	out[static_cast<std::size_t>(Dynamic::pos_coef_neg_coef_ratio_min)] = positive_negative_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::pos_coef_neg_coef_ratio_max)] = positive_negative_ratio_max;
+	out[static_cast<std::size_t>(Dynamic::neg_coef_pos_coef_ratio_min)] = negative_positive_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::neg_coef_pos_coef_ratio_max)] = negative_positive_ratio_max;
+	out[static_cast<std::size_t>(Dynamic::neg_coef_neg_coef_ratio_min)] = negative_negative_ratio_min;
+	out[static_cast<std::size_t>(Dynamic::neg_coef_neg_coef_ratio_max)] = negative_negative_ratio_max;
 }
 
 /**
@@ -624,11 +529,13 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model& model) {
  * sum, mean, stdev., max. and min. of those values, for each of the weighting schemes. We also
  * compute the weighted number of active constraints that xj is in, with the same 4 weightings.
  */
-auto stats_for_active_constraint_coefficients(
+template <typename Features>
+void set_stats_for_active_constraint_coefficients(
+	Features&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients,
-	xt::xtensor<value_type, 2> active_rows_weights) noexcept {
+	xt::xtensor<value_type, 2> const& active_rows_weights) noexcept {
 
 	auto weights_stats = std::array<StatsFeatures, 4>{};
 	for (auto& stats : weights_stats) {
@@ -686,32 +593,30 @@ auto stats_for_active_constraint_coefficients(
 		}
 	}
 
-	return std::tuple{
-		FeatureValue<Dynamic::active_coef_weight1_count>{weights_stats[0].count},
-		FeatureValue<Dynamic::active_coef_weight1_sum>{weights_stats[0].sum},
-		FeatureValue<Dynamic::active_coef_weight1_mean>{weights_stats[0].mean},
-		FeatureValue<Dynamic::active_coef_weight1_stddev>{weights_stats[0].stddev},
-		FeatureValue<Dynamic::active_coef_weight1_min>{weights_stats[0].min},
-		FeatureValue<Dynamic::active_coef_weight1_max>{weights_stats[0].max},
-		FeatureValue<Dynamic::active_coef_weight2_count>{weights_stats[1].count},
-		FeatureValue<Dynamic::active_coef_weight2_sum>{weights_stats[1].sum},
-		FeatureValue<Dynamic::active_coef_weight2_mean>{weights_stats[1].mean},
-		FeatureValue<Dynamic::active_coef_weight2_stddev>{weights_stats[1].stddev},
-		FeatureValue<Dynamic::active_coef_weight2_min>{weights_stats[1].min},
-		FeatureValue<Dynamic::active_coef_weight2_max>{weights_stats[1].max},
-		FeatureValue<Dynamic::active_coef_weight3_count>{weights_stats[2].count},
-		FeatureValue<Dynamic::active_coef_weight3_sum>{weights_stats[2].sum},
-		FeatureValue<Dynamic::active_coef_weight3_mean>{weights_stats[2].mean},
-		FeatureValue<Dynamic::active_coef_weight3_stddev>{weights_stats[2].stddev},
-		FeatureValue<Dynamic::active_coef_weight3_min>{weights_stats[2].min},
-		FeatureValue<Dynamic::active_coef_weight3_max>{weights_stats[2].max},
-		FeatureValue<Dynamic::active_coef_weight4_count>{weights_stats[3].count},
-		FeatureValue<Dynamic::active_coef_weight4_sum>{weights_stats[3].sum},
-		FeatureValue<Dynamic::active_coef_weight4_mean>{weights_stats[3].mean},
-		FeatureValue<Dynamic::active_coef_weight4_stddev>{weights_stats[3].stddev},
-		FeatureValue<Dynamic::active_coef_weight4_min>{weights_stats[3].min},
-		FeatureValue<Dynamic::active_coef_weight4_max>{weights_stats[3].max},
-	};
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_count)] = weights_stats[0].count;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_sum)] = weights_stats[0].sum;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_mean)] = weights_stats[0].mean;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_stddev)] = weights_stats[0].stddev;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_min)] = weights_stats[0].min;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_max)] = weights_stats[0].max;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_count)] = weights_stats[1].count;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_sum)] = weights_stats[1].sum;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_mean)] = weights_stats[1].mean;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_stddev)] = weights_stats[1].stddev;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_min)] = weights_stats[1].min;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_max)] = weights_stats[1].max;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_count)] = weights_stats[2].count;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_sum)] = weights_stats[2].sum;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_mean)] = weights_stats[2].mean;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_stddev)] = weights_stats[2].stddev;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_min)] = weights_stats[2].min;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_max)] = weights_stats[2].max;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_count)] = weights_stats[3].count;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_sum)] = weights_stats[3].sum;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_mean)] = weights_stats[3].mean;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_stddev)] = weights_stats[3].stddev;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_min)] = weights_stats[3].min;
+	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_max)] = weights_stats[3].max;
 }
 
 /**
@@ -720,46 +625,46 @@ auto stats_for_active_constraint_coefficients(
  * The precomputed static features given as input parameters are wrapped in their strong type to
  * avoid passing the wrong ones.
  */
-template <typename... FeatVal>
-auto extract_dynamic_features(
+template <typename Features>
+void set_dynamic_features(
+	Features&& out,
 	Scip* const scip,
 	scip::Var* const var,
-	xt::xtensor<value_type, 2> const& active_rows_weights,
-	std::tuple<FeatVal...> const& root_deg_stats) {
+	xt::xtensor<value_type, 2> const& active_rows_weights) {
 	auto* const col = SCIPvarGetCol(var);
 	auto const rows = scip_col_get_rows(col);
 	auto const coefficients = scip_col_get_vals(col);
 
-	auto features = std::tuple_cat(
-		slack_ceil_and_pseudocosts(scip, var, col),
-		infeasibility_statistics(var),
-		dynamic_stats_for_constraint_degree(rows, root_deg_stats),
-		min_max_for_ratios_constraint_coeffs_rhs(scip, rows, coefficients),
-		min_max_for_one_to_all_coefficient_ratios(rows, coefficients),
-		stats_for_active_constraint_coefficients(scip, rows, coefficients, active_rows_weights));
-	return features_tuple_to_tensor(features);
+	set_slack_ceil_and_pseudocosts(out, scip, var, col);
+	set_infeasibility_statistics(out, var);
+	set_dynamic_stats_for_constraint_degree(out, rows);
+	set_min_max_for_ratios_constraint_coeffs_rhs(out, scip, rows, coefficients);
+	set_min_max_for_one_to_all_coefficient_ratios(out, rows, coefficients);
+	set_stats_for_active_constraint_coefficients(out, scip, rows, coefficients, active_rows_weights);
+}
 
-	// Make sure at compile time that features are returned in correct order
-	using Tuple = decltype(features);
-	static_assert(is_contiguous(Tuple{}), "Dynammic features are permuted");
-	static_assert(first_index(Tuple{}) == Feature::n_static, "Dynamic features start at n_static");
-	static_assert(last_index(Tuple{}) == Feature::n_features - 1, "Missing dynamic features");
+/**
+ * Extract the static features already computed.
+ *
+ * The static features have been computed for all LP columns and stored in the order of `LPcolumns`.
+ * We need to find the one associated with the given variable.
+ */
+template <typename Features>
+void set_precomputed_static_features(
+	Features&& out,
+	scip::Var* const var,
+	xt::xtensor<value_type, 2> const& static_features) {
+
+	auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
+	using namespace xt::placeholders;
+	xt::view(out, xt::range(_, Feature::n_static)) = xt::row(static_features, col_idx);
 }
 
 /******************************
  *  Main extraction function  *
  ******************************/
 
-template <typename Tensor> auto extract_reused_static_features(Tensor const& tensor) noexcept {
-	return std::tuple{
-		FeatureValue<Static::rows_deg_mean>{tensor[static_cast<std::size_t>(Static::rows_deg_mean)]},
-		FeatureValue<Static::rows_deg_min>{tensor[static_cast<std::size_t>(Static::rows_deg_min)]},
-		FeatureValue<Static::rows_deg_max>{tensor[static_cast<std::size_t>(Static::rows_deg_max)]},
-	};
-}
-
 auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& static_features) {
-
 	xt::xtensor<value_type, 2> observation{
 		{model.pseudo_branch_cands().size(), Feature::n_static + Feature::n_dynamic},
 		std::nan(""),
@@ -772,14 +677,9 @@ auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& 
 	auto const n_pseudo_branch_cands = pseudo_branch_cands.size();
 	for (std::size_t var_idx = 0; var_idx < n_pseudo_branch_cands; ++var_idx) {
 		auto* const var = pseudo_branch_cands[var_idx];
-		auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
-
-		using namespace xt::placeholders;
-		// Static features are precomputed
-		xt::view(observation, var_idx, xt::range(_, Feature::n_static)) = xt::row(static_features, col_idx);
-		// Dynamic features
-		xt::view(observation, var_idx, xt::range(Feature::n_static, _)) = extract_dynamic_features(
-			scip, var, active_rows_weights, extract_reused_static_features(xt::row(static_features, col_idx)));
+		auto features = xt::row(observation, static_cast<std::ptrdiff_t>(var_idx));
+		set_precomputed_static_features(features, var, static_features);
+		set_dynamic_features(features, scip, var, active_rows_weights);
 	}
 
 	return observation;
@@ -805,7 +705,7 @@ auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<K
 		if (is_on_root_node(model)) {
 			static_features = extract_static_features(model);
 		}
-		return extract_all_features(model, static_features);
+		return {extract_all_features(model, static_features)};
 	}
 	return {};
 }
