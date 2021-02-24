@@ -32,9 +32,8 @@ include(cmake/Coverage.cmake)
 # Utilities to automatically download missing dependencies
 include(cmake/Dependencies.cmake)
 
-# Find Python and create virtual environment for Ecole
+# Find Python (with Numpy) and create virtual environment for Ecole
 include(cmake/Python.cmake)
-include(cmake/FindNumPy.cmake)
 include(cmake/PythonVenv.cmake)
 
 # Ecole libraries

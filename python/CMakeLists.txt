@@ -36,7 +36,7 @@ target_include_directories(ecole-python PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 # Include the headers directly instead of using the CMake target due to it wrongly linking against
 # libpython
-target_include_directories(ecole-python SYSTEM PRIVATE "${NUMPY_INCLUDE_DIRS}")
+target_include_directories(ecole-python SYSTEM PRIVATE "${Python_NumPy_INCLUDE_DIRS}")
 
 target_link_libraries(
 	ecole-python
