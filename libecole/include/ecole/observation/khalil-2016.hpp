@@ -14,9 +14,9 @@ using Khalil2016Obs = xt::xtensor<double, 2>;
 class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
 public:
 	struct Feature {
-		static constexpr std::size_t n_static = 18;
-		static constexpr std::size_t n_dynamic = 54;
-		static constexpr std::size_t n_features = n_static + n_dynamic;
+		static inline std::size_t constexpr n_static = 18;
+		static inline std::size_t constexpr n_dynamic = 54;
+		static inline std::size_t constexpr n_features = n_static + n_dynamic;
 
 		enum struct Static : std::size_t {
 			/** Objective function coeffs. (3) */
