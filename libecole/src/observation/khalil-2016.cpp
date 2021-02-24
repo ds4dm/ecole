@@ -14,7 +14,9 @@
 #include <xtensor/xview.hpp>
 
 #include "ecole/observation/khalil-2016.hpp"
+#include "ecole/scip/col.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/row.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
@@ -122,30 +124,6 @@ template <typename Range> auto sum_positive_negative(Range range) noexcept {
 	return std::pair{positive_sum, negative_sum};
 }
 
-/*****************************
- *  Scip wrapping functions  *
- *****************************/
-
-auto scip_col_get_rows(scip::Col* const col) noexcept -> nonstd::span<scip::Row*> {
-	auto const n_rows = SCIPcolGetNNonz(col);
-	return {SCIPcolGetRows(col), static_cast<std::size_t>(n_rows)};
-}
-
-auto scip_col_get_vals(scip::Col* const col) noexcept -> nonstd::span<scip::real> {
-	auto const n_rows = SCIPcolGetNNonz(col);
-	return {SCIPcolGetVals(col), static_cast<std::size_t>(n_rows)};
-}
-
-auto scip_row_get_cols(scip::Row* const row) noexcept -> nonstd::span<scip::Col*> {
-	auto const n_cols = SCIProwGetNNonz(row);
-	return {SCIProwGetCols(row), static_cast<std::size_t>(n_cols)};
-}
-
-auto scip_row_get_vals(scip::Row* const row) noexcept -> nonstd::span<scip::real> {
-	auto const n_cols = SCIProwGetNNonz(row);
-	return {SCIProwGetVals(row), static_cast<std::size_t>(n_cols)};
-}
-
 /******************************************
  *  Static features extraction functions  *
  ******************************************/
@@ -235,8 +213,8 @@ void set_stats_for_constraint_negative_coefficients(
  * Extract the static features for a single LP columns.
  */
 template <typename Features> void set_static_features(Features&& out, scip::Col* const col) {
-	auto const rows = scip_col_get_rows(col);
-	auto const coefficients = scip_col_get_vals(col);
+	auto const rows = scip::get_rows(col);
+	auto const coefficients = scip::get_vals(col);
 
 	set_objective_function_coefficient(out, col);
 	set_number_constraints(out, col);
@@ -420,7 +398,7 @@ void set_min_max_for_one_to_all_coefficient_ratios(
 	value_type negative_negative_ratio_min = 1;
 
 	for (auto const [row, coef] : views::zip(rows, coefficients)) {
-		auto const [positive_coeficients_sum, negative_coeficients_sum] = sum_positive_negative(scip_row_get_vals(row));
+		auto const [positive_coeficients_sum, negative_coeficients_sum] = sum_positive_negative(scip::get_vals(row));
 		if (coef > 0) {
 			auto const positive_ratio = coef / positive_coeficients_sum;
 			auto const negative_ratio = coef / (coef - negative_coeficients_sum);
@@ -502,10 +480,10 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model& model) {
 
 	for (auto* const row : lp_rows) {
 		if (row_is_active(scip, row)) {
-			auto const row_cols_vals = scip_row_get_vals(row);
+			auto const row_cols_vals = scip::get_vals(row);
 			*(weights_iter++) = 1.;
 			*(weights_iter++) = safe_inv(sum_abs(row_cols_vals));
-			*(weights_iter++) = safe_inv(sum_abs_if_candidate(scip_row_get_cols(row), row_cols_vals));
+			*(weights_iter++) = safe_inv(sum_abs_if_candidate(scip::get_cols(row), row_cols_vals));
 			*(weights_iter++) = std::abs(SCIProwGetDualsol(row));
 		} else {
 			weights_iter += 4;
@@ -632,8 +610,8 @@ void set_dynamic_features(
 	scip::Var* const var,
 	xt::xtensor<value_type, 2> const& active_rows_weights) {
 	auto* const col = SCIPvarGetCol(var);
-	auto const rows = scip_col_get_rows(col);
-	auto const coefficients = scip_col_get_vals(col);
+	auto const rows = scip::get_rows(col);
+	auto const coefficients = scip::get_vals(col);
 
 	set_slack_ceil_and_pseudocosts(out, scip, var, col);
 	set_infeasibility_statistics(out, var);

@@ -12,8 +12,9 @@ add_library(
 	src/scip/model.cpp
 	src/scip/cons.cpp
 	src/scip/var.cpp
-	src/scip/exception.cpp
 	src/scip/row.cpp
+	src/scip/col.cpp
+	src/scip/exception.cpp
 
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
