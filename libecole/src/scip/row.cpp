@@ -40,4 +40,14 @@ auto is_at_lhs(SCIP const* scip, SCIP_ROW const* row) noexcept -> bool {
 	return SCIPisEQ(not_const(scip), activity, lhs_val);
 }
 
+auto get_cols(SCIP_ROW const* row) noexcept -> nonstd::span<SCIP_COL*> {
+	auto const n_cols = SCIProwGetNNonz(not_const(row));
+	return {SCIProwGetCols(not_const(row)), static_cast<std::size_t>(n_cols)};
+}
+
+auto get_vals(SCIP_ROW const* row) noexcept -> nonstd::span<SCIP_Real> {
+	auto const n_cols = SCIProwGetNNonz(not_const(row));
+	return {SCIProwGetVals(not_const(row)), static_cast<std::size_t>(n_cols)};
+}
+
 }  // namespace ecole::scip
