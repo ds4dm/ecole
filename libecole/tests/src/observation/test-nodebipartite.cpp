@@ -16,8 +16,12 @@ TEST_CASE("NodeBipartite unit tests", "[unit][obs]") {
 }
 
 TEST_CASE("NodeBipartite return correct observation", "[obs]") {
-	auto obs_func = observation::NodeBipartite{};
+	auto cache = GENERATE(true, false);
+	auto obs_func = observation::NodeBipartite{cache};
 	auto model = get_model();
+	if (cache) {
+		model.disable_cuts();
+	}
 	obs_func.before_reset(model);
 	advance_to_root_node(model);
 	auto const optional_obs = obs_func.extract(model, false);
