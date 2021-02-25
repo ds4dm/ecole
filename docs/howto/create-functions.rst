@@ -24,8 +24,8 @@ to the observation features.
 
 The method that will be called to return an observation is called
 :py:meth:`~ecole.typing.ObservationFunction.extract`.
-Here is how we can create a new observation function that scale the features their maximum absolute
-value.
+Here is how we can create a new observation function that scale the features by their maximum
+absolute value.
 
 .. testcode::
 
@@ -158,7 +158,7 @@ It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations`
 
 Using PyScipOpt
 ---------------
-When creating new function, it is common to need to extract information from the solver.
+When creating a new function, it is common to need to extract information from the solver.
 `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is the official Python interface to
 SCIP.
 The ``pyscipopt.Model`` holds a stateful SCIP problem instance and solver.

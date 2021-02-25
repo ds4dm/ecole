@@ -19,7 +19,7 @@ In fact environments are wrapper around dynamics that drive the following orches
 
 * Environments store the state as a :py:class:`~ecole.scip.Model`;
 * Forward the :py:class:`~ecole.scip.Model` to the :py:class:`~ecole.typing.Dynamics` to start a new
-  episode or transition to receive and action set;
+  episode or transition to receive an action set;
 * Forward the :py:class:`~ecole.scip.Model` to the :py:class:`~ecole.typing.RewardFunction` and
   :py:class:`~ecole.typing.ObservationFunction` to recieve an observation and reward;
 * Return everything to the user.

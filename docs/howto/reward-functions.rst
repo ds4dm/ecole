@@ -81,7 +81,7 @@ it is similar to doing the following
    >>> _, _, lp_iter_reward, _, _ = env.step({})
    >>> reward = -3.5 * lp_iter_reward ** 2.1 + 4.4
 
-Arithmetic operations on reward functions become exremely powerful when combining mutiple
+Arithmetic operations on reward functions become extremely powerful when combining mutiple
 rewards functions, such as in
 
 .. testcode::
@@ -101,7 +101,7 @@ All operations that are valid between scalars are valid with reward functions
    - IsDone() ** abs(LpIterations() // 4)
 
 Not all mathematical operations have a dedicated Python operator.
-Ecole implements a number of other operations are as methods to reward functions.
+Ecole implements a number of other operations as methods of reward functions.
 For instance, to get the exponential of :py:class:`~ecole.reward.LpIterations`, one can
 use
 
