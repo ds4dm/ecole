@@ -62,7 +62,13 @@ public:
 
 class NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
 public:
+	NodeBipartite(bool cache = false) : use_cache{cache} {}
+
 	std::optional<NodeBipartiteObs> extract(scip::Model& model, bool done) override;
+
+private:
+	NodeBipartiteObs the_cache;
+	bool use_cache = false;
 };
 
 }  // namespace ecole::observation

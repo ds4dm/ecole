@@ -138,7 +138,15 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
 	)");
-	node_bipartite.def(py::init<>());
+	node_bipartite.def(py::init<bool>(), py::arg("cache") = false, R"(
+		Initialize the logger.
+
+		Parameters
+		----------
+		cache :
+			Whether or not to cache static features within an episode.
+			Currently, this is only safe if cutting planes are disabled.
+	)");
 	def_before_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
