@@ -6,7 +6,7 @@ Contribution Guidelines
 Thank you for your interest in contributing to Ecole! 🌟
 Contributions are more diverse than contributing new features.
 Improving the documentation, reporting and reproducing bugs, discussing the direction of Ecole in
-the discussions, helping other use Ecole.
+the discussions, helping others use Ecole.
 
 
 Contribution acceptance
@@ -30,7 +30,7 @@ Tour of the codebase
   Ecole uses `PyBind <https://pybind11.readthedocs.io/>`_ to create the binding, these are all the C++ files
   in this directory.
   Sometimes, you may find Python code as well.
-  Either this is because a feature is more natuarally in Python, or because we have accepted an early contribution
+  This is either because a feature is more naturally implemented in Python, or because we have accepted an early contribution
   that is not yet ported to C++.
 - ``docs`` is the `Sphinx <https://www.sphinx-doc.org>`_ documentation written in reStructuredText.
 - ``examples`` are practical examples showcasing how to use Ecole for certain tasks.
@@ -40,7 +40,7 @@ Dependencies with Conda
 -----------------------
 All dependencies required for building Ecole (including SCIP) can be resolved using a
 `conda <https://docs.conda.io/en/latest/>`_ environment.
-Install everything in a development (named ``ecole``) environment using
+Install everything in a development environment (named ``ecole``) using
 
 .. code-block:: bash
 
@@ -100,18 +100,18 @@ The Python package can finally be installed from the build directory
 
 .. important::
 
-   Be sure to eliminate all warnings, as warnings. They will be considered as errors in the PR.
+   Be sure to eliminate all warnings. They will be considered as errors in the PR.
 
 Compiler issues
 ^^^^^^^^^^^^^^^
-If you encounter problem with your compiler (because it is too old for instance),
+If you encounter problems with your compiler (because it is too old for instance),
 you can use the ones from ananconda.
 
 .. code-block:: bash
 
    conda install cxx-compiler
 
-And start again the configuring of Ecole.
+And start again the configuration of Ecole.
 
 .. code-block:: bash
 
@@ -173,7 +173,7 @@ Some C++ tools need access to a *compilation database*.
 This is a file called ``compile_commands.json`` that is created automatically by CMake when using
 ``-D ECOLE_DEVELOPER=ON``.
 The file needs to be accessible at the root directory of the project, so you should symlink it like
-so (assuming you set CMake to configure in the directory named ``build`` as shown before).
+so (assuming you set CMake to build in the directory named ``build`` as shown before).
 
 .. code-block:: bash
 
@@ -182,7 +182,7 @@ so (assuming you set CMake to configure in the directory named ``build`` as show
 .. tip::
 
    This file is also read by `clangd <https://clangd.llvm.org>`_, a C++ language server (already
-   installed the conda environment).
+   installed in the conda environment).
    To get code completion, compile errors, go-to-definition and more, you can install a language
    server protocol plugin for your editor.
 

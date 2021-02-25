@@ -60,7 +60,7 @@ With an Environment
 The environment :py:meth:`~ecole.environment.EnvironmentComposer.reset` accepts problem instance as
 :py:class:`ecole.scip.Model`, so there is no need to write generated instances to file.
 
-A typical example training voer 1000 instances/episodes would look like:
+A typical example training over 1000 instances/episodes would look like:
 
 .. testcode::
 
@@ -78,7 +78,7 @@ A typical example training voer 1000 instances/episodes would look like:
 .. note::
    While it is possible to modify the instance before passing it to
    :py:meth:`~ecole.environment.EnvironmentComposer.reset`, it is not considered a good practice, as it obscure what
-   what task is being learned (which is not be self contained by the environment class anymore).
+   what task is being learned (which is not self contained by the environment class anymore).
    A better alternative is to :ref:`create a new environment<create-new-environment>` to perfom such changes.
 
 
@@ -138,7 +138,7 @@ Another useful case it to generate instances of a same problem type but with dif
 If there are few different set of parameter to choose from, then we could use the same technique as above.
 However, with more set of parameters (or even infinite), this becomes wasteful (or impossible).
 
-To do this, we can use the generators :py:meth:`~ecole.typing.InstanceGenerator.generate_instance` static function
+To do this, we can use the generator's :py:meth:`~ecole.typing.InstanceGenerator.generate_instance` static function
 and manually pass a :py:class:`~ecole.RandomEngine`.
 For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
 :py:class:`~ecole.instance.SetCoverGenerator`, one could use
