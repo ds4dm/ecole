@@ -21,8 +21,8 @@ namespace {
  *  Common helpers   *
  *********************/
 
-using tensor = decltype(NodeBipartiteObs::column_features);
-using value_type = tensor::value_type;
+using xmatrix = decltype(NodeBipartiteObs::column_features);
+using value_type = xmatrix::value_type;
 
 using ColumnFeatures = NodeBipartiteObs::ColumnFeatures;
 using RowFeatures = NodeBipartiteObs::RowFeatures;
@@ -99,7 +99,7 @@ template <typename E> constexpr auto idx(E e) {
 }
 
 template <typename Features>
-void set_static_col_features(Features&& out, scip::Var* const var, scip::Col* const col, value_type obj_norm) {
+void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col* const col, value_type obj_norm) {
 	out[idx(ColumnFeatures::objective)] = SCIPcolGetObj(col) / obj_norm;
 	// On-hot enconding of varaible type
 	out[idx(ColumnFeatures::is_type_binary)] = 0.;
@@ -125,7 +125,7 @@ void set_static_col_features(Features&& out, scip::Var* const var, scip::Col* co
 }
 
 template <typename Features>
-void set_dynamic_col_features(
+void set_dynamic_features_for_col(
 	Features&& out,
 	Scip* const scip,
 	scip::Var* const var,
@@ -165,9 +165,8 @@ void set_dynamic_col_features(
 	}
 }
 
-auto extract_col_features(scip::Model& model) {
+void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const update_static) {
 	auto* const scip = model.get_scip_ptr();
-	auto col_feat = tensor{{model.lp_columns().size(), NodeBipartiteObs::n_column_features}, 0.};
 
 	// Contant reused in every iterations
 	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
@@ -178,12 +177,12 @@ auto extract_col_features(scip::Model& model) {
 	for (std::size_t col_idx = 0; col_idx < n_columns; ++col_idx) {
 		auto* const col = columns[col_idx];
 		auto* const var = SCIPcolGetVar(col);
-		auto features = xt::row(col_feat, static_cast<std::ptrdiff_t>(col_idx));
-		set_static_col_features(features, var, col, obj_norm);
-		set_dynamic_col_features(features, scip, var, col, obj_norm, n_lps);
+		auto features = xt::row(out, static_cast<std::ptrdiff_t>(col_idx));
+		if (update_static) {
+			set_static_features_for_col(features, var, col, obj_norm);
+		}
+		set_dynamic_features_for_col(features, scip, var, col, obj_norm, n_lps);
 	}
-
-	return col_feat;
 }
 
 /***************************************
@@ -219,19 +218,19 @@ std::size_t n_ineq_rows(scip::Model& model) {
 }
 
 template <typename Features>
-void set_static_row_features_lhs(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
 	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = -1 * obj_cos_sim(scip, row);
 }
 
 template <typename Features>
-void set_static_row_features_rhs(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
 	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = obj_cos_sim(scip, row);
 }
 
 template <typename Features>
-void set_dynamic_row_features_lhs(
+void set_dynamic_features_for_lhs_row(
 	Features&& out,
 	Scip* const scip,
 	scip::Row* const row,
@@ -244,7 +243,7 @@ void set_dynamic_row_features_lhs(
 }
 
 template <typename Features>
-void set_dynamic_row_features_rhs(
+void set_dynamic_features_for_rhs_row(
 	Features&& out,
 	Scip* const scip,
 	scip::Row* const row,
@@ -256,9 +255,8 @@ void set_dynamic_row_features_rhs(
 	out[idx(RowFeatures::scaled_age)] = static_cast<value_type>(SCIProwGetAge(row)) / (n_lps + cste);
 }
 
-auto extract_row_features(scip::Model& model) {
+auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const update_static) {
 	auto* const scip = model.get_scip_ptr();
-	auto row_features = tensor{{n_ineq_rows(model), NodeBipartiteObs::n_row_features}, 0.};
 
 	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
 	value_type const obj_norm = obj_l2_norm(scip);
@@ -268,20 +266,22 @@ auto extract_row_features(scip::Model& model) {
 	for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
 		auto* const row = rows[row_idx];
 		auto const row_norm = static_cast<value_type>(row_l2_norm(row));
-		auto features = xt::row(row_features, static_cast<std::ptrdiff_t>(row_idx));
+		auto features = xt::row(out, static_cast<std::ptrdiff_t>(row_idx));
 
 		// Rows are counted once per rhs and once per lhs
 		if (scip::get_unshifted_lhs(scip, row).has_value()) {
-			set_static_row_features_lhs(features, scip, row, row_norm);
-			set_dynamic_row_features_lhs(features, scip, row, row_norm, obj_norm, n_lps);
+			if (update_static) {
+				set_static_features_for_lhs_row(features, scip, row, row_norm);
+			}
+			set_dynamic_features_for_lhs_row(features, scip, row, row_norm, obj_norm, n_lps);
 		}
 		if (scip::get_unshifted_rhs(scip, row).has_value()) {
-			set_static_row_features_rhs(features, scip, row, row_norm);
-			set_dynamic_row_features_rhs(features, scip, row, row_norm, obj_norm, n_lps);
+			if (update_static) {
+				set_static_features_for_rhs_row(features, scip, row, row_norm);
+			}
+			set_dynamic_features_for_rhs_row(features, scip, row, row_norm, obj_norm, n_lps);
 		}
 	}
-
-	return row_features;
 }
 
 /****************************************
@@ -347,6 +347,28 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 	return {values, indices, {n_rows, n_cols}};
 }
 
+auto is_on_root_node(scip::Model& model) -> bool {
+	auto* const scip = model.get_scip_ptr();
+	return SCIPgetCurrentNode(scip) == SCIPgetRootNode(scip);
+}
+
+auto extract_observation_fully(scip::Model& model) -> NodeBipartiteObs {
+	auto obs = NodeBipartiteObs{
+		xmatrix::from_shape({model.lp_columns().size(), NodeBipartiteObs::n_column_features}),
+		xmatrix::from_shape({n_ineq_rows(model), NodeBipartiteObs::n_row_features}),
+		extract_edge_features(model),
+	};
+	set_features_for_all_cols(obs.column_features, model, true);
+	set_features_for_all_rows(obs.row_features, model, true);
+	return obs;
+}
+
+auto extract_observation_from_cache(scip::Model& model, NodeBipartiteObs obs) -> NodeBipartiteObs {
+	set_features_for_all_cols(obs.column_features, model, false);
+	set_features_for_all_rows(obs.row_features, model, false);
+	return obs;
+}
+
 }  // namespace
 
 /*************************************
@@ -355,7 +377,14 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 
 auto NodeBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<NodeBipartiteObs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
-		return NodeBipartiteObs{extract_col_features(model), extract_row_features(model), extract_edge_features(model)};
+		if (use_cache) {
+			if (is_on_root_node(model)) {
+				the_cache = extract_observation_fully(model);
+				return the_cache;
+			}
+			return extract_observation_from_cache(model, the_cache);
+		}
+		return extract_observation_fully(model);
 	}
 	return {};
 }
