@@ -106,32 +106,32 @@ void bind_submodule(py::module_ const& m) {
 			"columns for variables.");
 
 	py::enum_<NodeBipartiteObs::ColumnFeatures>(node_bipartite_obs, "ColumnFeatures")
+		.value("objective", NodeBipartiteObs::ColumnFeatures::objective)
+		.value("is_type_binary", NodeBipartiteObs::ColumnFeatures::is_type_binary)
+		.value("is_type_integer", NodeBipartiteObs::ColumnFeatures::is_type_integer)
+		.value("is_type_implicit_integer", NodeBipartiteObs::ColumnFeatures::is_type_implicit_integer)
+		.value("is_type_continuous", NodeBipartiteObs::ColumnFeatures::is_type_continuous)
 		.value("has_lower_bound", NodeBipartiteObs::ColumnFeatures::has_lower_bound)
 		.value("has_upper_bound", NodeBipartiteObs::ColumnFeatures::has_upper_bound)
 		.value("normed_reduced_cost", NodeBipartiteObs::ColumnFeatures::normed_reduced_cost)
-		.value("objective", NodeBipartiteObs::ColumnFeatures::objective)
 		.value("solution_value", NodeBipartiteObs::ColumnFeatures::solution_value)
 		.value("solution_frac", NodeBipartiteObs::ColumnFeatures::solution_frac)
 		.value("is_solution_at_lower_bound", NodeBipartiteObs::ColumnFeatures::is_solution_at_lower_bound)
 		.value("is_solution_at_upper_bound", NodeBipartiteObs::ColumnFeatures::is_solution_at_upper_bound)
 		.value("scaled_age", NodeBipartiteObs::ColumnFeatures::scaled_age)
+		.value("incumbent_value", NodeBipartiteObs::ColumnFeatures::incumbent_value)
+		.value("average_incumbent_value", NodeBipartiteObs::ColumnFeatures::average_incumbent_value)
 		.value("is_basis_lower", NodeBipartiteObs::ColumnFeatures::is_basis_lower)
 		.value("is_basis_basic", NodeBipartiteObs::ColumnFeatures::is_basis_basic)
 		.value("is_basis_upper", NodeBipartiteObs::ColumnFeatures::is_basis_upper)
-		.value("is_basis_zero", NodeBipartiteObs::ColumnFeatures ::is_basis_zero)
-		.value("incumbent_value", NodeBipartiteObs::ColumnFeatures::incumbent_value)
-		.value("average_incumbent_value", NodeBipartiteObs::ColumnFeatures::average_incumbent_value)
-		.value("is_type_binary", NodeBipartiteObs::ColumnFeatures::is_type_binary)
-		.value("is_type_integer", NodeBipartiteObs::ColumnFeatures::is_type_integer)
-		.value("is_type_implicit_integer", NodeBipartiteObs::ColumnFeatures::is_type_implicit_integer)
-		.value("is_type_continuous", NodeBipartiteObs::ColumnFeatures::is_type_continuous);
+		.value("is_basis_zero", NodeBipartiteObs::ColumnFeatures ::is_basis_zero);
 
 	py::enum_<NodeBipartiteObs::RowFeatures>(node_bipartite_obs, "RowFeatures")
 		.value("bias", NodeBipartiteObs::RowFeatures::bias)
-		.value("is_tight", NodeBipartiteObs::RowFeatures::is_tight)
-		.value("scaled_age", NodeBipartiteObs::RowFeatures::scaled_age)
 		.value("objective_cosine_similarity", NodeBipartiteObs::RowFeatures::objective_cosine_similarity)
-		.value("dual_solution_value", NodeBipartiteObs::RowFeatures::dual_solution_value);
+		.value("is_tight", NodeBipartiteObs::RowFeatures::is_tight)
+		.value("dual_solution_value", NodeBipartiteObs::RowFeatures::dual_solution_value)
+		.value("scaled_age", NodeBipartiteObs::RowFeatures::scaled_age);
 
 	auto node_bipartite = py::class_<NodeBipartite>(m, "NodeBipartite", R"(
 		Bipartite graph observation function on branch-and bound node.
