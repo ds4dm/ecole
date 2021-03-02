@@ -375,14 +375,21 @@ auto extract_observation_from_cache(scip::Model& model, NodeBipartiteObs obs) ->
  *  Observation extracting function  *
  *************************************/
 
+auto NodeBipartite::before_reset(scip::Model & /* model */) -> void {
+	cache_computed = false;
+}
+
 auto NodeBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<NodeBipartiteObs> {
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		if (use_cache) {
 			if (is_on_root_node(model)) {
 				the_cache = extract_observation_fully(model);
+				cache_computed = true;
 				return the_cache;
 			}
-			return extract_observation_from_cache(model, the_cache);
+			if (cache_computed) {
+				return extract_observation_from_cache(model, the_cache);
+			}
 		}
 		return extract_observation_fully(model);
 	}
