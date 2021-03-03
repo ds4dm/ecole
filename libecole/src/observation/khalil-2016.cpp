@@ -25,9 +25,7 @@ namespace {
 
 namespace views = ranges::views;
 
-using Feature = Khalil2016::Feature;
-using Static = Khalil2016::Feature::Static;
-using Dynamic = Khalil2016::Feature::Dynamic;
+using Features = Khalil2016::Features;
 using value_type = Khalil2016Obs::value_type;
 
 /*************************
@@ -124,6 +122,11 @@ template <typename Range> auto sum_positive_negative(Range range) noexcept {
 	return std::pair{positive_sum, negative_sum};
 }
 
+/** Convert an enum to its underlying index. */
+template <typename E> constexpr auto idx(E e) {
+	return static_cast<std::underlying_type_t<E>>(e);
+}
+
 /******************************************
  *  Static features extraction functions  *
  ******************************************/
@@ -139,11 +142,11 @@ template <typename Range> auto sum_positive_negative(Range range) noexcept {
  *
  * Value of the coefficient (raw, positive only, negative only).
  */
-template <typename Features> void set_objective_function_coefficient(Features&& out, scip::Col* const col) noexcept {
+template <typename Tensor> void set_objective_function_coefficient(Tensor&& out, scip::Col* const col) noexcept {
 	auto const obj = SCIPcolGetObj(col);
-	out[static_cast<std::size_t>(Static::obj_coef)] = obj;
-	out[static_cast<std::size_t>(Static::obj_coef_pos_part)] = std::max(obj, 0.);
-	out[static_cast<std::size_t>(Static::obj_coef_neg_part)] = std::min(obj, 0.);
+	out[idx(Features::obj_coef)] = obj;
+	out[idx(Features::obj_coef_pos_part)] = std::max(obj, 0.);
+	out[idx(Features::obj_coef_neg_part)] = std::min(obj, 0.);
 }
 
 /**
@@ -151,8 +154,8 @@ template <typename Features> void set_objective_function_coefficient(Features&& 
  *
  * Number of constraints that the variable participates in (with a non-zero coefficient).
  */
-template <typename Features> void set_number_constraints(Features&& out, scip::Col* const col) noexcept {
-	out[static_cast<std::size_t>(Static::n_rows)] = static_cast<value_type>(SCIPcolGetNNonz(col));
+template <typename Tensor> void set_number_constraints(Tensor&& out, scip::Col* const col) noexcept {
+	out[idx(Features::n_rows)] = static_cast<value_type>(SCIPcolGetNNonz(col));
 }
 
 /**
@@ -163,14 +166,14 @@ template <typename Features> void set_number_constraints(Features&& out, scip::C
  * degrees are used.
  * The constraint degree is computed on the root LP (mean, stdev., min, max)
  */
-template <typename Features>
-void set_static_stats_for_constraint_degree(Features&& out, nonstd::span<scip::Row*> const rows) noexcept {
+template <typename Tensor>
+void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Row*> const rows) noexcept {
 	auto row_get_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
 	auto const stats = compute_stats(rows | ranges::views::transform(row_get_nnz));
-	out[static_cast<std::size_t>(Static::rows_deg_mean)] = stats.mean;
-	out[static_cast<std::size_t>(Static::rows_deg_stddev)] = stats.stddev;
-	out[static_cast<std::size_t>(Static::rows_deg_min)] = stats.min;
-	out[static_cast<std::size_t>(Static::rows_deg_max)] = stats.max;
+	out[idx(Features::rows_deg_mean)] = stats.mean;
+	out[idx(Features::rows_deg_stddev)] = stats.stddev;
+	out[idx(Features::rows_deg_min)] = stats.min;
+	out[idx(Features::rows_deg_max)] = stats.max;
 }
 
 /**
@@ -179,16 +182,16 @@ void set_static_stats_for_constraint_degree(Features&& out, nonstd::span<scip::R
  * A variable's positive coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-template <typename Features>
+template <typename Tensor>
 void set_stats_for_constraint_positive_coefficients(
-	Features&& out,
+	Tensor&& out,
 	nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
-	out[static_cast<std::size_t>(Static::rows_pos_coefs_count)] = stats.count;
-	out[static_cast<std::size_t>(Static::rows_pos_coefs_mean)] = stats.mean;
-	out[static_cast<std::size_t>(Static::rows_pos_coefs_stddev)] = stats.stddev;
-	out[static_cast<std::size_t>(Static::rows_pos_coefs_min)] = stats.min;
-	out[static_cast<std::size_t>(Static::rows_pos_coefs_max)] = stats.max;
+	out[idx(Features::rows_pos_coefs_count)] = stats.count;
+	out[idx(Features::rows_pos_coefs_mean)] = stats.mean;
+	out[idx(Features::rows_pos_coefs_stddev)] = stats.stddev;
+	out[idx(Features::rows_pos_coefs_min)] = stats.min;
+	out[idx(Features::rows_pos_coefs_max)] = stats.max;
 }
 
 /**
@@ -197,22 +200,22 @@ void set_stats_for_constraint_positive_coefficients(
  * A variable's negative coefficients in the constraints it participates in
  * (count, mean, stdev., min, max).
  */
-template <typename Features>
+template <typename Tensor>
 void set_stats_for_constraint_negative_coefficients(
-	Features&& out,
+	Tensor&& out,
 	nonstd::span<scip::real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
-	out[static_cast<std::size_t>(Static::rows_neg_coefs_count)] = stats.count;
-	out[static_cast<std::size_t>(Static::rows_neg_coefs_mean)] = stats.mean;
-	out[static_cast<std::size_t>(Static::rows_neg_coefs_stddev)] = stats.stddev;
-	out[static_cast<std::size_t>(Static::rows_neg_coefs_min)] = stats.min;
-	out[static_cast<std::size_t>(Static::rows_neg_coefs_max)] = stats.max;
+	out[idx(Features::rows_neg_coefs_count)] = stats.count;
+	out[idx(Features::rows_neg_coefs_mean)] = stats.mean;
+	out[idx(Features::rows_neg_coefs_stddev)] = stats.stddev;
+	out[idx(Features::rows_neg_coefs_min)] = stats.min;
+	out[idx(Features::rows_neg_coefs_max)] = stats.max;
 }
 
 /**
  * Extract the static features for a single LP columns.
  */
-template <typename Features> void set_static_features(Features&& out, scip::Col* const col) {
+template <typename Tensor> void set_static_features(Tensor&& out, scip::Col* const col) {
 	auto const rows = scip::get_rows(col);
 	auto const coefficients = scip::get_vals(col);
 
@@ -228,7 +231,7 @@ template <typename Features> void set_static_features(Features&& out, scip::Col*
  */
 auto extract_static_features(scip::Model& model) {
 	auto const columns = model.lp_columns();
-	xt::xtensor<value_type, 2> static_features{{columns.size(), Feature::n_static}, 0.};
+	xt::xtensor<value_type, 2> static_features{{columns.size(), Khalil2016::n_static_features}, 0.};
 
 	auto const n_columns = columns.size();
 	for (std::size_t i = 0; i < n_columns; ++i) {
@@ -260,9 +263,9 @@ auto extract_static_features(scip::Model& model) {
  *     Upwards and downwards values, and their corresponding ratio, sum and product, weighted by the
  *     fractionality of xj.
  */
-template <typename Features>
+template <typename Tensor>
 void set_slack_ceil_and_pseudocosts(
-	Features&& out,
+	Tensor&& out,
 	Scip* const scip,
 	scip::Var* const var,
 	scip::Col* const col) noexcept {
@@ -275,13 +278,13 @@ void set_slack_ceil_and_pseudocosts(
 	auto const wpu_approx = std::max(weighted_pseudocost_up, epsilon);
 	auto const wpd_approx = std::max(weighted_pseudocost_down, epsilon);
 	auto const weighted_pseudocost_ratio = safe_div(std::min(wpu_approx, wpd_approx), std::max(wpu_approx, wpd_approx));
-	out[static_cast<std::size_t>(Dynamic::slack)] = std::min(floor_distance, ceil_distance);
-	out[static_cast<std::size_t>(Dynamic::ceil_dist)] = ceil_distance;
-	out[static_cast<std::size_t>(Dynamic::pseudocost_up)] = weighted_pseudocost_up;
-	out[static_cast<std::size_t>(Dynamic::pseudocost_down)] = weighted_pseudocost_down;
-	out[static_cast<std::size_t>(Dynamic::pseudocost_ratio)] = weighted_pseudocost_ratio;
-	out[static_cast<std::size_t>(Dynamic::pseudocost_sum)] = weighted_pseudocost_up + weighted_pseudocost_down;
-	out[static_cast<std::size_t>(Dynamic::pseudocost_product)] = weighted_pseudocost_up * weighted_pseudocost_down;
+	out[idx(Features::slack)] = std::min(floor_distance, ceil_distance);
+	out[idx(Features::ceil_dist)] = ceil_distance;
+	out[idx(Features::pseudocost_up)] = weighted_pseudocost_up;
+	out[idx(Features::pseudocost_down)] = weighted_pseudocost_down;
+	out[idx(Features::pseudocost_ratio)] = weighted_pseudocost_ratio;
+	out[idx(Features::pseudocost_sum)] = weighted_pseudocost_up + weighted_pseudocost_down;
+	out[idx(Features::pseudocost_product)] = weighted_pseudocost_up * weighted_pseudocost_down;
 }
 
 /**
@@ -292,15 +295,15 @@ void set_slack_ceil_and_pseudocosts(
  *
  * N.B. replaced by left, right infeasibility.
  */
-template <typename Features> void set_infeasibility_statistics(Features&& out, scip::Var* const var) noexcept {
+template <typename Tensor> void set_infeasibility_statistics(Tensor&& out, scip::Var* const var) noexcept {
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
 	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
 	auto const n_branchings_down = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_DOWNWARDS));
-	out[static_cast<std::size_t>(Dynamic::n_cutoff_up)] = n_infeasibles_up;
-	out[static_cast<std::size_t>(Dynamic::n_cutoff_down)] = n_infeasibles_down;
-	out[static_cast<std::size_t>(Dynamic::n_cutoff_up_ratio)] = safe_div(n_infeasibles_up, n_branchings_up);
-	out[static_cast<std::size_t>(Dynamic::n_cutoff_down_ratio)] = safe_div(n_infeasibles_down, n_branchings_down);
+	out[idx(Features::n_cutoff_up)] = n_infeasibles_up;
+	out[idx(Features::n_cutoff_down)] = n_infeasibles_down;
+	out[idx(Features::n_cutoff_up_ratio)] = safe_div(n_infeasibles_up, n_branchings_up);
+	out[idx(Features::n_cutoff_down_ratio)] = safe_div(n_infeasibles_down, n_branchings_down);
 }
 
 /**
@@ -314,20 +317,20 @@ template <typename Features> void set_infeasibility_statistics(Features&& out, s
  * The precomputed static features given as input parameters are wrapped in their strong type to
  * avoid passing the wrong ones.
  */
-template <typename Features>
-void set_dynamic_stats_for_constraint_degree(Features&& out, nonstd::span<scip::Row*> const rows) noexcept {
+template <typename Tensor>
+void set_dynamic_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Row*> const rows) noexcept {
 	auto row_get_lp_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
 	auto const stats = compute_stats(rows | views::transform(row_get_lp_nnz));
-	auto const root_deg_mean = out[static_cast<std::size_t>(Static::rows_deg_mean)];
-	auto const root_deg_min = out[static_cast<std::size_t>(Static::rows_deg_min)];
-	auto const root_deg_max = out[static_cast<std::size_t>(Static::rows_deg_max)];
-	out[static_cast<std::size_t>(Dynamic::rows_deg_mean)] = stats.mean;
-	out[static_cast<std::size_t>(Dynamic::rows_deg_stddev)] = stats.stddev;
-	out[static_cast<std::size_t>(Dynamic::rows_deg_min)] = stats.min;
-	out[static_cast<std::size_t>(Dynamic::rows_deg_max)] = stats.max;
-	out[static_cast<std::size_t>(Dynamic::rows_deg_mean_ratio)] = safe_div(stats.mean, root_deg_mean + stats.mean);
-	out[static_cast<std::size_t>(Dynamic::rows_deg_min_ratio)] = safe_div(stats.min, root_deg_min + stats.min);
-	out[static_cast<std::size_t>(Dynamic::rows_deg_max_ratio)] = safe_div(stats.max, root_deg_max + stats.max);
+	auto const root_deg_mean = out[idx(Features::rows_deg_mean)];
+	auto const root_deg_min = out[idx(Features::rows_deg_min)];
+	auto const root_deg_max = out[idx(Features::rows_deg_max)];
+	out[idx(Features::rows_dynamic_deg_mean)] = stats.mean;
+	out[idx(Features::rows_dynamic_deg_stddev)] = stats.stddev;
+	out[idx(Features::rows_dynamic_deg_min)] = stats.min;
+	out[idx(Features::rows_dynamic_deg_max)] = stats.max;
+	out[idx(Features::rows_dynamic_deg_mean_ratio)] = safe_div(stats.mean, root_deg_mean + stats.mean);
+	out[idx(Features::rows_dynamic_deg_min_ratio)] = safe_div(stats.min, root_deg_min + stats.min);
+	out[idx(Features::rows_dynamic_deg_max_ratio)] = safe_div(stats.max, root_deg_max + stats.max);
 }
 
 /**
@@ -335,9 +338,9 @@ void set_dynamic_stats_for_constraint_degree(Features&& out, nonstd::span<scip::
  *
  * Minimum and maximum ratios across positive and negative right-hand-sides (RHS).
  */
-template <typename Features>
+template <typename Tensor>
 void set_min_max_for_ratios_constraint_coeffs_rhs(
-	Features&& out,
+	Tensor&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients) noexcept {
@@ -368,10 +371,10 @@ void set_min_max_for_ratios_constraint_coeffs_rhs(
 		}
 	}
 
-	out[static_cast<std::size_t>(Dynamic::coef_pos_rhs_ratio_min)] = positive_rhs_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::coef_pos_rhs_ratio_max)] = positive_rhs_ratio_max;
-	out[static_cast<std::size_t>(Dynamic::coef_neg_rhs_ratio_min)] = negative_rhs_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::coef_neg_rhs_ratio_max)] = negative_rhs_ratio_max;
+	out[idx(Features::coef_pos_rhs_ratio_min)] = positive_rhs_ratio_min;
+	out[idx(Features::coef_pos_rhs_ratio_max)] = positive_rhs_ratio_max;
+	out[idx(Features::coef_neg_rhs_ratio_min)] = negative_rhs_ratio_min;
+	out[idx(Features::coef_neg_rhs_ratio_max)] = negative_rhs_ratio_max;
 }
 
 /**
@@ -382,9 +385,9 @@ void set_min_max_for_ratios_constraint_coeffs_rhs(
  * Four versions of these ratios are considered: positive (negative) coefficient to sum of
  * positive (negative) coefficients.
  */
-template <typename Features>
+template <typename Tensor>
 void set_min_max_for_one_to_all_coefficient_ratios(
-	Features&& out,
+	Tensor&& out,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients) noexcept {
 
@@ -416,14 +419,14 @@ void set_min_max_for_one_to_all_coefficient_ratios(
 		}
 	}
 
-	out[static_cast<std::size_t>(Dynamic::pos_coef_pos_coef_ratio_min)] = positive_positive_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::pos_coef_pos_coef_ratio_max)] = positive_positive_ratio_max;
-	out[static_cast<std::size_t>(Dynamic::pos_coef_neg_coef_ratio_min)] = positive_negative_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::pos_coef_neg_coef_ratio_max)] = positive_negative_ratio_max;
-	out[static_cast<std::size_t>(Dynamic::neg_coef_pos_coef_ratio_min)] = negative_positive_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::neg_coef_pos_coef_ratio_max)] = negative_positive_ratio_max;
-	out[static_cast<std::size_t>(Dynamic::neg_coef_neg_coef_ratio_min)] = negative_negative_ratio_min;
-	out[static_cast<std::size_t>(Dynamic::neg_coef_neg_coef_ratio_max)] = negative_negative_ratio_max;
+	out[idx(Features::pos_coef_pos_coef_ratio_min)] = positive_positive_ratio_min;
+	out[idx(Features::pos_coef_pos_coef_ratio_max)] = positive_positive_ratio_max;
+	out[idx(Features::pos_coef_neg_coef_ratio_min)] = positive_negative_ratio_min;
+	out[idx(Features::pos_coef_neg_coef_ratio_max)] = positive_negative_ratio_max;
+	out[idx(Features::neg_coef_pos_coef_ratio_min)] = negative_positive_ratio_min;
+	out[idx(Features::neg_coef_pos_coef_ratio_max)] = negative_positive_ratio_max;
+	out[idx(Features::neg_coef_neg_coef_ratio_min)] = negative_negative_ratio_min;
+	out[idx(Features::neg_coef_neg_coef_ratio_max)] = negative_negative_ratio_max;
 }
 
 /**
@@ -507,9 +510,9 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model& model) {
  * sum, mean, stdev., max. and min. of those values, for each of the weighting schemes. We also
  * compute the weighted number of active constraints that xj is in, with the same 4 weightings.
  */
-template <typename Features>
+template <typename Tensor>
 void set_stats_for_active_constraint_coefficients(
-	Features&& out,
+	Tensor&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
 	nonstd::span<scip::real> const coefficients,
@@ -571,30 +574,30 @@ void set_stats_for_active_constraint_coefficients(
 		}
 	}
 
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_count)] = weights_stats[0].count;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_sum)] = weights_stats[0].sum;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_mean)] = weights_stats[0].mean;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_stddev)] = weights_stats[0].stddev;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_min)] = weights_stats[0].min;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight1_max)] = weights_stats[0].max;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_count)] = weights_stats[1].count;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_sum)] = weights_stats[1].sum;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_mean)] = weights_stats[1].mean;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_stddev)] = weights_stats[1].stddev;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_min)] = weights_stats[1].min;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight2_max)] = weights_stats[1].max;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_count)] = weights_stats[2].count;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_sum)] = weights_stats[2].sum;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_mean)] = weights_stats[2].mean;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_stddev)] = weights_stats[2].stddev;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_min)] = weights_stats[2].min;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight3_max)] = weights_stats[2].max;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_count)] = weights_stats[3].count;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_sum)] = weights_stats[3].sum;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_mean)] = weights_stats[3].mean;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_stddev)] = weights_stats[3].stddev;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_min)] = weights_stats[3].min;
-	out[static_cast<std::size_t>(Dynamic::active_coef_weight4_max)] = weights_stats[3].max;
+	out[idx(Features::active_coef_weight1_count)] = weights_stats[0].count;
+	out[idx(Features::active_coef_weight1_sum)] = weights_stats[0].sum;
+	out[idx(Features::active_coef_weight1_mean)] = weights_stats[0].mean;
+	out[idx(Features::active_coef_weight1_stddev)] = weights_stats[0].stddev;
+	out[idx(Features::active_coef_weight1_min)] = weights_stats[0].min;
+	out[idx(Features::active_coef_weight1_max)] = weights_stats[0].max;
+	out[idx(Features::active_coef_weight2_count)] = weights_stats[1].count;
+	out[idx(Features::active_coef_weight2_sum)] = weights_stats[1].sum;
+	out[idx(Features::active_coef_weight2_mean)] = weights_stats[1].mean;
+	out[idx(Features::active_coef_weight2_stddev)] = weights_stats[1].stddev;
+	out[idx(Features::active_coef_weight2_min)] = weights_stats[1].min;
+	out[idx(Features::active_coef_weight2_max)] = weights_stats[1].max;
+	out[idx(Features::active_coef_weight3_count)] = weights_stats[2].count;
+	out[idx(Features::active_coef_weight3_sum)] = weights_stats[2].sum;
+	out[idx(Features::active_coef_weight3_mean)] = weights_stats[2].mean;
+	out[idx(Features::active_coef_weight3_stddev)] = weights_stats[2].stddev;
+	out[idx(Features::active_coef_weight3_min)] = weights_stats[2].min;
+	out[idx(Features::active_coef_weight3_max)] = weights_stats[2].max;
+	out[idx(Features::active_coef_weight4_count)] = weights_stats[3].count;
+	out[idx(Features::active_coef_weight4_sum)] = weights_stats[3].sum;
+	out[idx(Features::active_coef_weight4_mean)] = weights_stats[3].mean;
+	out[idx(Features::active_coef_weight4_stddev)] = weights_stats[3].stddev;
+	out[idx(Features::active_coef_weight4_min)] = weights_stats[3].min;
+	out[idx(Features::active_coef_weight4_max)] = weights_stats[3].max;
 }
 
 /**
@@ -603,9 +606,9 @@ void set_stats_for_active_constraint_coefficients(
  * The precomputed static features given as input parameters are wrapped in their strong type to
  * avoid passing the wrong ones.
  */
-template <typename Features>
+template <typename Tensor>
 void set_dynamic_features(
-	Features&& out,
+	Tensor&& out,
 	Scip* const scip,
 	scip::Var* const var,
 	xt::xtensor<value_type, 2> const& active_rows_weights) {
@@ -627,15 +630,15 @@ void set_dynamic_features(
  * The static features have been computed for all LP columns and stored in the order of `LPcolumns`.
  * We need to find the one associated with the given variable.
  */
-template <typename Features>
+template <typename Tensor>
 void set_precomputed_static_features(
-	Features&& out,
+	Tensor&& out,
 	scip::Var* const var,
 	xt::xtensor<value_type, 2> const& static_features) {
 
 	auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
 	using namespace xt::placeholders;
-	xt::view(out, xt::range(_, Feature::n_static)) = xt::row(static_features, col_idx);
+	xt::view(out, xt::range(_, Khalil2016::n_static_features)) = xt::row(static_features, col_idx);
 }
 
 /******************************
@@ -644,7 +647,7 @@ void set_precomputed_static_features(
 
 auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& static_features) {
 	xt::xtensor<value_type, 2> observation{
-		{model.pseudo_branch_cands().size(), Feature::n_static + Feature::n_dynamic},
+		{model.pseudo_branch_cands().size(), Khalil2016::n_features},
 		std::nan(""),
 	};
 
