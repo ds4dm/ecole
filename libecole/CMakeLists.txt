@@ -151,10 +151,10 @@ list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
 target_compile_features(libecole PUBLIC cxx_std_17)
 
 # Add test if this is the main project and testing is enabled
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+if(ECOLE_BUILD_TESTS)
 	add_subdirectory(tests)
 endif()
 
-if(ECOLE_BENCHMARK)
+if(ECOLE_BUILD_BENCHMARKS)
 	add_subdirectory(benchmarks)
 endif()

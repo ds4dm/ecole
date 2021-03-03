@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "branching/lambda-branchrule.hpp"
 
 namespace ecole::scip {

@@ -101,7 +101,7 @@ jobs:
     steps:
       - checkout
       - build_ecole:
-          target: libecole
+          target: ecole-version
       - run_pre_commit
 
   build_doc:
@@ -179,7 +179,8 @@ commands:
             cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
             -Wdev -Werror=dev
             -D CMAKE_BUILD_TYPE=Release
-            -D BUILD_TESTING=ON
+            -D ECOLE_BUILD_TESTS=ON
+            -D ECOLE_BUILD_BENCHMARKS=ON
             -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
             -D ENABLE_PYTHON_VENV=ON
             -D WARNINGS_AS_ERRORS=ON
