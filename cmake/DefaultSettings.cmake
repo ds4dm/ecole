@@ -22,6 +22,7 @@ macro(set_common_defaults)
 	option(CMAKE_POSITION_INDEPENDENT_CODE "Position Independent Code for building shared libraries." ON)
 	option(CMAKE_VISIBILITY_INLINES_HIDDEN "Hidden symbol visibility for inline functions in shared libraries" ON)
 	set(CMAKE_CXX_VISIBILITY_PRESET hidden CACHE STRING "Hidden visibility of symbols in shared libraries.")
+	option(ECOLE_BENCHMARK "Build Ecole benchmakrs" OFF)
 endmacro()
 
 
