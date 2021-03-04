@@ -25,6 +25,7 @@ add_library(
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
 	src/reward/nnodes.cpp
+  src/reward/dualbound.cpp
 
 	src/observation/nodebipartite.cpp
 	src/observation/khalil-2016.cpp
