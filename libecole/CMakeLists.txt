@@ -27,6 +27,7 @@ add_library(
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
 	src/reward/nnodes.cpp
+	src/reward/dualintegral.cpp
 
 	src/observation/nodebipartite.cpp
 	src/observation/milpbipartite.cpp
