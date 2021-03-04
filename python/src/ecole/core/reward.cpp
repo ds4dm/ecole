@@ -8,6 +8,7 @@
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/reward/nnodes.hpp"
 #include "ecole/reward/solvingtime.hpp"
+#include "ecole/reward/dualbound.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -167,6 +168,19 @@ void bind_submodule(py::module_ const& m) {
 
 		The difference in solving time is computed in between calls.
 		)");
+	
+	auto dualbound = py::class_<DualBound>(m, "DualBound", R"(
+		dual bound.
+
+		The reward is defined as the value of dual bound.
+	)");
+	dualbound.def(py::init<>());
+	def_operators(dualbound);
+	def_before_reset(dualbound, "Reset the dual bound : set -infinity.");
+	def_extract(dualbound, R"(
+		Extarct the dual bound.
+		)");
+
 }
 
 /******************************
