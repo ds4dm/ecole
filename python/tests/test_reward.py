@@ -24,6 +24,7 @@ def pytest_generate_tests(metafunc):
             ecole.reward.Constant(),
             ecole.reward.IsDone(),
             ecole.reward.LpIterations(),
+            ecole.reward.DualBound(),
         )
         metafunc.parametrize("reward_function", all_reward_functions)
 
