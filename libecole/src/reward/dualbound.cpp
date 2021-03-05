@@ -1,8 +1,6 @@
 #include "ecole/reward/dualbound.hpp"
 #include "ecole/scip/model.hpp"
 
-#define infinity   1e+20
-
 namespace ecole::reward {
 
 static auto dual_bound(scip::Model& model) {
@@ -27,8 +25,8 @@ void DualBound::before_reset(scip::Model& /*Model*/) {
 }
 
 Reward DualBound::extract(scip::Model& model, bool /* done */) {
-	auto dual_bound_value = dual_bound(model);
-	return static_cast<double>(dual_bound_value);
+	auto dualBound_value = dual_bound(model);
+	return static_cast<double>(dualBound_value);
 }
 
 }  // namespace ecole::reward
