@@ -10,12 +10,6 @@ Ecole
 .. image:: https://img.shields.io/circleci/build/github/ds4dm/ecole/master?logo=circleci
    :target: https://circleci.com/gh/ds4dm/ecole
    :alt: CircleCI
-.. image:: https://img.shields.io/conda/v/scipopt/ecole
-   :target: https://anaconda.org/scipopt/ecole
-   :alt: Conda Version
-.. image:: https://img.shields.io/conda/pn/scipopt/ecole?label=conda%7Cscipopt
-   :target: https://anaconda.org/scipopt/ecole
-   :alt: Conda Platforms
 
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
@@ -58,9 +52,17 @@ Installation
 ------------
 Conda
 ^^^^^
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/ecole?label=version&logo=conda-forge
+   :target: https://anaconda.org/conda-forge/ecole
+   :alt: Conda-Forge version
+.. image:: https://img.shields.io/conda/pn/conda-forge/ecole?logo=conda-forge
+   :target: https://anaconda.org/conda-forge/ecole
+   :alt: Conda-Forge platforms
+
 .. code-block:: bash
 
-   conda install -c scipopt -c conda-forge ecole
+   conda install -c conda-forge ecole
 
 Pip
 ^^^

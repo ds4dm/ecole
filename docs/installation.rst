@@ -3,16 +3,21 @@ Installation
 
 Conda
 -----
+.. image:: https://img.shields.io/conda/vn/conda-forge/ecole?label=version&logo=conda-forge
+   :alt: Conda-Forge version
+.. image:: https://img.shields.io/conda/pn/conda-forge/ecole?logo=conda-forge
+   :alt: Conda-Forge platforms
+
 .. code-block:: bash
 
-   conda install -c scipopt -c conda-forge ecole
+   conda install -c conda-forge ecole
 
 `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is not required but is the main SCIP
 interface to develop new Ecole components from Python
 
 .. code-block:: bash
 
-   conda install -c scipopt -c conda-forge ecole pyscipopt
+   conda install -c conda-forge ecole pyscipopt
 
 Currenlty, conda packages are only available for Linux and MacOS.
 
