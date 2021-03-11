@@ -76,8 +76,13 @@ including manually installing from source.
 
 Use It, Cite It
 ---------------
-If you use Ecole in a scientific publication, please cite the
-`Ecole publication <https://arxiv.org/abs/2011.06069>`_.
+
+.. image:: https://img.shields.io/badge/arxiv-2011.06069-red
+   :target: https://arxiv.org/abs/2011.06069
+   :alt: Ecole publication on Arxiv
+
+
+If you use Ecole in a scientific publication, please cite the Ecole publication
 
 .. code-block:: text
 
