@@ -13,7 +13,7 @@ public:
 		enum struct GraphType { barabasi_albert, erdos_renyi };
 
 		std::size_t n_nodes = 500;  // NOLINT(readability-magic-numbers)
-		GraphType graph_type = GraphType::erdos_renyi;
+		GraphType graph_type = GraphType::barabasi_albert;
 		double edge_probability = 0.25;  // NOLINT(readability-magic-numbers)
 		std::size_t affinity = 4;        // NOLINT(readability-magic-numbers)
 	};
