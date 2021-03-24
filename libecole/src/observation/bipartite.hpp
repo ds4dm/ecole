@@ -34,29 +34,33 @@ template <typename E> constexpr auto idx(E e) {
 }
 
 template <typename Features, typename ColumnFeatures>
-void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col* const col, typename Features::value_type obj_norm) {
-// 	out[idx(ColumnFeatures::objective)] = SCIPcolGetObj(col) / obj_norm;
-// 	// On-hot enconding of varaible type
-// 	out[idx(ColumnFeatures::is_type_binary)] = 0.;
-// 	out[idx(ColumnFeatures::is_type_integer)] = 0.;
-// 	out[idx(ColumnFeatures::is_type_implicit_integer)] = 0.;
-// 	out[idx(ColumnFeatures::is_type_continuous)] = 0.;
-// 	switch (SCIPvarGetType(var)) {
-// 	case SCIP_VARTYPE_BINARY:
-// 		out[idx(ColumnFeatures::is_type_binary)] = 1.;
-// 		break;
-// 	case SCIP_VARTYPE_INTEGER:
-// 		out[idx(ColumnFeatures::is_type_integer)] = 1.;
-// 		break;
-// 	case SCIP_VARTYPE_IMPLINT:
-// 		out[idx(ColumnFeatures::is_type_implicit_integer)] = 1.;
-// 		break;
-// 	case SCIP_VARTYPE_CONTINUOUS:
-// 		out[idx(ColumnFeatures::is_type_continuous)] = 1.;
-// 		break;
-// 	default:
-// 		assert(false);  // All enum cases must be handled
-// 	}
+void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col* const col, 
+                                 std::optional<typename std::remove_reference_t<Features>::value_type> obj_norm = {}) {
+	out[idx(ColumnFeatures::objective)] = SCIPcolGetObj(col);
+    if (obj_norm.has_value()) {
+        out[idx(ColumnFeatures::objective)] /= obj_norm.value();
+    }
+	// On-hot enconding of varaible type
+	out[idx(ColumnFeatures::is_type_binary)] = 0.;
+	out[idx(ColumnFeatures::is_type_integer)] = 0.;
+	out[idx(ColumnFeatures::is_type_implicit_integer)] = 0.;
+	out[idx(ColumnFeatures::is_type_continuous)] = 0.;
+	switch (SCIPvarGetType(var)) {
+	case SCIP_VARTYPE_BINARY:
+		out[idx(ColumnFeatures::is_type_binary)] = 1.;
+		break;
+	case SCIP_VARTYPE_INTEGER:
+		out[idx(ColumnFeatures::is_type_integer)] = 1.;
+		break;
+	case SCIP_VARTYPE_IMPLINT:
+		out[idx(ColumnFeatures::is_type_implicit_integer)] = 1.;
+		break;
+	case SCIP_VARTYPE_CONTINUOUS:
+		out[idx(ColumnFeatures::is_type_continuous)] = 1.;
+		break;
+	default:
+		assert(false);  // All enum cases must be handled
+	}
 }
 
 /***************************************
@@ -97,15 +101,23 @@ inline std::size_t n_ineq_rows(scip::Model& model) {
 }
 
 template <typename Features, typename RowFeatures>
-void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, typename Features::value_type row_norm) {
-// 	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value() / row_norm;
-// 	out[idx(RowFeatures::objective_cosine_similarity)] = -1 * obj_cos_sim(scip, row);
+void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, 
+                                 std::optional<typename std::remove_reference_t<Features>::value_type> row_norm = {}) {
+	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value();
+    if (row_norm.has_value()) {
+        out[idx(RowFeatures::bias)] /= row_norm.value();
+    }
+	out[idx(RowFeatures::objective_cosine_similarity)] = -1 * obj_cos_sim(scip, row);
 }
 
 template <typename Features, typename RowFeatures>
-void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, typename Features::value_type row_norm) {
-// 	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value() / row_norm;
-// 	out[idx(RowFeatures::objective_cosine_similarity)] = obj_cos_sim(scip, row);
+void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, 
+                                 std::optional<typename std::remove_reference_t<Features>::value_type> row_norm = {}) {
+	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value();
+    if (row_norm.has_value()) {
+        out[idx(RowFeatures::bias)] /= row_norm.value();
+    }
+	out[idx(RowFeatures::objective_cosine_similarity)] = obj_cos_sim(scip, row);
 }
 
 /****************************************
