@@ -32,11 +32,10 @@ using RowFeatures = MilpBipartiteObs::RowFeatures;
  *  Column features extraction functions  *
  ******************************************/
 
-void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const update_static, bool normalize) {
+void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool normalize) {
 	auto* const scip = model.get_scip_ptr();
 
 	// Contant reused in every iterations
-    auto const n_lps = normalize ? std::make_optional(static_cast<value_type>(SCIPgetNLPs(scip))) : std::nullopt;
     auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip)) : std::nullopt;
 
 	auto const columns = model.lp_columns();
@@ -45,7 +44,7 @@ void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const upda
 		auto* const col = columns[col_idx];
 		auto* const var = SCIPcolGetVar(col);
 		auto features = xt::row(out, static_cast<std::ptrdiff_t>(col_idx));
-        set_static_features_for_col<decltype(features), ColumnFeatures>(features, var, col, obj_norm);
+        set_static_features_for_col<decltype(features)&, ColumnFeatures>(features, var, col, obj_norm);
 	}
 }
 
@@ -53,11 +52,8 @@ void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const upda
  *  Row features extraction functions  *
  ***************************************/
 
-auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const update_static, bool normalize) {
+auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool normalize) {
 	auto* const scip = model.get_scip_ptr();
-
-    auto const n_lps = normalize ? std::make_optional(static_cast<value_type>(SCIPgetNLPs(scip))) : std::nullopt;
-    auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip)) : std::nullopt;
 
 	auto const rows = model.lp_rows();
 	auto const n_rows = rows.size();
@@ -68,10 +64,10 @@ auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const upda
 
 		// Rows are counted once per rhs and once per lhs
 		if (scip::get_unshifted_lhs(scip, row).has_value()) {
-			set_static_features_for_lhs_row<decltype(features), RowFeatures>(features, scip, row, row_norm);
+			set_static_features_for_lhs_row<decltype(features)&, RowFeatures>(features, scip, row, row_norm);
 		}
 		if (scip::get_unshifted_rhs(scip, row).has_value()) {
-            set_static_features_for_rhs_row<decltype(features), RowFeatures>(features, scip, row, row_norm);
+            set_static_features_for_rhs_row<decltype(features)&, RowFeatures>(features, scip, row, row_norm);
 		}
 	}
 }
@@ -80,10 +76,10 @@ auto extract_observation(scip::Model& model, bool normalize) -> MilpBipartiteObs
 	auto obs = MilpBipartiteObs{
 		xmatrix::from_shape({model.lp_columns().size(), MilpBipartiteObs::n_column_features}),
 		xmatrix::from_shape({n_ineq_rows(model), MilpBipartiteObs::n_row_features}),
-		extract_edge_features(model),
+		extract_edge_features<value_type>(model),
 	};
-	set_features_for_all_cols(obs.column_features, model, true);
-	set_features_for_all_rows(obs.row_features, model, true);
+	set_features_for_all_cols(obs.column_features, model, normalize);
+	set_features_for_all_rows(obs.row_features, model, normalize);
 	return obs;
 }
 

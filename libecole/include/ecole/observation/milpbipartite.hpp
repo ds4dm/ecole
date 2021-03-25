@@ -35,7 +35,7 @@ public:
 
 class MilpBipartite : public ObservationFunction<std::optional<MilpBipartiteObs>> {
 public:
-	NodeBipartite(bool use_normalization = false) : normalize{use_normalization}  {}
+	MilpBipartite(bool use_normalization = false) : normalize{use_normalization}  {}
 
 	std::optional<MilpBipartiteObs> extract(scip::Model& model, bool done) override;
     
