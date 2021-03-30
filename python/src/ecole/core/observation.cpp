@@ -169,13 +169,13 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	milp_bipartite_obs
 		.def_property_readonly(
-			"column_features",
-			[](MilpBipartiteObs & self) -> auto& { return self.column_features; },
+			"variable_features",
+			[](MilpBipartiteObs & self) -> auto& { return self.variable_features; },
 			"A matrix where each row is represents a variable, and each column a feature of "
 			"the variables.")
 		.def_property_readonly(
-			"row_features",
-			[](MilpBipartiteObs & self) -> auto& { return self.row_features; },
+			"constraint_features",
+			[](MilpBipartiteObs & self) -> auto& { return self.constraint_features; },
 			"A matrix where each row is represents a constraint, and each column a feature of "
 			"the constraints.")
 		.def_readwrite(
@@ -184,16 +184,15 @@ void bind_submodule(py::module_ const& m) {
 			"The constraint matrix of the optimization problem, with rows for contraints and "
 			"columns for variables.");
 
-	py::enum_<MilpBipartiteObs::ColumnFeatures>(milp_bipartite_obs, "ColumnFeatures")
-		.value("objective", MilpBipartiteObs::ColumnFeatures::objective)
-		.value("is_type_binary", MilpBipartiteObs::ColumnFeatures::is_type_binary)
-		.value("is_type_integer", MilpBipartiteObs::ColumnFeatures::is_type_integer)
-		.value("is_type_implicit_integer", MilpBipartiteObs::ColumnFeatures::is_type_implicit_integer)
-		.value("is_type_continuous", MilpBipartiteObs::ColumnFeatures::is_type_continuous);
+	py::enum_<MilpBipartiteObs::VariableFeatures>(milp_bipartite_obs, "VariableFeatures")
+		.value("objective", MilpBipartiteObs::VariableFeatures::objective)
+		.value("is_type_binary", MilpBipartiteObs::VariableFeatures::is_type_binary)
+		.value("is_type_integer", MilpBipartiteObs::VariableFeatures::is_type_integer)
+		.value("is_type_implicit_integer", MilpBipartiteObs::VariableFeatures::is_type_implicit_integer)
+		.value("is_type_continuous", MilpBipartiteObs::VariableFeatures::is_type_continuous);
 
-	py::enum_<MilpBipartiteObs::RowFeatures>(milp_bipartite_obs, "RowFeatures")
-		.value("bias", MilpBipartiteObs::RowFeatures::bias)
-		.value("objective_cosine_similarity", MilpBipartiteObs::RowFeatures::objective_cosine_similarity);
+	py::enum_<MilpBipartiteObs::ConstraintFeatures>(milp_bipartite_obs, "ConstraintFeatures")
+		.value("bias", MilpBipartiteObs::ConstraintFeatures::bias);
 
 	auto milp_bipartite = py::class_<MilpBipartite>(m, "MilpBipartite", R"(
 		Bipartite graph observation function for the sub-MILP at the latest branch-and-bound node.
