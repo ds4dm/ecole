@@ -29,12 +29,13 @@ namespace {
 
 using xmatrix = decltype(MilpBipartiteObs::variable_features);
 using value_type = xmatrix::value_type;
+using coo_xmatrix = utility::coo_matrix<value_type>;
 
 using VariableFeatures = MilpBipartiteObs::VariableFeatures;
 using ConstraintFeatures = MilpBipartiteObs::ConstraintFeatures;
 
 /******************************************
- *  Column features extraction functions  *
+ *  Variable extraction functions  *
  ******************************************/
     
 scip::real obj_l2_norm(Scip* const scip) noexcept {
@@ -94,89 +95,25 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
 	}
 }
 
-/***************************************
- *  Row features extraction functions  *
- ***************************************/
-    
-/**
- * Number of inequality constraints.
- *
- * Constraints are counted once per right hand side and once per left hand side.
- */
-std::size_t n_ineq_constraints(scip::Model& model) {
-	auto* const scip = model.get_scip_ptr();
-    std::size_t count = 0;
-
-	for (auto* const constraint: model.constraints()) {
-        auto lhs = scip::cons_get_lhs(scip, constraint);
-        auto rhs = scip::cons_get_rhs(scip, constraint);
-        if (lhs.has_value() && !SCIPisInfinity(scip, std::abs(lhs.value())))
-            ++count;
-        if (rhs.has_value() && !SCIPisInfinity(scip, std::abs(rhs.value())))
-            ++count;
-	}
-	return count;
-}
-
-scip::real cons_l2_norm(Scip* const scip, scip::Cons* const cons) noexcept {
-    auto const values = scip::get_vals_linear(scip, cons);
-    std::vector<std::size_t> shape = {values.size()};
-    xt::xarray<scip::real> xt_values = xt::adapt(values.data(), values.size(), xt::no_ownership(), shape);
-    
-	auto norm = xt::norm_l2(xt_values)();
-	return norm > 0. ? norm : 1.;
-}
-
-
-template <typename Features>
-void set_static_features_for_lhs_constraint(Features&& out, value_type lhs, std::optional<value_type> cons_norm = {}) {
-	out[idx(ConstraintFeatures::bias)] = -lhs;
-    if (cons_norm.has_value()) {
-        out[idx(ConstraintFeatures::bias)] /= cons_norm.value();
-    }
-}
-
-template <typename Features>
-void set_static_features_for_rhs_constraint(Features&& out, value_type rhs, std::optional<value_type> cons_norm = {}) {
-	out[idx(ConstraintFeatures::bias)] = rhs;
-    if (cons_norm.has_value()) {
-        out[idx(ConstraintFeatures::bias)] /= cons_norm.value();
-    }
-}
-
-auto set_features_for_all_cons(xmatrix& out, scip::Model& model, bool normalize) {
-	auto* const scip = model.get_scip_ptr();
-
-	auto const constraints = model.constraints();
-	auto const n_cons = constraints.size();
-	for (std::size_t cons_idx = 0; cons_idx < n_cons; ++cons_idx) {
-		auto* const constraint = constraints[cons_idx];
-		auto const cons_norm = normalize ? std::make_optional(static_cast<value_type>(cons_l2_norm(scip, constraint))) : std::nullopt;
-		auto features = xt::row(out, static_cast<std::ptrdiff_t>(cons_idx));
-
-		// Rows are counted once per rhs and once per lhs
-        auto lhs = scip::cons_get_lhs(scip, constraint);
-        if (lhs.has_value() && !SCIPisInfinity(scip, std::abs(lhs.value()))) {
-			set_static_features_for_lhs_constraint(features, lhs.value(), cons_norm);
-		}
-        auto rhs = scip::cons_get_rhs(scip, constraint);
-        if (rhs.has_value() && !SCIPisInfinity(scip, std::abs(rhs.value()))) {
-            set_static_features_for_rhs_constraint(features, rhs.value(), cons_norm);
-		}
-        
-	}
-}
-
 
 /****************************************
- *  Edge features extraction functions  *
+ *  Constraint extraction functions  *
  ****************************************/
  
+
+scip::real cons_l2_norm(std::vector<scip::real> constraint_coefs) noexcept {
+    std::vector<std::size_t> shape = {constraint_coefs.size()};
+    auto xt_constraint_coefs = xt::adapt(constraint_coefs, shape);
+    
+	auto norm = xt::norm_l2(xt_constraint_coefs)();
+	return norm > 0. ? norm : 1.;
+}
+    
 /**
  * Obtains the variables involved in a linear constraint and their coefficients in the constraint
  */
 auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> 
-    std::optional<std::tuple<std::vector<scip::Var*>, std::vector<scip::real>, scip::real>> {
+    std::optional<std::tuple<std::vector<scip::Var*>, std::vector<scip::real>, std::optional<scip::real>, std::optional<scip::real>>> {
 	SCIP_Bool success = false;
     int n_constraint_variables;
     int n_active_variables;
@@ -208,63 +145,84 @@ auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) ->
     output_variables.insert(output_variables.end(), variables, &variables[n_constraint_variables]); 
     output_coefficients.insert(output_coefficients.end(), coefficients, &coefficients[n_constraint_variables]);
     
+    // Obtain the left hand side
+    std::optional<scip::real> lhs;
+    scip::real lhs_value = SCIPconsGetLhs(scip, constraint, &success);
+    if (success && !SCIPisInfinity(scip, std::abs(lhs_value))) {
+        lhs = lhs_value - constant_offset;
+    }
+    else lhs = std::nullopt;
+    
+    std::optional<scip::real> rhs;
+    scip::real rhs_value = SCIPconsGetRhs(scip, constraint, &success);
+    if (success && !SCIPisInfinity(scip, std::abs(rhs_value))) {
+        rhs = rhs_value - constant_offset;
+    }
+    else rhs = std::nullopt;
+    
     // Free the buffers
     delete variables;
     delete coefficients;
     
-    return std::make_tuple(output_variables, output_coefficients, constant_offset);
+    return std::make_tuple(output_variables, output_coefficients, lhs, rhs);
 }
 
-template <typename value_type>
-utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
+
+auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utility::coo_matrix<value_type>, xmatrix> {
 	auto* const scip = model.get_scip_ptr();
     auto const constraints = model.constraints();
-    auto n_cons = static_cast<std::size_t>(SCIPgetNConss(scip));
-    auto n_vars = static_cast<std::size_t>(SCIPgetNVars(scip));
 
-	using coo_matrix = utility::coo_matrix<value_type>;
-    std::vector<value_type> raw_values;
+    std::size_t n_rows = 0;
+    auto n_cols = static_cast<std::size_t>(SCIPgetNVars(scip));
+    
+    std::vector<value_type> values;
     std::vector<std::size_t> column_indices;
     std::vector<std::size_t> row_indices;
-    std::size_t n_rows = 0;
+    std::vector<value_type> biases;
     
-    for(std::size_t cons_idx = 0; cons_idx < n_cons; ++cons_idx) {
+    // For each constraint
+    for(std::size_t cons_idx = 0; cons_idx < std::size(constraints); ++cons_idx) {
         auto const constraint = constraints[cons_idx];
         auto const constraint_data = get_constraint_coefs(scip, constraint);
-        if (constraint_data.has_value()) {
+        if (constraint_data.has_value()) { // Constraint must be linear
             std::vector<scip::Var*> constraint_vars;
             std::vector<scip::real> constraint_coefs;
-            scip::real constraint_offset;
-            std::tie(constraint_vars, constraint_coefs, constraint_offset) = constraint_data.value();
+            std::optional<scip::real> lhs, rhs;
+            std::tie(constraint_vars, constraint_coefs, lhs, rhs) = constraint_data.value();
+            scip::real constraint_norm = 0;
+            if (normalize)
+                constraint_norm = cons_l2_norm(constraint_coefs);
             
             // Inequality has a left hand side?
-            auto lhs = scip::cons_get_lhs(scip, constraint);
-            if (lhs.has_value() && !SCIPisInfinity(scip, std::abs(lhs.value()))) {
+            if (lhs.has_value()) {
                 for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
                     value_type value = constraint_coefs[cons_var_idx]; 
                     int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
-                    if (value != 0) { // Always the case?
-                        raw_values.push_back(-value);
-                        row_indices.push_back(n_rows);
-                        column_indices.push_back(static_cast<std::size_t>(var_idx));
-                    }
+                    values.push_back(-value);
+                    row_indices.push_back(n_rows);
+                    column_indices.push_back(static_cast<std::size_t>(var_idx));
                 }
+                if (normalize) 
+                    biases.push_back(-lhs.value() / constraint_norm); 
+                else 
+                    biases.push_back(-lhs.value());
                 n_rows++;
             }
             // Inequality has a right hand side?
-            auto rhs = scip::cons_get_rhs(scip, constraint);
-            if (rhs.has_value() && !SCIPisInfinity(scip, std::abs(rhs.value()))) {
+            if (rhs.has_value()) {
                 for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
                     value_type value = constraint_coefs[cons_var_idx]; 
                     int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
-                    if (value != 0) { // Always the case?
-                        raw_values.push_back(value);
-                        row_indices.push_back(n_rows);
-                        column_indices.push_back(static_cast<std::size_t>(var_idx));
-                    }
+                    values.push_back(value);
+                    row_indices.push_back(n_rows);
+                    column_indices.push_back(static_cast<std::size_t>(var_idx));
                 }
+                if (normalize) 
+                    biases.push_back(rhs.value() / constraint_norm); 
+                else 
+                    biases.push_back(rhs.value());
                 n_rows++;
             }
         } else {
@@ -274,28 +232,18 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
     }
     
     // Turn values and indices into xt::xarray's
-    auto nnz = std::size(raw_values);
-    auto values = xt::adapt(raw_values, {nnz});
-	auto indices = decltype(coo_matrix::indices)::from_shape({2, nnz});
-    xt::row(indices, 0) = xt::adapt(row_indices, {nnz});
-    xt::row(indices, 1) = xt::adapt(column_indices, {nnz});
+    auto nnz = std::size(values);
     
-    return {values, indices, {n_rows, n_vars}};
-}
-
-/****************************************
- *  General functions  *
- ****************************************/
-
-auto extract_observation(scip::Model& model, bool normalize) -> MilpBipartiteObs {
-	auto obs = MilpBipartiteObs{
-		xmatrix::from_shape({model.variables().size(), MilpBipartiteObs::n_variable_features}),
-		xmatrix::from_shape({n_ineq_constraints(model), MilpBipartiteObs::n_constraint_features}),
-		extract_edge_features<value_type>(model),
-	};
-	set_features_for_all_vars(obs.variable_features, model, normalize);
-	set_features_for_all_cons(obs.constraint_features, model, normalize);
-	return obs;
+    auto edge_values = xt::adapt(values, {nnz});
+	auto edge_indices = decltype(coo_xmatrix::indices)::from_shape({2, nnz});
+    xt::row(edge_indices, 0) = xt::adapt(row_indices, {nnz});
+    xt::row(edge_indices, 1) = xt::adapt(column_indices, {nnz});
+    coo_xmatrix edge_features = {edge_values, edge_indices, {n_rows, n_cols}};
+    
+    std::vector<std::size_t> constraint_features_shape = {n_rows, 1};
+    xmatrix constraint_features = xt::adapt(biases, constraint_features_shape);
+    
+    return std::make_tuple(edge_features, constraint_features);
 }
 
 }  // namespace
@@ -307,7 +255,14 @@ auto extract_observation(scip::Model& model, bool normalize) -> MilpBipartiteObs
 auto MilpBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<MilpBipartiteObs> {
 // 	if (model.get_stage() < SCIP_STAGE_SOLVING) {
     if (model.get_stage() == SCIP_STAGE_SOLVING) {
-        return extract_observation(model, normalize);
+        coo_xmatrix edge_features;
+        xmatrix constraint_features;
+        std::tie(edge_features, constraint_features) = extract_constraints(model, normalize);
+
+        auto variable_features = xmatrix::from_shape({model.variables().size(), MilpBipartiteObs::n_variable_features});
+        set_features_for_all_vars(variable_features, model, normalize);
+
+        return MilpBipartiteObs{variable_features, constraint_features, edge_features};
 	}
 	return {};
 }

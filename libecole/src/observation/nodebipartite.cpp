@@ -344,7 +344,6 @@ auto matrix_nnz(scip::Model& model) {
 	return nnz;
 }
 
-template <typename value_type>
 utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 	auto* const scip = model.get_scip_ptr();
 
@@ -397,7 +396,7 @@ auto extract_observation_fully(scip::Model& model, bool normalize) -> NodeBipart
 	auto obs = NodeBipartiteObs{
 		xmatrix::from_shape({model.lp_columns().size(), NodeBipartiteObs::n_column_features}),
 		xmatrix::from_shape({n_ineq_rows(model), NodeBipartiteObs::n_row_features}),
-		extract_edge_features<value_type>(model),
+		extract_edge_features(model),
 	};
 	set_features_for_all_cols(obs.column_features, model, true, normalize);
 	set_features_for_all_rows(obs.row_features, model, true, normalize);
