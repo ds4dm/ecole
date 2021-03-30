@@ -102,6 +102,19 @@ def test_NodeBipartite_observation(model):
     # Check that there are enums describing feeatures
     assert len(ecole.observation.NodeBipartiteObs.ColumnFeatures.__members__) == 19
     assert len(ecole.observation.NodeBipartiteObs.RowFeatures.__members__) == 5
+    
+def test_MilpBipartite_observation(model):
+    """Observation of MilpBipartite is a type with array attributes."""
+    obs = make_obs(ecole.observation.MilpBipartite(), model)
+    assert isinstance(obs, ecole.observation.MilpBipartiteObs)
+    assert_array(obs.column_features, ndim=2)
+    assert_array(obs.row_features, ndim=2)
+    assert_array(obs.edge_features.values)
+    assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
+
+    # Check that there are enums describing feeatures
+    assert len(ecole.observation.MilpBipartiteObs.ColumnFeatures.__members__) == 5
+    assert len(ecole.observation.MilpBipartiteObs.RowFeatures.__members__) == 1
 
 
 def test_StrongBranchingScores_observation(model):
