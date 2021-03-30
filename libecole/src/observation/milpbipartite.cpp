@@ -163,6 +163,7 @@ auto set_features_for_all_cons(xmatrix& out, scip::Model& model, bool normalize)
         if (rhs.has_value() && !SCIPisInfinity(scip, std::abs(rhs.value()))) {
             set_static_features_for_rhs_constraint(features, rhs.value(), cons_norm);
 		}
+        
 	}
 }
 
@@ -171,18 +172,47 @@ auto set_features_for_all_cons(xmatrix& out, scip::Model& model, bool normalize)
  *  Edge features extraction functions  *
  ****************************************/
  
-auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std::optional<nonstd::span<scip::real const>> {
-    int n_vars;
+/**
+ * Obtains the variables involved in a linear constraint and their coefficients in the constraint
+ */
+auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> 
+    std::optional<std::tuple<std::vector<scip::Var*>, std::vector<scip::real>, scip::real>> {
 	SCIP_Bool success = false;
+    int n_constraint_variables;
+    int n_active_variables;
+    scip::real constant_offset = 0;
+    int requiredsize = 0;
     
-    scip::call(SCIPgetConsNVars, scip, constraint, &n_vars, &success);
-    if (success) {
-        scip::real* values = new SCIP_Real[n_vars];
-        scip::call(SCIPgetConsVals, scip, constraint, values, n_vars, &success);
-        nonstd::span<scip::real const> output = {values, static_cast<std::size_t>(n_vars)};
-        return output;
-    }
-    return {};
+    // Find how many active variables and constraint variables there are (for allocation)
+    scip::call(SCIPgetConsNVars, scip, constraint, &n_constraint_variables, &success);
+    if (!success) return {};
+    n_active_variables = SCIPgetNVars(scip);
+    
+    // Allocate buffers large enough to hold future variables and coefficients
+    int buffer_size = std::max(n_constraint_variables, n_active_variables);
+    auto* variables = new scip::Var*[buffer_size];
+    auto* coefficients = new scip::real[buffer_size];
+    
+    // Get the variables and their coefficients in the constraint (the variables might be inactive)
+    scip::call(SCIPgetConsVars, scip, constraint, variables, buffer_size, &success);
+    if (!success) return {};
+    scip::call(SCIPgetConsVals, scip, constraint, coefficients, buffer_size, &success);
+    if (!success) return {};
+    
+    // Re-express the coefficients in terms of active variables
+    scip::call(SCIPgetProbvarLinearSum, scip, variables, coefficients, &n_constraint_variables, buffer_size, &constant_offset, &requiredsize, true);
+    
+    // Copy the relevant sections of the buffers to output vectors
+    std::vector<scip::Var*> output_variables;
+    std::vector<scip::real> output_coefficients;
+    output_variables.insert(output_variables.end(), variables, &variables[n_constraint_variables]); 
+    output_coefficients.insert(output_coefficients.end(), coefficients, &coefficients[n_constraint_variables]);
+    
+    // Free the buffers
+    delete variables;
+    delete coefficients;
+    
+    return std::make_tuple(output_variables, output_coefficients, constant_offset);
 }
 
 template <typename value_type>
@@ -200,21 +230,21 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
     
     for(std::size_t cons_idx = 0; cons_idx < n_cons; ++cons_idx) {
         auto const constraint = constraints[cons_idx];
-        auto const constraint_values = get_constraint_coefs(scip, constraint);
-        auto n_cons_vars = std::size(constraint_values.value());
-        if (constraint_values.has_value()) {
-            SCIP_Bool success = false;
-            auto cons_vars = new scip::Var*[n_cons_vars];
-            scip::call(SCIPgetConsVars, scip, constraint, cons_vars, static_cast<int>(n_cons_vars), &success);
+        auto const constraint_data = get_constraint_coefs(scip, constraint);
+        if (constraint_data.has_value()) {
+            std::vector<scip::Var*> constraint_vars;
+            std::vector<scip::real> constraint_coefs;
+            scip::real constraint_offset;
+            std::tie(constraint_vars, constraint_coefs, constraint_offset) = constraint_data.value();
             
             // Inequality has a left hand side?
             auto lhs = scip::cons_get_lhs(scip, constraint);
             if (lhs.has_value() && !SCIPisInfinity(scip, std::abs(lhs.value()))) {
-                for(std::size_t cons_var_idx = 0; cons_var_idx < n_cons_vars; ++cons_var_idx) {
-                    value_type value = constraint_values.value()[cons_var_idx]; 
-                    int var_idx = SCIPvarGetIndex(cons_vars[cons_var_idx]);
+                for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
+                    value_type value = constraint_coefs[cons_var_idx]; 
+                    int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
-                    if (value != 0) {
+                    if (value != 0) { // Always the case?
                         raw_values.push_back(-value);
                         row_indices.push_back(n_rows);
                         column_indices.push_back(static_cast<std::size_t>(var_idx));
@@ -225,11 +255,11 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
             // Inequality has a right hand side?
             auto rhs = scip::cons_get_rhs(scip, constraint);
             if (rhs.has_value() && !SCIPisInfinity(scip, std::abs(rhs.value()))) {
-                for(std::size_t cons_var_idx = 0; cons_var_idx < n_cons_vars; ++cons_var_idx) {
-                    value_type value = constraint_values.value()[cons_var_idx]; 
-                    int var_idx = SCIPvarGetProbindex(cons_vars[cons_var_idx]);
+                for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
+                    value_type value = constraint_coefs[cons_var_idx]; 
+                    int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
-                    if (value != 0) {
+                    if (value != 0) { // Always the case?
                         raw_values.push_back(value);
                         row_indices.push_back(n_rows);
                         column_indices.push_back(static_cast<std::size_t>(var_idx));
