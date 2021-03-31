@@ -77,6 +77,7 @@ void bind_submodule(py::module_ const& m) {
 		.def_readwrite("shape", &coo_matrix::shape, "The dimension of the sparse matrix, as if it was dense.")
 		.def_property_readonly("nnz", &coo_matrix::nnz);
 
+	// Node bipartite observation
 	auto node_bipartite_obs =
 		auto_class<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
 		Bipartite graph observation for branch-and-bound nodes.
@@ -139,7 +140,7 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
 	)");
-	node_bipartite.def(py::init<bool, bool>(), py::arg("cache") = false, py::arg("use_normalization") = true, R"(
+	node_bipartite.def(py::init<bool>(), py::arg("cache") = false, R"(
 		Initialize the logger.
 
 		Parameters
@@ -147,9 +148,6 @@ void bind_submodule(py::module_ const& m) {
 		cache :
 			Whether or not to cache static features within an episode.
 			Currently, this is only safe if cutting planes are disabled.
-		use_normalization :
-            Should the features be normalized? 
-            This is recommended for some application such as deep learning models.
 	)");
 	def_before_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");

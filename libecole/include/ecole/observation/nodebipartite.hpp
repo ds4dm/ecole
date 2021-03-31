@@ -62,7 +62,7 @@ public:
 
 class NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
 public:
-	NodeBipartite(bool cache = false, bool use_normalization = true) : use_cache{cache}, normalize{use_normalization} {}
+	NodeBipartite(bool cache = false) : use_cache{cache} {}
 
 	void before_reset(scip::Model& model) override;
 
@@ -72,7 +72,6 @@ private:
 	NodeBipartiteObs the_cache;
 	bool use_cache = false;
 	bool cache_computed = false;
-    bool normalize = true;
 };
 
 }  // namespace ecole::observation
