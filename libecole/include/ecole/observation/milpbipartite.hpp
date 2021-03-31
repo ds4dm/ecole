@@ -6,7 +6,6 @@
 
 #include "ecole/observation/abstract.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
-#include "ecole/scip/model.hpp"
 
 namespace ecole::observation {
 
