@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <limits>
 #include <type_traits>
-#include <optional>
 
 #include <scip/scip.h>
 #include <scip/struct_lp.h>
@@ -31,14 +30,14 @@ using RowFeatures = NodeBipartiteObs::RowFeatures;
 value_type constexpr cste = 5.;
 value_type constexpr nan = std::numeric_limits<value_type>::quiet_NaN();
 
-/******************************************
- *  Column features extraction functions  *
- ******************************************/
-    
 scip::real obj_l2_norm(Scip* const scip) noexcept {
 	auto const norm = SCIPgetObjNorm(scip);
 	return norm > 0 ? norm : 1.;
 }
+
+/******************************************
+ *  Column features extraction functions  *
+ ******************************************/
 
 std::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) noexcept {
 	auto const ub_val = SCIPcolGetUb(col);
@@ -93,22 +92,15 @@ std::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip
 	}
 	return SCIPfeasFrac(scip, SCIPcolGetPrimsol(col));
 }
-    
+
 /** Convert an enum to its underlying index. */
 template <typename E> constexpr auto idx(E e) {
 	return static_cast<std::underlying_type_t<E>>(e);
 }
 
-template <typename Features, typename ColumnFeatures>
-void set_static_features_for_col(Features&& out, Scip* const scip, scip::Var* const var, scip::Col* const col, 
-                                 std::optional<typename std::remove_reference_t<Features>::value_type> obj_norm = {}) {
-    
-    double objsense = (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MINIMIZE) ? 1. : -1.;
-    
-	out[idx(ColumnFeatures::objective)] = objsense * SCIPcolGetObj(col);
-    if (obj_norm.has_value()) {
-        out[idx(ColumnFeatures::objective)] /= obj_norm.value();
-    }
+template <typename Features>
+void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col* const col, value_type obj_norm) {
+	out[idx(ColumnFeatures::objective)] = SCIPcolGetObj(col) / obj_norm;
 	// On-hot enconding of varaible type
 	out[idx(ColumnFeatures::is_type_binary)] = 0.;
 	out[idx(ColumnFeatures::is_type_integer)] = 0.;
@@ -138,22 +130,16 @@ void set_dynamic_features_for_col(
 	Scip* const scip,
 	scip::Var* const var,
 	scip::Col* const col,
-	std::optional<value_type> obj_norm = {},
-	std::optional<value_type> n_lps = {}) {
+	value_type obj_norm,
+	value_type n_lps) {
 	out[idx(ColumnFeatures::has_lower_bound)] = static_cast<value_type>(lower_bound(scip, col).has_value());
 	out[idx(ColumnFeatures::has_upper_bound)] = static_cast<value_type>(upper_bound(scip, col).has_value());
-	out[idx(ColumnFeatures::normed_reduced_cost)] = SCIPgetColRedcost(scip, col);
-    if (obj_norm.has_value()) {
-        out[idx(ColumnFeatures::normed_reduced_cost)] /= obj_norm.value();
-    }
+	out[idx(ColumnFeatures::normed_reduced_cost)] = SCIPgetColRedcost(scip, col) / obj_norm;
 	out[idx(ColumnFeatures::solution_value)] = SCIPcolGetPrimsol(col);
 	out[idx(ColumnFeatures::solution_frac)] = feas_frac(scip, var, col).value_or(0.);
 	out[idx(ColumnFeatures::is_solution_at_lower_bound)] = static_cast<value_type>(is_prim_sol_at_lb(scip, col));
 	out[idx(ColumnFeatures::is_solution_at_upper_bound)] = static_cast<value_type>(is_prim_sol_at_ub(scip, col));
-	out[idx(ColumnFeatures::scaled_age)] = static_cast<value_type>(SCIPcolGetAge(col));
-    if (n_lps.has_value()) {
-        out[idx(ColumnFeatures::scaled_age)] /= (n_lps.value() + cste);
-    }
+	out[idx(ColumnFeatures::scaled_age)] = static_cast<value_type>(SCIPcolGetAge(col)) / (n_lps + cste);
 	out[idx(ColumnFeatures::incumbent_value)] = best_sol_val(scip, var).value_or(nan);
 	out[idx(ColumnFeatures::average_incumbent_value)] = avg_sol(scip, var).value_or(nan);
 	// On-hot encoding
@@ -179,12 +165,12 @@ void set_dynamic_features_for_col(
 	}
 }
 
-void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const update_static, bool normalize) {
+void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const update_static) {
 	auto* const scip = model.get_scip_ptr();
 
-    // Contant reused in every iterations
-    auto const n_lps = normalize ? std::make_optional(static_cast<value_type>(SCIPgetNLPs(scip))) : std::nullopt;
-    auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip)) : std::nullopt;
+	// Contant reused in every iterations
+	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
+	auto const obj_norm = obj_l2_norm(scip);
 
 	auto const columns = model.lp_columns();
 	auto const n_columns = columns.size();
@@ -193,7 +179,7 @@ void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const upda
 		auto* const var = SCIPcolGetVar(col);
 		auto features = xt::row(out, static_cast<std::ptrdiff_t>(col_idx));
 		if (update_static) {
-			set_static_features_for_col<decltype(features)&, ColumnFeatures>(features, scip, var, col, obj_norm);
+			set_static_features_for_col(features, var, col, obj_norm);
 		}
 		set_dynamic_features_for_col(features, scip, var, col, obj_norm, n_lps);
 	}
@@ -231,23 +217,15 @@ std::size_t n_ineq_rows(scip::Model& model) {
 	return count;
 }
 
-template <typename Features, typename RowFeatures>
-void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, 
-                                 std::optional<typename std::remove_reference_t<Features>::value_type> row_norm = {}) {
-	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value();
-    if (row_norm.has_value()) {
-        out[idx(RowFeatures::bias)] /= row_norm.value();
-    }
+template <typename Features>
+void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = -1 * obj_cos_sim(scip, row);
 }
 
-template <typename Features, typename RowFeatures>
-void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, 
-                                 std::optional<typename std::remove_reference_t<Features>::value_type> row_norm = {}) {
-	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value();
-    if (row_norm.has_value()) {
-        out[idx(RowFeatures::bias)] /= row_norm.value();
-    }
+template <typename Features>
+void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = obj_cos_sim(scip, row);
 }
 
@@ -256,69 +234,55 @@ void set_dynamic_features_for_lhs_row(
 	Features&& out,
 	Scip* const scip,
 	scip::Row* const row,
-	std::optional<value_type> row_norm = {},
-	std::optional<value_type> obj_norm = {},
-	std::optional<value_type> n_lps = {}) {
-	out[idx(RowFeatures::is_tight)] = static_cast<value_type>(scip::is_at_rhs(scip, row));
-	out[idx(RowFeatures::dual_solution_value)] = -1. * SCIProwGetDualsol(row);
-	out[idx(RowFeatures::scaled_age)] = static_cast<value_type>(SCIProwGetAge(row));
-    if (row_norm.has_value() && obj_norm.has_value()) {
-        out[idx(RowFeatures::dual_solution_value)] /= (row_norm.value() * obj_norm.value());
-    }
-    if (n_lps.has_value()) {
-        out[idx(RowFeatures::scaled_age)] /= (n_lps.value() + cste);
-    }
+	value_type row_norm,
+	value_type obj_norm,
+	value_type n_lps) {
+	out[idx(RowFeatures::is_tight)] = static_cast<value_type>(scip::is_at_lhs(scip, row));
+	out[idx(RowFeatures::dual_solution_value)] = -1. * SCIProwGetDualsol(row) / (row_norm * obj_norm);
+	out[idx(RowFeatures::scaled_age)] = static_cast<value_type>(SCIProwGetAge(row)) / (n_lps + cste);
 }
-    
+
 template <typename Features>
 void set_dynamic_features_for_rhs_row(
 	Features&& out,
 	Scip* const scip,
 	scip::Row* const row,
-	std::optional<value_type> row_norm = {},
-	std::optional<value_type> obj_norm = {},
-	std::optional<value_type> n_lps = {}) {
+	value_type row_norm,
+	value_type obj_norm,
+	value_type n_lps) {
 	out[idx(RowFeatures::is_tight)] = static_cast<value_type>(scip::is_at_rhs(scip, row));
-	out[idx(RowFeatures::dual_solution_value)] = SCIProwGetDualsol(row);
-	out[idx(RowFeatures::scaled_age)] = static_cast<value_type>(SCIProwGetAge(row));
-    if (row_norm.has_value() && obj_norm.has_value()) {
-        out[idx(RowFeatures::dual_solution_value)] /= (row_norm.value() * obj_norm.value());
-    }
-    if (n_lps.has_value()) {
-        out[idx(RowFeatures::scaled_age)] /= (n_lps.value() + cste);
-    }
+	out[idx(RowFeatures::dual_solution_value)] = SCIProwGetDualsol(row) / (row_norm * obj_norm);
+	out[idx(RowFeatures::scaled_age)] = static_cast<value_type>(SCIProwGetAge(row)) / (n_lps + cste);
 }
 
-
-auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const update_static, bool normalize) {
+auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const update_static) {
 	auto* const scip = model.get_scip_ptr();
 
-    auto const n_lps = normalize ? std::make_optional(static_cast<value_type>(SCIPgetNLPs(scip))) : std::nullopt;
-    auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip)) : std::nullopt;
+	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
+	value_type const obj_norm = obj_l2_norm(scip);
 
 	auto const rows = model.lp_rows();
 	auto const n_rows = rows.size();
 	for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
 		auto* const row = rows[row_idx];
-		auto const row_norm = normalize ? std::make_optional(static_cast<value_type>(row_l2_norm(row))) : std::nullopt;
+		auto const row_norm = static_cast<value_type>(row_l2_norm(row));
 		auto features = xt::row(out, static_cast<std::ptrdiff_t>(row_idx));
 
 		// Rows are counted once per rhs and once per lhs
 		if (scip::get_unshifted_lhs(scip, row).has_value()) {
 			if (update_static) {
-				set_static_features_for_lhs_row<decltype(features)&, RowFeatures>(features, scip, row, row_norm);
+				set_static_features_for_lhs_row(features, scip, row, row_norm);
 			}
 			set_dynamic_features_for_lhs_row(features, scip, row, row_norm, obj_norm, n_lps);
 		}
 		if (scip::get_unshifted_rhs(scip, row).has_value()) {
 			if (update_static) {
-				set_static_features_for_rhs_row<decltype(features)&, RowFeatures>(features, scip, row, row_norm);
+				set_static_features_for_rhs_row(features, scip, row, row_norm);
 			}
 			set_dynamic_features_for_rhs_row(features, scip, row, row_norm, obj_norm, n_lps);
 		}
 	}
 }
-
 
 /****************************************
  *  Edge features extraction functions  *
@@ -383,29 +347,25 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 	return {values, indices, {n_rows, n_cols}};
 }
 
-/****************************************
- *  General functions  *
- ****************************************/
-
 auto is_on_root_node(scip::Model& model) -> bool {
 	auto* const scip = model.get_scip_ptr();
 	return SCIPgetCurrentNode(scip) == SCIPgetRootNode(scip);
 }
 
-auto extract_observation_fully(scip::Model& model, bool normalize) -> NodeBipartiteObs {
+auto extract_observation_fully(scip::Model& model) -> NodeBipartiteObs {
 	auto obs = NodeBipartiteObs{
 		xmatrix::from_shape({model.lp_columns().size(), NodeBipartiteObs::n_column_features}),
 		xmatrix::from_shape({n_ineq_rows(model), NodeBipartiteObs::n_row_features}),
 		extract_edge_features(model),
 	};
-	set_features_for_all_cols(obs.column_features, model, true, normalize);
-	set_features_for_all_rows(obs.row_features, model, true, normalize);
+	set_features_for_all_cols(obs.column_features, model, true);
+	set_features_for_all_rows(obs.row_features, model, true);
 	return obs;
 }
 
-auto extract_observation_from_cache(scip::Model& model, NodeBipartiteObs obs, bool normalize) -> NodeBipartiteObs {
-	set_features_for_all_cols(obs.column_features, model, false, normalize);
-	set_features_for_all_rows(obs.row_features, model, false, normalize);
+auto extract_observation_from_cache(scip::Model& model, NodeBipartiteObs obs) -> NodeBipartiteObs {
+	set_features_for_all_cols(obs.column_features, model, false);
+	set_features_for_all_rows(obs.row_features, model, false);
 	return obs;
 }
 
@@ -423,15 +383,15 @@ auto NodeBipartite::extract(scip::Model& model, bool /* done */) -> std::optiona
 	if (model.get_stage() == SCIP_STAGE_SOLVING) {
 		if (use_cache) {
 			if (is_on_root_node(model)) {
-				the_cache = extract_observation_fully(model, normalize);
+				the_cache = extract_observation_fully(model);
 				cache_computed = true;
 				return the_cache;
 			}
 			if (cache_computed) {
-				return extract_observation_from_cache(model, the_cache, normalize);
+				return extract_observation_from_cache(model, the_cache);
 			}
 		}
-		return extract_observation_fully(model, normalize);
+		return extract_observation_fully(model);
 	}
 	return {};
 }
