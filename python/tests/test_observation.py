@@ -102,7 +102,8 @@ def test_NodeBipartite_observation(model):
     # Check that there are enums describing feeatures
     assert len(ecole.observation.NodeBipartiteObs.ColumnFeatures.__members__) == 19
     assert len(ecole.observation.NodeBipartiteObs.RowFeatures.__members__) == 5
-    
+
+
 def test_MilpBipartite_observation(model):
     """Observation of MilpBipartite is a type with array attributes."""
     obs_func = ecole.observation.MilpBipartite()
