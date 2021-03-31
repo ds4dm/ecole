@@ -1,9 +1,6 @@
-#include <array>
 #include <cmath>
 #include <cstddef>
-#include <limits>
 #include <type_traits>
-#include <iostream>
 #include <fmt/format.h>
 
 #include <scip/scip.h>
@@ -16,7 +13,6 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/cons.hpp"
 #include "ecole/scip/type.hpp"
-#include "ecole/scip/utils.hpp"
 #include "ecole/exception.hpp"
 
 namespace ecole::observation {
@@ -35,7 +31,7 @@ using VariableFeatures = MilpBipartiteObs::VariableFeatures;
 using ConstraintFeatures = MilpBipartiteObs::ConstraintFeatures;
 
 /******************************************
- *  Variable extraction functions  *
+ *  Variable extraction functions         *
  ******************************************/
     
 /* Computes the L2 norm of the objective.
@@ -129,7 +125,7 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
 
 
 /****************************************
- *  Constraint extraction functions  *
+ *  Constraint extraction functions     *
  ****************************************/
 
 scip::real cons_l2_norm(std::vector<scip::real> constraint_coefs) noexcept {
@@ -261,9 +257,9 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
                 n_rows++;
             }
         } else {
-            throw Exception(fmt::format("Constraint {} is non-linear (type \"{}\"), MilpBipartite observation cannot be extracted.", 
+            throw Exception(fmt::format("Constraint {} cannot be expressed as a single linear constraint (type \"{}\"), MilpBipartite observation cannot be extracted.", 
                             cons_idx, SCIPconshdlrGetName(SCIPconsGetHdlr(constraint))));
-        }   
+        }
     }
     
     // Turn values and indices into xt::xarray's
