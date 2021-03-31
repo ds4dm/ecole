@@ -38,8 +38,22 @@ using ConstraintFeatures = MilpBipartiteObs::ConstraintFeatures;
  *  Variable extraction functions  *
  ******************************************/
     
-scip::real obj_l2_norm(Scip* const scip) noexcept {
-	auto const norm = SCIPgetObjNorm(scip);
+/* Computes the L2 norm of the objective.
+   This is done by hand because SCIPgetObjNorm is 
+   not available for all stages (need >= SCIP_STAGE_TRANSFORMED) */
+scip::real obj_l2_norm(Scip* const scip, scip::Model& model) noexcept {
+	scip::real norm = 0.;
+    
+    if (SCIPgetStage(scip) >= SCIP_STAGE_TRANSFORMED) {
+        norm = SCIPgetObjNorm(scip);
+    } else {
+        // If too early, this must be done by hand
+        for (auto* variable: model.variables()) {
+            norm += std::pow(SCIPvarGetObj(variable), 2);
+        }
+        norm = std::sqrt(norm);
+    }
+    
 	return norm > 0 ? norm : 1.;
 }
     
@@ -78,13 +92,31 @@ void set_static_features_for_var(Features&& out, Scip* const scip, scip::Var* co
 	default:
 		assert(false);  // All enum cases must be handled
 	}
+    
+    auto lower_bound = SCIPvarGetLbLocal(var);
+    if (SCIPisInfinity(scip, std::abs(lower_bound))) {
+        out[idx(VariableFeatures::has_lower_bound)] = 0.;
+        out[idx(VariableFeatures::lower_bound)] = 0.;
+    } else {
+        out[idx(VariableFeatures::has_lower_bound)] = 1.;
+        out[idx(VariableFeatures::lower_bound)] = lower_bound;
+    }
+        
+    auto upper_bound = SCIPvarGetUbLocal(var);
+    if (SCIPisInfinity(scip, std::abs(upper_bound))) {
+        out[idx(VariableFeatures::has_lower_bound)] = 0.;
+        out[idx(VariableFeatures::lower_bound)] = 0.;
+    } else {
+        out[idx(VariableFeatures::has_upper_bound)] = 1.;
+        out[idx(VariableFeatures::upper_bound)] = upper_bound;
+    }
 }
 
 void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize) {
 	auto* const scip = model.get_scip_ptr();
 
 	// Contant reused in every iterations
-    auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip)) : std::nullopt;
+    auto const obj_norm = normalize ? std::make_optional(obj_l2_norm(scip, model)) : std::nullopt;
 
 	auto const variables = model.variables();
 	auto const n_vars = variables.size();
@@ -99,7 +131,6 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
 /****************************************
  *  Constraint extraction functions  *
  ****************************************/
- 
 
 scip::real cons_l2_norm(std::vector<scip::real> constraint_coefs) noexcept {
     std::vector<std::size_t> shape = {constraint_coefs.size()};
@@ -130,14 +161,18 @@ auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) ->
     auto* variables = new scip::Var*[buffer_size];
     auto* coefficients = new scip::real[buffer_size];
     
-    // Get the variables and their coefficients in the constraint (the variables might be inactive)
+    // Get the variables and their coefficients in the constraint
     scip::call(SCIPgetConsVars, scip, constraint, variables, buffer_size, &success);
     if (!success) return {};
     scip::call(SCIPgetConsVals, scip, constraint, coefficients, buffer_size, &success);
     if (!success) return {};
     
+    // If we are in SCIP_STAGE_TRANSFORMED or later, the variables in the constraint might be inactive
     // Re-express the coefficients in terms of active variables
-    scip::call(SCIPgetProbvarLinearSum, scip, variables, coefficients, &n_constraint_variables, buffer_size, &constant_offset, &requiredsize, true);
+    if (SCIPgetStage(scip) >= SCIP_STAGE_TRANSFORMED) {
+        scip::call(SCIPgetProbvarLinearSum, scip, variables, coefficients, &n_constraint_variables, 
+                   buffer_size, &constant_offset, &requiredsize, true);
+    }
     
     // Copy the relevant sections of the buffers to output vectors
     std::vector<scip::Var*> output_variables;
@@ -196,7 +231,7 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
             // Inequality has a left hand side?
             if (lhs.has_value()) {
                 for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
-                    value_type value = constraint_coefs[cons_var_idx]; 
+                    value_type value = constraint_coefs[cons_var_idx];
                     int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
                     values.push_back(-value);
@@ -212,7 +247,7 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
             // Inequality has a right hand side?
             if (rhs.has_value()) {
                 for(std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
-                    value_type value = constraint_coefs[cons_var_idx]; 
+                    value_type value = constraint_coefs[cons_var_idx];
                     int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
                     
                     values.push_back(value);
@@ -253,8 +288,7 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
  *************************************/
 
 auto MilpBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<MilpBipartiteObs> {
-// 	if (model.get_stage() < SCIP_STAGE_SOLVING) {
-    if (model.get_stage() == SCIP_STAGE_SOLVING) {
+	if (model.get_stage() < SCIP_STAGE_SOLVING) {
         coo_xmatrix edge_features;
         xmatrix constraint_features;
         std::tie(edge_features, constraint_features) = extract_constraints(model, normalize);

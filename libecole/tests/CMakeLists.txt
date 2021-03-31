@@ -36,6 +36,7 @@ add_executable(
 	src/reward/test-solvingtime.cpp
 
 	src/observation/test-nodebipartite.cpp
+	src/observation/test-milpbipartite.cpp
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
 	src/observation/test-khalil-2016.cpp

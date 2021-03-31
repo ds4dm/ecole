@@ -189,7 +189,11 @@ void bind_submodule(py::module_ const& m) {
 		.value("is_type_binary", MilpBipartiteObs::VariableFeatures::is_type_binary)
 		.value("is_type_integer", MilpBipartiteObs::VariableFeatures::is_type_integer)
 		.value("is_type_implicit_integer", MilpBipartiteObs::VariableFeatures::is_type_implicit_integer)
-		.value("is_type_continuous", MilpBipartiteObs::VariableFeatures::is_type_continuous);
+		.value("is_type_continuous", MilpBipartiteObs::VariableFeatures::is_type_continuous)
+		.value("has_lower_bound", MilpBipartiteObs::VariableFeatures::has_lower_bound)
+		.value("has_upper_bound", MilpBipartiteObs::VariableFeatures::has_upper_bound)
+		.value("lower_bound", MilpBipartiteObs::VariableFeatures::lower_bound)
+		.value("upper_bound", MilpBipartiteObs::VariableFeatures::upper_bound);
 
 	py::enum_<MilpBipartiteObs::ConstraintFeatures>(milp_bipartite_obs, "ConstraintFeatures")
 		.value("bias", MilpBipartiteObs::ConstraintFeatures::bias);
