@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "ecole/scip/cons.hpp"
 
 namespace ecole::scip {
@@ -29,11 +27,6 @@ auto create_cons_basic_linear(
 		lhs,
 		rhs);
 	return {cons, ConsReleaser{scip}};
-}
-    
-auto is_cons_linear(SCIP_CONS* cons) noexcept -> bool {
-    const char* constype = SCIPconshdlrGetName(SCIPconsGetHdlr(cons));
-    return strcmp(constype, "linear");
 }
 
 auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {

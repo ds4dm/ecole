@@ -156,8 +156,8 @@ auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std
 
 	// Allocate buffers large enough to hold future variables and coefficients
 	int buffer_size = std::max(n_constraint_variables, n_active_variables);
-	auto* variables = new scip::Var*[buffer_size];
-	auto* coefficients = new scip::real[buffer_size];
+	auto* variables = new scip::Var*[static_cast<std::size_t>(buffer_size)];
+	auto* coefficients = new scip::real[static_cast<std::size_t>(buffer_size)];
 
 	// Get the variables and their coefficients in the constraint
 	scip::call(SCIPgetConsVars, scip, constraint, variables, buffer_size, &success);
@@ -202,8 +202,8 @@ auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std
 		rhs = std::nullopt;
 
 	// Free the buffers
-	delete variables;
-	delete coefficients;
+	delete[] variables;
+	delete[] coefficients;
 
 	return std::make_tuple(output_variables, output_coefficients, lhs, rhs);
 }
