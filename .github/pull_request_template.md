@@ -10,7 +10,7 @@ Refer to the README for help on running the tests, checks, formatters, and docum
 -->
 - [ ] I have open an issue to discuss the proposed changes. Fix #
 - [ ] I have modified/added tests to cover the new changes/features.
-- [ ] I have modified/added the documenation to cover the new changes/features.
+- [ ] I have modified/added the documentation to cover the new changes/features.
 - [ ] I have ran the tests, checks, and code formatters.
 
 ## Proposed implementation
