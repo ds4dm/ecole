@@ -13,7 +13,7 @@ public:
 	struct Parameters {
 		std::size_t n_customers = 100;                                   // NOLINT(readability-magic-numbers)
 		std::size_t n_facilities = 100;                                  // NOLINT(readability-magic-numbers)
-		bool continuous_assignment = false;                              // NOLINT(readability-magic-numbers)
+		bool continuous_assignment = true;                               // NOLINT(readability-magic-numbers)
 		double ratio = 5.0;                                              // NOLINT(readability-magic-numbers)
 		std::pair<int, int> demand_interval = {5, 35 + 1};               // NOLINT(readability-magic-numbers)
 		std::pair<int, int> capacity_interval = {10, 160 + 1};           // NOLINT(readability-magic-numbers)
