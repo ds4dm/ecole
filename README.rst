@@ -70,7 +70,7 @@ Currently unavailable
 
 From Source and Other Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Checkout the `installation instructions <https://doc.ecole.ai/>`_ in the documentation for more information,
+Checkout the `installation instructions <https://doc.ecole.ai/master/installation.html>`_ in the documentation for more information,
 including manually installing from source.
 
 
