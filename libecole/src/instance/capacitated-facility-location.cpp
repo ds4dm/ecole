@@ -74,9 +74,9 @@ auto unit_transportation_costs(std::size_t n_customers, std::size_t n_facilities
 
 /** Create and add a single binary variable the representing whether to open the facility.
  *
- * Variable are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured by
- * the scip*.
- * Their lifetime should not exceed that of the scip* (although that was already implied when creating them).
+ * Variables are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured
+ * by the scip*. Their lifetime should not exceed that of the scip* (although that was already implied when creating
+ * them).
  */
 auto add_facility_var(SCIP* scip, std::size_t idx, scip::real cost) -> SCIP_VAR* {
 	auto const name = fmt::format("f_{}", idx);
@@ -88,7 +88,7 @@ auto add_facility_var(SCIP* scip, std::size_t idx, scip::real cost) -> SCIP_VAR*
 
 /** Create and add all variables for opening the facilities.
  *
- * Variables pointers are returned in a array with as many entries as there are facilities.
+ * Variable pointers are returned in a array with as many entries as there are facilities.
  */
 auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
 	auto vars = xt::xtensor<SCIP_VAR*, 1>{fixed_costs.shape(), nullptr};
@@ -101,9 +101,9 @@ auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
 
 /** Create and add a single continuous variable the for the fraction of customer demand served by the facility.
  *
- * Variable are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured by
- * the scip*.
- * Their lifetime should not exceed that of the scip* (although that was already implied when creating them).
+ * Variables are automatically released (using the unique_ptr provided by scip::create_var_basic) after being captured
+ * by the scip*. Their lifetime should not exceed that of the scip* (although that was already implied when creating
+ * them).
  */
 auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_idx, scip::real cost, bool continuous)
 	-> SCIP_VAR* {
@@ -187,17 +187,25 @@ auto add_capacity_cons(
 
 /** Add n_customers * n_facilities constraint that tighten the LP relaxation.
  *
- * A facility cannot serve demand if it is not open.
  * Constraints are relased automatically (through unique_ptr in scip::create_cons_basic_linear).
  */
 auto add_tightening_cons(
 	SCIP* scip,
 	xt::xtensor<SCIP_VAR*, 2> const& serving_vars,
-	xt::xtensor<SCIP_VAR*, 1> const& facility_vars) -> void {
+	xt::xtensor<SCIP_VAR*, 1> const& facility_vars,
+	xvector const& demands,
+	xvector const& capacities) -> void {
 	auto const inf = SCIPinfinity(scip);
 	auto const [n_customers, n_facilities] = serving_vars.shape();
 	assert(facility_vars.size() == n_facilities);
 
+	// Open facilities must satisfy the total demand.
+	auto total_demand = xt::sum(demands)();
+	auto global_cons = scip::create_cons_basic_linear(
+		scip, "t_total_demand", n_facilities, facility_vars.data(), capacities.data(), total_demand, inf);
+	scip::call(SCIPaddCons, scip, global_cons.get());
+
+	// A closed facility cannot serve any customer.
 	for (std::size_t customer_idx = 0; customer_idx < n_customers; ++customer_idx) {
 		for (std::size_t facility_idx = 0; facility_idx < n_facilities; ++facility_idx) {
 			auto const name = fmt::format("t_{}_{}", customer_idx, facility_idx);
@@ -237,6 +245,7 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 
 	// Scale capacities according to ratio after sampling as stated in Cornuejols et al. (1991).
 	capacities = capacities * parameters.ratio * xt::sum(demands)() / xt::sum(capacities)();
+	capacities = xt::nearbyint(capacities);
 
 	auto model = scip::Model::prob_basic();
 	auto* const scip = model.get_scip_ptr();
@@ -246,7 +255,7 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 
 	add_demand_cons(scip, serving_vars);
 	add_capacity_cons(scip, serving_vars, facility_vars, demands, capacities);
-	add_tightening_cons(scip, serving_vars, facility_vars);
+	add_tightening_cons(scip, serving_vars, facility_vars, demands, capacities);
 
 	return model;
 }
