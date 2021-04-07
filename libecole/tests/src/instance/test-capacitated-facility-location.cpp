@@ -80,11 +80,6 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
 				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
 				REQUIRE(coefs.size() == params.n_customers + 1);
-			} else if (is_thightening(cons)) {
-				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
-				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
-				REQUIRE(coefs.size() == 2);
-				REQUIRE(std::all_of(coefs.begin(), coefs.end(), [](auto coef) { return std::abs(coef) == 1.; }));
 			}
 		}
 	}
