@@ -1,3 +1,5 @@
+.. _contributing-reference:
+
 Contribution Guidelines
 =======================
 
