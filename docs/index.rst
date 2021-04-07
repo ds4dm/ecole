@@ -103,3 +103,4 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    :hidden:
 
    contributing.rst
+   developers/example-observation.rst
