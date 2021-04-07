@@ -60,12 +60,17 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 		auto const is_demand = [](auto* cons) { return SCIPconsGetName(cons)[0] == 'd'; };
 		auto const is_capacity = [](auto* cons) { return SCIPconsGetName(cons)[0] == 'c'; };
 		auto const is_thightening = [](auto* cons) { return SCIPconsGetName(cons)[0] == 't'; };
+		auto const is_total_thightening = [](auto* cons) {
+			return std::string_view{SCIPconsGetName(cons)} == "t_total_demand";
+		};
+
 		auto const conss = model.constraints();
 
 		// Correct number of constraints
 		REQUIRE(count_if(conss, is_demand) == params.n_customers);
 		REQUIRE(count_if(conss, is_capacity) == params.n_facilities);
 		REQUIRE(count_if(conss, is_thightening) == params.n_facilities * params.n_customers + 1);
+		REQUIRE(count_if(conss, is_total_thightening) == 1);
 
 		// Correct constraints bounds
 		auto const inf = SCIPinfinity(scip_ptr);
@@ -80,6 +85,14 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
 				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
 				REQUIRE(coefs.size() == params.n_customers + 1);
+			} else if (is_thightening(cons) && !is_total_thightening(cons)) {
+				REQUIRE(scip::cons_get_lhs(scip_ptr, cons).value() == -inf);
+				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == 0.0);
+				REQUIRE(coefs.size() == 2);
+				REQUIRE(std::all_of(coefs.begin(), coefs.end(), [](auto coef) { return std::abs(coef) == 1.; }));
+			} else if (is_total_thightening(cons)) {
+				REQUIRE(scip::cons_get_rhs(scip_ptr, cons).value() == inf);
+				REQUIRE(coefs.size() == params.n_facilities);
 			}
 		}
 	}
