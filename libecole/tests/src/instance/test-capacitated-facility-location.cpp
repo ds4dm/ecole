@@ -65,7 +65,7 @@ TEST_CASE("Instances generated are capacitated facility location instances", "[i
 		// Correct number of constraints
 		REQUIRE(count_if(conss, is_demand) == params.n_customers);
 		REQUIRE(count_if(conss, is_capacity) == params.n_facilities);
-		REQUIRE(count_if(conss, is_thightening) == params.n_facilities * params.n_customers);
+		REQUIRE(count_if(conss, is_thightening) == params.n_facilities * params.n_customers + 1);
 
 		// Correct constraints bounds
 		auto const inf = SCIPinfinity(scip_ptr);
