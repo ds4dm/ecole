@@ -25,6 +25,7 @@ def pytest_generate_tests(metafunc):
         all_observation_functions = (
             ecole.observation.Nothing(),
             ecole.observation.NodeBipartite(),
+            ecole.observation.MilpBipartite(),
             ecole.observation.StrongBranchingScores(True),
             ecole.observation.StrongBranchingScores(False),
             ecole.observation.Pseudocosts(),
@@ -116,8 +117,14 @@ def test_MilpBipartite_observation(model):
     assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
 
     # Check that there are enums describing feeatures
-    assert len(ecole.observation.MilpBipartiteObs.VariableFeatures.__members__) == 9
-    assert len(ecole.observation.MilpBipartiteObs.ConstraintFeatures.__members__) == 1
+    assert (
+        len(ecole.observation.MilpBipartiteObs.VariableFeatures.__members__)
+        == obs.variable_features.shape[1]
+    )
+    assert (
+        len(ecole.observation.MilpBipartiteObs.ConstraintFeatures.__members__)
+        == obs.constraint_features.shape[1]
+    )
 
 
 def test_StrongBranchingScores_observation(model):

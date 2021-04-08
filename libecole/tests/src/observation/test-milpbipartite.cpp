@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <iostream>
 
 #include <catch2/catch.hpp>
 #include <xtensor/xmath.hpp>
@@ -13,7 +12,8 @@
 using namespace ecole;
 
 TEST_CASE("MilpBipartite unit tests", "[unit][obs]") {
-	observation::unit_tests(observation::MilpBipartite{});
+	auto const normalize = GENERATE(true, false);
+	observation::unit_tests(observation::MilpBipartite{normalize});
 }
 
 TEST_CASE("MilpBipartite return correct observation", "[obs]") {

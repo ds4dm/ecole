@@ -9,8 +9,8 @@
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/observation/khalil-2016.hpp"
-#include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/milpbipartite.hpp"
+#include "ecole/observation/nodebipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strongbranchingscores.hpp"
@@ -141,7 +141,7 @@ void bind_submodule(py::module_ const& m) {
 		This observation function extract structured :py:class:`NodeBipartiteObs`.
 	)");
 	node_bipartite.def(py::init<bool>(), py::arg("cache") = false, R"(
-		Initialize the logger.
+		Constructor for NodeBipartite.
 
 		Parameters
 		----------
@@ -151,10 +151,10 @@ void bind_submodule(py::module_ const& m) {
 	)");
 	def_before_reset(node_bipartite, "Cache some feature not expected to change during an episode.");
 	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
-    
-    // MILP bipartite observation
-    auto milp_bipartite_obs = py::class_<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
-		Bipartite graph observation representing the sub-MILP at the latest branch-and-bound node.
+
+	// MILP bipartite observation
+	auto milp_bipartite_obs = py::class_<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
+		Bipartite graph observation that represents the most recent MILP during presolving.
 
 		The optimization problem is represented as an heterogenous bipartite graph.
 		On one side, a node is associated with one variable, on the other side a node is
@@ -169,7 +169,7 @@ void bind_submodule(py::module_ const& m) {
 		.def_property_readonly(
 			"variable_features",
 			[](MilpBipartiteObs & self) -> auto& { return self.variable_features; },
-			"A matrix where each row is represents a variable, and each column a feature of "
+			"A matrix where each row represents a variable, and each column a feature of "
 			"the variables.")
 		.def_property_readonly(
 			"constraint_features",
@@ -201,19 +201,19 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation function extract structured :py:class:`MilpBipartiteObs`.
 	)");
-	milp_bipartite.def(py::init<bool>(), py::arg("use_normalization") = false, R"(
-		Initialize the logger.
+	milp_bipartite.def(py::init<bool>(), py::arg("normalize") = false, R"(
+		Constructor for MilpBipartite.
 
 		Parameters
 		----------
 		use_normalization :
-            Should the features be normalized? 
-            This is recommended for some application such as deep learning models.
+			Should the features be normalized?
+			This is recommended for some application such as deep learning models.
 	)");
 	def_before_reset(milp_bipartite, R"(Do nothing.)");
 	def_extract(milp_bipartite, "Extract a new :py:class:`MilpBipartiteObs`.");
-    
-    // Strong branching observation
+
+	// Strong branching observation
 	auto strong_branching_scores = py::class_<StrongBranchingScores>(m, "StrongBranchingScores", R"(
 		Strong branching score observation function on branch-and bound node.
 
@@ -239,7 +239,7 @@ void bind_submodule(py::module_ const& m) {
 	def_before_reset(strong_branching_scores, R"(Do nothing.)");
 	def_extract(strong_branching_scores, "Extract an array containing strong branching scores.");
 
-    // Pseudocosts observation
+	// Pseudocosts observation
 	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
 		Pseudocosts observation function on branch-and bound node.
 
@@ -258,7 +258,7 @@ void bind_submodule(py::module_ const& m) {
 	def_before_reset(pseudocosts, R"(Do nothing.)");
 	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
 
-    // Khalil observation
+	// Khalil observation
 	auto khalil_2016 = py::class_<Khalil2016>(m, "Khalil2016", R"(
 		Branching candidates features from Khalil et al. (2016).
 
