@@ -21,7 +21,7 @@ Node Bipartite
 .. autoclass:: ecole.observation.NodeBipartite
 .. autoclass:: ecole.observation.NodeBipartiteObs
 
-Node Bipartite
+Milp Bipartite
 ^^^^^^^^^^^^^^
 .. autoclass:: ecole.observation.MilpBipartite
 .. autoclass:: ecole.observation.MilpBipartiteObs
