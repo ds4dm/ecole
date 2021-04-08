@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <scip/scip.h>
+
 #include "branching/lambda-branchrule.hpp"
 
 namespace ecole::scip {

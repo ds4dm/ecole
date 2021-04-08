@@ -7,15 +7,15 @@ include(cmake/Conda.cmake)
 include(cmake/Version.cmake)
 read_version("${CMAKE_SOURCE_DIR}/VERSION" Ecole_VERSION)
 
+# Set default parameters. Assumes Ecole user,
+include(cmake/DefaultSettings.cmake)
+
 project(
 	Ecole
 	VERSION "${Ecole_VERSION}"
 	LANGUAGES CXX
 	DESCRIPTION "Extensible Combinatorial Optimization Learning Environments"
 )
-
-# Set default parameters. Assumes Ecole user,
-include(cmake/DefaultSettings.cmake)
 
 # Add option to enable interprocedural optimization
 include(cmake/InterproceduralOptimization.cmake)
