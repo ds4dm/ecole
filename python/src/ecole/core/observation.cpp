@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
+#include "auto-class.hpp"
 #include "core.hpp"
 
 namespace ecole::observation {
@@ -57,26 +59,25 @@ void bind_submodule(py::module_ const& m) {
 	m.attr("Nothing") = py::type::of<Nothing>();
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
-	py::class_<coo_matrix>(m, "coo_matrix", R"(
+	auto_class<coo_matrix>(m, "coo_matrix", R"(
 		Sparse matrix in the coordinate format.
 
 		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
 	)")
-		.def_property_readonly(
-			"values", [](coo_matrix & self) -> auto& { return self.values; }, "A vector of non zero values in the matrix")
-		.def_property_readonly(
-			"indices",
-			[](coo_matrix & self) -> auto& { return self.indices; },
-			"A matrix holding the indices of non zero coefficient in the sparse matrix. "
-			"There are as many columns as there are non zero coefficients, and each row is a "
-			"dimension in the sparse matrix.")
-		.def_property_readonly(
-			"shape",
-			[](coo_matrix& self) { return std::make_pair(self.shape[0], self.shape[1]); },
-			"The dimension of the sparse matrix, as if it was dense.")
+		.def_auto_copy()
+		.def_auto_pickle(std::array{"values", "indices", "shape"})
+		.def_readwrite_xtensor("values", &coo_matrix::values, "A vector of non zero values in the matrix")
+		.def_readwrite_xtensor("indices", &coo_matrix::indices, R"(
+			A matrix holding the indices of non zero coefficient in the sparse matrix.
+
+			There are as many columns as there are non zero coefficients, and each row is a
+			dimension in the sparse matrix.
+		)")
+		.def_readwrite("shape", &coo_matrix::shape, "The dimension of the sparse matrix, as if it was dense.")
 		.def_property_readonly("nnz", &coo_matrix::nnz);
 
-	auto node_bipartite_obs = py::class_<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
+	auto node_bipartite_obs =
+		auto_class<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
 		Bipartite graph observation for branch-and-bound nodes.
 
 		The optimization problem is represented as an heterogenous bipartite graph.
@@ -87,23 +88,22 @@ void bind_submodule(py::module_ const& m) {
 
 		Each variable and constraint node is associated with a vector of features.
 		Each edge is associated with the coefficient of the variable in the constraint.
-	)");
-	node_bipartite_obs
-		.def_property_readonly(
-			"column_features",
-			[](NodeBipartiteObs & self) -> auto& { return self.column_features; },
-			"A matrix where each row is represents a variable, and each column a feature of "
-			"the variables.")
-		.def_property_readonly(
-			"row_features",
-			[](NodeBipartiteObs & self) -> auto& { return self.row_features; },
-			"A matrix where each row is represents a constraint, and each column a feature of "
-			"the constraints.")
-		.def_readwrite(
-			"edge_features",
-			&NodeBipartiteObs::edge_features,
-			"The constraint matrix of the optimization problem, with rows for contraints and "
-			"columns for variables.");
+	)")
+			.def_auto_copy()
+			.def_auto_pickle(std::array{"column_features", "row_features", "edge_features"})
+			.def_readwrite_xtensor(
+				"column_features",
+				&NodeBipartiteObs::column_features,
+				"A matrix where each row is represents a variable, and each column a feature of the variables.")
+			.def_readwrite_xtensor(
+				"row_features",
+				&NodeBipartiteObs::row_features,
+				"A matrix where each row is represents a constraint, and each column a feature of the constraints.")
+			.def_readwrite(
+				"edge_features",
+				&NodeBipartiteObs::edge_features,
+				"The constraint matrix of the optimization problem, with rows for contraints and "
+				"columns for variables.");
 
 	py::enum_<NodeBipartiteObs::ColumnFeatures>(node_bipartite_obs, "ColumnFeatures")
 		.value("objective", NodeBipartiteObs::ColumnFeatures::objective)
