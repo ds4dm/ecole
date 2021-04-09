@@ -7,6 +7,9 @@ Here,
   - Other tests that observation returned form observation functions are bound to the correct types.
 """
 
+import copy
+import pickle
+
 import numpy as np
 
 import ecole
@@ -56,9 +59,23 @@ def test_extract(observation_function, model):
 
 
 def make_obs(obs_func, model):
+    """Utility function to extract observation on root node."""
     obs_func.before_reset(model)
     advance_to_root_node(model)
     return obs_func.extract(model, False)
+
+
+def test_observation_deepcopy(observation_function, model):
+    """Deepcopy observation."""
+    obs = make_obs(observation_function, model)
+    copy.deepcopy(obs)
+
+
+def test_observation_pickle(observation_function, model):
+    """Pickle and unpickle observation."""
+    obs = make_obs(observation_function, model)
+    blob = pickle.dumps(obs)
+    obs_copy = pickle.loads(blob)
 
 
 def assert_array(arr, ndim=1, non_empty=True, dtype=np.double):
