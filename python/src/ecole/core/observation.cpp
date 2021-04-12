@@ -153,7 +153,8 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(node_bipartite, "Extract a new :py:class:`NodeBipartiteObs`.");
 
 	// MILP bipartite observation
-	auto milp_bipartite_obs = py::class_<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
+	auto milp_bipartite_obs =
+		auto_class<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
 		Bipartite graph observation that represents the most recent MILP during presolving.
 
 		The optimization problem is represented as an heterogenous bipartite graph.
@@ -164,23 +165,21 @@ void bind_submodule(py::module_ const& m) {
 
 		Each variable and constraint node is associated with a vector of features.
 		Each edge is associated with the coefficient of the variable in the constraint.
-	)");
-	milp_bipartite_obs
-		.def_property_readonly(
-			"variable_features",
-			[](MilpBipartiteObs & self) -> auto& { return self.variable_features; },
-			"A matrix where each row represents a variable, and each column a feature of "
-			"the variables.")
-		.def_property_readonly(
-			"constraint_features",
-			[](MilpBipartiteObs & self) -> auto& { return self.constraint_features; },
-			"A matrix where each row is represents a constraint, and each column a feature of "
-			"the constraints.")
-		.def_readwrite(
-			"edge_features",
-			&MilpBipartiteObs::edge_features,
-			"The constraint matrix of the optimization problem, with rows for contraints and "
-			"columns for variables.");
+	)")
+			.def_auto_copy()
+			.def_auto_pickle(std::array{"variable_features", "constraint_features", "edge_features"})
+			.def_readwrite_xtensor(
+				"variable_features",
+				&MilpBipartiteObs::variable_features,
+				"A matrix where each row represents a variable, and each column a feature of the variables.")
+			.def_readwrite_xtensor(
+				"constraint_features",
+				&MilpBipartiteObs::constraint_features,
+				"A matrix where each row is represents a constraint, and each column a feature of the constraints.")
+			.def_readwrite(
+				"edge_features",
+				&MilpBipartiteObs::edge_features,
+				"The constraint matrix of the optimization problem, with rows for contraints and columns for variables.");
 
 	py::enum_<MilpBipartiteObs::VariableFeatures>(milp_bipartite_obs, "VariableFeatures")
 		.value("objective", MilpBipartiteObs::VariableFeatures::objective)

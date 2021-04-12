@@ -61,6 +61,7 @@ def test_extract(observation_function, model):
 
 def make_obs(obs_func, model):
     """Utility function to extract observation on root node."""
+    # TODO adapt for MilpBiparite that must not be in stage solving
     obs_func.before_reset(model)
     advance_to_root_node(model)
     return obs_func.extract(model, False)
