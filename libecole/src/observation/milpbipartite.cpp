@@ -217,13 +217,9 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
 	// For each constraint
 	for (std::size_t cons_idx = 0; cons_idx < std::size(constraints); ++cons_idx) {
 		auto* const constraint = constraints[cons_idx];
-		auto const constraint_data = get_constraint_coefs(scip, constraint);
+		auto constraint_data = get_constraint_coefs(scip, constraint);
 		if (constraint_data.has_value()) {  // Constraint must be linear
-			std::vector<scip::Var*> constraint_vars;
-			std::vector<scip::real> constraint_coefs;
-			std::optional<scip::real> lhs;
-			std::optional<scip::real> rhs;
-			std::tie(constraint_vars, constraint_coefs, lhs, rhs) = constraint_data.value();
+			auto [constraint_vars, constraint_coefs, lhs, rhs] = std::move(constraint_data).value();
 			scip::real const constraint_norm = normalize ? cons_l2_norm(constraint_coefs) : 1.;
 
 			// Inequality has a left hand side?
