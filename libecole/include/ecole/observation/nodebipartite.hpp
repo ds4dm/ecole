@@ -9,8 +9,7 @@
 
 namespace ecole::observation {
 
-class NodeBipartiteObs {
-public:
+struct NodeBipartiteObs {
 	using value_type = double;
 
 	static inline std::size_t constexpr n_static_column_features = 5;
