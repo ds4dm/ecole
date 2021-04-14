@@ -266,8 +266,8 @@ void bind_submodule(py::module_ const& m) {
 		represent features related to these variables.
 		See [Khalil2016]_ for a complete reference on this observation function.
 
-		The first :py:attribute:`Khalil2016Obs.n_static_features` are static (they do not change through the solving
-		process), and the remaining :py:attribute:`Khalil2016Obs.n_dynamic_features` dynamic.
+		The first :py:attr:`Khalil2016Obs.n_static_features` are static (they do not change through the solving
+		process), and the remaining :py:attr:`Khalil2016Obs.n_dynamic_features` dynamic.
 
 		.. [Khalil2016]
 			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
@@ -280,7 +280,9 @@ void bind_submodule(py::module_ const& m) {
 			.def_readwrite_xtensor(
 				"features",
 				&Khalil2016Obs::features,
-				"A matrix where each row represents a variable, and each column a feature of the variables.");
+				"A matrix where each row represents a variable, and each column a feature of the variables.")
+			.def_readonly_static("n_static_features", &Khalil2016Obs::n_static_features)
+			.def_readonly_static("n_dynamic_features", &Khalil2016Obs::n_dynamic_features);
 
 	py::enum_<Khalil2016Obs::Features>(khalil2016_obs, "Features")
 		.value("obj_coef", Khalil2016Obs::Features::obj_coef)
