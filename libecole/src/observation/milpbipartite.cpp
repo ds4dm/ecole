@@ -138,7 +138,7 @@ scip::real cons_l2_norm(std::vector<scip::real> const& constraint_coefs) {
 /**
  * Obtains the variables involved in a linear constraint and their coefficients in the constraint
  */
-auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std::optional<
+auto get_constraint_linear_coefs(Scip* const scip, scip::Cons* const constraint) -> std::optional<
 	std::tuple<std::vector<scip::Var*>, std::vector<scip::real>, std::optional<scip::real>, std::optional<scip::real>>> {
 	SCIP_Bool success = false;
 	int n_constraint_variables;
@@ -202,6 +202,19 @@ auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std
 	return std::optional{std::tuple{variables, coefficients, lhs, rhs}};
 }
 
+auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std::
+	tuple<std::vector<scip::Var*>, std::vector<scip::real>, std::optional<scip::real>, std::optional<scip::real>> {
+	auto constraint_data = get_constraint_linear_coefs(scip, constraint);
+	if (constraint_data.has_value()) {  // Constraint must be linear
+		return constraint_data.value();
+	}
+	throw Exception(fmt::format(
+		"Constraint {} cannot be expressed as a single linear constraint (type \"{}\"), MilpBipartite observation "
+		"cannot be extracted.",
+		SCIPconsGetPos(constraint),
+		SCIPconshdlrGetName(SCIPconsGetHdlr(constraint))));
+}
+
 auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utility::coo_matrix<value_type>, xmatrix> {
 	auto* const scip = model.get_scip_ptr();
 	auto const constraints = model.constraints();
@@ -217,51 +230,42 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
 	// For each constraint
 	for (std::size_t cons_idx = 0; cons_idx < std::size(constraints); ++cons_idx) {
 		auto* const constraint = constraints[cons_idx];
-		auto constraint_data = get_constraint_coefs(scip, constraint);
-		if (constraint_data.has_value()) {  // Constraint must be linear
-			auto [constraint_vars, constraint_coefs, lhs, rhs] = std::move(constraint_data).value();
-			scip::real const constraint_norm = normalize ? cons_l2_norm(constraint_coefs) : 1.;
+		auto [constraint_vars, constraint_coefs, lhs, rhs] = get_constraint_coefs(scip, constraint);
+		scip::real const constraint_norm = normalize ? cons_l2_norm(constraint_coefs) : 1.;
 
-			// Inequality has a left hand side?
-			if (lhs.has_value()) {
-				for (std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
-					value_type value = constraint_coefs[cons_var_idx];
-					int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
+		// Inequality has a left hand side?
+		if (lhs.has_value()) {
+			for (std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
+				value_type value = constraint_coefs[cons_var_idx];
+				int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
 
-					values.push_back(-value);
-					row_indices.push_back(n_rows);
-					column_indices.push_back(static_cast<std::size_t>(var_idx));
-				}
-				if (normalize) {
-					biases.push_back(-lhs.value() / constraint_norm);
-				} else {
-					biases.push_back(-lhs.value());
-				}
-				n_rows++;
+				values.push_back(-value);
+				row_indices.push_back(n_rows);
+				column_indices.push_back(static_cast<std::size_t>(var_idx));
 			}
-			// Inequality has a right hand side?
-			if (rhs.has_value()) {
-				for (std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
-					value_type value = constraint_coefs[cons_var_idx];
-					int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
-
-					values.push_back(value);
-					row_indices.push_back(n_rows);
-					column_indices.push_back(static_cast<std::size_t>(var_idx));
-				}
-				if (normalize) {
-					biases.push_back(rhs.value() / constraint_norm);
-				} else {
-					biases.push_back(rhs.value());
-				}
-				n_rows++;
+			if (normalize) {
+				biases.push_back(-lhs.value() / constraint_norm);
+			} else {
+				biases.push_back(-lhs.value());
 			}
-		} else {
-			throw Exception(fmt::format(
-				"Constraint {} cannot be expressed as a single linear constraint (type \"{}\"), MilpBipartite observation "
-				"cannot be extracted.",
-				cons_idx,
-				SCIPconshdlrGetName(SCIPconsGetHdlr(constraint))));
+			n_rows++;
+		}
+		// Inequality has a right hand side?
+		if (rhs.has_value()) {
+			for (std::size_t cons_var_idx = 0; cons_var_idx < std::size(constraint_vars); ++cons_var_idx) {
+				value_type value = constraint_coefs[cons_var_idx];
+				int var_idx = SCIPvarGetProbindex(constraint_vars[cons_var_idx]);
+
+				values.push_back(value);
+				row_indices.push_back(n_rows);
+				column_indices.push_back(static_cast<std::size_t>(var_idx));
+			}
+			if (normalize) {
+				biases.push_back(rhs.value() / constraint_norm);
+			} else {
+				biases.push_back(rhs.value());
+			}
+			n_rows++;
 		}
 	}
 
