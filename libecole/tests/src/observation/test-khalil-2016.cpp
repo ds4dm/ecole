@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <catch2/catch.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
@@ -22,7 +20,7 @@ auto in_interval(Tensor const& tensor, T const& lower, T const& upper) {
 }
 
 TEST_CASE("Khalil2016 return correct observation", "[obs]") {
-	using Features = observation::Khalil2016::Features;
+	using Features = observation::Khalil2016Obs::Features;
 
 	auto obs_func = observation::Khalil2016{};
 	auto model = get_model();
@@ -34,19 +32,19 @@ TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 
 	SECTION("Observation features has correct shape") {
 		auto const& obs = optional_obs.value();
-		REQUIRE(obs.shape(0) == model.pseudo_branch_cands().size());
-		REQUIRE(obs.shape(1) == observation::Khalil2016::n_features);
+		REQUIRE(obs.features.shape(0) == model.pseudo_branch_cands().size());
+		REQUIRE(obs.features.shape(1) == observation::Khalil2016Obs::n_features);
 	}
 
 	SECTION("No features are NaN or infinite") {
 		auto const& obs = optional_obs.value();
-		REQUIRE_FALSE(xt::any(xt::isnan(obs)));
-		REQUIRE_FALSE(xt::any(xt::isinf(obs)));
+		REQUIRE_FALSE(xt::any(xt::isnan(obs.features)));
+		REQUIRE_FALSE(xt::any(xt::isinf(obs.features)));
 	}
 
 	SECTION("Observation has correct values") {
 		auto const& obs = optional_obs.value();
-		auto col = [&obs](auto feature) { return xt::col(obs, static_cast<std::ptrdiff_t>(feature)); };
+		auto col = [&obs](auto feat) { return xt::col(obs.features, static_cast<std::ptrdiff_t>(feat)); };
 
 		SECTION("Objective function coefficients") {
 			REQUIRE(xt::all(col(Features::obj_coef_pos_part) >= 0));

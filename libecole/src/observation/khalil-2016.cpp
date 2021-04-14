@@ -25,8 +25,8 @@ namespace {
 
 namespace views = ranges::views;
 
-using Features = Khalil2016::Features;
-using value_type = Khalil2016Obs::value_type;
+using Features = Khalil2016Obs::Features;
+using value_type = decltype(Khalil2016Obs::features)::value_type;
 
 /*************************
  *  Algorithm functions  *
@@ -231,7 +231,7 @@ template <typename Tensor> void set_static_features(Tensor&& out, scip::Col* con
  */
 auto extract_static_features(scip::Model& model) {
 	auto const columns = model.lp_columns();
-	xt::xtensor<value_type, 2> static_features{{columns.size(), Khalil2016::n_static_features}, 0.};
+	xt::xtensor<value_type, 2> static_features{{columns.size(), Khalil2016Obs::n_static_features}, 0.};
 
 	auto const n_columns = columns.size();
 	for (std::size_t i = 0; i < n_columns; ++i) {
@@ -638,7 +638,7 @@ void set_precomputed_static_features(
 
 	auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
 	using namespace xt::placeholders;
-	xt::view(out, xt::range(_, Khalil2016::n_static_features)) = xt::row(static_features, col_idx);
+	xt::view(out, xt::range(_, Khalil2016Obs::n_static_features)) = xt::row(static_features, col_idx);
 }
 
 /******************************
@@ -647,7 +647,7 @@ void set_precomputed_static_features(
 
 auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& static_features) {
 	xt::xtensor<value_type, 2> observation{
-		{model.pseudo_branch_cands().size(), Khalil2016::n_features},
+		{model.pseudo_branch_cands().size(), Khalil2016Obs::n_features},
 		std::nan(""),
 	};
 
@@ -686,7 +686,7 @@ auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<K
 		if (is_on_root_node(model)) {
 			static_features = extract_static_features(model);
 		}
-		return {extract_all_features(model, static_features)};
+		return {{extract_all_features(model, static_features)}};
 	}
 	return {};
 }

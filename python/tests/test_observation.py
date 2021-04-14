@@ -143,4 +143,7 @@ def test_Pseudocosts_observation(model):
 def test_Khalil2016_observatio(model):
     """Observation of Khalil2016 is a numpy matrix."""
     obs = make_obs(ecole.observation.Khalil2016(), model)
-    assert_array(obs, ndim=2)
+    assert_array(obs.features, ndim=2)
+
+    # Check that there are enums describing feeatures
+    assert len(obs.Features.__members__) == obs.features.shape[1]
