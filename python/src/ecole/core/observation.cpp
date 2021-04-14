@@ -258,22 +258,112 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
 
 	// Khalil observation
-	auto khalil_2016 = py::class_<Khalil2016>(m, "Khalil2016", R"(
+	auto khalil2016_obs =
+		auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
 		Branching candidates features from Khalil et al. (2016).
 
-		The observation is a matrix where rows represent pseudo branching cnadidates and columns
+		The observation is a matrix where rows represent pseudo branching candidates and columns
 		represent features related to these variables.
-		See [Khalil2016]_ for a complete reference on this objservation function.
+		See [Khalil2016]_ for a complete reference on this observation function.
+
+		The first :py:attribute:`Khalil2016Obs.n_static_features` are static (they do not change through the solving
+		process), and the remaining :py:attribute:`Khalil2016Obs.n_dynamic_features` dynamic.
 
 		.. [Khalil2016]
 			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
 			"`Learning to branch in mixed integer programming.
 			<https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf>`_"
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
+	)")
+			.def_auto_copy()
+			.def_auto_pickle(std::array{"features"})
+			.def_readwrite_xtensor(
+				"features",
+				&Khalil2016Obs::features,
+				"A matrix where each row represents a variable, and each column a feature of the variables.");
+
+	py::enum_<Khalil2016Obs::Features>(khalil2016_obs, "Features")
+		.value("obj_coef", Khalil2016Obs::Features::obj_coef)
+		.value("obj_coef_pos_part", Khalil2016Obs::Features::obj_coef_pos_part)
+		.value("obj_coef_neg_part", Khalil2016Obs::Features::obj_coef_neg_part)
+		.value("n_rows", Khalil2016Obs::Features::n_rows)
+		.value("rows_deg_mean", Khalil2016Obs::Features::rows_deg_mean)
+		.value("rows_deg_stddev", Khalil2016Obs::Features::rows_deg_stddev)
+		.value("rows_deg_min", Khalil2016Obs::Features::rows_deg_min)
+		.value("rows_deg_max", Khalil2016Obs::Features::rows_deg_max)
+		.value("rows_pos_coefs_count", Khalil2016Obs::Features::rows_pos_coefs_count)
+		.value("rows_pos_coefs_mean", Khalil2016Obs::Features::rows_pos_coefs_mean)
+		.value("rows_pos_coefs_stddev", Khalil2016Obs::Features::rows_pos_coefs_stddev)
+		.value("rows_pos_coefs_min", Khalil2016Obs::Features::rows_pos_coefs_min)
+		.value("rows_pos_coefs_max", Khalil2016Obs::Features::rows_pos_coefs_max)
+		.value("rows_neg_coefs_count", Khalil2016Obs::Features::rows_neg_coefs_count)
+		.value("rows_neg_coefs_mean", Khalil2016Obs::Features::rows_neg_coefs_mean)
+		.value("rows_neg_coefs_stddev", Khalil2016Obs::Features::rows_neg_coefs_stddev)
+		.value("rows_neg_coefs_min", Khalil2016Obs::Features::rows_neg_coefs_min)
+		.value("rows_neg_coefs_max", Khalil2016Obs::Features::rows_neg_coefs_max)
+		.value("slack", Khalil2016Obs::Features::slack)
+		.value("ceil_dist", Khalil2016Obs::Features::ceil_dist)
+		.value("pseudocost_up", Khalil2016Obs::Features::pseudocost_up)
+		.value("pseudocost_down", Khalil2016Obs::Features::pseudocost_down)
+		.value("pseudocost_ratio", Khalil2016Obs::Features::pseudocost_ratio)
+		.value("pseudocost_sum", Khalil2016Obs::Features::pseudocost_sum)
+		.value("pseudocost_product", Khalil2016Obs::Features::pseudocost_product)
+		.value("n_cutoff_up", Khalil2016Obs::Features::n_cutoff_up)
+		.value("n_cutoff_down", Khalil2016Obs::Features::n_cutoff_down)
+		.value("n_cutoff_up_ratio", Khalil2016Obs::Features::n_cutoff_up_ratio)
+		.value("n_cutoff_down_ratio", Khalil2016Obs::Features::n_cutoff_down_ratio)
+		.value("rows_dynamic_deg_mean", Khalil2016Obs::Features::rows_dynamic_deg_mean)
+		.value("rows_dynamic_deg_stddev", Khalil2016Obs::Features::rows_dynamic_deg_stddev)
+		.value("rows_dynamic_deg_min", Khalil2016Obs::Features::rows_dynamic_deg_min)
+		.value("rows_dynamic_deg_max", Khalil2016Obs::Features::rows_dynamic_deg_max)
+		.value("rows_dynamic_deg_mean_ratio", Khalil2016Obs::Features::rows_dynamic_deg_mean_ratio)
+		.value("rows_dynamic_deg_min_ratio", Khalil2016Obs::Features::rows_dynamic_deg_min_ratio)
+		.value("rows_dynamic_deg_max_ratio", Khalil2016Obs::Features::rows_dynamic_deg_max_ratio)
+		.value("coef_pos_rhs_ratio_min", Khalil2016Obs::Features::coef_pos_rhs_ratio_min)
+		.value("coef_pos_rhs_ratio_max", Khalil2016Obs::Features::coef_pos_rhs_ratio_max)
+		.value("coef_neg_rhs_ratio_min", Khalil2016Obs::Features::coef_neg_rhs_ratio_min)
+		.value("coef_neg_rhs_ratio_max", Khalil2016Obs::Features::coef_neg_rhs_ratio_max)
+		.value("pos_coef_pos_coef_ratio_min", Khalil2016Obs::Features::pos_coef_pos_coef_ratio_min)
+		.value("pos_coef_pos_coef_ratio_max", Khalil2016Obs::Features::pos_coef_pos_coef_ratio_max)
+		.value("pos_coef_neg_coef_ratio_min", Khalil2016Obs::Features::pos_coef_neg_coef_ratio_min)
+		.value("pos_coef_neg_coef_ratio_max", Khalil2016Obs::Features::pos_coef_neg_coef_ratio_max)
+		.value("neg_coef_pos_coef_ratio_min", Khalil2016Obs::Features::neg_coef_pos_coef_ratio_min)
+		.value("neg_coef_pos_coef_ratio_max", Khalil2016Obs::Features::neg_coef_pos_coef_ratio_max)
+		.value("neg_coef_neg_coef_ratio_min", Khalil2016Obs::Features::neg_coef_neg_coef_ratio_min)
+		.value("neg_coef_neg_coef_ratio_max", Khalil2016Obs::Features::neg_coef_neg_coef_ratio_max)
+		.value("active_coef_weight1_count", Khalil2016Obs::Features::active_coef_weight1_count)
+		.value("active_coef_weight1_sum", Khalil2016Obs::Features::active_coef_weight1_sum)
+		.value("active_coef_weight1_mean", Khalil2016Obs::Features::active_coef_weight1_mean)
+		.value("active_coef_weight1_stddev", Khalil2016Obs::Features::active_coef_weight1_stddev)
+		.value("active_coef_weight1_min", Khalil2016Obs::Features::active_coef_weight1_min)
+		.value("active_coef_weight1_max", Khalil2016Obs::Features::active_coef_weight1_max)
+		.value("active_coef_weight2_count", Khalil2016Obs::Features::active_coef_weight2_count)
+		.value("active_coef_weight2_sum", Khalil2016Obs::Features::active_coef_weight2_sum)
+		.value("active_coef_weight2_mean", Khalil2016Obs::Features::active_coef_weight2_mean)
+		.value("active_coef_weight2_stddev", Khalil2016Obs::Features::active_coef_weight2_stddev)
+		.value("active_coef_weight2_min", Khalil2016Obs::Features::active_coef_weight2_min)
+		.value("active_coef_weight2_max", Khalil2016Obs::Features::active_coef_weight2_max)
+		.value("active_coef_weight3_count", Khalil2016Obs::Features::active_coef_weight3_count)
+		.value("active_coef_weight3_sum", Khalil2016Obs::Features::active_coef_weight3_sum)
+		.value("active_coef_weight3_mean", Khalil2016Obs::Features::active_coef_weight3_mean)
+		.value("active_coef_weight3_stddev", Khalil2016Obs::Features::active_coef_weight3_stddev)
+		.value("active_coef_weight3_min", Khalil2016Obs::Features::active_coef_weight3_min)
+		.value("active_coef_weight3_max", Khalil2016Obs::Features::active_coef_weight3_max)
+		.value("active_coef_weight4_count", Khalil2016Obs::Features::active_coef_weight4_count)
+		.value("active_coef_weight4_sum", Khalil2016Obs::Features::active_coef_weight4_sum)
+		.value("active_coef_weight4_mean", Khalil2016Obs::Features::active_coef_weight4_mean)
+		.value("active_coef_weight4_stddev", Khalil2016Obs::Features::active_coef_weight4_stddev)
+		.value("active_coef_weight4_min", Khalil2016Obs::Features::active_coef_weight4_min)
+		.value("active_coef_weight4_max", Khalil2016Obs::Features::active_coef_weight4_max);
+
+	auto khalil2016 = py::class_<Khalil2016>(m, "Khalil2016", R"(
+		Branching candidates features from Khalil et al. (2016).
+
+		This observation function extract structured :py:class:`Khalil2016Obs`.
 	)");
-	khalil_2016.def(py::init<>());
-	def_before_reset(khalil_2016, R"(Precompute static features for all varaible columns.)");
-	def_extract(khalil_2016, "Extract the observation matrix.");
+	khalil2016.def(py::init<>());
+	def_before_reset(khalil2016, R"(Reset static features cache.)");
+	def_extract(khalil2016, "Extract the observation matrix.");
 }
 
 }  // namespace ecole::observation

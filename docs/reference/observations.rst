@@ -37,3 +37,4 @@ Pseudocosts
 Khalil et al. 2016
 ^^^^^^^^^^^^^^^^^^
 .. autoclass:: ecole.observation.Khalil2016
+.. autoclass:: ecole.observation.Khalil2016Obs

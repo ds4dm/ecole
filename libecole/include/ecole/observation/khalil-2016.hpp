@@ -9,10 +9,7 @@
 
 namespace ecole::observation {
 
-using Khalil2016Obs = xt::xtensor<double, 2>;
-
-class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
-public:
+struct Khalil2016Obs {
 	static inline std::size_t constexpr n_static_features = 18;
 	static inline std::size_t constexpr n_dynamic_features = 54;
 	static inline std::size_t constexpr n_features = n_static_features + n_dynamic_features;
@@ -106,12 +103,17 @@ public:
 		active_coef_weight4_max,
 	};
 
+	xt::xtensor<double, 2> features;
+};
+
+class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
+public:
 	void before_reset(scip::Model& model) override;
 
 	std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
 
 private:
-	xt::xtensor<Khalil2016Obs::value_type, 2> static_features;
+	xt::xtensor<double, 2> static_features;
 };
 
 }  // namespace ecole::observation
