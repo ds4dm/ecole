@@ -112,10 +112,10 @@ template <> void Model::set_param<ParamType::Bool>(std::string const& name, bool
 template <> void Model::set_param<ParamType::Int>(std::string const& name, int value) {
 	scip::call(SCIPsetIntParam, get_scip_ptr(), name.c_str(), value);
 }
-template <> void Model::set_param<ParamType::LongInt>(std::string const& name, long_int value) {
+template <> void Model::set_param<ParamType::LongInt>(std::string const& name, SCIP_Longint value) {
 	scip::call(SCIPsetLongintParam, get_scip_ptr(), name.c_str(), value);
 }
-template <> void Model::set_param<ParamType::Real>(std::string const& name, real value) {
+template <> void Model::set_param<ParamType::Real>(std::string const& name, SCIP_Real value) {
 	scip::call(SCIPsetRealParam, get_scip_ptr(), name.c_str(), value);
 }
 template <> void Model::set_param<ParamType::Char>(std::string const& name, char value) {
@@ -135,12 +135,12 @@ template <> int Model::get_param<ParamType::Int>(std::string const& name) const 
 	scip::call(SCIPgetIntParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
-template <> long_int Model::get_param<ParamType::LongInt>(std::string const& name) const {
+template <> SCIP_Longint Model::get_param<ParamType::LongInt>(std::string const& name) const {
 	SCIP_Longint value{};
 	scip::call(SCIPgetLongintParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;
 }
-template <> real Model::get_param<ParamType::Real>(std::string const& name) const {
+template <> SCIP_Real Model::get_param<ParamType::Real>(std::string const& name) const {
 	SCIP_Real value{};
 	scip::call(SCIPgetRealParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &value);
 	return value;

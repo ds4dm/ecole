@@ -9,7 +9,7 @@ void NNodes::before_reset(scip::Model& /* model */) {
 }
 
 Reward NNodes::extract(scip::Model& model, bool /* done */) {
-	auto n_nodes_diff = SCIPgetNTotalNodes(model.get_scip_ptr()) - last_n_nodes;
+	auto n_nodes_diff = static_cast<std::uint64_t>(SCIPgetNTotalNodes(model.get_scip_ptr())) - last_n_nodes;
 	last_n_nodes += n_nodes_diff;
 	return static_cast<double>(n_nodes_diff);
 }

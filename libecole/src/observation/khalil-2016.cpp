@@ -17,7 +17,6 @@
 #include "ecole/scip/col.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/row.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
 
@@ -183,9 +182,7 @@ void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Row
  * (count, mean, stdev., min, max).
  */
 template <typename Tensor>
-void set_stats_for_constraint_positive_coefficients(
-	Tensor&& out,
-	nonstd::span<scip::real> const coefficients) noexcept {
+void set_stats_for_constraint_positive_coefficients(Tensor&& out, nonstd::span<SCIP_Real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
 	out[idx(Features::rows_pos_coefs_count)] = stats.count;
 	out[idx(Features::rows_pos_coefs_mean)] = stats.mean;
@@ -201,9 +198,7 @@ void set_stats_for_constraint_positive_coefficients(
  * (count, mean, stdev., min, max).
  */
 template <typename Tensor>
-void set_stats_for_constraint_negative_coefficients(
-	Tensor&& out,
-	nonstd::span<scip::real> const coefficients) noexcept {
+void set_stats_for_constraint_negative_coefficients(Tensor&& out, nonstd::span<SCIP_Real> const coefficients) noexcept {
 	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
 	out[idx(Features::rows_neg_coefs_count)] = stats.count;
 	out[idx(Features::rows_neg_coefs_mean)] = stats.mean;
@@ -343,7 +338,7 @@ void set_min_max_for_ratios_constraint_coeffs_rhs(
 	Tensor&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
-	nonstd::span<scip::real> const coefficients) noexcept {
+	nonstd::span<SCIP_Real> const coefficients) noexcept {
 
 	value_type positive_rhs_ratio_max = -1.;
 	value_type positive_rhs_ratio_min = 1.;
@@ -389,7 +384,7 @@ template <typename Tensor>
 void set_min_max_for_one_to_all_coefficient_ratios(
 	Tensor&& out,
 	nonstd::span<scip::Row*> const rows,
-	nonstd::span<scip::real> const coefficients) noexcept {
+	nonstd::span<SCIP_Real> const coefficients) noexcept {
 
 	value_type positive_positive_ratio_max = 0;
 	value_type positive_positive_ratio_min = 1;
@@ -515,7 +510,7 @@ void set_stats_for_active_constraint_coefficients(
 	Tensor&& out,
 	Scip* const scip,
 	nonstd::span<scip::Row*> const rows,
-	nonstd::span<scip::real> const coefficients,
+	nonstd::span<SCIP_Real> const coefficients,
 	xt::xtensor<value_type, 2> const& active_rows_weights) noexcept {
 
 	auto weights_stats = std::array<StatsFeatures, 4>{};

@@ -1,7 +1,8 @@
 #pragma once
 
+#include <cstdint>
+
 #include "ecole/reward/abstract.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::reward {
 
@@ -11,7 +12,7 @@ public:
 	Reward extract(scip::Model& model, bool done = false) override;
 
 private:
-	scip::long_int last_lp_iter = 0;
+	std::uint64_t last_lp_iter = 0;
 };
 
 }  // namespace ecole::reward

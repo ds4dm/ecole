@@ -85,7 +85,7 @@ auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_sample
  *
  * Adds a single binary variable with a specified cost.
  */
-auto add_var(SCIP* scip, size_t idx, scip::real cost) -> SCIP_VAR* {
+auto add_var(SCIP* scip, size_t idx, SCIP_Real cost) -> SCIP_VAR* {
 	auto const name = fmt::format("x_{}", idx);
 	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., cost, SCIP_VARTYPE_BINARY);
 	auto* var_ptr = unique_var.get();
@@ -98,7 +98,7 @@ auto add_var(SCIP* scip, size_t idx, scip::real cost) -> SCIP_VAR* {
  * A variable is added for each element (or column) in the
  * set cover problem.
  */
-auto add_vars(SCIP* scip, xt::xtensor<scip::real, 1> const& c) -> xt::xtensor<SCIP_VAR*, 1> {
+auto add_vars(SCIP* scip, xt::xtensor<SCIP_Real, 1> const& c) -> xt::xtensor<SCIP_VAR*, 1> {
 	auto vars = xt::xtensor<SCIP_VAR*, 1>{{c.shape()}};
 	for (size_t i = 0; i < c.size(); ++i) {
 		vars(i) = add_var(scip, i, c(i));
@@ -123,7 +123,7 @@ auto add_constaints(SCIP* scip, xt::xtensor<SCIP_VAR*, 1> vars, xvector& indices
 		// add constraint to SCIP Model.
 		auto name = fmt::format("c_{}", i);
 		auto const inf = SCIPinfinity(scip);
-		auto coefs = xt::xtensor<scip::real, 1>(cons_vars.shape(), 1.);
+		auto coefs = xt::xtensor<SCIP_Real, 1>(cons_vars.shape(), 1.);
 		auto cons =
 			scip::create_cons_basic_linear(scip, name.c_str(), cons_vars.size(), &cons_vars(0), coefs.data(), 1.0, inf);
 		scip::call(SCIPaddCons, scip, cons.get());
@@ -222,7 +222,7 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEn
 	auto [indptr_csr, indices_csr] = convert_csc_to_csr(indices, indptr, n_rows, n_cols);
 
 	// sample coefficients
-	xt::xtensor<scip::real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, random_engine);
+	xt::xtensor<SCIP_Real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, random_engine);
 
 	// create scip model
 	auto model = scip::Model::prob_basic();

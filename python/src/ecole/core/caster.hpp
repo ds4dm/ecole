@@ -58,7 +58,7 @@ public:
 	 */
 	bool load(handle src, bool /*implicit_conversion*/) {
 		using namespace ecole;
-		using ParamHelper = std::variant<bool, scip::long_int, scip::real, std::string>;
+		using ParamHelper = std::variant<bool, SCIP_Longint, SCIP_Real, std::string>;
 
 		try {
 			value =

@@ -11,7 +11,6 @@
 #include "ecole/observation/nodebipartite.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/row.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
 
@@ -30,7 +29,7 @@ using RowFeatures = NodeBipartiteObs::RowFeatures;
 value_type constexpr cste = 5.;
 value_type constexpr nan = std::numeric_limits<value_type>::quiet_NaN();
 
-scip::real obj_l2_norm(Scip* const scip) noexcept {
+SCIP_Real obj_l2_norm(Scip* const scip) noexcept {
 	auto const norm = SCIPgetObjNorm(scip);
 	return norm > 0 ? norm : 1.;
 }
@@ -39,7 +38,7 @@ scip::real obj_l2_norm(Scip* const scip) noexcept {
  *  Column features extraction functions  *
  ******************************************/
 
-std::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) noexcept {
+std::optional<SCIP_Real> upper_bound(SCIP* const scip, SCIP_COL* const col) noexcept {
 	auto const ub_val = SCIPcolGetUb(col);
 	if (SCIPisInfinity(scip, std::abs(ub_val))) {
 		return {};
@@ -47,7 +46,7 @@ std::optional<scip::real> upper_bound(Scip* const scip, scip::Col* const col) no
 	return ub_val;
 }
 
-std::optional<scip::real> lower_bound(Scip* const scip, scip::Col* const col) noexcept {
+std::optional<SCIP_Real> lower_bound(SCIP* const scip, SCIP_COL* const col) noexcept {
 	auto const lb_val = SCIPcolGetLb(col);
 	if (SCIPisInfinity(scip, std::abs(lb_val))) {
 		return {};
@@ -71,7 +70,7 @@ bool is_prim_sol_at_ub(Scip* const scip, scip::Col* const col) noexcept {
 	return false;
 }
 
-std::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<SCIP_Real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
 	auto* const sol = SCIPgetBestSol(scip);
 	if (sol != nullptr) {
 		return SCIPgetSolVal(scip, sol, var);
@@ -79,14 +78,14 @@ std::optional<scip::real> best_sol_val(Scip* const scip, scip::Var* const var) n
 	return {};
 }
 
-std::optional<scip::real> avg_sol(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<SCIP_Real> avg_sol(Scip* const scip, scip::Var* const var) noexcept {
 	if (SCIPgetBestSol(scip) != nullptr) {
 		return SCIPvarGetAvgSol(var);
 	}
 	return {};
 }
 
-std::optional<scip::real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
+std::optional<SCIP_Real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
 	if (SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS) {
 		return {};
 	}
@@ -189,12 +188,12 @@ void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const upda
  *  Row features extraction functions  *
  ***************************************/
 
-scip::real row_l2_norm(scip::Row* const row) noexcept {
+SCIP_Real row_l2_norm(scip::Row* const row) noexcept {
 	auto const norm = SCIProwGetNorm(row);
 	return norm > 0 ? norm : 1.;
 }
 
-scip::real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
+SCIP_Real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
 	auto const norm_prod = SCIProwGetNorm(row) * SCIPgetObjNorm(scip);
 	if (SCIPisPositive(scip, norm_prod)) {
 		return row->objprod / norm_prod;

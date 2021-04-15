@@ -197,9 +197,9 @@ template <typename T> void Model::set_param(std::string const& name, T value) {
 	case ParamType::Int:
 		return set_param<ParamType::Int>(name, cast<int>(value));
 	case ParamType::LongInt:
-		return set_param<ParamType::LongInt>(name, cast<long_int>(value));
+		return set_param<ParamType::LongInt>(name, cast<SCIP_Longint>(value));
 	case ParamType::Real:
-		return set_param<ParamType::Real>(name, cast<real>(value));
+		return set_param<ParamType::Real>(name, cast<SCIP_Real>(value));
 	case ParamType::Char:
 		return set_param<ParamType::Char>(name, cast<char>(value));
 	case ParamType::String:

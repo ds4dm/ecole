@@ -47,7 +47,7 @@ void CapacitatedFacilityLocationGenerator::seed(Seed seed) {
 
 namespace {
 
-using value_type = scip::real;
+using value_type = SCIP_Real;
 using xvector = xt::xtensor<value_type, 1>;
 using xmatrix = xt::xtensor<value_type, 2>;
 
@@ -78,7 +78,7 @@ auto unit_transportation_costs(std::size_t n_customers, std::size_t n_facilities
  * by the scip*. Their lifetime should not exceed that of the scip* (although that was already implied when creating
  * them).
  */
-auto add_facility_var(SCIP* scip, std::size_t idx, scip::real cost) -> SCIP_VAR* {
+auto add_facility_var(SCIP* scip, std::size_t idx, SCIP_Real cost) -> SCIP_VAR* {
 	auto const name = fmt::format("f_{}", idx);
 	auto unique_var = scip::create_var_basic(scip, name.c_str(), 0., 1., cost, SCIP_VARTYPE_BINARY);
 	auto* var_ptr = unique_var.get();
@@ -105,7 +105,7 @@ auto add_facility_vars(SCIP* scip, xvector const& fixed_costs) {
  * by the scip*. Their lifetime should not exceed that of the scip* (although that was already implied when creating
  * them).
  */
-auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_idx, scip::real cost, bool continuous)
+auto add_serving_var(SCIP* scip, std::size_t customer_idx, std::size_t facility_idx, SCIP_Real cost, bool continuous)
 	-> SCIP_VAR* {
 	auto const name = fmt::format("s_{}_{}", customer_idx, facility_idx);
 	auto unique_var = scip::create_var_basic(
@@ -210,7 +210,7 @@ auto add_tightening_cons(
 		for (std::size_t facility_idx = 0; facility_idx < n_facilities; ++facility_idx) {
 			auto const name = fmt::format("t_{}_{}", customer_idx, facility_idx);
 			auto const vars = std::array{serving_vars(customer_idx, facility_idx), facility_vars[facility_idx]};
-			auto constexpr coefs = std::array<scip::real, 2>{1., -1};
+			auto constexpr coefs = std::array<SCIP_Real, 2>{1., -1};
 			auto cons = scip::create_cons_basic_linear(scip, name.c_str(), vars.size(), vars.data(), coefs.data(), -inf, 0.);
 			scip::call(SCIPaddCons, scip, cons.get());
 		}

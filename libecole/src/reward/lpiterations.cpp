@@ -3,18 +3,22 @@
 
 namespace ecole::reward {
 
-static auto n_lp_iterations(scip::Model& model) {
+namespace {
+
+auto n_lp_iterations(scip::Model& model) -> std::uint64_t {
 	switch (model.get_stage()) {
 	// Only stages when the following call is authorized
 	case SCIP_STAGE_PRESOLVING:
 	case SCIP_STAGE_PRESOLVED:
 	case SCIP_STAGE_SOLVING:
 	case SCIP_STAGE_SOLVED:
-		return SCIPgetNLPIterations(model.get_scip_ptr());
+		return static_cast<std::uint64_t>(SCIPgetNLPIterations(model.get_scip_ptr()));
 	default:
-		return decltype(SCIPgetNLPIterations(nullptr)){0};
+		return 0;
 	}
 }
+
+}  // namespace
 
 void LpIterations::before_reset(scip::Model& /*unused*/) {
 	last_lp_iter = 0;
