@@ -17,7 +17,7 @@ namespace views = ranges::views;
 namespace {
 
 /** get vanilla full strong branching scores and variables */
-auto scip_get_vanillafullstrong_data(Scip* const scip) noexcept {
+auto scip_get_vanillafullstrong_data(SCIP* const scip) noexcept {
 	SCIP_VAR** cands = nullptr;
 	SCIP_Real* cands_scores = nullptr;
 	int n_cands = 0;

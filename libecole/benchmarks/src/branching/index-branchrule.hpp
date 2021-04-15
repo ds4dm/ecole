@@ -14,7 +14,7 @@ class IndexBranchruleFunc {
 public:
 	IndexBranchruleFunc(std::size_t branching_index) noexcept : m_branching_index(branching_index) {}
 
-	auto operator()(Scip* scip) const noexcept {
+	auto operator()(SCIP* scip) const noexcept {
 		SCIP_VAR** branch_cands = nullptr;
 		int n_cands [[maybe_unused]] = 0;
 		auto retcode
