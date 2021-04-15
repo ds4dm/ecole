@@ -13,7 +13,6 @@
 #include "ecole/observation/milpbipartite.hpp"
 #include "ecole/scip/cons.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
 
@@ -36,8 +35,8 @@ using ConstraintFeatures = MilpBipartiteObs::ConstraintFeatures;
 
 /* Computes the L2 norm of the objective.
 	 This is done by hand because SCIPgetObjNorm is not available for all stages (need >= SCIP_STAGE_TRANSFORMED) */
-scip::real obj_l2_norm(Scip* const scip, scip::Model& model) noexcept {
-	scip::real norm = 0.;
+SCIP_Real obj_l2_norm(Scip* const scip, scip::Model& model) noexcept {
+	SCIP_Real norm = 0.;
 
 	if (SCIPgetStage(scip) >= SCIP_STAGE_TRANSFORMED) {
 		norm = SCIPgetObjNorm(scip);
@@ -128,7 +127,7 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
  *  Constraint extraction functions     *
  ****************************************/
 
-scip::real cons_l2_norm(std::vector<scip::real> const& constraint_coefs) {
+SCIP_Real cons_l2_norm(std::vector<SCIP_Real> const& constraint_coefs) {
 	auto xt_constraint_coefs = xt::adapt(constraint_coefs, {constraint_coefs.size()});
 
 	auto const norm = xt::norm_l2(xt_constraint_coefs)();
@@ -139,11 +138,11 @@ scip::real cons_l2_norm(std::vector<scip::real> const& constraint_coefs) {
  * Obtains the variables involved in a linear constraint and their coefficients in the constraint
  */
 auto get_constraint_linear_coefs(Scip* const scip, scip::Cons* const constraint) -> std::optional<
-	std::tuple<std::vector<scip::Var*>, std::vector<scip::real>, std::optional<scip::real>, std::optional<scip::real>>> {
+	std::tuple<std::vector<scip::Var*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>>> {
 	SCIP_Bool success = false;
 	int n_constraint_variables;
 	int n_active_variables;
-	scip::real constant_offset = 0;
+	SCIP_Real constant_offset = 0;
 	int requiredsize = 0;
 
 	// Find how many active variables and constraint variables there are (for allocation)
@@ -156,7 +155,7 @@ auto get_constraint_linear_coefs(Scip* const scip, scip::Cons* const constraint)
 	// Allocate buffers large enough to hold future variables and coefficients
 	auto const buffer_size = static_cast<std::size_t>(std::max(n_constraint_variables, n_active_variables));
 	auto variables = std::vector<scip::Var*>(buffer_size);
-	auto coefficients = std::vector<scip::real>(buffer_size);
+	auto coefficients = std::vector<SCIP_Real>(buffer_size);
 
 	// Get the variables and their coefficients in the constraint
 	scip::call(SCIPgetConsVars, scip, constraint, variables.data(), static_cast<int>(buffer_size), &success);
@@ -187,14 +186,14 @@ auto get_constraint_linear_coefs(Scip* const scip, scip::Cons* const constraint)
 	coefficients.resize(static_cast<std::size_t>(n_constraint_variables));
 
 	// Obtain the left hand side
-	std::optional<scip::real> lhs;
-	scip::real lhs_value = SCIPconsGetLhs(scip, constraint, &success);
+	std::optional<SCIP_Real> lhs;
+	SCIP_Real lhs_value = SCIPconsGetLhs(scip, constraint, &success);
 	if (success && !SCIPisInfinity(scip, std::abs(lhs_value))) {
 		lhs = lhs_value - constant_offset;
 	}
 
-	std::optional<scip::real> rhs;
-	scip::real rhs_value = SCIPconsGetRhs(scip, constraint, &success);
+	std::optional<SCIP_Real> rhs;
+	SCIP_Real rhs_value = SCIPconsGetRhs(scip, constraint, &success);
 	if (success && !SCIPisInfinity(scip, std::abs(rhs_value))) {
 		rhs = rhs_value - constant_offset;
 	}
@@ -202,8 +201,8 @@ auto get_constraint_linear_coefs(Scip* const scip, scip::Cons* const constraint)
 	return std::optional{std::tuple{variables, coefficients, lhs, rhs}};
 }
 
-auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint) -> std::
-	tuple<std::vector<scip::Var*>, std::vector<scip::real>, std::optional<scip::real>, std::optional<scip::real>> {
+auto get_constraint_coefs(Scip* const scip, scip::Cons* const constraint)
+	-> std::tuple<std::vector<scip::Var*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>> {
 	auto constraint_data = get_constraint_linear_coefs(scip, constraint);
 	if (constraint_data.has_value()) {  // Constraint must be linear
 		return constraint_data.value();
@@ -231,7 +230,7 @@ auto extract_constraints(scip::Model& model, bool normalize) -> std::tuple<utili
 	for (std::size_t cons_idx = 0; cons_idx < std::size(constraints); ++cons_idx) {
 		auto* const constraint = constraints[cons_idx];
 		auto [constraint_vars, constraint_coefs, lhs, rhs] = get_constraint_coefs(scip, constraint);
-		scip::real const constraint_norm = normalize ? cons_l2_norm(constraint_coefs) : 1.;
+		SCIP_Real const constraint_norm = normalize ? cons_l2_norm(constraint_coefs) : 1.;
 
 		// Inequality has a left hand side?
 		if (lhs.has_value()) {

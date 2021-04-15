@@ -9,7 +9,6 @@
 
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::observation {
 

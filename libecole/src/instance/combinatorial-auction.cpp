@@ -376,7 +376,7 @@ auto add_constraints(SCIP* scip, xvector<SCIP_VAR*> vars, std::vector<Bundle> co
 	for (auto item_bids : bids_per_item) {
 		if (!item_bids.empty()) {
 			auto cons_vars = xvector<SCIP_VAR*>{{item_bids.size()}};
-			auto coefs = xvector<scip::real>(cons_vars.shape(), 1.);
+			auto coefs = xvector<SCIP_Real>(cons_vars.shape(), 1.);
 			for (std::size_t j = 0; j < item_bids.size(); ++j) {
 				cons_vars(j) = vars(item_bids[j]);
 			}

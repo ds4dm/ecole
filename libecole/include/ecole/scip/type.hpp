@@ -7,9 +7,6 @@
 
 namespace ecole::scip {
 
-using long_int = SCIP_Longint;
-using real = SCIP_Real;
-
 /**
  * Types of parameters supported by SCIP.
  *
@@ -22,8 +19,8 @@ namespace internal {
 template <ParamType> struct ParamType_get;
 template <> struct ParamType_get<ParamType::Bool> { using type = bool; };
 template <> struct ParamType_get<ParamType::Int> { using type = int; };
-template <> struct ParamType_get<ParamType::LongInt> { using type = long_int; };
-template <> struct ParamType_get<ParamType::Real> { using type = real; };
+template <> struct ParamType_get<ParamType::LongInt> { using type = SCIP_Longint; };
+template <> struct ParamType_get<ParamType::Real> { using type = SCIP_Real; };
 template <> struct ParamType_get<ParamType::Char> { using type = char; };
 template <> struct ParamType_get<ParamType::String> { using type = std::string; };
 }  // namespace internal
@@ -49,23 +46,6 @@ using Stage = SCIP_STAGE;
 using Var = SCIP_VAR;
 using Cons = SCIP_CONS;
 using Col = SCIP_COL;
-using Cons = SCIP_CONS;
 using Row = SCIP_ROW;
-
-/**
- * Class template to store the number of elements in Scip enums.
- *
- * Template is specialized for each Scip enum for which we need the number of element
- * (for instance for one-hot encoding categorical variables in observations).
- */
-template <typename Enum> struct enum_size;
-
-using base_stat = SCIP_BASESTAT;
-template <> struct enum_size<base_stat> { static constexpr std::size_t value = 4; };
-
-using var_type = SCIP_Vartype;
-template <> struct enum_size<var_type> { static constexpr std::size_t value = 4; };
-
-template <typename Enum> inline constexpr std::size_t enum_size_v = enum_size<Enum>::value;
 
 }  // namespace ecole::scip

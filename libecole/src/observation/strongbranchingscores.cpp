@@ -8,7 +8,6 @@
 
 #include "ecole/observation/strongbranchingscores.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::observation {
