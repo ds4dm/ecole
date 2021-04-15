@@ -29,7 +29,7 @@ using RowFeatures = NodeBipartiteObs::RowFeatures;
 value_type constexpr cste = 5.;
 value_type constexpr nan = std::numeric_limits<value_type>::quiet_NaN();
 
-SCIP_Real obj_l2_norm(Scip* const scip) noexcept {
+SCIP_Real obj_l2_norm(SCIP* const scip) noexcept {
 	auto const norm = SCIPgetObjNorm(scip);
 	return norm > 0 ? norm : 1.;
 }
@@ -54,7 +54,7 @@ std::optional<SCIP_Real> lower_bound(SCIP* const scip, SCIP_COL* const col) noex
 	return lb_val;
 }
 
-bool is_prim_sol_at_lb(Scip* const scip, scip::Col* const col) noexcept {
+bool is_prim_sol_at_lb(SCIP* const scip, SCIP_COL* const col) noexcept {
 	auto const lb_val = lower_bound(scip, col);
 	if (lb_val) {
 		return SCIPisEQ(scip, SCIPcolGetPrimsol(col), lb_val.value());
@@ -62,7 +62,7 @@ bool is_prim_sol_at_lb(Scip* const scip, scip::Col* const col) noexcept {
 	return false;
 }
 
-bool is_prim_sol_at_ub(Scip* const scip, scip::Col* const col) noexcept {
+bool is_prim_sol_at_ub(SCIP* const scip, SCIP_COL* const col) noexcept {
 	auto const ub_val = upper_bound(scip, col);
 	if (ub_val) {
 		return SCIPisEQ(scip, SCIPcolGetPrimsol(col), ub_val.value());
@@ -70,7 +70,7 @@ bool is_prim_sol_at_ub(Scip* const scip, scip::Col* const col) noexcept {
 	return false;
 }
 
-std::optional<SCIP_Real> best_sol_val(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<SCIP_Real> best_sol_val(SCIP* const scip, SCIP_VAR* const var) noexcept {
 	auto* const sol = SCIPgetBestSol(scip);
 	if (sol != nullptr) {
 		return SCIPgetSolVal(scip, sol, var);
@@ -78,14 +78,14 @@ std::optional<SCIP_Real> best_sol_val(Scip* const scip, scip::Var* const var) no
 	return {};
 }
 
-std::optional<SCIP_Real> avg_sol(Scip* const scip, scip::Var* const var) noexcept {
+std::optional<SCIP_Real> avg_sol(SCIP* const scip, SCIP_VAR* const var) noexcept {
 	if (SCIPgetBestSol(scip) != nullptr) {
 		return SCIPvarGetAvgSol(var);
 	}
 	return {};
 }
 
-std::optional<SCIP_Real> feas_frac(Scip* const scip, scip::Var* const var, scip::Col* const col) noexcept {
+std::optional<SCIP_Real> feas_frac(SCIP* const scip, SCIP_VAR* const var, SCIP_COL* const col) noexcept {
 	if (SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS) {
 		return {};
 	}
@@ -98,7 +98,7 @@ template <typename E> constexpr auto idx(E e) {
 }
 
 template <typename Features>
-void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col* const col, value_type obj_norm) {
+void set_static_features_for_col(Features&& out, SCIP_VAR* const var, SCIP_COL* const col, value_type obj_norm) {
 	out[idx(ColumnFeatures::objective)] = SCIPcolGetObj(col) / obj_norm;
 	// On-hot enconding of varaible type
 	out[idx(ColumnFeatures::is_type_binary)] = 0.;
@@ -126,9 +126,9 @@ void set_static_features_for_col(Features&& out, scip::Var* const var, scip::Col
 template <typename Features>
 void set_dynamic_features_for_col(
 	Features&& out,
-	Scip* const scip,
-	scip::Var* const var,
-	scip::Col* const col,
+	SCIP* const scip,
+	SCIP_VAR* const var,
+	SCIP_COL* const col,
 	value_type obj_norm,
 	value_type n_lps) {
 	out[idx(ColumnFeatures::has_lower_bound)] = static_cast<value_type>(lower_bound(scip, col).has_value());
@@ -188,12 +188,12 @@ void set_features_for_all_cols(xmatrix& out, scip::Model& model, bool const upda
  *  Row features extraction functions  *
  ***************************************/
 
-SCIP_Real row_l2_norm(scip::Row* const row) noexcept {
+SCIP_Real row_l2_norm(SCIP_ROW* const row) noexcept {
 	auto const norm = SCIProwGetNorm(row);
 	return norm > 0 ? norm : 1.;
 }
 
-SCIP_Real obj_cos_sim(Scip* const scip, scip::Row* const row) noexcept {
+SCIP_Real obj_cos_sim(SCIP* const scip, SCIP_ROW* const row) noexcept {
 	auto const norm_prod = SCIProwGetNorm(row) * SCIPgetObjNorm(scip);
 	if (SCIPisPositive(scip, norm_prod)) {
 		return row->objprod / norm_prod;
@@ -217,13 +217,13 @@ std::size_t n_ineq_rows(scip::Model& model) {
 }
 
 template <typename Features>
-void set_static_features_for_lhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+void set_static_features_for_lhs_row(Features&& out, SCIP* const scip, SCIP_ROW* const row, value_type row_norm) {
 	out[idx(RowFeatures::bias)] = -1. * scip::get_unshifted_lhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = -1 * obj_cos_sim(scip, row);
 }
 
 template <typename Features>
-void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row* const row, value_type row_norm) {
+void set_static_features_for_rhs_row(Features&& out, SCIP* const scip, SCIP_ROW* const row, value_type row_norm) {
 	out[idx(RowFeatures::bias)] = scip::get_unshifted_rhs(scip, row).value() / row_norm;
 	out[idx(RowFeatures::objective_cosine_similarity)] = obj_cos_sim(scip, row);
 }
@@ -231,8 +231,8 @@ void set_static_features_for_rhs_row(Features&& out, Scip* const scip, scip::Row
 template <typename Features>
 void set_dynamic_features_for_lhs_row(
 	Features&& out,
-	Scip* const scip,
-	scip::Row* const row,
+	SCIP* const scip,
+	SCIP_ROW* const row,
 	value_type row_norm,
 	value_type obj_norm,
 	value_type n_lps) {
@@ -244,8 +244,8 @@ void set_dynamic_features_for_lhs_row(
 template <typename Features>
 void set_dynamic_features_for_rhs_row(
 	Features&& out,
-	Scip* const scip,
-	scip::Row* const row,
+	SCIP* const scip,
+	SCIP_ROW* const row,
 	value_type row_norm,
 	value_type obj_norm,
 	value_type n_lps) {

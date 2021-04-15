@@ -85,7 +85,7 @@ public:
 	[[nodiscard]] std::string name() const noexcept;
 	void set_name(std::string const& name);
 
-	[[nodiscard]] Stage get_stage() const noexcept;
+	[[nodiscard]] SCIP_STAGE get_stage() const noexcept;
 
 	[[nodiscard]] ParamType get_param_type(std::string const& name) const;
 
@@ -123,16 +123,16 @@ public:
 	[[nodiscard]] bool is_solved() const noexcept;
 
 	void solve_iter();
-	void solve_iter_branch(Var* var);
+	void solve_iter_branch(SCIP_VAR* var);
 	void solve_iter_stop();
 	[[nodiscard]] bool solve_iter_is_done();
 
-	[[nodiscard]] nonstd::span<Var*> variables() const noexcept;
-	[[nodiscard]] nonstd::span<Var*> lp_branch_cands() const;
-	[[nodiscard]] nonstd::span<Var*> pseudo_branch_cands() const;
-	[[nodiscard]] nonstd::span<Col*> lp_columns() const;
-	[[nodiscard]] nonstd::span<Cons*> constraints() const noexcept;
-	[[nodiscard]] nonstd::span<Row*> lp_rows() const;
+	[[nodiscard]] nonstd::span<SCIP_VAR*> variables() const noexcept;
+	[[nodiscard]] nonstd::span<SCIP_VAR*> lp_branch_cands() const;
+	[[nodiscard]] nonstd::span<SCIP_VAR*> pseudo_branch_cands() const;
+	[[nodiscard]] nonstd::span<SCIP_COL*> lp_columns() const;
+	[[nodiscard]] nonstd::span<SCIP_CONS*> constraints() const noexcept;
+	[[nodiscard]] nonstd::span<SCIP_ROW*> lp_rows() const;
 	[[nodiscard]] std::size_t nnz() const noexcept;
 
 private:

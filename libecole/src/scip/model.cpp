@@ -77,7 +77,7 @@ void Model::set_name(std::string const& name) {
 	scip::call(SCIPsetProbName, get_scip_ptr(), name.c_str());
 }
 
-Stage Model::get_stage() const noexcept {
+SCIP_STAGE Model::get_stage() const noexcept {
 	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr()));
 }
 
@@ -201,7 +201,7 @@ void Model::solve_iter() {
 	scimpl->solve_iter();
 }
 
-void Model::solve_iter_branch(Var* var) {
+void Model::solve_iter_branch(SCIP_VAR* var) {
 	scimpl->solve_iter_branch(var);
 }
 
@@ -220,12 +220,12 @@ void Model::disable_cuts() {
 	scip::call(SCIPsetSeparating, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
 
-nonstd::span<Var*> Model::variables() const noexcept {
+nonstd::span<SCIP_VAR*> Model::variables() const noexcept {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	return {SCIPgetVars(scip_ptr), static_cast<std::size_t>(SCIPgetNVars(scip_ptr))};
 }
 
-nonstd::span<Var*> Model::lp_branch_cands() const {
+nonstd::span<SCIP_VAR*> Model::lp_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
 	scip::call(
@@ -233,14 +233,14 @@ nonstd::span<Var*> Model::lp_branch_cands() const {
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
-nonstd::span<Var*> Model::pseudo_branch_cands() const {
+nonstd::span<SCIP_VAR*> Model::pseudo_branch_cands() const {
 	int n_vars = 0;
 	SCIP_VAR** vars = nullptr;
 	scip::call(SCIPgetPseudoBranchCands, const_cast<SCIP*>(get_scip_ptr()), &vars, &n_vars, nullptr);
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
-nonstd::span<Col*> Model::lp_columns() const {
+nonstd::span<SCIP_COL*> Model::lp_columns() const {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP columns are only available during solving");
@@ -248,12 +248,12 @@ nonstd::span<Col*> Model::lp_columns() const {
 	return {SCIPgetLPCols(scip_ptr), static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr))};
 }
 
-nonstd::span<Cons*> Model::constraints() const noexcept {
+nonstd::span<SCIP_CONS*> Model::constraints() const noexcept {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	return {SCIPgetConss(scip_ptr), static_cast<std::size_t>(SCIPgetNConss(scip_ptr))};
 }
 
-nonstd::span<Row*> Model::lp_rows() const {
+nonstd::span<SCIP_ROW*> Model::lp_rows() const {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
 		throw Exception("LP rows are only available during solving");

@@ -15,7 +15,7 @@ namespace ecole::instance {
 
 namespace {
 
-auto same_constraint_permutation(SCIP* scip1, SCIP_Cons* constraint1, SCIP* scip2, SCIP_Cons* constraint2) noexcept
+auto same_constraint_permutation(SCIP* scip1, SCIP_CONS* constraint1, SCIP* scip2, SCIP_Cons* constraint2) noexcept
 	-> bool {
 	if (scip::cons_get_lhs(scip1, constraint1) != scip::cons_get_lhs(scip2, constraint2)) {
 		return false;

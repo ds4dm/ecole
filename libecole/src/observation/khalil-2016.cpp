@@ -141,7 +141,7 @@ template <typename E> constexpr auto idx(E e) {
  *
  * Value of the coefficient (raw, positive only, negative only).
  */
-template <typename Tensor> void set_objective_function_coefficient(Tensor&& out, scip::Col* const col) noexcept {
+template <typename Tensor> void set_objective_function_coefficient(Tensor&& out, SCIP_COL* const col) noexcept {
 	auto const obj = SCIPcolGetObj(col);
 	out[idx(Features::obj_coef)] = obj;
 	out[idx(Features::obj_coef_pos_part)] = std::max(obj, 0.);
@@ -153,7 +153,7 @@ template <typename Tensor> void set_objective_function_coefficient(Tensor&& out,
  *
  * Number of constraints that the variable participates in (with a non-zero coefficient).
  */
-template <typename Tensor> void set_number_constraints(Tensor&& out, scip::Col* const col) noexcept {
+template <typename Tensor> void set_number_constraints(Tensor&& out, SCIP_COL* const col) noexcept {
 	out[idx(Features::n_rows)] = static_cast<value_type>(SCIPcolGetNNonz(col));
 }
 
@@ -166,7 +166,7 @@ template <typename Tensor> void set_number_constraints(Tensor&& out, scip::Col* 
  * The constraint degree is computed on the root LP (mean, stdev., min, max)
  */
 template <typename Tensor>
-void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Row*> const rows) noexcept {
+void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<SCIP_ROW*> const rows) noexcept {
 	auto row_get_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
 	auto const stats = compute_stats(rows | ranges::views::transform(row_get_nnz));
 	out[idx(Features::rows_deg_mean)] = stats.mean;
@@ -210,7 +210,7 @@ void set_stats_for_constraint_negative_coefficients(Tensor&& out, nonstd::span<S
 /**
  * Extract the static features for a single LP columns.
  */
-template <typename Tensor> void set_static_features(Tensor&& out, scip::Col* const col) {
+template <typename Tensor> void set_static_features(Tensor&& out, SCIP_COL* const col) {
 	auto const rows = scip::get_rows(col);
 	auto const coefficients = scip::get_vals(col);
 
@@ -259,11 +259,7 @@ auto extract_static_features(scip::Model& model) {
  *     fractionality of xj.
  */
 template <typename Tensor>
-void set_slack_ceil_and_pseudocosts(
-	Tensor&& out,
-	Scip* const scip,
-	scip::Var* const var,
-	scip::Col* const col) noexcept {
+void set_slack_ceil_and_pseudocosts(Tensor&& out, SCIP* const scip, SCIP_VAR* const var, SCIP_COL* const col) noexcept {
 	auto const solval = SCIPcolGetPrimsol(col);
 	auto const floor_distance = SCIPfeasFrac(scip, solval);
 	auto const ceil_distance = 1. - floor_distance;
@@ -290,7 +286,7 @@ void set_slack_ceil_and_pseudocosts(
  *
  * N.B. replaced by left, right infeasibility.
  */
-template <typename Tensor> void set_infeasibility_statistics(Tensor&& out, scip::Var* const var) noexcept {
+template <typename Tensor> void set_infeasibility_statistics(Tensor&& out, SCIP_VAR* const var) noexcept {
 	auto const n_infeasibles_up = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_UPWARDS);
 	auto const n_infeasibles_down = SCIPvarGetCutoffSum(var, SCIP_BRANCHDIR_DOWNWARDS);
 	auto const n_branchings_up = static_cast<value_type>(SCIPvarGetNBranchings(var, SCIP_BRANCHDIR_UPWARDS));
@@ -313,7 +309,7 @@ template <typename Tensor> void set_infeasibility_statistics(Tensor&& out, scip:
  * avoid passing the wrong ones.
  */
 template <typename Tensor>
-void set_dynamic_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Row*> const rows) noexcept {
+void set_dynamic_stats_for_constraint_degree(Tensor&& out, nonstd::span<SCIP_ROW*> const rows) noexcept {
 	auto row_get_lp_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
 	auto const stats = compute_stats(rows | views::transform(row_get_lp_nnz));
 	auto const root_deg_mean = out[idx(Features::rows_deg_mean)];
@@ -336,8 +332,8 @@ void set_dynamic_stats_for_constraint_degree(Tensor&& out, nonstd::span<scip::Ro
 template <typename Tensor>
 void set_min_max_for_ratios_constraint_coeffs_rhs(
 	Tensor&& out,
-	Scip* const scip,
-	nonstd::span<scip::Row*> const rows,
+	SCIP* const scip,
+	nonstd::span<SCIP_ROW*> const rows,
 	nonstd::span<SCIP_Real> const coefficients) noexcept {
 
 	value_type positive_rhs_ratio_max = -1.;
@@ -383,7 +379,7 @@ void set_min_max_for_ratios_constraint_coeffs_rhs(
 template <typename Tensor>
 void set_min_max_for_one_to_all_coefficient_ratios(
 	Tensor&& out,
-	nonstd::span<scip::Row*> const rows,
+	nonstd::span<SCIP_ROW*> const rows,
 	nonstd::span<SCIP_Real> const coefficients) noexcept {
 
 	value_type positive_positive_ratio_max = 0;
@@ -427,7 +423,7 @@ void set_min_max_for_one_to_all_coefficient_ratios(
 /**
  * Return if a row in the constraints is active in the LP.
  */
-auto row_is_active(Scip* const scip, scip::Row* const row) noexcept -> bool {
+auto row_is_active(SCIP* const scip, SCIP_ROW* const row) noexcept -> bool {
 	auto const activity = SCIPgetRowActivity(scip, row);
 	auto const lhs = SCIProwGetLhs(row);
 	auto const rhs = SCIProwGetRhs(row);
@@ -508,8 +504,8 @@ auto stats_for_active_constraint_coefficients_weights(scip::Model& model) {
 template <typename Tensor>
 void set_stats_for_active_constraint_coefficients(
 	Tensor&& out,
-	Scip* const scip,
-	nonstd::span<scip::Row*> const rows,
+	SCIP* const scip,
+	nonstd::span<SCIP_ROW*> const rows,
 	nonstd::span<SCIP_Real> const coefficients,
 	xt::xtensor<value_type, 2> const& active_rows_weights) noexcept {
 
@@ -604,8 +600,8 @@ void set_stats_for_active_constraint_coefficients(
 template <typename Tensor>
 void set_dynamic_features(
 	Tensor&& out,
-	Scip* const scip,
-	scip::Var* const var,
+	SCIP* const scip,
+	SCIP_VAR* const var,
 	xt::xtensor<value_type, 2> const& active_rows_weights) {
 	auto* const col = SCIPvarGetCol(var);
 	auto const rows = scip::get_rows(col);
@@ -628,7 +624,7 @@ void set_dynamic_features(
 template <typename Tensor>
 void set_precomputed_static_features(
 	Tensor&& out,
-	scip::Var* const var,
+	SCIP_VAR* const var,
 	xt::xtensor<value_type, 2> const& static_features) {
 
 	auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));

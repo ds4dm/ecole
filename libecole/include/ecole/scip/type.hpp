@@ -42,10 +42,4 @@ using Seed = int;
 constexpr Seed min_seed = 1;  // 0 might be used for default.
 constexpr Seed max_seed = 2147483647;
 
-using Stage = SCIP_STAGE;
-using Var = SCIP_VAR;
-using Cons = SCIP_CONS;
-using Col = SCIP_COL;
-using Row = SCIP_ROW;
-
 }  // namespace ecole::scip
