@@ -36,6 +36,9 @@ include(cmake/Dependencies.cmake)
 include(cmake/Python.cmake)
 include(cmake/PythonVenv.cmake)
 
+# Enable CTest for registering tests
+include(CTest)
+
 # Ecole libraries
 add_subdirectory(libecole)
 add_subdirectory(python)
