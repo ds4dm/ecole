@@ -77,3 +77,7 @@ target_link_libraries(
 		Catch2::Catch2
 		libscip
 )
+
+include("${Catch2_DIR}/Catch.cmake")
+enable_testing()
+catch_discover_tests(test-libecole)
