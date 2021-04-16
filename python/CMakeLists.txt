@@ -1,7 +1,4 @@
-# Moving files to binary dir to create python package
-configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in" "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY
-)
+find_package(Python COMPONENTS Interpreter Development NumPy REQUIRED)
 
 find_or_download_package(
 	NAME pybind11
@@ -47,7 +44,7 @@ set_target_properties(
 	ecole-python PROPERTIES
 	OUTPUT_NAME core
 )
-# If no output directory specified, preserve the src/ecole layout
+# If no output directory specified, preserve the src/ecole layout in the build tree
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 	set_target_properties(
 		ecole-python PROPERTIES
@@ -79,13 +76,11 @@ add_custom_target(
 )
 add_dependencies(ecole-python ecole-python-files)
 
-if(ENABLE_PYTHON_VENV)
-	add_custom_command(
-		OUTPUT "${CMAKE_BINARY_DIR}/venv"
-		DEPENDS ecole-python ecole-python-files
-		COMMAND venv-python -m pip install --upgrade ${CMAKE_CURRENT_BINARY_DIR} > /dev/null
-		COMMENT "Installing ecole in virtual environment"
+# Scikit build relies on an install to find the library
+if(SKBUILD)
+	install(
+		TARGETS ecole-python
+		DESTINATION ecole
+		COMPONENT Ecole_Python_Extension
 	)
-
-	add_custom_target(ecole-venv ALL DEPENDS "${CMAKE_BINARY_DIR}/venv")
 endif()
