@@ -41,7 +41,6 @@ macro(set_developer_defaults)
 	set_common_defaults()
 	set_default_build_type(Debug)
 
-	option(ENABLE_PYTHON_VENV "Install Ecole Python library in a virtual environment" ON)
 	option(ECOLE_BUILD_BENCHMARKS "Build Ecole benchmarks" ON)
 	option(ECOLE_BUILD_TESTS "Build Ecole tests" ON)
 
