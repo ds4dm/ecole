@@ -1,10 +1,7 @@
 # Moving files to binary dir to create python package
-foreach(py_file "setup.py" "src/ecole/__init__.py")
-	configure_file(
-		"${CMAKE_CURRENT_SOURCE_DIR}/${py_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/${py_file}"
-		@ONLY
-	)
-endforeach(py_file)
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in" "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY
+)
 
 find_or_download_package(
 	NAME pybind11
@@ -66,7 +63,7 @@ endif()
 
 set(
 	PYTHON_FILES
-	"py.typed" "typing.py"
+	"__init__.py" "py.typed" "typing.py"
 	"version.py" "scip.py" "instance.py"
 	"data.py" "observation.py" "reward.py" "information.py" "dynamics.py" "environment.py"
 )
