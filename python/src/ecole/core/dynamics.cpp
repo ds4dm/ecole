@@ -7,6 +7,7 @@
 #include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/dynamics/configuring.hpp"
+#include "ecole/dynamics/primalsearch.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -262,6 +263,9 @@ void bind_submodule(pybind11::module_ const& m) {
 				random_engine:
 					The source of randomness. Passed by the environment.
 		)")
+		.def(py::init<>());
+
+	dynamics_class<PrimalSearchDynamics>(m, "PrimalSearchDynamics")  //
 		.def(py::init<>());
 }
 

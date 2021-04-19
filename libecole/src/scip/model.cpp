@@ -287,12 +287,20 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-void Model::solve_iter() {
-	scimpl->solve_iter();
+void Model::solve_iter_start_branch() {
+	scimpl->solve_iter_start_branch();
 }
 
 void Model::solve_iter_branch(SCIP_RESULT result) {
 	scimpl->solve_iter_branch(result);
+}
+
+void Model::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
+	scimpl->solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
+}
+
+void Model::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals) {
+	scimpl->solve_iter_primalsearch(varvals);
 }
 
 void Model::solve_iter_stop() {

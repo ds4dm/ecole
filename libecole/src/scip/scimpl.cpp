@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <objscip/objbranchrule.h>
+#include <objscip/objheur.h>
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
@@ -31,6 +32,35 @@ public:
 
 private:
 	std::weak_ptr<utility::Controller::Executor> weak_executor;
+};
+
+}  // namespace
+
+/************************************
+ *  Declaration of the ReverseHeur  *
+ ************************************/
+
+namespace {
+
+class ReverseHeur : public ::scip::ObjHeur {
+public:
+	static constexpr int max_priority = 536870911;
+
+	ReverseHeur(
+		SCIP* scip,
+		std::weak_ptr<utility::Controller::Executor> /*weak_executor*/,
+		int trials_per_node,
+		int depth_freq,
+		int depth_start,
+		int depth_stop);
+
+	auto scip_exec(SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result)
+		-> SCIP_RETCODE override;
+
+private:
+	std::weak_ptr<utility::Controller::Executor> weak_executor;
+
+	int trials_per_node;
 };
 
 }  // namespace
@@ -96,7 +126,7 @@ scip::Scimpl scip::Scimpl::copy_orig() const {
 	return {std::move(dest)};
 }
 
-void Scimpl::solve_iter() {
+void Scimpl::solve_iter_start_branch() {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller =
 		std::make_unique<utility::Controller>([scip_ptr](std::weak_ptr<utility::Controller::Executor> weak_executor) {
@@ -116,6 +146,46 @@ void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
 		*final_result = result;
 		return SCIP_OKAY;
 	});
+	m_controller->wait_thread();
+}
+
+void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
+	auto* const scip_ptr = get_scip_ptr();
+	m_controller = std::make_unique<utility::Controller>([scip_ptr, trials_per_node, depth_freq, depth_start, depth_stop](
+																												 std::weak_ptr<utility::Controller::Executor> weak_executor) {
+		scip::call(
+			SCIPincludeObjHeur,
+			scip_ptr,
+			new ReverseHeur(
+				scip_ptr, std::move(weak_executor), trials_per_node, depth_freq, depth_start, depth_stop),  // NOLINT
+			true);
+		scip::call(SCIPsolve, scip_ptr);  // NOLINT
+	});
+	m_controller->wait_thread();
+}
+
+void scip::Scimpl::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals) {
+	m_controller->resume_thread([&varvals](SCIP* scip_ptr, SCIP_RESULT* result) {
+		SCIP_HEUR* heur = nullptr;  // TODO take the actual primal heuristic ?
+		SCIP_SOL* sol = nullptr;
+		SCIP_Bool success = false;
+
+		// create empty solution
+		// scip::call(SCIPcreatePartialSol, scip_ptr, &sol, heur);
+		scip::call(SCIPcreateUnknownSol, scip_ptr, &sol, heur);
+
+		// fill (partial) solution values
+		for (auto const& [var, val] : varvals) {
+			scip::call(SCIPsetSolVal, scip_ptr, sol, var, val);
+		}
+
+		// try (and free) partial solution
+		scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
+
+		*result = success ? SCIP_FOUNDSOL : SCIP_DIDNOTFIND;
+		return SCIP_OKAY;
+	});
+
 	m_controller->wait_thread();
 }
 
@@ -140,17 +210,84 @@ scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Co
 		"Branchrule that wait for another thread to make the branching.",
 		scip::ReverseBranchrule::max_priority,
 		scip::ReverseBranchrule::no_maxdepth,
-		no_maxbounddist),
+		scip::ReverseBranchrule::no_maxbounddist),
 	weak_executor(std::move(weak_executor_)) {}
 
-auto ReverseBranchrule::scip_execlp(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool, SCIP_RESULT* result)
-	-> SCIP_RETCODE {
+auto ReverseBranchrule::scip_execlp(
+	SCIP* scip,
+	SCIP_BRANCHRULE* /*branchrule*/,
+	SCIP_Bool /*allowaddcons*/,
+	SCIP_RESULT* result) -> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;
 	}
 	auto action_func = weak_executor.lock()->hold_env();
 	return action_func(scip, result);
+}
+
+}  // namespace
+
+/*******************************
+ *  Definition of ReverseHeur  *
+ *******************************/
+
+namespace {
+
+scip::ReverseHeur::ReverseHeur(
+	SCIP* scip,
+	std::weak_ptr<utility::Controller::Executor> weak_executor_,
+	int trials_per_node_,
+	int depth_freq,
+	int depth_start,
+	int depth_stop) :
+	::scip::ObjHeur(
+		scip,
+		"ecole::ReverseHeur",
+		"Primal heuristic that waits for another thread to provide a primal solution.",
+		'e',
+		scip::ReverseHeur::max_priority,
+		depth_freq,
+		depth_start,
+		depth_stop,
+		SCIP_HEURTIMING_AFTERNODE,
+		false),
+	weak_executor(std::move(weak_executor_)),
+	trials_per_node(trials_per_node_) {}
+
+auto ReverseHeur::scip_exec(
+	SCIP* scip,
+	SCIP_HEUR* /*heur*/,
+	SCIP_HEURTIMING /*heurtiming*/,
+	SCIP_Bool /*nodeinfeasible*/,
+	SCIP_RESULT* result) -> SCIP_RETCODE {
+	*result = SCIP_DIDNOTRUN;
+	auto retcode = SCIP_OKAY;
+
+	for (int trial = 0; trial < trials_per_node || trials_per_node < 0; trial++) {
+		if (weak_executor.expired()) {
+			return SCIP_OKAY;
+		}
+
+		auto action_func = weak_executor.lock()->hold_env();
+
+		SCIP_RESULT action_result = SCIP_DIDNOTRUN;
+		retcode = action_func(scip, &action_result);
+
+		assert(action_result == SCIP_FOUNDSOL || action_result == SCIP_DIDNOTFIND || action_result == SCIP_DIDNOTRUN);
+
+		// update primal heuristic result depending on search action result
+		if (*result == SCIP_DIDNOTRUN || action_result == SCIP_FOUNDSOL) {
+			*result = action_result;
+		}
+
+		// stop if anything went wrong, or if SCIP should be stopped
+		if (retcode != SCIP_OKAY || action_result == SCIP_DIDNOTRUN || SCIPisStopped(scip)) {
+			break;
+		}
+	}
+
+	return retcode;
 }
 
 }  // namespace

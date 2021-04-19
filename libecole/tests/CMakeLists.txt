@@ -49,6 +49,7 @@ add_executable(
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-branching-sum.cpp
 	src/dynamics/test-configuring.cpp
+	src/dynamics/test-primalsearch.cpp
 
 	src/environment/test-environment.cpp
 

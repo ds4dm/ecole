@@ -189,7 +189,7 @@ std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model) 
 }  // namespace
 
 auto BranchingSumDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
-	model.solve_iter();
+	model.solve_iter_start_branch();
 	if (model.solve_iter_is_done()) {
 		return {true, {}};
 	}

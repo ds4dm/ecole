@@ -170,7 +170,7 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
-	model.solve_iter();
+	model.solve_iter_start_branch();
 
 	SECTION("Branch outside of callback") {
 		while (!model.solve_iter_is_done()) {

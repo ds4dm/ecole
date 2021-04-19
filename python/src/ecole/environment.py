@@ -202,3 +202,7 @@ class BranchingSum(Environment):
 
 class Configuring(Environment):
     __Dynamics__ = ecole.dynamics.ConfiguringDynamics
+
+
+class PrimalSearch(Environment):
+    __Dynamics__ = ecole.dynamics.PrimalSearchDynamics
