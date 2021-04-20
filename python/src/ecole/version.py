@@ -1,5 +1,7 @@
 import ecole.core
 
+__version__ = "{v.minor}.{v.major}.{v.patch}".format(v=ecole.core.get_build_version())
+
 
 if __name__ == "__main__":
     ecole_version = ecole.core.get_build_version()
