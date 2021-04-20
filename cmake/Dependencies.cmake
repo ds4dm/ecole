@@ -41,14 +41,14 @@ function(build_package)
 
 	message(DEBUG "${CMAKE_COMMAND}" -S "${ARG_SOURCE_DIR}" -B "${ARG_BUILD_DIR}" ${ARG_CONFIGURE_ARGS})
 	execute_process_handle_output(
-		COMMAND "${CMAKE_COMMAND}" -S "${ARG_SOURCE_DIR}" -B "${ARG_BUILD_DIR}" ${ARG_CONFIGURE_ARGS}
+		COMMAND "${CMAKE_COMMAND}" -S "${ARG_SOURCE_DIR}" -B "${ARG_BUILD_DIR}" -G "${CMAKE_GENERATOR}" ${ARG_CONFIGURE_ARGS}
 	)
 	execute_process_handle_output(COMMAND "${CMAKE_COMMAND}" --build "${ARG_BUILD_DIR}" --parallel)
 	execute_process_handle_output(COMMAND "${CMAKE_COMMAND}" --install "${ARG_BUILD_DIR}" --prefix "${ARG_INSTALL_DIR}")
 endfunction()
 
 
-# Try to find a pacakge or downloads it at configure time.
+# Try to find a package or downloads it at configure time.
 #
 # Use FetchContent to download a package if it was not found and build it inside the build tree.
 function(find_or_download_package)
