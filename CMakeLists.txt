@@ -41,6 +41,3 @@ include(CTest)
 # Ecole libraries
 add_subdirectory(libecole)
 add_subdirectory(python)
-
-# Documentation with Doxygen and Sphinx
-add_subdirectory(docs EXCLUDE_FROM_ALL)
