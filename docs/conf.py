@@ -92,11 +92,6 @@ autodoc_default_options = {
     "undoc-members": True,
 }
 
-# Breathe for Doxygen import
-extensions += ["breathe"]
-breathe_default_project = "libecole"
-
-
 # Napoleon write docstrings in Numpy style
 extensions += ["sphinx.ext.napoleon"]
 napoleon_google_docstring = False
