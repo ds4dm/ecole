@@ -12,22 +12,11 @@ __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __ECOLE_DIR__="$(git -C "${__DIR__}" rev-parse --show-toplevel)"
 
 
-function skip_testing {
-	# May skip building doc if relevant files are not edited
-	local -r branch="${1}"
-	git diff --name-only --exit-code "${branch}" -- docs/ python/src > /dev/null \
-		&& return 0 \
-		|| return 1
-}
-
-
 function main {
-	# If a branch is given, we only test if relevant files have been changes wrt it.
-	local differential=""
 	# Fail if there are warnings.
-	local warnings_as_errors="${CI:-0}"
+	local warnings_as_errors="false"
 	# Additional testing of the documentation.
-	local enable_testing="${CI:-0}"
+	local enable_testing="false"
 	# Where to find sphinx conf.py.
 	local source_dir="${__ECOLE_DIR__}/docs"
 	# Where to output the doc.
@@ -48,11 +37,11 @@ function main {
 				shift
 				;;
 			--warnings-as-errors)
-				warnings_as_errors=1
+				warnings_as_errors="true"
 				shift
 				;;
 			--enable-testing)
-				enable_testing=1
+				enable_testing="true"
 				shift
 				;;
 			--source-dir=*)
@@ -70,14 +59,9 @@ function main {
 		esac
 	done
 
-	# If differential and testing is not needed return.
-	if [ "${differential+set}" == set ] && skip_testing "${differential}" ; then
-		return 0
-	fi
-
 	# Build according to testing/error policy
-	sphinx_args+=("$([ ${warnings_as_errors} ] && printf -- '-W')")
-	if [ ${enable_testing} ]; then
+	sphinx_args+=("$([ ${warnings_as_errors} = "true" ] && printf -- '-W')")
+	if [ ${enable_testing} = "true" ]; then
 		python -m sphinx "${sphinx_args}" -b html "${source_dir}" "${build_dir}/html"
 		python -m sphinx "${sphinx_args}" -b linkcheck "${source_dir}" "${build_dir}"
 		python -m sphinx "${sphinx_args}" -b doctest "${source_dir}" "${build_dir}"
