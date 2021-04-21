@@ -44,7 +44,7 @@ set_target_properties(
 	ecole-python PROPERTIES
 	OUTPUT_NAME core
 )
-# If no output directory specified, preserve the src/ecole layout in the build tree
+# If no output directory specified, preserve the ecole layout in the build tree
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 	set_target_properties(
 		ecole-python PROPERTIES
@@ -53,7 +53,7 @@ if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 else()
 	set_target_properties(
 		ecole-python PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ecole"
 	)
 endif()
 
@@ -66,12 +66,10 @@ set(
 )
 set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
 list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
-set(PYTHON_COPIED_FILES ${PYTHON_FILES})
-list(TRANSFORM PYTHON_COPIED_FILES PREPEND "${CMAKE_CURRENT_BINARY_DIR}/src/ecole/")
 
 add_custom_target(
 	ecole-python-files
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/src/ecole"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/ecole"
 	COMMENT "Copying Python files"
 )
 add_dependencies(ecole-python ecole-python-files)
