@@ -1,5 +1,5 @@
 add_executable(
-	test-libecole
+	ecole-lib-test
 
 	src/main.cpp
 	src/conftest.cpp
@@ -50,11 +50,11 @@ add_executable(
 )
 
 target_compile_definitions(
-	test-libecole PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+	ecole-lib-test PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
 )
 
 target_include_directories(
-	test-libecole
+	ecole-lib-test
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 		${CMAKE_SOURCE_DIR}/libecole/src  # Add libecole private include
@@ -68,9 +68,9 @@ find_or_download_package(
 )
 
 target_link_libraries(
-	test-libecole
+	ecole-lib-test
 	PRIVATE
-		Ecole::libecole
+		Ecole::lib
 		Ecole::warnings
 		Ecole::sanitizers
 		range-v3::range-v3
@@ -80,4 +80,4 @@ target_link_libraries(
 
 include("${Catch2_DIR}/Catch.cmake")
 enable_testing()
-catch_discover_tests(test-libecole)
+catch_discover_tests(ecole-lib-test)

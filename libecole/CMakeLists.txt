@@ -1,5 +1,5 @@
 add_library(
-	libecole
+	ecole-lib
 
 	src/version.cpp
 	src/random.cpp
@@ -36,14 +36,14 @@ add_library(
 	src/dynamics/branching.cpp
 	src/dynamics/configuring.cpp
 )
-set_target_properties(libecole PROPERTIES OUTPUT_NAME ecole)
+set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)
 
-add_library(Ecole::libecole ALIAS libecole)
+add_library(Ecole::lib ALIAS ecole-lib)
 
 # Unconditionally generate version file at build time
 string(TIMESTAMP Ecole_BUILD_TIME)
 add_custom_target(
-	ecole-version
+	ecole-lib-version
 	COMMAND ${CMAKE_COMMAND}
 		-D SOURCE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/include/ecole/version.hpp.in"
 		-D TARGET_FILE="${CMAKE_CURRENT_BINARY_DIR}/include/ecole/version.hpp"
@@ -57,11 +57,11 @@ add_custom_target(
 		-D Ecole_BUILD_COMPILER="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
 		-P "${CMAKE_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
 )
-add_dependencies(libecole ecole-version)
+add_dependencies(ecole-lib ecole-lib-version)
 
 
 target_include_directories(
-	libecole
+	ecole-lib
 	PUBLIC
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -124,7 +124,7 @@ find_or_download_package(
 )
 
 target_link_libraries(
-	libecole
+	ecole-lib
 	PUBLIC
 		libscip
 		xtensor
@@ -141,7 +141,7 @@ target_link_libraries(
 # System CPU time, silently ignored if LibRT is not present
 find_library(LIBRT rt)
 if(LIBRT)
-	target_link_libraries(libecole PRIVATE "${LIBRT}")
+	target_link_libraries(ecole-lib PRIVATE "${LIBRT}")
 endif()
 
 # Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
@@ -149,7 +149,7 @@ get_target_property(SCIP_LOCATION libscip LOCATION)
 get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
 list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
 
-target_compile_features(libecole PUBLIC cxx_std_17)
+target_compile_features(ecole-lib PUBLIC cxx_std_17)
 
 # Add test if this is the main project and testing is enabled
 if(ECOLE_BUILD_TESTS)
