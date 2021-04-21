@@ -1,11 +1,11 @@
 add_executable(
-	benchmark-libecole
+	ecole-lib-benchmark
 	src/main.cpp
 	src/benchmark.cpp
 	src/bench-branching.cpp
 )
 
-target_include_directories(benchmark-libecole PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(ecole-lib-benchmark PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 find_or_download_package(
 	NAME CLI11
@@ -17,9 +17,9 @@ find_or_download_package(
 )
 
 target_link_libraries(
-	benchmark-libecole
+	ecole-lib-benchmark
 	PRIVATE
-		Ecole::libecole
+		Ecole::lib
 		Ecole::warnings
 		Ecole::sanitizers
 		CLI11::CLI11
@@ -27,7 +27,7 @@ target_link_libraries(
 )
 
 set_target_properties(
-	benchmark-libecole
+	ecole-lib-benchmark
 	PROPERTIES
 		CXX_VISIBILITY_PRESET hidden
 		VISIBILITY_INLINES_HIDDEN ON
