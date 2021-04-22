@@ -37,6 +37,14 @@ function add_build_to_pythonpath {
 }
 
 
+# Execute a command if rebuild is true.
+function if_rebuild_then {
+	if [ "${rebuild}" = "true" ]; then
+		"${@}"
+	fi
+}
+
+
 function configure {
 	local cmd=(
 		"cmake" "-S" "${source_dir}" "-B" "${build_dir}"
@@ -49,21 +57,18 @@ function configure {
 }
 
 
+function build {
+	execute cmake --build "${build_dir}" --parallel --target "${1-all}" "${@:2}"
+}
+
+
 function build_lib {
-	execute cmake --build "${build_dir}" --parallel --target ecole-lib
+	build ecole-lib
 }
 
 
 function build_lib_test {
-	execute cmake --build "${build_dir}" --parallel --target ecole-lib-test
-}
-
-
-function test_lib {
-	if [ ${rebuild} = "true" ]; then
-		build_lib_test
-	fi
-	execute cmake --build "${build_dir}" --target test -- ARGS="--parallel --stop-on-failure $@"
+	build ecole-lib-test
 }
 
 
@@ -72,18 +77,20 @@ function build_py {
 }
 
 
+function test_lib {
+	if_rebuild_then build_lib_test
+	build test -- ARGS="--parallel --stop-on-failure $@"
+}
+
+
 function test_py {
-	if [ ${rebuild} = "true" ]; then
-		build_py
-	fi
+	if_rebuild_then build_py
 	execute python -m pytest "${source_dir}/python/tests" --exitfirst
 }
 
 function build_doc {
-	if [ ${rebuild} = "true" ]; then
-		build_py
-	fi
-	if [ ${warnings_as_errors} = "true" ]; then
+	if_rebuild_then build_py
+	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
 	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}/html"
@@ -91,13 +98,67 @@ function build_doc {
 
 
 function test_doc {
-	if [ ${warnings_as_errors} = "true" ]; then
+	if_rebuild_then build_doc
+	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
 	execute python -m sphinx "${sphinx_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
 	execute python -m sphinx "${sphinx_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
 }
 
+
+# Set update variable if it exists or throw an error.
+function set_option {
+	local -r key="${1}"
+	local -r val="${2}"
+	# If variable referenced in key is not set throw error
+	if [ -z "${!key+x}" ]; then
+		echo "Invalid option ${key}." 1>&2
+		return 1
+	# Otherwise update it's value
+	else
+		printf -v "${key}" "%s" "${val}"
+	fi
+}
+
+# Parse command line parameters into variables.
+#
+# Parsing is done as follows. The output variables must be previously defined to avoid errors.
+#   --some-key=val  -> some_key="val"
+#   --some-key      -> some_key="true"
+#   --no-some-key   -> some_key="false"
+# Remaining parameter are set unchanged in a positional array.
+function parse_argv {
+	positional=()
+	while [[ $# -gt 0 ]]; do
+		local arg="${1}"
+		case "${arg}" in
+			--*=*)
+				local key="${arg%=*}"
+				local key="${key#--}"
+				local key="${key//-/_}"
+				set_option "${key}" "${arg#*=}"
+				shift
+				;;
+			--no-*)
+				local key="${arg#--no-}"
+				local key="${key//-/_}"
+				set_option "${key}" "false"
+				shift
+				;;
+			--*)
+				local key="${arg#--}"
+				local key="${key//-/_}"
+				set_option "${key}" "true"
+				shift
+				;;
+			*)
+				positional+=("${arg}")
+				shift
+				;;
+		esac
+	done
+}
 
 
 function run_main {
@@ -111,72 +172,23 @@ function run_main {
 	local cmake_warnings="${__CI__}"
 	# CMake build type.
 	local build_type="Release"
-	# Add build tree to P
+	# Add build tree to PYTHONPATH.
 	local fix_pythonpath="false"
-	# Automaticaly rebuild libraries for tests and doc
+	# Automaticaly rebuild libraries for tests and doc.
 	local rebuild="true"
-	# Functions to execute
-	local commands=()
+	# Test only if relevant differences have been made since the revision branch
+	local rev="origin/master"
+	local diff="false"
 
-	# Parse all arguments
-	while [[ $# -gt 0 ]]; do
-		local arg="${1}"
-		case "${arg}" in
-			--source-dir=*)
-				source_dir="${arg#*=}"
-				shift
-				;;
-			--build-dir=*)
-				build_dir="${arg#*=}"
-				shift
-				;;
-			--warnings-as-errors|--wae)
-				warnings_as_errors="true"
-				shift
-				;;
-			--no-warnings-as-errors|--no-wae)
-				warnings_as_errors="fase"
-				shift
-				;;
-			--cmake-warnings)
-				cmake_warnings="true"
-				shift
-				;;
-			--no-cmake-warnings)
-				cmake_warnings="true"
-				shift
-				;;
-			--build-type=*)
-				build_type="${arg#*=}"
-				shift
-				;;
-			--fix-pythonpath)
-				fix_pythonpath="true"
-				shift
-				;;
-			--no-fix-pythonpath)
-				fix_pythonpath="false"
-				shift
-				;;
-			--rebuild)
-				rebuild="true"
-				shift
-				;;
-			--no-rebuild)
-				rebuild="false"
-				shift
-				;;
-			*)
-				commands+=("${arg//-/_}")
-				shift
-				;;
-		esac
-	done
+	# Parse all command line arguments.
+	parse_argv "$@"
 
 	# Where to find sphinx conf.py.
 	local -r source_doc_dir="${__ECOLE_DIR__}/docs"
 	# Where to output the doc.
 	local -r build_doc_dir="${__ECOLE_DIR__}/build/docs"
+	# Functions to execute are positional arguments with - replaced by _.
+	local -r commands=("${positional[@]//-/_}")
 
 	# Fix Python ecole import
 	if [ "${fix_pythonpath}" = "true" ]; then
