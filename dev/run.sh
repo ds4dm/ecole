@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 # Directory of this file
 __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -27,21 +28,15 @@ function log {
 # Wrap calls to manage verbosity, dry-run, ...
 function execute {
 	log "$@"
-	"$@"
+	if [ "${dry_run}" = "false" ]; then
+		"$@"
+	fi
 }
 
 
 # Add Ecole build tree to PYTHONPATH.
 function add_build_to_pythonpath {
 	execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
-}
-
-
-# Execute a command if rebuild is true.
-function if_rebuild_then {
-	if [ "${rebuild}" = "true" ]; then
-		"${@}"
-	fi
 }
 
 
@@ -77,16 +72,13 @@ function build_py {
 }
 
 
-function test_lib {
-	if_rebuild_then build_lib_test
-	build test -- ARGS="--parallel --stop-on-failure $@"
+# Execute a command if rebuild is true.
+function if_rebuild_then {
+	if [ "${rebuild}" = "true" ]; then
+		"${@}"
+	fi
 }
 
-
-function test_py {
-	if_rebuild_then build_py
-	execute python -m pytest "${source_dir}/python/tests" --exitfirst
-}
 
 function build_doc {
 	if_rebuild_then build_py
@@ -97,13 +89,46 @@ function build_doc {
 }
 
 
-function test_doc {
-	if_rebuild_then build_doc
-	if [ "${warnings_as_errors}" = "true" ]; then
-		local sphinx_args+=("-W")
+# Return false (1) when `diff` is set and given files pattern have modifications since `rev`.
+function files_have_changed {
+	if [ "${diff}" = "true" ]; then
+		git -C "${__ECOLE_DIR__}" diff --name-only --exit-code "${rev}" -- "${@}" > /dev/null && return 1 || return 0
 	fi
-	execute python -m sphinx "${sphinx_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
-	execute python -m sphinx "${sphinx_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
+}
+
+
+function test_lib {
+	if files_have_changed 'CMakeLists.txt' 'libecole';  then
+		if_rebuild_then build_lib_test
+		build test -- ARGS="--parallel --stop-on-failure $@"
+	else
+		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
+	fi
+}
+
+
+function test_py {
+	local -r relevant_files=('CMakeLists.txt' 'libecole/CMakeLists' 'libecole/src' 'libecole/include' 'python')
+	if files_have_changed "${relevant_files}";  then
+		if_rebuild_then build_py
+		execute python -m pytest "${source_dir}/python/tests" --exitfirst
+	else
+		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
+	fi
+}
+
+
+function test_doc {
+	if files_have_changed 'doc' 'python/src'; then
+		if_rebuild_then build_doc
+		if [ "${warnings_as_errors}" = "true" ]; then
+			local sphinx_args+=("-W")
+		fi
+		execute python -m sphinx "${sphinx_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
+		execute python -m sphinx "${sphinx_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
+	else
+		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
+	fi
 }
 
 
@@ -162,6 +187,8 @@ function parse_argv {
 
 
 function run_main {
+	# Only print the commands that would be executed.
+	local dry_run="false"
 	# Where the top-level CMakeLists.txt is.
 	local source_dir="${__ECOLE_DIR__}"
 	# Where is the CMake build folder with the test.
@@ -178,7 +205,7 @@ function run_main {
 	local rebuild="true"
 	# Test only if relevant differences have been made since the revision branch
 	local rev="origin/master"
-	local diff="false"
+	local diff="$([ "${__CI__}" = "true" ] && printf "false" || printf "true")"
 
 	# Parse all command line arguments.
 	parse_argv "$@"
