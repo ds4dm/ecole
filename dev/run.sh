@@ -10,10 +10,6 @@ __ECOLE_DIR__="$(git -C "${__DIR__}" rev-parse --show-toplevel)"
 __CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
 
 
-# Get build_doc, test_doc.
-source "${__ECOLE_DIR__}/docs/build.sh"
-
-
 # Print in yellow with a new line.
 function echo_yellow {
 	local -r yellow="\033[1;33m"
@@ -58,18 +54,48 @@ function build_lib {
 }
 
 
+function build_lib_test {
+	execute cmake --build "${build_dir}" --parallel --target ecole-lib-test
+}
+
+
+function test_lib {
+	if [ ${rebuild} = "true" ]; then
+		build_lib_test
+	fi
+	execute cmake --build "${build_dir}" --target test -- ARGS="--parallel --stop-on-failure $@"
+}
+
+
 function build_py {
 	execute cmake --build "${build_dir}" --parallel --target ecole-py-ext
 }
 
 
-function test_lib {
-	execute cmake --build "${build_dir}" --target test -- ARGS="--parallel --stop-on-failure $@"
+function test_py {
+	if [ ${rebuild} = "true" ]; then
+		build_py
+	fi
+	execute python -m pytest "${source_dir}/python/tests" --exitfirst
+}
+
+function build_doc {
+	if [ ${rebuild} = "true" ]; then
+		build_py
+	fi
+	if [ ${warnings_as_errors} = "true" ]; then
+		local sphinx_args+=("-W")
+	fi
+	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}/html"
 }
 
 
-function test_py {
-	execute python -m pytest "${source_dir}/python/tests" --exitfirst
+function test_doc {
+	if [ ${warnings_as_errors} = "true" ]; then
+		local sphinx_args+=("-W")
+	fi
+	execute python -m sphinx "${sphinx_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
+	execute python -m sphinx "${sphinx_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
 }
 
 
@@ -87,6 +113,8 @@ function run_main {
 	local build_type="Release"
 	# Add build tree to P
 	local fix_pythonpath="false"
+	# Automaticaly rebuild libraries for tests and doc
+	local rebuild="true"
 	# Functions to execute
 	local commands=()
 
@@ -106,7 +134,15 @@ function run_main {
 				warnings_as_errors="true"
 				shift
 				;;
+			--no-warnings-as-errors|--no-wae)
+				warnings_as_errors="fase"
+				shift
+				;;
 			--cmake-warnings)
+				cmake_warnings="true"
+				shift
+				;;
+			--no-cmake-warnings)
 				cmake_warnings="true"
 				shift
 				;;
@@ -116,6 +152,18 @@ function run_main {
 				;;
 			--fix-pythonpath)
 				fix_pythonpath="true"
+				shift
+				;;
+			--no-fix-pythonpath)
+				fix_pythonpath="false"
+				shift
+				;;
+			--rebuild)
+				rebuild="true"
+				shift
+				;;
+			--no-rebuild)
+				rebuild="false"
 				shift
 				;;
 			*)
