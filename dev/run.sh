@@ -100,7 +100,11 @@ function files_have_changed {
 function test_lib {
 	if files_have_changed 'CMakeLists.txt' 'libecole';  then
 		if_rebuild_then build_lib_test
-		build test -- ARGS="--parallel --stop-on-failure $@"
+		local extra_args=("$@")
+		if [ "${fail_fast}" = "true" ]; then
+			extra_args+=("--stop-on-failure ")
+		fi
+		build test -- ARGS="--parallel ${extra_args}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -111,7 +115,11 @@ function test_py {
 	local -r relevant_files=('CMakeLists.txt' 'libecole/CMakeLists' 'libecole/src' 'libecole/include' 'python')
 	if files_have_changed "${relevant_files}";  then
 		if_rebuild_then build_py
-		execute python -m pytest "${source_dir}/python/tests" --exitfirst
+		local extra_args=("$@")
+		if [ "${fail_fast}" = "true" ]; then
+			extra_args+=("--exitfirst")
+		fi
+		execute python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -197,6 +205,8 @@ function run_main {
 	local warnings_as_errors="${__CI__}"
 	# Warning for CMake itself (not compiler).
 	local cmake_warnings="${__CI__}"
+	# Stop on first failure
+	local fail_fast="${__CI__}"
 	# CMake build type.
 	local build_type="Release"
 	# Add build tree to PYTHONPATH.
