@@ -142,7 +142,32 @@ function test_doc {
 }
 
 
-# Set update variable if it exists or throw an error.
+# The usage of this script.
+function help {
+	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
+	echo ""
+	echo "Options:"
+	echo "  --dry-run|--no-dry-run (${dry_run})"
+	echo "  --source-dir=<dir> (${source_dir})"
+	echo "  --build-dir=<dir> (${build_dir})"
+	echo "  --warnings-as-errors|--no-warnings-as-errors (${warnings_as_errors})"
+	echo "  --cmake-warnings|--no-cmake-warnings (${cmake_warnings})"
+	echo "  --fail-fast|--no-fail-fast (${fail_fast})"
+	echo "  --fix-pythonpath|--no-fix-pythonpath (${fix_pythonpath})"
+	echo "  --rebuild|--no-rebuild (${rebuild})"
+	echo "  --diff|--no-diff (${diff})"
+	echo "  --rev=<rev> (${rev})"
+	echo ""
+	echo "Commands:"
+	echo "  help, configure, build-lib, build-lib-test, build-py, build-doc,"
+	echo "  test-lib, test-py, test-doc"
+	echo ""
+	echo "Example:"
+	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
+}
+
+
+# Update variable if it exists or throw an error.
 function set_option {
 	local -r key="${1}"
 	local -r val="${2}"
