@@ -41,13 +41,14 @@ function add_build_to_pythonpath {
 
 
 function configure {
-	local cmd=(
-		"cmake" "-S" "${source_dir}" "-B" "${build_dir}"
-		"-D" "ECOLE_BUILD_TESTS=ON" "-D" "ECOLE_BUILD_BENCHMARKS=ON"
-	)
-	[ "${cmake_warnings}" = "true" ] && cmd+=("-Wdev")
-	[ "${warnings_as_errors}" = "true" ] && cmd+=("-Werror=dev" "-D" "WARNINGS_AS_ERRORS=ON")
-	execute "${cmd[@]}"
+	local extra_args=("$@")
+	if [ "${cmake_warnings}" = "true" ]; then
+		extra_args+=("-Wdev")
+	fi
+	if [ "${warnings_as_errors}" = "true" ]; then
+		extra_args+=("-Werror=dev" "-D" "WARNINGS_AS_ERRORS=ON")
+	fi
+	execute cmake -S "${source_dir}" -B "${build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON "${extra_args[@]}"
 	execute ln -nfs "${build_dir}/compile_commands.json"
 }
 
@@ -58,17 +59,17 @@ function build {
 
 
 function build_lib {
-	build ecole-lib
+	build ecole-lib "$@"
 }
 
 
 function build_lib_test {
-	build ecole-lib-test
+	build ecole-lib-test "$@"
 }
 
 
 function build_py {
-	execute cmake --build "${build_dir}" --parallel --target ecole-py-ext
+	build ecole-py-ext "$@"
 }
 
 
@@ -85,7 +86,7 @@ function build_doc {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
-	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}/html"
+	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}/html" "$@"
 }
 
 
@@ -129,11 +130,12 @@ function test_py {
 function test_doc {
 	if files_have_changed 'doc' 'python/src'; then
 		if_rebuild_then build_doc
+		local extra_args=("$@")
 		if [ "${warnings_as_errors}" = "true" ]; then
-			local sphinx_args+=("-W")
+			extra_args+=("-W")
 		fi
-		execute python -m sphinx "${sphinx_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
-		execute python -m sphinx "${sphinx_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
+		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
+		execute python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -154,15 +156,16 @@ function set_option {
 	fi
 }
 
+
 # Parse command line parameters into variables.
 #
 # Parsing is done as follows. The output variables must be previously defined to avoid errors.
 #   --some-key=val  -> some_key="val"
 #   --some-key      -> some_key="true"
 #   --no-some-key   -> some_key="false"
-# Remaining parameter are set unchanged in a positional array.
+# As soon as one of this case does not match, all the remaining parameters are put unchanged in
+# a `positional` array.
 function parse_argv {
-	positional=()
 	while [[ $# -gt 0 ]]; do
 		local arg="${1}"
 		case "${arg}" in
@@ -186,11 +189,41 @@ function parse_argv {
 				shift
 				;;
 			*)
-				positional+=("${arg}")
-				shift
+				positional=("$@")
+				return 0
 				;;
 		esac
 	done
+}
+
+
+# Parse the positional arguments and run the commands
+#   configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py --pdb
+# Will execute
+#   configure -D ECOLE_DEVELOPER=ON
+#   test_lib
+#   test_py --pdb
+function parse_and_run_commands {
+	if [ $# = 0 ]; then
+		return 0
+	fi
+	local -r args=("$@")  # Somehow we need to syntax this to use the following syntax.
+	# First item in -- separated list is the name of the function where we replace - > _.
+	local last_cmd_idx=0
+	local func="${args[$last_cmd_idx]//-/_}"
+
+	for idx in ${!args[@]}; do
+		# -- is the delimitor that end the parameters for the current function
+		if [ "${args[$idx]}" = "--" ]; then
+			# Run current function with its args
+			${func} "${args[@]:$last_cmd_idx+1:$idx-$last_cmd_idx-1}"
+			# Next fucntion start at the position after --
+			last_cmd_idx=$(($idx + 1))
+			func="${args[$last_cmd_idx]//-/_}"
+		fi
+	done
+	# Run the last function that does not terminate with a -- separator
+	${func} "${args[@]:$last_cmd_idx+1}"
 }
 
 
@@ -207,8 +240,6 @@ function run_main {
 	local cmake_warnings="${__CI__}"
 	# Stop on first failure
 	local fail_fast="${__CI__}"
-	# CMake build type.
-	local build_type="Release"
 	# Add build tree to PYTHONPATH.
 	local fix_pythonpath="false"
 	# Automaticaly rebuild libraries for tests and doc.
@@ -224,17 +255,19 @@ function run_main {
 	local -r source_doc_dir="${__ECOLE_DIR__}/docs"
 	# Where to output the doc.
 	local -r build_doc_dir="${__ECOLE_DIR__}/build/docs"
-	# Functions to execute are positional arguments with - replaced by _.
-	local -r commands=("${positional[@]//-/_}")
 
 	# Fix Python ecole import
 	if [ "${fix_pythonpath}" = "true" ]; then
 		add_build_to_pythonpath
 	fi
 
-	for cmd in "${commands[@]}"; do
-		"${cmd}"
-	done
+	# Functions to execute are positional arguments with - replaced by _.
+	parse_and_run_commands "${positional[@]}"
+	# local -r commands_and_extta args=("${positional[@]//-/_}")
+
+	# for cmd in "${commands[@]}"; do
+	#   "${cmd}"
+	# done
 }
 
 
