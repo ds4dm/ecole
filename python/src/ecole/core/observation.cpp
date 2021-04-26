@@ -272,7 +272,7 @@ void bind_submodule(py::module_ const& m) {
 		.. [Khalil2016]
 			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
 			"`Learning to branch in mixed integer programming.
-			<https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf>`_"
+			<https://web.archive.org/web/20200812151256/https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf>`_"
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
 	)")
 			.def_auto_copy()
