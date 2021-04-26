@@ -33,7 +33,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		REQUIRE(action_set.has_value());
 		auto const& branch_cands = action_set.value();
 		REQUIRE(branch_cands.size() > 0);
-		REQUIRE(branch_cands.size() < model.lp_columns().size());
+		REQUIRE(branch_cands.size() <= model.lp_columns().size());
 		REQUIRE(xt::all(branch_cands >= 0));
 		REQUIRE(xt::all(branch_cands < model.lp_columns().size()));
 		REQUIRE(xt::unique(branch_cands).size() == branch_cands.size());
