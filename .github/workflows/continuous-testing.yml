@@ -3,8 +3,15 @@ on: [push]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - "ecoleai/ci-linux-conda-gcc-py3.6"
+          - "ecoleai/ci-linux-conda-gcc-py3.7"
+          - "ecoleai/ci-linux-conda-gcc-py3.8"
+          - "ecoleai/ci-linux-src-clang10-py3.8"
     container:
-      image: ecoleai/ci-linux-conda-gcc-py3.6
+      image: ${{ matrix.image }}
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
