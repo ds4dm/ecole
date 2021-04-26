@@ -173,7 +173,7 @@ Some C++ tools need access to a *compilation database*.
 This is a file called ``compile_commands.json`` that is created automatically by CMake when using
 ``-D ECOLE_DEVELOPER=ON``.
 The file needs to be accessible at the root directory of the project, so you should symlink it like
-so (assuming you set CMake to build in the directory named ``build`` as shown before).
+so (assuming you have configured CMake in the ``build`` directory as shown before).
 
 .. code-block:: bash
 
