@@ -68,14 +68,9 @@ jobs:
           password: "$DOCKERHUB_PASSWORD"
     steps:
       - checkout
-      - build_ecole:
-          cmake_options: "<<parameters.cmake_options>>"
       - run:
-          name: "Test libecole"
-          command: ./build/libecole/tests/test-libecole --abort
-      - run:
-          name: "Test Python ecole"
-          command: build/venv/bin/python -m pytest --exitfirst python/tests
+          name: "Configure, build, and test ecole-lib and ecole-py-ext"
+          command: ./dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
   sanitize:
     parameters:
@@ -87,12 +82,9 @@ jobs:
         auth: *dockerhub_auth
     steps:
       - checkout
-      - build_ecole:
-          cmake_options: "-D SANITIZE_<<parameters.sanitizer>>=ON"
       - run:
-          name: "Test libecole"
-          command: ./build/libecole/tests/test-libecole
-        # Python library cannot be sanitized so far
+          name: "Configure, build, and test ecole-lib"
+          command: ./dev/run.sh --fix-pythonpath configure -D SANITIZE_<<parameters.sanitizer>>=ON -- test-lib
 
   code_checker:
     docker:
@@ -100,8 +92,6 @@ jobs:
         auth: *dockerhub_auth
     steps:
       - checkout
-      - build_ecole:
-          target: ecole-version
       - run_pre_commit
 
   build_doc:
@@ -110,9 +100,9 @@ jobs:
         auth: *dockerhub_auth
     steps:
       - checkout
-      - build_ecole:
-          cmake_options: "-D ENABLE_DOCUMENTATION=ON -D DOC_WARNINGS_AS_ERRORS=ON -D ENABLE_DOCUMENTATION_TESTING=ON"
-          target: "ecole-sphinx"
+      - run:
+          name: "Configure and build ecole-py-ext. Build and test documentation."
+          command: ./dev/run.sh --fix-pythonpath configure -- test-doc
 
   deploy_doc:
     parameters:
@@ -125,11 +115,11 @@ jobs:
     steps:
       - checkout
       # Easier/faster to rebuild than to share a workspace
-      - build_ecole:
-          cmake_options: "-D ENABLE_DOCUMENTATION=ON"
-          target: "ecole-sphinx"
+      - run:
+          name: "Configure and build ecole-py-ext. Build documentation."
+          command: ./dev/run.sh --fix-pythonpath configure -- build-doc
       - deploy_github:
-          build_dir: build/docs/sphinx/html
+          build_dir: build/docs/html
           delete_previous: true
           github_repository: doc.ecole.ai
           repository_subdir: "<<parameters.deploy_version>>"
@@ -156,42 +146,6 @@ jobs:
 # Reusable set of instructions to be used in jobs
 commands:
 
-  # Build the entire project
-  build_ecole:
-    parameters:
-      source_dir:
-        type: string
-        default: "."
-      build_dir:
-        type: string
-        default: build
-      cmake_options:
-        type: string
-        default: ""
-      target:
-        type: string
-        default: all
-    description: "Compiling the Ecole project"
-    steps:
-      - run:
-          name: "CMake configure"
-          command: >
-            cmake -S <<parameters.source_dir>> -B <<parameters.build_dir>>
-            -Wdev -Werror=dev
-            -D CMAKE_BUILD_TYPE=Release
-            -D ECOLE_BUILD_TESTS=ON
-            -D ECOLE_BUILD_BENCHMARKS=ON
-            -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-            -D ENABLE_PYTHON_VENV=ON
-            -D WARNINGS_AS_ERRORS=ON
-            <<parameters.cmake_options>>
-      - run:
-          name: "Symlink compilation database"
-          command: ln -s "<<parameters.build_dir>>/compile_commands.json"
-      - run:
-          name: "CMake build"
-          command: "cmake --build build --target <<parameters.target>>"
-
   run_pre_commit:
     description: "Run pre-commit checks"
     steps:
@@ -207,7 +161,7 @@ commands:
             PRE_COMMIT_HOME: &pre_commit_cache_dir /cache/precommit
           name: "Run pre-commit checks"
           no_output_timeout: 30m
-          command: python -m pre_commit run --all-files
+          command: ./dev/run.sh --fix-pythonpath configure -- check-code
       - save_cache:
           key: *pre_commit_cache_key
           paths:
