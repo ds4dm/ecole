@@ -1,0 +1,14 @@
+name: Continuous testing
+on: [push]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: ecoleai/ci-linux-conda-gcc-py3.6
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Configure, build, and test ecole-lib and ecole-py-ext"
+        run: ./dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
