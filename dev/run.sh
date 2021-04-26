@@ -5,7 +5,7 @@
 __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Top of the repository in which this file is
-__ECOLE_DIR__="$(git -C "${__DIR__}" rev-parse --show-toplevel)"
+__ECOLE_DIR__="$(git -C "${__DIR__:?}" rev-parse --show-toplevel)"
 
 # If CI is defined then "true", otherwise "false" (string, not bools).
 __CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
