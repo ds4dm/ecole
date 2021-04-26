@@ -142,6 +142,20 @@ function test_doc {
 }
 
 
+# These differential checks are the ones used in CI, for per-commit diff, install the pre-commit hooks with
+#   pre-commit install
+function check_code {
+	if_rebuild_then build ecole-lib-version
+	local extra_args=("$@")
+	if [ "${diff}" = "true" ]; then
+		extra_args+=("--from-ref" "${rev}" "--to-ref" "HEAD")
+	else
+		extra_args+=("--all-files")
+	fi
+	execute pre-commit run "${extra_args[@]}"
+}
+
+
 # The usage of this script.
 function help {
 	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
@@ -160,7 +174,7 @@ function help {
 	echo ""
 	echo "Commands:"
 	echo "  help, configure, build-lib, build-lib-test, build-py, build-doc,"
-	echo "  test-lib, test-py, test-doc"
+	echo "  test-lib, test-py, test-doc, check-code"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
