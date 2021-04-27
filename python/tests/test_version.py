@@ -29,9 +29,14 @@ def test_match_importlib():
     try:
         import importlib.metadata
 
-        version = importlib.metadata.version(__name__)
-        assert version == ecole.__version__
+        try:
+            version = importlib.metadata.version(__name__)
+            assert version == ecole.__version__
 
-    # In Python <= 3.8 or without packaging, we cannot use imprortlib to get the version
-    except (ModuleNotFoundError, importlib.metadata.PackageNotFoundError):
+        # Without packaging Ecole, we cannot use importlib to get the version
+        except importlib.metadata.PackageNotFoundError:
+            pytest.skip()
+
+    # In Python <= 3.8 we cannot use importlib to get the version
+    except ModuleNotFoundError:
         pytest.skip()
