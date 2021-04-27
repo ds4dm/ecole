@@ -2,7 +2,7 @@
 
 
 # Directory of this file
-__DIR__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__DIR__="$(cd "$(dirname "${BASH_SOURCE[0]:?}")" && pwd)"
 
 # Top of the repository in which this file is
 __ECOLE_DIR__="$(git -C "${__DIR__:?}" rev-parse --show-toplevel)"
@@ -270,9 +270,9 @@ function run_main {
 	# Only print the commands that would be executed.
 	local dry_run="false"
 	# Where the top-level CMakeLists.txt is.
-	local source_dir="${__ECOLE_DIR__}"
+	local source_dir="${__ECOLE_DIR__:?}"
 	# Where is the CMake build folder with the test.
-	local build_dir="${__ECOLE_DIR__}/build"
+	local build_dir="${__ECOLE_DIR__:?}/build"
 	# Fail if there are warnings.
 	local warnings_as_errors="${__CI__}"
 	# Warning for CMake itself (not compiler).
