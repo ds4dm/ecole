@@ -57,12 +57,7 @@ jobs:
       - checkout
       - run:
           name: "Verifiying version file matches tag"
-          command: |
-            for part in 1 2 3 ; do
-              tag_part="$( echo $CIRCLE_TAG | sed s/v// | cut -d '.' -f $part )"
-              file_part="$( sed $part'q;d' VERSION |  cut -d ' ' -f 2 )"
-              [ $tag_part -eq $file_part ]
-            done
+          command: ./dev/run.sh test-version "${$CIRCLE_TAG}"
 
 
 # Reusable set of instructions to be used in jobs
