@@ -2,13 +2,13 @@
 
 
 # Directory of this file
-__DIR__="$(cd "$(dirname "${BASH_SOURCE[0]:?}")" && pwd)"
+readonly __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]:?}")" && pwd)"
 
 # Top of the repository in which this file is
-__ECOLE_DIR__="$(cd "${__DIR__:?}/.." && pwd)"
+readonly __ECOLE_DIR__="$(cd "${__DIR__:?}/.." && pwd)"
 
 # If CI is defined then "true", otherwise "false" (string, not bools).
-__CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
+readonly __CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
 
 
 # Print in yellow with a new line.
@@ -156,6 +156,59 @@ function check_code {
 }
 
 
+function file_version {
+	local -r file_major="$(grep -Po 'VERSION_MAJOR\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
+	local -r file_minor="$(grep -Po 'VERSION_MINOR\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
+	local -r file_patch="$(grep -Po 'VERSION_PATCH\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
+	echo "${file_major:?}.${file_minor:?}.${file_patch:?}"
+}
+
+
+function sort_versions {
+	local -r sort_versions=(
+		'import sys, re;'
+		'lines = [l.strip() for l in sys.stdin.readlines()];'
+		'comp = lambda s: [int(n) for n in re.findall(r"\d+", s)];'
+		'versions = sorted(lines, key=comp);'
+		'print(" ".join(versions));'
+	)
+	python -c "${sort_versions[*]}"
+}
+
+
+function git_version {
+	# All possible git tags.
+	mapfile -t all_tags < <(git tag)
+	# Find tags that are ancestor of HEAD and match a version.
+	local prev_versions
+	local tag
+	for tag in "${all_tags[@]}"; do
+		if git merge-base --is-ancestor "${tag}" HEAD; then
+			if version=$(printf "${tag}" | grep -Po '^v\K\d+\.\d+\.\d+$'); then
+				prev_versions+=("${version}")
+			fi
+		fi
+	done
+	# Sort using proper version comparison.
+	mapfile -t sorted_versions < <(echo "${prev_versions[@]}" | xargs -n1 | sort_versions | xargs -n1)
+	# Take the lastest version.
+	local -r latest_version="${sorted_versions[${#sorted_versions[@]}-1]}"
+	echo "${latest_version}"
+}
+
+
+function test_version {
+	# Without args, use the version from git
+	if [ -z "${1+x}" ]; then
+		local -r version="$(git_version)"
+	# Otherwise use the arg
+	else
+		local -r version=$(printf "${1}" | grep -Po '^v?\K\d+\.\d+\.\d+$')
+	fi
+	[ "$(file_version)" = "${version}" ]
+}
+
+
 # The usage of this script.
 function help {
 	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
@@ -174,7 +227,7 @@ function help {
 	echo ""
 	echo "Commands:"
 	echo "  help, configure, build-lib, build-lib-test, build-py, build-doc,"
-	echo "  test-lib, test-py, test-doc, check-code"
+	echo "  test-lib, test-py, test-doc, check-code, test-version"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
