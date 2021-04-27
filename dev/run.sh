@@ -5,7 +5,7 @@
 __DIR__="$(cd "$(dirname "${BASH_SOURCE[0]:?}")" && pwd)"
 
 # Top of the repository in which this file is
-__ECOLE_DIR__="$(git -C "${__DIR__:?}" rev-parse --show-toplevel)"
+__ECOLE_DIR__="$(cd "${__DIR__:?}/.." && pwd)"
 
 # If CI is defined then "true", otherwise "false" (string, not bools).
 __CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
@@ -272,7 +272,7 @@ function run_main {
 	# Where the top-level CMakeLists.txt is.
 	local source_dir="${__ECOLE_DIR__:?}"
 	# Where is the CMake build folder with the test.
-	local build_dir="${__ECOLE_DIR__:?}/build"
+	local build_dir="build"
 	# Fail if there are warnings.
 	local warnings_as_errors="${__CI__}"
 	# Warning for CMake itself (not compiler).
