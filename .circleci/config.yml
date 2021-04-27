@@ -4,36 +4,7 @@ version: 2.1
 workflows:
   continuous_testing:
     jobs:
-      - code_checker
-      - build_test:
-          name: build_py3.6
-          image: "ecoleai/ci-linux-conda-gcc-py3.6"
-      - build_test:
-          name: build_py3.7
-          image: "ecoleai/ci-linux-conda-gcc-py3.7"
-          requires:
-            - build_py3.6
-      - build_test:
-          name: build_py3.8
-          image: "ecoleai/ci-linux-conda-gcc-py3.8"
-          requires:
-            - build_py3.6
-      - build_test:
-          name: build_clang
-          image: "ecoleai/ci-linux-src-clang10-py3.8"
-          requires:
-            - build_py3.6
-      - sanitize:
-          name: build_asan
-          sanitizer: "ADDRESS"
-          requires:
-            - build_py3.6
-      - build_doc:
-          requires:
-            - build_py3.6
       - deploy_doc:
-          requires:
-            - build_doc
           filters:
             branches:
               only:
@@ -53,57 +24,6 @@ workflows:
 # Execute a set of commands in a clean image
 jobs:
 
-  build_test:
-    parameters:
-      image:
-        type: string
-        default: "ecoleai/ci-linux-conda-gcc-py3.8"
-      cmake_options:
-        type: string
-        default: ""
-    docker:
-      - image: "<<parameters.image>>"
-        auth: &dockerhub_auth
-          username: "$DOCKERHUB_USERNAME"
-          password: "$DOCKERHUB_PASSWORD"
-    steps:
-      - checkout
-      - run:
-          name: "Configure, build, and test ecole-lib and ecole-py-ext"
-          command: ./dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
-
-  sanitize:
-    parameters:
-      sanitizer:
-        type: enum
-        enum: ["THREAD", "ADDRESS", "MEMORY", "UNDEFINED"]
-    docker:
-      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
-        auth: *dockerhub_auth
-    steps:
-      - checkout
-      - run:
-          name: "Configure, build, and test ecole-lib"
-          command: ./dev/run.sh --fix-pythonpath configure -D SANITIZE_<<parameters.sanitizer>>=ON -- test-lib
-
-  code_checker:
-    docker:
-      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
-        auth: *dockerhub_auth
-    steps:
-      - checkout
-      - run_pre_commit
-
-  build_doc:
-    docker:
-      - image: "ecoleai/ci-linux-conda-gcc-py3.8"
-        auth: *dockerhub_auth
-    steps:
-      - checkout
-      - run:
-          name: "Configure and build ecole-py-ext. Build and test documentation."
-          command: ./dev/run.sh --fix-pythonpath configure -- test-doc
-
   deploy_doc:
     parameters:
       deploy_version:
@@ -111,13 +31,15 @@ jobs:
         default: "${CIRCLE_BRANCH}"
     docker:
       - image: "ecoleai/ci-linux-conda-gcc-py3.8"
-        auth: *dockerhub_auth
+        auth: &dockerhub_auth
+          username: "$DOCKERHUB_USERNAME"
+          password: "$DOCKERHUB_PASSWORD"
     steps:
       - checkout
       # Easier/faster to rebuild than to share a workspace
       - run:
           name: "Configure and build ecole-py-ext. Build documentation."
-          command: ./dev/run.sh --fix-pythonpath configure -- build-doc
+          command: ./dev/run.sh --fix-pythonpath configure -- test-doc
       - deploy_github:
           build_dir: build/docs/html
           delete_previous: true
@@ -145,28 +67,6 @@ jobs:
 
 # Reusable set of instructions to be used in jobs
 commands:
-
-  run_pre_commit:
-    description: "Run pre-commit checks"
-    steps:
-      - restore_cache:
-          keys:
-            - &pre_commit_cache_key >-
-              precommit-v1.1-{{ arch }}-{{ checksum ".pre-commit-config.yaml" }}
-            - precommit-v1.1-{{ arch }}-
-      - run:
-          environment:
-            # Remove parallelism for clang-tidy that goes out of memory otherwise
-            PRE_COMMIT_NO_CONCURRENCY: "True"
-            PRE_COMMIT_HOME: &pre_commit_cache_dir /cache/precommit
-          name: "Run pre-commit checks"
-          no_output_timeout: 30m
-          command: ./dev/run.sh --fix-pythonpath configure -- check-code
-      - save_cache:
-          key: *pre_commit_cache_key
-          paths:
-            - *pre_commit_cache_dir
-
 
   # Deploy files to a Github repository
   deploy_github:
