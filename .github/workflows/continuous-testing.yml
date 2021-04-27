@@ -21,6 +21,19 @@ jobs:
       - name: "Configure, build, and test ecole-lib and ecole-py-ext"
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
+  # Currenlty only sanitize address without Python
+  sanitize:
+    runs-on: ubuntu-latest
+    container:
+      image: "ecoleai/ci-linux-conda-gcc-py3.8"
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Configure, build, and test ecole-lib with sanitizer"
+        run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- test-lib
+
   check-code:
     runs-on: ubuntu-latest
     container:
