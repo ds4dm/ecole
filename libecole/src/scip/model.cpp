@@ -49,9 +49,9 @@ bool Model::operator!=(Model const& other) const noexcept {
 	return !(*this == other);
 }
 
-Model Model::from_file(const std::string& filename) {
+Model Model::from_file(std::filesystem::path const& filename) {
 	auto model = Model{};
-	model.read_problem(filename);
+	model.read_problem(filename.c_str());
 	return model;
 }
 

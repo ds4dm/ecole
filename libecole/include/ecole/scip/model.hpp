@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <memory>
@@ -65,7 +66,7 @@ public:
 	/**
 	 * Construct a model by reading a problem file supported by SCIP (LP, MPS,...).
 	 */
-	static Model from_file(std::string const& filename);
+	static Model from_file(std::filesystem::path const& filename);
 
 	/**
 	 * Constuct an empty problem with empty data structures.
