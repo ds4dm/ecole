@@ -135,7 +135,7 @@ function test_lib {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--stop-on-failure ")
 		fi
-		build test -- ARGS="--parallel ${extra_args[@]}"
+		cmake_build test -- ARGS="--parallel ${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
