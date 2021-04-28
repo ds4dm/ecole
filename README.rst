@@ -64,14 +64,30 @@ Conda
 
    conda install -c conda-forge ecole
 
-Pip
-^^^
-Currently unavailable
+All dependencies are resolved by conda, no compiler is required.
 
-From Source and Other Options
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Checkout the `installation instructions <https://doc.ecole.ai/master/installation.html>`_ in the documentation for more information,
-including manually installing from source.
+Pip wheel (binary)
+^^^^^^^^^^^^^^^^^^
+Currently unavailable.
+
+Pip source
+^^^^^^^^^^^
+.. image:: https://img.shields.io/pypi/v/ecole?logo=python
+   :target: https://pypi.org/project/ecole/
+   :alt: PyPI version
+
+Building from source requires:
+ - A `C++17 compiler <https://en.cppreference.com/w/cpp/compiler_support>`_,
+ - A `SCIP <https://www.scipopt.org/>`_ installation.
+
+.. code-block:: bash
+
+   pip install ecole
+
+Other Options
+^^^^^^^^^^^^^
+Checkout the `installation instructions <https://doc.ecole.ai/master/installation.html>`_ in the
+documentation for more installation options.
 
 Related Projects
 ----------------

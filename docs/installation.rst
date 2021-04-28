@@ -1,3 +1,5 @@
+.. _installation:
+
 Installation
 ============
 
@@ -12,6 +14,8 @@ Conda
 
    conda install -c conda-forge ecole
 
+All dependencies are resolved by conda, no compiler is required.
+
 `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is not required but is the main SCIP
 interface to develop new Ecole components from Python
 
@@ -21,26 +25,34 @@ interface to develop new Ecole components from Python
 
 Currenlty, conda packages are only available for Linux and MacOS.
 
-Pip
----
+Pip wheel (binary)
+------------------
 Currently unavailable.
 
-From Source
+Pip source
 -----------
+.. image:: https://img.shields.io/pypi/v/ecole?logo=python
+   :target: https://pypi.org/project/ecole/
+   :alt: PyPI version
+
 Building from source requires:
- - `CMake <https://cmake.org/>`_ >= 3.15,
  - A `C++17 compiler <https://en.cppreference.com/w/cpp/compiler_support>`_,
- - `Python <https://www.python.org/>`_ and `NumPy <https://numpy.org/>`_ for the Python package,
  - A `SCIP <https://www.scipopt.org/>`_ installation.
+
+For the stable `PyPI version <https://pypi.org/project/ecole/>`_:
 
 .. code-block:: bash
 
-   cmake -B build/
-   cmake --build build/ --parallel
-   python -m pip install build/python
+   pip install ecole
 
-Both the ``build/`` folder and ``ecole`` folder can safely be removed aftwerwards.
+To specify the where to find SCIP (or any CMake parameters):
 
-.. warning::
+.. code-block:: bash
 
-   SCIP is linked dynamically so it must remained installed when using Ecole.
+   CMAKE_ARGS="-DSCIP_DIR=path/to/lib/cmake/scip" pip install ecole
+
+For the latest Github version:
+
+.. code-block:: bash
+
+   pip install git+https://github.com/ds4dm/ecole
