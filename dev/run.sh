@@ -53,23 +53,38 @@ function configure {
 }
 
 
-function build {
+function build_all {
+	# List all functions in that file.
+	local all_funcs
+	mapfile -t all_funcs < <(declare -F)
+	all_funcs=("${all_funcs[@]#declare -f }")
+	# Run functions that start with test_
+	local func
+	for func in "${all_funcs[@]}"; do
+		if [[ "${func}" = build_* && "${func}" != "build_all" ]]; then
+			"${func}"
+		fi
+	done
+}
+
+
+function cmake_build {
 	execute cmake --build "${build_dir}" --parallel --target "${1-all}" "${@:2}"
 }
 
 
 function build_lib {
-	build ecole-lib "$@"
+	cmake_build ecole-lib "$@"
 }
 
 
 function build_lib_test {
-	build ecole-lib-test "$@"
+	cmake_build ecole-lib-test "$@"
 }
 
 
 function build_py {
-	build ecole-py-ext "$@"
+	cmake_build ecole-py-ext "$@"
 }
 
 
@@ -90,6 +105,21 @@ function build_doc {
 }
 
 
+function test_all {
+	# List all functions in that file.
+	local all_funcs
+	mapfile -t all_funcs < <(declare -F)
+	all_funcs=("${all_funcs[@]#declare -f }")
+	# Run functions that start with test_
+	local func
+	for func in "${all_funcs[@]}"; do
+		if [[ "${func}" = test_* && "${func}" != "test_all" ]]; then
+			"${func}"
+		fi
+	done
+}
+
+
 # Return false (1) when `diff` is set and given files pattern have modifications since `rev`.
 function files_have_changed {
 	if [ "${diff}" = "true" ]; then
@@ -105,7 +135,7 @@ function test_lib {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--stop-on-failure ")
 		fi
-		build test -- ARGS="--parallel ${extra_args}"
+		build test -- ARGS="--parallel ${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -139,20 +169,6 @@ function test_doc {
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
-}
-
-
-# These differential checks are the ones used in CI, for per-commit diff, install the pre-commit hooks with
-#   pre-commit install
-function check_code {
-	if_rebuild_then build ecole-lib-version
-	local extra_args=("$@")
-	if [ "${diff}" = "true" ]; then
-		extra_args+=("--from-ref" "${rev}" "--to-ref" "HEAD")
-	else
-		extra_args+=("--all-files")
-	fi
-	execute pre-commit run "${extra_args[@]}"
 }
 
 
@@ -209,6 +225,20 @@ function test_version {
 }
 
 
+# These differential checks are the ones used in CI, for per-commit diff, install the pre-commit hooks with
+#   pre-commit install
+function check_code {
+	if_rebuild_then cmake_build ecole-lib-version
+	local extra_args=("$@")
+	if [ "${diff}" = "true" ]; then
+		extra_args+=("--from-ref" "${rev}" "--to-ref" "HEAD")
+	else
+		extra_args+=("--all-files")
+	fi
+	execute pre-commit run "${extra_args[@]}"
+}
+
+
 # The usage of this script.
 function help {
 	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
@@ -226,8 +256,10 @@ function help {
 	echo "  --rev=<rev> (${rev})"
 	echo ""
 	echo "Commands:"
-	echo "  help, configure, build-lib, build-lib-test, build-py, build-doc,"
-	echo "  test-lib, test-py, test-doc, check-code, test-version"
+	echo "  help, configure,"
+	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
+	echo "  test-lib, test-py, test-doc, test-version, test-all"
+	echo "  check-code"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
@@ -333,7 +365,7 @@ function run_main {
 	# Stop on first failure
 	local fail_fast="${__CI__}"
 	# Add build tree to PYTHONPATH.
-	local fix_pythonpath="false"
+	local fix_pythonpath="$([ "${__CI__}" = "true" ] && printf "false" || printf "true")"
 	# Automaticaly rebuild libraries for tests and doc.
 	local rebuild="true"
 	# Test only if relevant differences have been made since the revision branch
