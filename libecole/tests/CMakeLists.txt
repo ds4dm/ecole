@@ -4,6 +4,8 @@ add_executable(
 	src/main.cpp
 	src/conftest.cpp
 
+	src/test-utility/tmp-folder.cpp
+
 	src/test-traits.cpp
 	src/test-random.cpp
 
