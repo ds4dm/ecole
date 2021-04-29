@@ -24,6 +24,7 @@ public:
 
 	scip::Model next() override;
 	void seed(Seed seed) override;
+	[[nodiscard]] bool done() const override { return false; }
 
 	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
 

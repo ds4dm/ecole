@@ -21,6 +21,11 @@ public:
 	 * Seed the internal random engine.
 	 */
 	virtual void seed(Seed seed) = 0;
+
+	/**
+	 * Wether the generator is exhausted.
+	 */
+	[[nodiscard]] virtual bool done() const = 0;
 };
 
 }  // namespace ecole::instance
