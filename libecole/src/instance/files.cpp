@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <iterator>
 #include <random>
-#include <stdexcept>
 
+#include "ecole/exception.hpp"
 #include "ecole/instance/files.hpp"
 
 namespace ecole::instance {
@@ -42,7 +42,7 @@ void FilesGenerator::seed(Seed seed) {
 
 scip::Model FilesGenerator::next() {
 	if (files.empty()) {
-		throw std::out_of_range{"No files to iterate over."};
+		throw IteratorExhausted{};
 	}
 	auto choice = std::uniform_int_distribution<std::size_t>{0, files.size() - 1};
 	return scip::Model::from_file(files[choice(random_engine)]);
