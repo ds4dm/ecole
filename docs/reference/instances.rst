@@ -13,6 +13,10 @@ Listing
 -------
 The list of instance generators is given below.
 
+Local Files
+^^^^^^^^^^^
+.. autoclass:: ecole.instance.FileGenerator
+
 Set Cover
 ^^^^^^^^^
 .. autoclass:: ecole.instance.SetCoverGenerator
