@@ -31,7 +31,7 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_slow)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def problem_file():
     """Return a MILP problem file."""
     return DATA_DIR / "enlight8.mps"
@@ -50,3 +50,13 @@ def model(problem_file):
 def model_copy(model):
     """Return a Model object with a valid problem."""
     return model.copy_orig()
+
+
+@pytest.fixture(scope="module")
+def tmp_dataset(tmp_path_factory, problem_file):
+    """Create a local dataset of problem files."""
+    model = ecole.scip.Model.from_file(str(problem_file))
+    path = tmp_path_factory.mktemp("instances")
+    for name in "abc":
+        model.write_problem(str(path / f"model-{name}.lp"))
+    return path

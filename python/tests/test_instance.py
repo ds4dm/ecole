@@ -13,34 +13,48 @@ import pytest
 import ecole
 
 
-def pytest_generate_tests(metafunc):
-    """Parametrize the `instance_generator` fixture.
-
-    Add instance generator here to have them automatically run all the tests that take
-    `instance_generator` as input.
-    """
-    if "instance_generator" in metafunc.fixturenames:
-        all_instance_generators = (
-            ecole.instance.SetCoverGenerator(n_rows=100, n_cols=200),
-            ecole.instance.CombinatorialAuctionGenerator(n_items=50, n_bids=150),
-            ecole.instance.IndependentSetGenerator(n_nodes=100),
-            ecole.instance.CapacitatedFacilityLocationGenerator(n_customers=60, n_facilities=50),
-        )
-        metafunc.parametrize("instance_generator", all_instance_generators)
+@pytest.fixture(
+    params=(
+        ecole.instance.FileGenerator,
+        ecole.instance.SetCoverGenerator,
+        ecole.instance.CombinatorialAuctionGenerator,
+        ecole.instance.IndependentSetGenerator,
+        ecole.instance.CapacitatedFacilityLocationGenerator,
+    )
+)
+def instance_generator(request, tmp_dataset):
+    """Fixture to run tests with various instance generators."""
+    args = {
+        ecole.instance.FileGenerator: {"directory": str(tmp_dataset)},
+        ecole.instance.SetCoverGenerator: {"n_rows": 100, "n_cols": 200},
+        ecole.instance.CombinatorialAuctionGenerator: {"n_items": 50, "n_bids": 150},
+        ecole.instance.IndependentSetGenerator: {"n_nodes": 100},
+        ecole.instance.CapacitatedFacilityLocationGenerator: {
+            "n_customers": 60,
+            "n_facilities": 50,
+        },
+    }
+    return request.param(**args[request.param])
 
 
 def test_default_init(instance_generator):
     """Construct with default arguments."""
+    if isinstance(instance_generator, ecole.instance.FileGenerator):
+        pytest.skip("No dataset in default directory")
     type(instance_generator)()
 
 
 def test_random_engine_init(instance_generator):
     """Construct a random engine."""
+    if isinstance(instance_generator, ecole.instance.FileGenerator):
+        pytest.skip("No dataset in default directory")
     type(instance_generator)(random_engine=ecole.RandomEngine())
 
 
 def test_generate_instance(instance_generator):
     """Use stateless instance generating function."""
+    if isinstance(instance_generator, ecole.instance.FileGenerator):
+        pytest.skip("No generate_instance for file loaders")
     InstanceGenerator = type(instance_generator)
     model = InstanceGenerator.generate_instance(random_engine=ecole.RandomEngine())
     assert isinstance(model, ecole.scip.Model)
@@ -58,6 +72,12 @@ def test_repeated_slice_iteration(instance_generator):
     for epoch in range(2):
         for model in itertools.islice(instance_generator, 2):
             assert isinstance(model, ecole.scip.Model)
+
+
+def test_FileGenerator_parameters(tmp_dataset):
+    """Parameters are bound in the constructor and as attributes."""
+    generator = ecole.instance.FileGenerator(directory=str(tmp_dataset), sampling_mode="remove")
+    assert generator.sampling_mode.name == "remove"
 
 
 def test_SetCoverGenerator_parameters():
