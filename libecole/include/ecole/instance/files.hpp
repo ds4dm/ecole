@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <vector>
 
@@ -8,26 +9,32 @@
 
 namespace ecole::instance {
 
-class FilesGenerator : public InstanceGenerator {
+class FileGenerator : public InstanceGenerator {
 public:
 	struct Parameters {
+		enum struct SamplingMode { replace, remove, remove_and_repeat };
+
 		bool recursive = true;
+		SamplingMode sampling_mode = SamplingMode::remove_and_repeat;
 	};
 
-	FilesGenerator(std::filesystem::path const& dir, Parameters parameters, RandomEngine random_engine);
-	FilesGenerator(std::filesystem::path const& dir, Parameters parameters);
-	FilesGenerator(std::filesystem::path const& dir);
+	FileGenerator(std::filesystem::path const& dir, Parameters parameters, RandomEngine random_engine);
+	FileGenerator(std::filesystem::path const& dir, Parameters parameters);
+	FileGenerator(std::filesystem::path const& dir);
 
-	scip::Model next() override;
+	auto next() -> scip::Model override;
 	void seed(Seed seed) override;
-	[[nodiscard]] bool done() const override { return false; }
+	[[nodiscard]] auto done() const -> bool override;
 
-	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
+	[[nodiscard]] auto get_parameters() const noexcept -> Parameters const& { return parameters; }
 
 private:
 	RandomEngine random_engine;
 	Parameters parameters;
 	std::vector<std::filesystem::path> files;
+	std::size_t files_remaining;
+
+	void reset_file_list();
 };
 
 }  // namespace ecole::instance

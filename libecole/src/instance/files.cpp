@@ -11,41 +11,74 @@ namespace fs = std::filesystem;
 
 namespace {
 
-template <typename FileIter> auto list_files(FileIter&& iter) {
+/** List files and symlinks to files in the given directory iterator. */
+template <typename FileIter> auto list_files(FileIter&& dir_iter) {
 	auto files = std::vector<fs::path>{};
-	std::transform(begin(iter), end(iter), std::back_inserter(files), [](auto de) { return de.path(); });
-	// The order in which the files are iterated over is unspecified.
-	std::sort(begin(files), end(files));
+	for (auto iter = begin(dir_iter), last = end(dir_iter); iter != last; ++iter) {
+		auto file = iter->path();
+		if (fs::is_regular_file(file) || (fs::is_symlink(file) && fs::exists(fs::read_symlink(file)))) {
+			files.push_back(std::move(file));
+		}
+	}
 	return files;
 }
 
 }  // namespace
 
-FilesGenerator::FilesGenerator(fs::path const& dir, Parameters parameters_, RandomEngine random_engine_) :
+FileGenerator::FileGenerator(fs::path const& dir, Parameters parameters_, RandomEngine random_engine_) :
 	random_engine{random_engine_}, parameters{parameters_} {
 	if (parameters.recursive) {
-		files = list_files(fs::recursive_directory_iterator{dir});
+		files = list_files(fs::recursive_directory_iterator{dir, fs::directory_options::follow_directory_symlink});
 	} else {
-		files = list_files(fs::directory_iterator{dir});
+		files = list_files(fs::directory_iterator{dir, fs::directory_options::follow_directory_symlink});
 	}
+	// The order in which the files are iterated over is unspecified.
+	reset_file_list();
 }
 
-FilesGenerator::FilesGenerator(std::filesystem::path const& dir, Parameters parameters_) :
-	FilesGenerator{dir, parameters_, ecole::spawn_random_engine()} {}
+FileGenerator::FileGenerator(std::filesystem::path const& dir, Parameters parameters_) :
+	FileGenerator{dir, parameters_, ecole::spawn_random_engine()} {}
 
-FilesGenerator::FilesGenerator(std::filesystem::path const& dir) :
-	FilesGenerator{dir, Parameters{}, ecole::spawn_random_engine()} {}
+FileGenerator::FileGenerator(std::filesystem::path const& dir) :
+	FileGenerator{dir, Parameters{}, ecole::spawn_random_engine()} {}
 
-void FilesGenerator::seed(Seed seed) {
+auto FileGenerator::next() -> scip::Model {
+	if (done()) {
+		throw IteratorExhausted{};
+	}
+	if (files_remaining == 0) {
+		files_remaining = files.size();
+	}
+
+	auto choice = std::uniform_int_distribution<std::size_t>{0, files_remaining - 1};
+	auto const idx = choice(random_engine);
+
+	// files_remaining is not used in this case, it is only an alias for files.size().
+	if (parameters.sampling_mode == Parameters::SamplingMode::replace) {
+		return scip::Model::from_file(files[idx]);
+	}
+
+	// files[0: files_reamining] are unseen files, while files[files_reamining: -1] are seen.
+	// We mark files[idx] as seen by exchanging it with files[files_remaining]
+	files_remaining--;
+	swap(files[idx], files[files_remaining]);
+	return scip::Model::from_file(files[files_remaining]);
+}
+
+void FileGenerator::seed(Seed seed) {
+	reset_file_list();
 	random_engine.seed(seed);
 }
 
-scip::Model FilesGenerator::next() {
-	if (files.empty()) {
-		throw IteratorExhausted{};
-	}
-	auto choice = std::uniform_int_distribution<std::size_t>{0, files.size() - 1};
-	return scip::Model::from_file(files[choice(random_engine)]);
+auto FileGenerator::done() const -> bool {
+	auto const no_files_at_all = files.empty();
+	auto const seen_all_files = (files_remaining == 0 && parameters.sampling_mode == Parameters::SamplingMode::remove);
+	return no_files_at_all || seen_all_files;
+}
+
+void FileGenerator::reset_file_list() {
+	std::sort(begin(files), end(files));
+	files_remaining = files.size();
 }
 
 }  // namespace ecole::instance

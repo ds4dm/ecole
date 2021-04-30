@@ -3,6 +3,7 @@
 
 #include <catch2/catch.hpp>
 
+#include "ecole/exception.hpp"
 #include "ecole/instance/files.hpp"
 
 #include "conftest.hpp"
@@ -17,44 +18,85 @@ public:
 	inline static constexpr auto names = std::array{"m1", "m2", "m3", "m4"};
 
 	/** Generate a local dataset of instances. */
-	InstanceDatasetRAII() {
+	InstanceDatasetRAII(bool nested = false) {
 		auto model = get_model();
 		for (auto const* const name : names) {
 			model.set_name(name);
-			model.write_problem(this->make_subpath(".mps"));
+			if (nested) {
+				auto dir = this->make_subpath();
+				std::filesystem::create_directory(dir);
+				model.write_problem(dir / "model.mps");
+			} else {
+				model.write_problem(this->make_subpath(".mps"));
+			}
 		}
 	}
 };
 
-/** Check wether an element is inside a container. */
-template <typename Elem, typename Range> auto is_in(Elem const& val, Range const& range) -> bool {
-	return std::find(begin(range), end(range), val) != end(range);
-}
-
-TEST_CASE("FilesGenerator unit test", "[unit][instance]") {
-	// We cannot run the usual instance generator unit tests because the loader is not as complete.
-	auto const instances_raii = InstanceDatasetRAII{};
-	auto generator = instance::FilesGenerator{instances_raii.dir()};
-
-	SECTION("Generate instances in a loop") {
-		auto const n_instances = GENERATE(2, 2 * InstanceDatasetRAII::names.size());
-		for (auto i = 0; i < n_instances; ++i) {
-			auto model = generator.next();
+/** Check if one container is a sumbet of the other. */
+template <typename RangeA, typename RangeB> auto is_subset(RangeA const& range_a, RangeB const& range_b) -> bool {
+	// Naive quadratic algorithm
+	for (auto const& a : range_a) {
+		if (std::find(begin(range_b), end(range_b), a) == end(range_b)) {
+			return false;
 		}
 	}
-
-	SECTION("Same seed give reproducible results") {
-		generator.seed(0);
-		auto const model1 = generator.next();
-		generator.seed(0);
-		auto const model2 = generator.next();
-		REQUIRE(model1.name() == model2.name());
-	}
+	return true;
 }
 
-TEST_CASE("FilesGenerator properly iterate over files", "[instance]") {
-	auto const instances_raii = InstanceDatasetRAII{};
-	auto generator = instance::FilesGenerator{instances_raii.dir()};
+/** Check if two containers represent the same set. */
+template <typename RangeA, typename RangeB> auto is_same_set(RangeA const& range_a, RangeB const& range_b) -> bool {
+	// Naive algorithm
+	return is_subset(range_a, range_b) && is_subset(range_b, range_a);
+}
 
-	SECTION("Files are from the dataset") { REQUIRE(is_in(generator.next().name(), InstanceDatasetRAII::names)); }
+/** Collect model name from a generator. */
+template <std::size_t N> auto collect_names(instance::FileGenerator& generator) {
+	auto names = std::array<std::string, N>{};
+	std::generate(begin(names), end(names), [&]() { return generator.next().name(); });
+	return names;
+}
+
+TEST_CASE("FileGenerator properly iterate over files", "[instance]") {
+	using SamplingMode = instance::FileGenerator::Parameters::SamplingMode;
+	auto const nested_dirs = GENERATE(true, false);
+	auto const recursive = GENERATE(true, false);
+	auto const sampling_mode = GENERATE(SamplingMode::replace, SamplingMode::remove, SamplingMode::remove_and_repeat);
+	auto const instances_raii = InstanceDatasetRAII{nested_dirs};
+	auto generator = instance::FileGenerator{instances_raii.dir(), {recursive, sampling_mode}};
+
+	if (nested_dirs && !recursive) {
+		SECTION("Throw exception when no files are found") {
+			REQUIRE(generator.done());
+			REQUIRE_THROWS_AS(generator.next(), IteratorExhausted);
+		}
+
+	} else {
+		SECTION("Iterate as many files as there are in the dateset") {
+			auto constexpr n_files = InstanceDatasetRAII::names.size();
+			auto names_seen = collect_names<n_files>(generator);
+
+			if (sampling_mode == SamplingMode::remove) {
+				SECTION("Throw exception after first iteration when removing.") {
+					REQUIRE(generator.done());
+					REQUIRE_THROWS_AS(generator.next(), IteratorExhausted);
+				}
+			} else {
+				SECTION("Iterate over files a second time when replacing or repeating ") { collect_names<n_files>(generator); }
+			}
+			if (sampling_mode == SamplingMode::replace) {
+				REQUIRE(is_subset(names_seen, InstanceDatasetRAII::names));
+			} else {
+				REQUIRE(is_same_set(names_seen, InstanceDatasetRAII::names));
+			}
+		}
+
+		SECTION("Same seed give reproducible results") {
+			generator.seed(0);
+			auto const model1 = generator.next();
+			generator.seed(0);
+			auto const model2 = generator.next();
+			REQUIRE(model1.name() == model2.name());
+		}
+	}
 }
