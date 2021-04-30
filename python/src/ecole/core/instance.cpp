@@ -344,85 +344,95 @@ void bind_submodule(py::module const& m) {
  *  Binding code for instance generators  *
  ******************************************/
 
-template <typename PyClass, typename MemberTuple>
-void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple, char const* docstring) {
+/**
+ * Implementation of def_generate_instance to unpack tuple.
+ */
+template <typename PyClass, typename... Members>
+void def_generate_instance_impl(PyClass& py_class, char const* docstring, Members&&... members) {
 	// The C++ class being wrapped
 	using Generator = typename PyClass::type;
 	using Parameters = typename Generator::Parameters;
+	// Instantiate the C++ parameters at compile time to get default parameters.
+	// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
+	static auto const default_params = Parameters{};
+	// Bind a the static method that takes as input all parameters
+	py_class.def_static(
+		"generate_instance",
+		// Get the type of each parameter and add it to the Python function parameters
+		[](utility::return_t<decltype(members.value)>... params, RandomEngine& random_engine) {
+			// Call the C++ static function with a Parameter struct
+			return Generator::generate_instance(Parameters{params...}, random_engine);
+		},
+		// Set name for all function parameters.
+		// Fetch default value on the default parameters
+		(py::arg(members.name) = std::invoke(members.value, default_params))...,
+		py::arg("random_engine"),
+		py::call_guard<py::gil_scoped_release>(),
+		docstring);
+}
 
-	// Implementation of def_generate_instance to unpack tuple.
-	auto def_generate_instance_impl = [&py_class, docstring](auto&&... members) {
-		// Instantiate the C++ parameters at compile time to get default parameters.
-		// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
-		static auto const default_params = Parameters{};
-		// Bind a the static method that takes as input all parameters
-		py_class.def_static(
-			"generate_instance",
-			// Get the type of each parameter and add it to the Python function parameters
-			[](utility::return_t<decltype(members.value)>... params, RandomEngine& random_engine) {
-				// Call the C++ static function with a Parameter struct
-				return Generator::generate_instance(Parameters{params...}, random_engine);
-			},
-			// Set name for all function parameters.
-			// Fetch default value on the default parameters
-			(py::arg(members.name) = std::invoke(members.value, default_params))...,
-			py::arg("random_engine"),
-			py::call_guard<py::gil_scoped_release>(),
-			docstring);
-	};
-
+template <typename PyClass, typename MemberTuple>
+void def_generate_instance(PyClass& py_class, MemberTuple&& members_tuple, char const* docstring) {
 	// Forward call to impl in order to unpack the tuple
-	std::apply(def_generate_instance_impl, std::forward<MemberTuple>(members_tuple));
+	std::apply(
+		[&py_class, docstring](auto&&... members) {
+			def_generate_instance_impl(py_class, docstring, std::forward<decltype(members)>(members)...);
+		},
+		std::forward<MemberTuple>(members_tuple));
+}
+
+/**
+ * Implementation of def_init to unpack tuple.
+ */
+template <typename PyClass, typename... Members>
+void def_init_impl(PyClass& py_class, char const* docstring, Members&&... members) {
+	// The C++ class being wrapped
+	using Generator = typename PyClass::type;
+	using Parameters = typename Generator::Parameters;
+	// Instantiate the C++ parameters at compile time to get default parameters.
+	// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
+	static auto const default_params = Parameters{};
+	// Bind a constructor that takes as input all parameters
+	py_class.def(
+		// Get the type of each parameter and add it to the Python constructor
+		py::init([](utility::return_t<decltype(members.value)>... params, RandomEngine const* random_engine) {
+			// Dispatch to the C++ constructors with a Parameter struct
+			if (random_engine == nullptr) {
+				return std::make_unique<Generator>(Parameters{params...});
+			}
+			return std::make_unique<Generator>(Parameters{params...}, *random_engine);
+		}),
+		// Set name for all constructor parameters.
+		// Fetch default value on the default parameters
+		(py::arg(members.name) = std::invoke(members.value, default_params))...,
+		// None as nullptr are allowed
+		py::arg("random_engine").none(true) = py::none(),
+		docstring);
 }
 
 template <typename PyClass, typename MemberTuple>
 void def_init(PyClass& py_class, MemberTuple&& members_tuple, char const* docstring) {
+	// Forward call to impl in order to unpack the tuple
+	std::apply(
+		[&](auto&&... members) { def_init_impl(py_class, docstring, std::forward<decltype(members)>(members)...); },
+		std::forward<MemberTuple>(members_tuple));
+}
+
+template <typename PyClass, typename Member> void def_attributes_impl(PyClass& py_class, Member&& member) {
 	// The C++ class being wrapped
 	using Generator = typename PyClass::type;
-	using Parameters = typename Generator::Parameters;
-
-	// Implementation of def_init to unpack tuple
-	auto def_init_impl = [&py_class, docstring](auto&&... members) {
-		// Instantiate the C++ parameters at compile time to get default parameters.
-		// FIXME could be constexpr but GCC 7.3 (on conda) is complaining
-		static auto const default_params = Parameters{};
-		// Bind a constructor that takes as input all parameters
-		py_class.def(
-			// Get the type of each parameter and add it to the Python constructor
-			py::init([](utility::return_t<decltype(members.value)>... params, RandomEngine const* random_engine) {
-				// Dispatch to the C++ constructors with a Parameter struct
-				if (random_engine == nullptr) {
-					return std::make_unique<Generator>(Parameters{params...});
-				}
-				return std::make_unique<Generator>(Parameters{params...}, *random_engine);
-			}),
-			// Set name for all constructor parameters.
-			// Fetch default value on the default parameters
-			(py::arg(members.name) = std::invoke(members.value, default_params))...,
-			// None as nullptr are allowed
-			py::arg("random_engine").none(true) = py::none(),
-			docstring);
-	};
-
-	// Forward call to impl in order to unpack the tuple
-	std::apply(def_init_impl, std::forward<MemberTuple>(members_tuple));
+	// Bind attribute access for a given member variable
+	// Fetch the value on the Parameter object of the C++ class
+	py_class.def_property_readonly(
+		member.name, [value = member.value](Generator& self) { return std::invoke(value, self.get_parameters()); });
 }
 
 template <typename PyClass, typename MemberTuple> void def_attributes(PyClass& py_class, MemberTuple&& members_tuple) {
-	// The C++ class being wrapped
-	using Generator = typename PyClass::type;
-	auto def_attribute = [&py_class](auto&& member) {
-		// Bind attribute access for a given member variable
-		// Fetch the value on the Parameter object of the C++ class
-		py_class.def_property_readonly(
-			member.name, [value = member.value](Generator& self) { return std::invoke(value, self.get_parameters()); });
-	};
-
 	// Forward call to impl in order to unpack the tuple
 	std::apply(
-		[&](auto&&... members) {
+		[&py_class](auto&&... members) {
 			// Bind attribute access for each member variable (comma operator fold expression).
-			((def_attribute(std::forward<decltype(members)>(members))), ...);
+			((def_attributes_impl(py_class, std::forward<decltype(members)>(members))), ...);
 		},
 		std::forward<MemberTuple>(members_tuple));
 }
