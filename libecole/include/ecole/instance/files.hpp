@@ -14,13 +14,14 @@ public:
 	struct Parameters {
 		enum struct SamplingMode { replace, remove, remove_and_repeat };
 
+		std::filesystem::path directory = "instances";
 		bool recursive = true;
 		SamplingMode sampling_mode = SamplingMode::remove_and_repeat;
 	};
 
-	FileGenerator(std::filesystem::path const& dir, Parameters parameters, RandomEngine random_engine);
-	FileGenerator(std::filesystem::path const& dir, Parameters parameters);
-	FileGenerator(std::filesystem::path const& dir);
+	FileGenerator(Parameters parameters, RandomEngine random_engine);
+	FileGenerator(Parameters parameters);
+	FileGenerator();
 
 	auto next() -> scip::Model override;
 	void seed(Seed seed) override;

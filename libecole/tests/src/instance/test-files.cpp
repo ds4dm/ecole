@@ -63,7 +63,7 @@ TEST_CASE("FileGenerator properly iterate over files", "[instance]") {
 	auto const recursive = GENERATE(true, false);
 	auto const sampling_mode = GENERATE(SamplingMode::replace, SamplingMode::remove, SamplingMode::remove_and_repeat);
 	auto const instances_raii = InstanceDatasetRAII{nested_dirs};
-	auto generator = instance::FileGenerator{instances_raii.dir(), {recursive, sampling_mode}};
+	auto generator = instance::FileGenerator{{instances_raii.dir(), recursive, sampling_mode}};
 
 	if (nested_dirs && !recursive) {
 		SECTION("Throw exception when no files are found") {

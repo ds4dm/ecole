@@ -25,22 +25,22 @@ template <typename FileIter> auto list_files(FileIter&& dir_iter) {
 
 }  // namespace
 
-FileGenerator::FileGenerator(fs::path const& dir, Parameters parameters_, RandomEngine random_engine_) :
-	random_engine{random_engine_}, parameters{parameters_} {
+FileGenerator::FileGenerator(Parameters parameters_, RandomEngine random_engine_) :
+	random_engine{random_engine_}, parameters{std::move(parameters_)} {
+	using opts = fs::directory_options;
 	if (parameters.recursive) {
-		files = list_files(fs::recursive_directory_iterator{dir, fs::directory_options::follow_directory_symlink});
+		files = list_files(fs::recursive_directory_iterator{parameters.directory, opts::follow_directory_symlink});
 	} else {
-		files = list_files(fs::directory_iterator{dir, fs::directory_options::follow_directory_symlink});
+		files = list_files(fs::directory_iterator{parameters.directory, opts::follow_directory_symlink});
 	}
 	// The order in which the files are iterated over is unspecified.
 	reset_file_list();
 }
 
-FileGenerator::FileGenerator(std::filesystem::path const& dir, Parameters parameters_) :
-	FileGenerator{dir, parameters_, ecole::spawn_random_engine()} {}
+FileGenerator::FileGenerator(Parameters parameters_) :
+	FileGenerator{std::move(parameters_), ecole::spawn_random_engine()} {}
 
-FileGenerator::FileGenerator(std::filesystem::path const& dir) :
-	FileGenerator{dir, Parameters{}, ecole::spawn_random_engine()} {}
+FileGenerator::FileGenerator() : FileGenerator{Parameters{}} {}
 
 auto FileGenerator::next() -> scip::Model {
 	if (done()) {

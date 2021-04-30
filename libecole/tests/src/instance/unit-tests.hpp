@@ -15,7 +15,7 @@ namespace ecole::instance {
  */
 auto same_problem_permutation(scip::Model const& model1, scip::Model const& model2) noexcept -> bool;
 
-template <typename Generator, bool check_ctor = true> void unit_tests(Generator&& generator) {
+template <typename Generator> void unit_tests(Generator&& generator) {
 	using Parameters = typename Generator::Parameters;
 
 	SECTION("Generate instance consume random engine") {
@@ -27,15 +27,13 @@ template <typename Generator, bool check_ctor = true> void unit_tests(Generator&
 		REQUIRE(random_engine != original_random_engine);
 	}
 
-	if constexpr (check_ctor) {
-		SECTION("Has default constructor") { Generator{}; }
+	SECTION("Has default constructor") { Generator{}; }
 
-		SECTION("Has parameter constructor") { Generator{Parameters{}}; }
+	SECTION("Has parameter constructor") { Generator{Parameters{}}; }
 
-		SECTION("Has parameter and random engine constructor") {
-			// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
-			Generator{Parameters{}, RandomEngine{}};
-		}
+	SECTION("Has parameter and random engine constructor") {
+		// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+		Generator{Parameters{}, RandomEngine{}};
 	}
 
 	SECTION("Generate instances in loop") {
