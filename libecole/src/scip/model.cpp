@@ -61,7 +61,7 @@ Model Model::prob_basic(std::string const& name) {
 	return model;
 }
 
-void Model::write_problem(const std::string& filename) const {
+void Model::write_problem(std::filesystem::path const& filename) const {
 	scip::call(SCIPwriteOrigProblem, const_cast<SCIP*>(get_scip_ptr()), filename.c_str(), nullptr, true);
 }
 
