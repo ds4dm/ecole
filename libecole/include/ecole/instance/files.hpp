@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <string>
 #include <vector>
 
 #include "ecole/instance/abstract.hpp"
@@ -14,7 +15,9 @@ public:
 	struct Parameters {
 		enum struct SamplingMode { replace, remove, remove_and_repeat };
 
-		std::filesystem::path directory = "instances";
+		// FIXME Made this a string for easier bining while waiting for PyBind 2.7
+		// https://github.com/pybind/pybind11/pull/2730
+		std::string directory = "instances";
 		bool recursive = true;
 		SamplingMode sampling_mode = SamplingMode::remove_and_repeat;
 	};

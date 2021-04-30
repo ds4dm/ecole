@@ -5,6 +5,7 @@
 
 #include "ecole/instance/capacitated-facility-location.hpp"
 #include "ecole/instance/combinatorial-auction.hpp"
+#include "ecole/instance/files.hpp"
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
 #include "ecole/utility/function-traits.hpp"
@@ -54,6 +55,46 @@ template <typename PyEnum> void def_init_str(PyEnum& py_enum);
 
 void bind_submodule(py::module const& m) {
 	m.doc() = "Random instance generators for Ecole.";
+
+	// The sampling parameters used in constructor and attributes.
+	auto constexpr file_params = std::tuple{
+		Member{"directory", &FileGenerator::Parameters::directory},
+		Member{"recursive", &FileGenerator::Parameters::recursive},
+		Member{"sampling_mode", &FileGenerator::Parameters::sampling_mode},
+	};
+	// Bind FileGenerator and remove intermediate Parameter class
+	auto file_gen = py::class_<FileGenerator>{m, "FileGenerator"};
+	// Bind FileGenerator::Parameter::SamplingMode enum
+	auto sampling_mode = py::enum_<FileGenerator::Parameters::SamplingMode>{file_gen, "SamplingMode", R"(
+		A generator to iterate over files in a directory and load them into :py:class:<ecole.scip.Model>.
+	)"};
+	sampling_mode  //
+		.value("replace", FileGenerator::Parameters::SamplingMode::replace)
+		.value("remove", FileGenerator::Parameters::SamplingMode::remove)
+		.value("remove_and_repeat", FileGenerator::Parameters::SamplingMode::remove_and_repeat);
+	// Add contructor from str to FileGenerator::Parameter::SamplingMode and make it implicit
+	def_init_str(sampling_mode);
+	// Bind FileGenerator methods and remove intermediate Parameter class
+	def_init(file_gen, file_params, R"(
+		Create a generator to iterate over local problem files.
+
+		Parameters
+		--------
+		directory:
+			The path of the directory in which to look for files.
+		recursive:
+			Wether sub-directories are searched as well.
+		sampling_mode:
+			Method to iterate over files
+				- "replace": Replace every file in the sampling pool right after it is sampled;
+				- "remove": Remove every file from the sampling pool right after it is sampled and finish
+					iteration when all files are sampled once;
+				- "remove_and_repeat": Remove every file from the sampling pool right after it is sampled
+					but repeat the procedure (with different order) after all files have been sampled.
+	)");
+	def_attributes(file_gen, file_params);
+	def_iterator(file_gen);
+	file_gen.def("seed", &FileGenerator::seed, py::arg(" seed"));
 
 	// The Set Cover parameters used in constructor, generate_instance, and attributes
 	auto constexpr set_cover_params = std::tuple{
@@ -110,7 +151,7 @@ void bind_submodule(py::module const& m) {
 	graph_type  //
 		.value("barabasi_albert", IndependentSetGenerator::Parameters::GraphType::barabasi_albert)
 		.value("erdos_renyi", IndependentSetGenerator::Parameters::GraphType::erdos_renyi)
-		.export_values();
+		.export_values();  // TODO remove
 	// Add contructor from str to IndependenSetGenerator::Parameter::GraphType and make it implicit
 	def_init_str(graph_type);
 	// Bind IndependentSetGenerator methods and remove intermediate Parameter class
