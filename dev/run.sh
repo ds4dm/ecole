@@ -173,9 +173,9 @@ function test_doc {
 
 
 function file_version {
-	local -r file_major="$(grep -Po 'VERSION_MAJOR\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
-	local -r file_minor="$(grep -Po 'VERSION_MINOR\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
-	local -r file_patch="$(grep -Po 'VERSION_PATCH\s+\K\d+' "${source_dir}/VERSION" | tr -d '\n')"
+	local -r file_major="$(awk '/VERSION_MAJOR/{print $2}' "${source_dir}/VERSION")"
+	local -r file_minor="$(awk '/VERSION_MINOR/{print $2}' "${source_dir}/VERSION")"
+	local -r file_patch="$(awk '/VERSION_PATCH/{print $2}' "${source_dir}/VERSION")"
 	echo "${file_major:?}.${file_minor:?}.${file_patch:?}"
 }
 
@@ -200,7 +200,7 @@ function git_version {
 	local tag
 	for tag in "${all_tags[@]}"; do
 		if git merge-base --is-ancestor "${tag}" HEAD; then
-			if version=$(printf "${tag}" | grep -Po '^v\K\d+\.\d+\.\d+$'); then
+			if version=$(printf "${tag}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v'); then
 				prev_versions+=("${version}")
 			fi
 		fi
@@ -219,7 +219,7 @@ function test_version {
 		local -r version="$(git_version)"
 	# Otherwise use the arg
 	else
-		local -r version=$(printf "${1}" | grep -Po '^v?\K\d+\.\d+\.\d+$')
+		local -r version=$(printf "${1}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v')
 	fi
 	[ "$(file_version)" = "${version}" ]
 }
