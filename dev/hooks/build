@@ -22,10 +22,18 @@ for python_version in "3.6" "3.7" "3.8" "3.9" ; do
 
 	# Source images with given compiler
 	for compiler in "gcc9" "clang10" ; do
+		extra_args=()
+		# If using clang, compile with LLVM libc++ because the given libstd++ does not fully support C++17.
+		# FIXME libstdc++ should just be updated (because libc++ does not fully support C+=17), but
+		# somehow the add-apt-repository hangs .
+		if [[ "${compiler}" = clang* ]]; then
+			extra_args+=(--build-arg CXXFLAGS="-stdlib=libc++" --build-arg LDFLAGS="-lc++abi")
+		fi;
 		docker build \
 			--file "${DOCKERFILE_DIR}/Dockerfile.src" \
 			--build-arg python_version="${python_version}" \
 			--build-arg compiler="${compiler}" \
+			"${extra_args[@]+"${extra_args[@]}"}" \
 			--tag "${DOCKER_REPO}-linux-src-${compiler}-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
 	done
 

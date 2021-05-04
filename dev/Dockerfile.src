@@ -4,9 +4,14 @@ ARG compiler=clang10
 FROM conanio/${compiler}
 USER root
 
-# Install minimal dependencies for a CircleCI image and upgrade libc++ verison for C++17
+ARG CXXFLAGS=""
+ARG LDFLAGS=""
+ENV CXXFLAGS="$CXXFLAGS"
+ENV LDFLAGS="$LDFLAGS"
+
+# Install minimal dependencies for a CircleCI image.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates libstdc++-8-dev && \
+    apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates && \
     apt-get clean
 
 # Install SCIP from source.
