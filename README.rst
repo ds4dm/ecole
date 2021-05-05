@@ -76,9 +76,9 @@ including manually installing from source.
 Related Projects
 ----------------
 
-- [OR-Gym](https://github.com/hubbs5/or-gym) is a gym-like library providing gym-like environments to produce feasible solutions
+- `OR-Gym <https://github.com/hubbs5/or-gym>`_ is a gym-like library providing gym-like environments to produce feasible solutions
    directly, without the needfor an MILP solver;
-- [MIPLearn](https://github.com/ANL-CEEESA/MIPLearn) for learning to configure solvers. 
+- `MIPLearn <https://github.com/ANL-CEEESA/MIPLearn>`_ for learning to configure solvers. 
 
 Use It, Cite It
 ---------------
