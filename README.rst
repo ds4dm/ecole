@@ -73,6 +73,12 @@ From Source and Other Options
 Checkout the `installation instructions <https://doc.ecole.ai/master/installation.html>`_ in the documentation for more information,
 including manually installing from source.
 
+Related Projects
+----------------
+
+ - [OR-Gym](https://github.com/hubbs5/or-gym) is a gym-like library providing gym-like environments to produce feasible solutions
+   directly, without the needfor an MILP solver;
+ - [MIPLearn](https://github.com/ANL-CEEESA/MIPLearn) for learning to configure solvers. 
 
 Use It, Cite It
 ---------------
