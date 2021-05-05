@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cassert>
 #include <mutex>
 
 #include <objscip/objbranchrule.h>
@@ -94,12 +96,28 @@ void Scimpl::solve_iter() {
 	m_controller->wait_thread();
 }
 
-void scip::Scimpl::solve_iter_branch(SCIP_VAR* var) {
-	m_controller->resume_thread([var](SCIP* scip_ptr, SCIP_RESULT* result) {
-		if (var == nullptr) {
+SCIP_RETCODE
+SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** eqchild, SCIP_NODE** upchild) {
+	if (nvars <= 0) {
+		return SCIP_ERROR;
+	}
+	if (nvars == 1) {
+		SCIP_CALL(SCIPbranchVar(scip, *vars, downchild, eqchild, upchild));
+	} else {
+		// Our implementation
+		return SCIP_NOTIMPLEMENTED;
+	}
+	return SCIP_OKAY;
+}
+
+void scip::Scimpl::solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars) {
+	assert(std::none_of(vars.begin(), vars.end(), [](auto* var) { return var == nullptr; }));
+	m_controller->resume_thread([vars](SCIP* scip_ptr, SCIP_RESULT* result) {
+		if (vars.empty()) {
 			*result = SCIP_DIDNOTRUN;
 		} else {
-			SCIP_CALL(SCIPbranchVar(scip_ptr, var, nullptr, nullptr, nullptr));
+			SCIP_CALL(SCIPbranchGUB(
+				scip_ptr, const_cast<SCIP_VAR**>(vars.data()), static_cast<int>(vars.size()), nullptr, nullptr, nullptr));
 			*result = SCIP_BRANCHED;
 		}
 		return SCIP_OKAY;

@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 
 #include <fmt/format.h>
@@ -201,8 +201,19 @@ void Model::solve_iter() {
 	scimpl->solve_iter();
 }
 
-void Model::solve_iter_branch(SCIP_VAR* var) {
-	scimpl->solve_iter_branch(var);
+void Model::solve_iter_branch() {
+	return solve_iter_branch(nonstd::span<SCIP_VAR const* const>{});
+}
+
+void Model::solve_iter_branch(SCIP_VAR const* var) {
+	return solve_iter_branch({&var, 1});
+}
+
+void Model::solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars) {
+	if (std::any_of(vars.begin(), vars.end(), [](auto* var) { return var == nullptr; })) {
+		throw std::invalid_argument{"All variables must be non null."};
+	}
+	scimpl->solve_iter_branch(vars);
 }
 
 void Model::solve_iter_stop() {
