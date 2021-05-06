@@ -7,8 +7,9 @@
 #include <scip/scipdefplugins.h>
 
 #include "ecole/scip/scimpl.hpp"
-
 #include "ecole/scip/utils.hpp"
+
+#include "scip/gub-branch.hpp"
 
 namespace ecole::scip {
 
@@ -96,26 +97,18 @@ void Scimpl::solve_iter() {
 	m_controller->wait_thread();
 }
 
-SCIP_RETCODE
-SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** eqchild, SCIP_NODE** upchild) {
-	if (nvars <= 0) {
-		return SCIP_ERROR;
-	}
-	if (nvars == 1) {
-		SCIP_CALL(SCIPbranchVar(scip, *vars, downchild, eqchild, upchild));
-	} else {
-		// Our implementation
-		return SCIP_NOTIMPLEMENTED;
-	}
-	return SCIP_OKAY;
-}
-
 void scip::Scimpl::solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars) {
 	assert(std::none_of(vars.begin(), vars.end(), [](auto* var) { return var == nullptr; }));
 	m_controller->resume_thread([vars](SCIP* scip_ptr, SCIP_RESULT* result) {
-		if (vars.empty()) {
+		switch (vars.size()) {
+		case 0:
 			*result = SCIP_DIDNOTRUN;
-		} else {
+			break;
+		case 1:
+			SCIP_CALL(SCIPbranchVar(scip_ptr, const_cast<SCIP_VAR*>(vars.front()), nullptr, nullptr, nullptr));
+			*result = SCIP_BRANCHED;
+			break;
+		default:
 			SCIP_CALL(SCIPbranchGUB(
 				scip_ptr, const_cast<SCIP_VAR**>(vars.data()), static_cast<int>(vars.size()), nullptr, nullptr, nullptr));
 			*result = SCIP_BRANCHED;

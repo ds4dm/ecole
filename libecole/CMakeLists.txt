@@ -15,6 +15,7 @@ add_library(
 	src/scip/row.cpp
 	src/scip/col.cpp
 	src/scip/exception.cpp
+	src/scip/gub-branch.cpp  # Temporary
 
 	src/instance/files.cpp
 	src/instance/set-cover.cpp
