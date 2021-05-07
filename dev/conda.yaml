@@ -27,7 +27,7 @@ dependencies:
   # General dev tools
   - pre-commit
   # C++ dev tools
-  - clang-tools=10
+  - clang-tools=11
   - ccache
   - catch2
   - cli11
