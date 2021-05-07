@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <fmt/format.h>
 
 #include <scip/cons_linear.h>
@@ -46,6 +48,8 @@ static SCIP_RETCODE SCIPbranchGUB_validate(SCIP* scip, SCIP_VAR** vars, int nvar
 
 static SCIP_RETCODE SCIPbranchGUB_add_child(
 	SCIP* scip,
+	SCIP_Real priority,
+	SCIP_Real estimate,
 	SCIP_VAR** vars,
 	SCIP_Real* ones,
 	int nvars,
@@ -54,7 +58,7 @@ static SCIP_RETCODE SCIPbranchGUB_add_child(
 	SCIP_NODE** node_out) {
 	// TODO decide on priorities
 	SCIP_NODE* node = nullptr;
-	SCIP_CALL(SCIPcreateChild(scip, &node, 1., 0.));
+	SCIP_CALL(SCIPcreateChild(scip, &node, priority, estimate));
 	auto name = fmt::format("branching-{}", SCIPnodeGetNumber(node));
 	SCIP_CONS* cons = nullptr;
 	SCIP_CALL(SCIPcreateConsBasicLinear(scip, &cons, name.c_str(), nvars, vars, ones, lhs, rhs));
@@ -92,13 +96,19 @@ SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 
 	SCIP_Real const downbound = SCIPfeasFloor(scip, pseudo_sol_sum);
 	SCIP_Real const upbound = SCIPfeasCeil(scip, pseudo_sol_sum);
+	SCIP_Real const estimate = SCIPnodeGetLowerbound(SCIPgetCurrentNode(scip));
 	if (SCIPisEQ(scip, downbound, upbound)) {
-		SCIP_CALL_TERMINATE(retcode, SCIPbranchGUB_add_child(scip, vars, ones, nvars, upbound, upbound, eqchild), TERM);
-		SCIP_CALL_TERMINATE(retcode, SCIPbranchGUB_add_child(scip, vars, ones, nvars, -inf, upbound - 1, downchild), TERM);
-		SCIP_CALL_TERMINATE(retcode, SCIPbranchGUB_add_child(scip, vars, ones, nvars, upbound + 1, inf, upchild), TERM);
+		SCIP_CALL_TERMINATE(
+			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, upbound, eqchild), TERM);
+		SCIP_CALL_TERMINATE(
+			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, upbound - 1, downchild), TERM);
+		SCIP_CALL_TERMINATE(
+			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound + 1, inf, upchild), TERM);
 	} else {
-		SCIP_CALL_TERMINATE(retcode, SCIPbranchGUB_add_child(scip, vars, ones, nvars, -inf, downbound, downchild), TERM);
-		SCIP_CALL_TERMINATE(retcode, SCIPbranchGUB_add_child(scip, vars, ones, nvars, upbound, inf, upchild), TERM);
+		SCIP_CALL_TERMINATE(
+			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
+		SCIP_CALL_TERMINATE(
+			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
 	}
 
 TERM:
