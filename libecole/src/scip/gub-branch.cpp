@@ -56,17 +56,20 @@ static SCIP_RETCODE SCIPbranchGUB_add_child(
 	SCIP_Real lhs,
 	SCIP_Real rhs,
 	SCIP_NODE** node_out) {
-	// TODO decide on priorities
 	SCIP_NODE* node = nullptr;
 	SCIP_CALL(SCIPcreateChild(scip, &node, priority, estimate));
 	auto name = fmt::format("branching-{}", SCIPnodeGetNumber(node));
 	SCIP_CONS* cons = nullptr;
 	SCIP_CALL(SCIPcreateConsBasicLinear(scip, &cons, name.c_str(), nvars, vars, ones, lhs, rhs));
-	SCIP_CALL(SCIPaddConsNode(scip, node, cons, nullptr));
+	SCIP_RETCODE retcode = SCIP_OKAY;
+	SCIP_CALL_TERMINATE(retcode, SCIPaddConsNode(scip, node, cons, nullptr), TERM);
 	if (node_out != nullptr) {
 		*node_out = node;
 	}
-	return SCIP_OKAY;
+
+TERM:
+	SCIP_CALL(SCIPreleaseCons(scip, &cons));
+	return retcode;
 }
 
 SCIP_RETCODE
