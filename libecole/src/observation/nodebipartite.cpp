@@ -375,7 +375,7 @@ auto extract_observation_from_cache(scip::Model& model, NodeBipartiteObs obs) ->
  *  Observation extracting function  *
  *************************************/
 
-auto NodeBipartite::before_reset(scip::Model & /* model */) -> void {
+auto NodeBipartite::before_reset(scip::Model& /* model */) -> void {
 	cache_computed = false;
 }
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstddef>
 
 #include <range/v3/view/zip.hpp>
@@ -34,15 +35,12 @@ auto same_constraint_permutation(SCIP* scip1, SCIP_Cons* constraint1, SCIP* scip
 		}
 	}
 
-	auto vars1 = scip::get_vars_linear(scip1, constraint1);
-	auto vars2 = scip::get_vars_linear(scip2, constraint2);
-	for (auto [v1, v2] : views::zip(vars1, vars2)) {
-		if (SCIPvarGetIndex(v1) != SCIPvarGetIndex(v2)) {
-			return false;
-		}
-	}
-
-	return true;
+	auto const vars1 = scip::get_vars_linear(scip1, constraint1);
+	auto const vars2 = scip::get_vars_linear(scip2, constraint2);
+	auto const zipped_vars = views::zip(vars1, vars2);
+	return std::all_of(zipped_vars.begin(), zipped_vars.end(), [](auto const& var_pair) {
+		return SCIPvarGetIndex(var_pair.first) == SCIPvarGetIndex(var_pair.second);
+	});
 }
 
 }  // namespace
