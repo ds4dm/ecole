@@ -36,12 +36,8 @@ public:
 /** Check if one container is a sumbet of the other. */
 template <typename RangeA, typename RangeB> auto is_subset(RangeA const& range_a, RangeB const& range_b) -> bool {
 	// Naive quadratic algorithm
-	for (auto const& a : range_a) {
-		if (std::find(begin(range_b), end(range_b), a) == end(range_b)) {
-			return false;
-		}
-	}
-	return true;
+	auto in_range_b = [&range_b](auto elem) { return std::find(begin(range_b), end(range_b), elem) < end(range_b); };
+	return std::all_of(range_a.begin(), range_a.end(), in_range_b);
 }
 
 /** Check if two containers represent the same set. */
