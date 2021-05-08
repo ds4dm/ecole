@@ -25,3 +25,8 @@ Configuring
 ^^^^^^^^^^^
 .. autoclass:: ecole.environment.Configuring
 .. autoclass:: ecole.dynamics.ConfiguringDynamics
+
+PrimalSearch
+^^^^^^^^^^^^
+.. autoclass:: ecole.environment.PrimalSearch
+.. autoclass:: ecole.dynamics.PrimalSearchDynamics

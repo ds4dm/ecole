@@ -266,7 +266,12 @@ void bind_submodule(pybind11::module_ const& m) {
 		.def(py::init<>());
 
 	dynamics_class<PrimalSearchDynamics>(m, "PrimalSearchDynamics")  //
-		.def(py::init<>());
+		.def(
+			py::init<int, int, int, int>(),
+			py::arg("trials_per_node") = 1,
+			py::arg("depth_freq") = 1,
+			py::arg("depth_start") = 0,
+			py::arg("depth_stop") = -1);
 }
 
 }  // namespace ecole::dynamics

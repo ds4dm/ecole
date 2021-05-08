@@ -141,7 +141,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 		auto model = get_model();
 
 		auto const time_limit = GENERATE(0, 1, 2);
-		model.set_param("limits/time", time_limit);
+		model.set_param("limits/time", time_limit);  // we must set a time limit
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			REQUIRE(action_set.has_value());
@@ -167,7 +167,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 		REQUIRE(done);
 	}
 
-	SECTION("Single trial at root node (bis)") {
+	SECTION("Single trial at root node (alternative)") {
 		auto dyn = dynamics::PrimalSearchDynamics{1, 1, 0, 0};  // trials, freq, start, stop
 		auto model = get_model();
 
