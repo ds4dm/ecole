@@ -126,3 +126,23 @@ class TestConfiguring(DynamicsUnitTests):
 
     def setup_method(self, method):
         self.dynamics = ecole.dynamics.ConfiguringDynamics()
+
+
+class TestPrimalSearch(DynamicsUnitTests):
+    @staticmethod
+    def assert_action_set(action_set):
+        assert isinstance(action_set, np.ndarray)
+        assert action_set.ndim == 1
+        assert action_set.size > 0
+        assert action_set.dtype == np.uint64
+
+    @staticmethod
+    def policy(action_set):
+        return {a: 0.0 for a in action_set}
+
+    @staticmethod
+    def bad_policy(action_set):
+        return {1 << 31: 0.0}
+
+    def setup_method(self, method):
+        self.dynamics = ecole.dynamics.PrimalSearchDynamics()
