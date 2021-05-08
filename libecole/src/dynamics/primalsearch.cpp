@@ -29,7 +29,7 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
-	auto vars = model.variables();  // transformed problem variables
+	auto vars = model.pseudo_branch_cands();  // non-fixed discrete variables
 	auto var_ids = xt::xtensor<std::size_t, 1>::from_shape({vars.size()});
 	std::transform(  //
 		vars.begin(),
@@ -37,7 +37,6 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 		var_ids.begin(),
 		[](auto const var) { return SCIPvarGetProbindex(var); });
 
-	assert(var_ids.size() > 0);
 	return var_ids;
 }
 

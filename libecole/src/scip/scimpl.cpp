@@ -24,6 +24,7 @@ public:
 	static constexpr int max_priority = 536870911;
 	static constexpr int no_maxdepth = -1;
 	static constexpr double no_maxbounddist = 1.0;
+	static constexpr auto name = "ecole::ReverseBranchrule";
 
 	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor_*/);
 
@@ -45,6 +46,7 @@ namespace {
 class ReverseHeur : public ::scip::ObjHeur {
 public:
 	static constexpr int max_priority = 536870911;
+	static constexpr auto name = "ecole::ReverseHeur";
 
 	ReverseHeur(
 		SCIP* scip,
@@ -166,21 +168,50 @@ void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, 
 
 void scip::Scimpl::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals) {
 	m_controller->resume_thread([&varvals](SCIP* scip_ptr, SCIP_RESULT* result) {
-		SCIP_HEUR* heur = nullptr;  // TODO take the actual primal heuristic ?
+		SCIP_HEUR* heur = SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
 		SCIP_SOL* sol = nullptr;
+		SCIP_Bool lperror = false;
+		SCIP_Bool cutoff = false;
 		SCIP_Bool success = false;
 
-		// create empty solution
-		// scip::call(SCIPcreatePartialSol, scip_ptr, &sol, heur);
-		scip::call(SCIPcreateUnknownSol, scip_ptr, &sol, heur);
-
-		// fill (partial) solution values
-		for (auto const& [var, val] : varvals) {
-			scip::call(SCIPsetSolVal, scip_ptr, sol, var, val);
+		// if action is empty, do nothing
+		if (varvals.empty()) {
+			*result = SCIP_DIDNOTFIND;
+			return SCIP_OKAY;
 		}
 
-		// try (and free) partial solution
-		scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
+		// try to improve the (partial) solution by fixing variables and
+		// then re-solving the LP
+
+		// enter probing mode
+		scip::call(SCIPstartProbing, scip_ptr);
+
+		// fix the given variables to the given values
+		for (auto const& [var, val] : varvals) {
+			scip::call(SCIPfixVarProbing, scip_ptr, var, val);
+		}
+
+		// propagate
+		scip::call(SCIPpropagateProbing, scip_ptr, 0, &cutoff, nullptr);
+		if (!cutoff) {
+			// build the LP if needed
+			if (!SCIPisLPConstructed(scip_ptr)) {
+				scip::call(SCIPconstructLP, scip_ptr, &cutoff);
+			}
+			if (!cutoff) {
+				// solve the LP
+				scip::call(SCIPsolveProbingLP, scip_ptr, -1, &lperror, &cutoff);
+				if (!lperror && !cutoff) {
+					// try the LP solution in the original problem
+					scip::call(SCIPcreateSol, scip_ptr, &sol, heur);
+					scip::call(SCIPlinkLPSol, scip_ptr, sol);
+					scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
+				}
+			}
+		}
+
+		// exit probing mode
+		scip::call(SCIPendProbing, scip_ptr);
 
 		*result = success ? SCIP_FOUNDSOL : SCIP_DIDNOTFIND;
 		return SCIP_OKAY;
@@ -206,7 +237,7 @@ namespace {
 scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
 	::scip::ObjBranchrule(
 		scip,
-		"ecole::ReverseBranchrule",
+		scip::ReverseBranchrule::name,
 		"Branchrule that wait for another thread to make the branching.",
 		scip::ReverseBranchrule::max_priority,
 		scip::ReverseBranchrule::no_maxdepth,
@@ -243,7 +274,7 @@ scip::ReverseHeur::ReverseHeur(
 	int depth_stop) :
 	::scip::ObjHeur(
 		scip,
-		"ecole::ReverseHeur",
+		scip::ReverseHeur::name,
 		"Primal heuristic that waits for another thread to provide a primal solution.",
 		'e',
 		scip::ReverseHeur::max_priority,
