@@ -1,15 +1,11 @@
 #pragma once
 
-#include <cstddef>
 #include <map>
 #include <optional>
 
-#include <nonstd/span.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/dynamics.hpp"
-#include "ecole/none.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::dynamics {
 
