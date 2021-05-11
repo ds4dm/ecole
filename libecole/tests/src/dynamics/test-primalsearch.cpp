@@ -51,7 +51,7 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 		REQUIRE(xt::unique(var_ids).size() == var_ids.size());
 	}
 
-	SECTION("Handle extreme values - empty") {
+	SECTION("Handle extreme action - empty") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
 		auto const& var_ids = action_set.value();
@@ -60,52 +60,20 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 		REQUIRE_FALSE(done);
 	}
 
-	SECTION("Handle extreme values - min") {
-		auto [done, action_set] = dyn.reset_dynamics(model);
-		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
-		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, std::numeric_limits<SCIP_Real>::min());
-		std::tie(done, action_set) = dyn.step_dynamics(model, action);
-		REQUIRE_FALSE(done);
-	}
+	SECTION("Handle extreme values") {
+		auto const scip_inf = SCIPinfinity(model.get_scip_ptr());
+		auto const scip_unknown = SCIP_UNKNOWN;
+		auto const scip_invalid = SCIP_INVALID;
+		auto const scip_min = std::numeric_limits<SCIP_Real>::min();
+		auto const scip_max = std::numeric_limits<SCIP_Real>::max();
 
-	SECTION("Handle SCIP special values - SCIP_UNKNOWN") {
-		auto [done, action_set] = dyn.reset_dynamics(model);
-		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
-		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, SCIP_UNKNOWN);
-		std::tie(done, action_set) = dyn.step_dynamics(model, action);
-		REQUIRE_FALSE(done);
-	}
+		auto const val = GENERATE_COPY(scip_min, scip_max, scip_unknown, scip_invalid, -scip_inf, scip_inf);
 
-	SECTION("Handle SCIP special values - SCIP_INVALID") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
 		auto const& var_ids = action_set.value();
 		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, SCIP_INVALID);
-		std::tie(done, action_set) = dyn.step_dynamics(model, action);
-		REQUIRE_FALSE(done);
-	}
-
-	SECTION("Handle SCIP special values - infinity") {
-		auto [done, action_set] = dyn.reset_dynamics(model);
-		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
-		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, SCIPinfinity(model.get_scip_ptr()));
-		std::tie(done, action_set) = dyn.step_dynamics(model, action);
-		REQUIRE_FALSE(done);
-	}
-
-	SECTION("Handle SCIP special values - minus infinity") {
-		auto [done, action_set] = dyn.reset_dynamics(model);
-		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
-		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, -SCIPinfinity(model.get_scip_ptr()));
+		auto const& action = filled_action(action_set, val);
 		std::tie(done, action_set) = dyn.step_dynamics(model, action);
 		REQUIRE_FALSE(done);
 	}

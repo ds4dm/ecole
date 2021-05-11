@@ -153,8 +153,7 @@ void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
 
 void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
 	auto* const scip_ptr = get_scip_ptr();
-	m_controller = std::make_unique<utility::Controller>([scip_ptr, trials_per_node, depth_freq, depth_start, depth_stop](
-																												 std::weak_ptr<utility::Controller::Executor> weak_executor) {
+	m_controller = std::make_unique<utility::Controller>([=](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 		scip::call(
 			SCIPincludeObjHeur,
 			scip_ptr,
@@ -169,7 +168,6 @@ void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, 
 void scip::Scimpl::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals) {
 	m_controller->resume_thread([&varvals](SCIP* scip_ptr, SCIP_RESULT* result) {
 		SCIP_HEUR* heur = SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
-		SCIP_SOL* sol = nullptr;
 		SCIP_Bool lperror = false;
 		SCIP_Bool cutoff = false;
 		SCIP_Bool success = false;
@@ -203,6 +201,7 @@ void scip::Scimpl::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCI
 				scip::call(SCIPsolveProbingLP, scip_ptr, -1, &lperror, &cutoff);
 				if (!lperror && !cutoff) {
 					// try the LP solution in the original problem
+					SCIP_SOL* sol = nullptr;
 					scip::call(SCIPcreateSol, scip_ptr, &sol, heur);
 					scip::call(SCIPlinkLPSol, scip_ptr, sol);
 					scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);

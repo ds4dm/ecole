@@ -14,7 +14,7 @@ PrimalSearchDynamics::PrimalSearchDynamics(
 	int depth_stop_) noexcept(false) :
 	trials_per_node(trials_per_node_), depth_freq(depth_freq_), depth_start(depth_start_), depth_stop(depth_stop_) {
 	if (trials_per_node < -1) {
-		throw Exception{fmt::format("Illegal value for number of trials per node: {}.", trials_per_node)};
+		throw std::invalid_argument{fmt::format("Illegal value for number of trials per node: {}.", trials_per_node)};
 	}
 }
 
@@ -55,10 +55,9 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdVals const& ac
 		action.end(),
 		varvals.begin(),
 		[&problem_vars](auto& pair) -> decltype(varvals)::value_type {
-			auto& var_id = pair.first;
-			auto& val = pair.second;
+			auto const [var_id, val] = pair;
 			if (var_id >= problem_vars.size()) {
-				throw Exception{fmt::format("Variable index {} is out of range.", var_id)};
+				throw std::invalid_argument{fmt::format("Variable index {} is out of range.", var_id)};
 			}
 			return {problem_vars[var_id], val};
 		});

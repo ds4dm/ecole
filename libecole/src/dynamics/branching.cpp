@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include <fmt/format.h>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/branching.hpp"
@@ -39,7 +40,8 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& var_idx) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 	if (var_idx >= lp_cols.size()) {
-		throw std::invalid_argument{"Branching index is larger than the number of columns."};
+		throw std::invalid_argument{
+			fmt::format("Branching candidate index {} larger than the number of columns ({}).", var_idx, lp_cols.size())};
 	}
 	auto* const var = SCIPcolGetVar(lp_cols[var_idx]);
 	scip::call(SCIPbranchVar, model.get_scip_ptr(), var, nullptr, nullptr, nullptr);

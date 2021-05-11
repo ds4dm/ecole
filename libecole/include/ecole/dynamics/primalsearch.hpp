@@ -24,17 +24,17 @@ public:
 	using ActionSet = std::optional<VarIds>;
 	using Action = VarIdVals;
 
-	int trials_per_node;
-	int depth_freq;
-	int depth_start;
-	int depth_stop;
-
-	PrimalSearchDynamics(int trials_per_node = 1, int depth_freq = 1, int depth_start = 0, int depth_stop = -1) noexcept(
-		false);
+	PrimalSearchDynamics(int trials_per_node = 1, int depth_freq = 1, int depth_start = 0, int depth_stop = -1);
 
 	std::tuple<bool, ActionSet> reset_dynamics(scip::Model& model) override;
 
 	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, Action const& action) override;
+
+private:
+	int trials_per_node;
+	int depth_freq;
+	int depth_start;
+	int depth_stop;
 };
 
 }  // namespace ecole::dynamics

@@ -206,3 +206,4 @@ class Configuring(Environment):
 
 class PrimalSearch(Environment):
     __Dynamics__ = ecole.dynamics.PrimalSearchDynamics
+    __DefaultObservationFunction__ = ecole.observation.NodeBipartite
