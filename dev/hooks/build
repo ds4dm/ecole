@@ -14,12 +14,6 @@ DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
 for python_version in "3.6" "3.7" "3.8" "3.9" ; do
 
-	# Default conda images
-	docker build \
-		--file "${DOCKERFILE_DIR}/Dockerfile.conda" \
-		--build-arg python_version="${python_version}" \
-		--tag "${DOCKER_REPO}-linux-conda-gcc-py${python_version}:${DOCKER_TAG:-latest}" "${DOCKERFILE_DIR}"
-
 	# Source images with given compiler
 	for compiler in "gcc9" "clang10" ; do
 		extra_args=()
