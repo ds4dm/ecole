@@ -2,14 +2,11 @@ name: Continuous testing
 on: [push]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  test-from-src:
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         image:
-          - "ecoleai/ci-linux-conda-gcc-py3.6"
-          - "ecoleai/ci-linux-conda-gcc-py3.7"
-          - "ecoleai/ci-linux-conda-gcc-py3.8"
           - "ecoleai/ci-linux-src-clang10-py3.6"
           - "ecoleai/ci-linux-src-gcc9-py3.6"
     container:
@@ -22,7 +19,7 @@ jobs:
       - name: "Configure, build, and test ecole-lib and ecole-py-ext"
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
-  build-and-test-conda:
+  test-with-conda:
     strategy:
       matrix:
         os:
@@ -35,45 +32,38 @@ jobs:
       - name: "Add python version to requirements"
         run: echo '  - python=${{ matrix.python }}' >> dev/conda.yaml
       - uses: mamba-org/provision-with-micromamba@v10
-        with:
-          environment-file: dev/conda.yaml
+        with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib and ecole-py-ext"
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
   # Currenlty only sanitize address without Python
-  sanitize:
-    runs-on: ubuntu-latest
-    container:
-      image: "ecoleai/ci-linux-conda-gcc-py3.8"
-      credentials:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  test-with-sanitizer:
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib with sanitizer"
+        shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- test-lib
 
   check-code:
-    runs-on: ubuntu-latest
-    container:
-      image: "ecoleai/ci-linux-conda-gcc-py3.8"
-      credentials:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
       - name: "Run pre-commit"
+        shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- check-code
 
   test-doc:
-    runs-on: ubuntu-latest
-    container:
-      image: "ecoleai/ci-linux-conda-gcc-py3.8"
-      credentials:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
       - name: "Configure and build ecole-py-ext. Build and test documentation."
+        shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-doc
