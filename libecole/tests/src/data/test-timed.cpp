@@ -21,5 +21,5 @@ TEST_CASE("Timed data function is positive", "[data]") {
 	timed_func.before_reset(model);
 	advance_to_root_node(model);
 	auto const time = timed_func.extract(model, false);
-	REQUIRE(time > 0.);
+	REQUIRE(time >= 0.);
 }
