@@ -1,0 +1,40 @@
+name: "Push to repository"
+description: >
+  Push files to another repository.
+  Adapted from https://github.com/tagus/git-deploy
+
+inputs:
+  git_email:
+    description: "Git email to make the deploy commit."
+    required: true
+  git_user:
+    description: "Git user to make the deploy commit."
+    required: true
+  ssh_key:
+    description: "Key to push to the repository."
+    required: true
+  ssh_known_hosts:
+    description: "The known hosts to run SSH commands against. By default, github.com is used as the known host."
+  commit_message:
+    description: "The commit message used to deploy files."
+    default: "Automatic deploy of ${GITHUB_SHA}"
+    required: true
+  repository:
+    description: "Repository to deploy to."
+    required: true
+  repository_branch:
+    description: "Branch to deploy to."
+  repository_subdir:
+    description: "Directory of the deploy repository to push files to."
+    default: ""
+  local_dir:
+    description: "Directory with files to deploy"
+    required: true
+  delete_existing:
+    description: "Whether to delete existing files in the deploy directory (append otherwise)"
+    required: true
+    default: true
+
+runs:
+  using: docker
+  image: Dockerfile
