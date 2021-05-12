@@ -11,6 +11,7 @@ jobs:
           - "ecoleai/ci-linux-conda-gcc-py3.7"
           - "ecoleai/ci-linux-conda-gcc-py3.8"
           - "ecoleai/ci-linux-src-clang10-py3.6"
+          - "ecoleai/ci-linux-src-gcc9-py3.6"
     container:
       image: ${{ matrix.image }}
       credentials:
