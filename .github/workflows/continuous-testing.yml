@@ -28,10 +28,12 @@ jobs:
         os:
           - "ubuntu-20.04"
           - "macos-10.15"
-          # - "windows-2019"
+        python: ["3.6", "3.7", "3.8", "3.9"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+      - name: "Add python version to requirements"
+        run: echo '  - python=${{ matrix.python }}' >> dev/conda.yaml
       - uses: mamba-org/provision-with-micromamba@v10
         with:
           environment-file: dev/conda.yaml
