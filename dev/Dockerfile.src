@@ -10,7 +10,11 @@ ENV CXXFLAGS="$CXXFLAGS"
 ENV LDFLAGS="$LDFLAGS"
 
 # Install minimal dependencies for a CircleCI image.
+# Update git otherwise Github Action complains.
 RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && \
     apt-get install -y --no-install-recommends wget git openssh-client tar gzip ca-certificates && \
     apt-get clean
 
