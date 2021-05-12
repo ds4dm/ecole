@@ -8,6 +8,7 @@ dependencies:
   - cmake>=3.15
   # C++ build time dependencies
   - xtensor
+  - cxx-compiler
   - xsimd
   - fmt
   # C++ runtime dependencies
