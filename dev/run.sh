@@ -29,7 +29,8 @@ function log {
 function execute {
 	log "$@"
 	if [ "${dry_run}" = "false" ]; then
-		"$@"
+		## Run the command. Indent both stdout and stderr but preserve them.
+		"$@" > >(sed 's/^/  /')  2> >(sed 's/^/  /')
 	fi
 }
 
@@ -101,7 +102,7 @@ function build_doc {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
-	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}/html" "$@"
+	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
 }
 
 
@@ -164,8 +165,8 @@ function test_doc {
 		if [ "${warnings_as_errors}" = "true" ]; then
 			extra_args+=("-W")
 		fi
-		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}/html"
-		execute python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}/html"
+		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}"
+		execute python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -247,6 +248,8 @@ function help {
 	echo "  --dry-run|--no-dry-run (${dry_run})"
 	echo "  --source-dir=<dir> (${source_dir})"
 	echo "  --build-dir=<dir> (${build_dir})"
+	echo "  --source-doc-dir=<dir> (${source_doc_dir})"
+	echo "  --build-doc-dir=<dir> (${build_doc_dir})"
 	echo "  --warnings-as-errors|--no-warnings-as-errors (${warnings_as_errors})"
 	echo "  --cmake-warnings|--no-cmake-warnings (${cmake_warnings})"
 	echo "  --fail-fast|--no-fail-fast (${fail_fast})"
@@ -358,6 +361,10 @@ function run_main {
 	local source_dir="${__ECOLE_DIR__:?}"
 	# Where is the CMake build folder with the test.
 	local build_dir="build"
+	# Where to find sphinx conf.py.
+	local source_doc_dir="${__ECOLE_DIR__}/docs"
+	# Where to output the doc.
+	local build_doc_dir="${build_dir}/docs/html"
 	# Fail if there are warnings.
 	local warnings_as_errors="${__CI__}"
 	# Warning for CMake itself (not compiler).
@@ -374,11 +381,6 @@ function run_main {
 
 	# Parse all command line arguments.
 	parse_argv "$@"
-
-	# Where to find sphinx conf.py.
-	local -r source_doc_dir="${__ECOLE_DIR__}/docs"
-	# Where to output the doc.
-	local -r build_doc_dir="${__ECOLE_DIR__}/build/docs"
 
 	# Fix Python ecole import
 	if [ "${fix_pythonpath}" = "true" ]; then
