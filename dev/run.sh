@@ -181,6 +181,12 @@ function file_version {
 }
 
 
+# Check that a string is version and print it without the leading 'v'.
+function is_version {
+	( printf "${1}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v' )  || return 1
+}
+
+
 function sort_versions {
 	local -r sort_versions=(
 		'import sys, re;'
@@ -201,7 +207,7 @@ function git_version {
 	local tag
 	for tag in "${all_tags[@]}"; do
 		if git merge-base --is-ancestor "${tag}" HEAD; then
-			if version=$(printf "${tag}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v'); then
+			if version=$(is_version "${tag}"); then
 				prev_versions+=("${version}")
 			fi
 		fi
@@ -220,7 +226,7 @@ function test_version {
 		local -r version="$(git_version)"
 	# Otherwise use the arg
 	else
-		local -r version=$(printf "${1}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v')
+		local -r version=$(is_version "${1}")
 	fi
 	[ "$(file_version)" = "${version}" ]
 }
