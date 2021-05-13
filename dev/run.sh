@@ -249,6 +249,7 @@ function check_code {
 
 # Install documentation to a local folder depending on the branch/tag
 # FIXME the Github Action could be moved here to a deploy_doc function
+# FIXME this is not used in Github Action for now
 function deploy_doc_locally {
 	# Try getting from exact tag.
 	local -r tag=$(git -C ${source_dir} describe --tags --exact-match HEAD 2> /dev/null)
@@ -277,7 +278,7 @@ function deploy_doc_locally {
 	fi
 
 	# Install stable
-	if [ "$(git_version master)" = "${version-}" ]; then
+	if [[ ! -z "${dir-}" && "$(git_version origin/master)" = "${version-false}" ]]; then
 		execute ln -s -f "${dir}" "${install_dir}/stable"
 	fi
 }
