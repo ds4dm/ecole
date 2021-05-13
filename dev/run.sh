@@ -200,13 +200,14 @@ function sort_versions {
 
 
 function git_version {
+	local -r rev="${1-HEAD}"
 	# All possible git tags.
 	mapfile -t all_tags < <(git tag)
-	# Find tags that are ancestor of HEAD and match a version.
+	# Find tags that are ancestor of rev and match a version.
 	local prev_versions
 	local tag
 	for tag in "${all_tags[@]}"; do
-		if git merge-base --is-ancestor "${tag}" HEAD; then
+		if git merge-base --is-ancestor "${tag}" "${rev}"; then
 			if version=$(is_version "${tag}"); then
 				prev_versions+=("${version}")
 			fi
@@ -243,6 +244,42 @@ function check_code {
 		extra_args+=("--all-files")
 	fi
 	execute pre-commit run "${extra_args[@]}"
+}
+
+
+# Install documentation to a local folder depending on the branch/tag
+# FIXME the Github Action could be moved here to a deploy_doc function
+function deploy_doc_locally {
+	# Try getting from exact tag.
+	local -r tag=$(git -C ${source_dir} describe --tags --exact-match HEAD 2> /dev/null)
+	local -r branch="$(git rev-parse --abbrev-ref HEAD)"
+
+	local -r install_dir="${1}"
+	if_rebuild_then build_doc
+
+	# Install master to latest
+	if printf ${branch} | grep -E '(master|main)' &> /dev/null; then
+		local -r dir="${install_dir}/latest"
+		# Only create the parent so that source dir is not created in target
+		execute mkdir -p "$(dirname "${dir}")"
+		execute rm -rf "${dir}"
+		execute cp -R "${build_doc_dir}/" "${dir}"
+	fi
+
+	# Install versions to v.x.x
+	if version=$(is_version "${tag}"); then
+		local -r version_major_minor="$(printf "${tag}" | grep -E -o '[0-9]+\.[0-9]+')"
+		local -r dir="${install_dir}/v${version_major_minor}"
+		# Only create the parent so that source dir is not created in target
+		execute mkdir -p "$(dirname "${dir}")"
+		execute rm -rf "${dir}"
+		execute cp -R "${build_doc_dir}/" "${dir}"
+	fi
+
+	# Install stable
+	if [ "$(git_version master)" = "${version-}" ]; then
+		execute ln -s -f "${dir}" "${install_dir}/stable"
+	fi
 }
 
 
