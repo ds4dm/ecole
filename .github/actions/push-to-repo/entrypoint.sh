@@ -6,7 +6,7 @@ set -o nounset
 readonly ssh_dir="/root/.ssh"
 mkdir -p "${ssh_dir}"
 
-if [ ! -d "${INPUT_LOCAL_DIR}" ] || find "${INPUT_LOCAL_DIR}" -type f -exec command {} \; ; then
+if [ ! -d "${INPUT_LOCAL_DIR}" ] || [ -z "$(ls -A "${INPUT_LOCAL_DIR}")" ]; then
     echo "No files to deploy"
     exit 0
 fi
