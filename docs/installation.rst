@@ -49,7 +49,7 @@ To specify the where to find SCIP (or any CMake parameters):
 
 .. code-block:: bash
 
-   CMAKE_ARGS="-DSCIP_DIR=path/to/lib/cmake/scip" pip install ecole
+   CMAKE_ARGS="-DSCIP_DIR=path/to/lib/cmake/scip -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON" pip install ecole
 
 For the latest Github version:
 
