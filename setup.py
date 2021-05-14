@@ -16,16 +16,18 @@ def get_file(file: pathlib.Path) -> str:
 
 
 def get_version(version_file: pathlib.Path) -> str:
-    """Extract version from the Ecole VERSION file."""
+    """Extract version from the Ecole VERSION file according to PEP440."""
     lines = get_file(version_file)
     version_dict = re.search(
-        "VERSION_MAJOR\s+(?P<major>\d+).*"
-        "VERSION_MINOR\s+(?P<minor>\d+).*"
-        "VERSION_PATCH\s+(?P<patch>\d+)",
+        r"VERSION_MAJOR\s+(?P<major>\d+)[\s\n]*"
+        r"VERSION_MINOR\s+(?P<minor>\d+)[\s\n]*"
+        r"VERSION_PATCH\s+(?P<patch>\d+)[\s\n]*"
+        r"VERSION_PRE\s+(?P<pre>.*)[\s\n]*"
+        r"VERSION_POST\s+(?P<post>.*)[\s\n]*"
+        r"VERSION_DEV\s+(?P<dev>.*)",
         lines,
-        re.DOTALL,
     ).groupdict()
-    return "{major}.{minor}.{patch}".format(**version_dict)
+    return "{major}.{minor}.{patch}{pre}{post}{dev}".format(**version_dict)
 
 
 install_requires = ["numpy>=1.4"]

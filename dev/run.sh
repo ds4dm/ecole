@@ -183,23 +183,27 @@ function file_version {
 	local -r file_major="$(awk '/VERSION_MAJOR/{print $2}' "${source_dir}/VERSION")"
 	local -r file_minor="$(awk '/VERSION_MINOR/{print $2}' "${source_dir}/VERSION")"
 	local -r file_patch="$(awk '/VERSION_PATCH/{print $2}' "${source_dir}/VERSION")"
-	echo "${file_major:?}.${file_minor:?}.${file_patch:?}"
+	local -r file_pre="$(awk '/VERSION_PRE/{print $2}' "${source_dir}/VERSION")"
+	local -r file_post="$(awk '/VERSION_POST/{print $2}' "${source_dir}/VERSION")"
+	local -r file_dev="$(awk '/VERSION_DEV/{print $2}' "${source_dir}/VERSION")"
+	local version="${file_major:?}.${file_minor:?}.${file_patch:?}"
+	version+="${file_pre}${file_post}${file_dev}"
+	echo "${version}"
 }
 
 
 # Check that a string is version and print it without the leading 'v'.
 function is_version {
-	( printf "${1}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v' )  || return 1
+	( printf "${1}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$' | sed 's/^v//' )  || return 1
 }
 
 
 function sort_versions {
 	local -r sort_versions=(
-		'import sys, re;'
-		'lines = [l.strip() for l in sys.stdin.readlines()];'
-		'comp = lambda s: [int(n) for n in re.findall(r"\d+", s)];'
-		'versions = sorted(lines, key=comp);'
-		'print(" ".join(versions));'
+		'import sys, distutils.version;'
+		'lines = [distutils.version.LooseVersion(l) for l in sys.stdin.readlines()];'
+		'versions = sorted(lines);'
+		'print(" ".join(str(v) for v in versions));'
 	)
 	python -c "${sort_versions[*]}"
 }
