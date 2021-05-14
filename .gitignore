@@ -174,3 +174,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Scikit-build build folder
+_skbuild/
