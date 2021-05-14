@@ -38,3 +38,4 @@ dependencies:
   - black
   - ipython
   - pyscipopt >= 3.0.1  # optional
+  - twine
