@@ -7,6 +7,7 @@ on:
 
 jobs:
   test-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -25,4 +26,4 @@ jobs:
         env:
           TWINE_USERNAME: "${{ secrets.PYPI_USERNAME }}"
           TWINE_PASSWORD: "${{ secrets.PYPI_PASSWORD }}"
-        run: bash dev/run.sh test-sdist -- deploy-sdist -r testpypi --skip-existing  # FIXME testpypi for testing
+        run: bash dev/run.sh test-sdist -- deploy-sdist
