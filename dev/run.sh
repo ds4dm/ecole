@@ -35,9 +35,15 @@ function execute {
 }
 
 
-# Add Ecole build tree to PYTHONPATH.
-function add_build_to_pythonpath {
-	execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+# Wrap call and set PYTHONPATH
+function execute_pythonpath {
+	if [ "${fix_pythonpath}" = "true" ]; then
+		execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+		execute "$@"
+		execute unset PYTHONPATH
+	else
+		execute "$@"
+	fi
 }
 
 
@@ -102,7 +108,7 @@ function build_doc {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
-	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
+	execute_pythonpath python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
 }
 
 
@@ -151,7 +157,7 @@ function test_py {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--exitfirst")
 		fi
-		execute python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+		execute_pythonpath python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -166,7 +172,7 @@ function test_doc {
 			extra_args+=("-W")
 		fi
 		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}"
-		execute python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
+		execute_pythonpath python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -425,11 +431,6 @@ function run_main {
 
 	# Parse all command line arguments.
 	parse_argv "$@"
-
-	# Fix Python ecole import
-	if [ "${fix_pythonpath}" = "true" ]; then
-		add_build_to_pythonpath
-	fi
 
 	# Functions to execute are positional arguments with - replaced by _.
 	parse_and_run_commands "${positional[@]}"
