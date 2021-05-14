@@ -1,0 +1,28 @@
+name: "Release deploy"
+on:
+  workflow_run:
+    workflows: ["Continuous testing"]
+    tags: 'v[0-9]+.[0-9]+.[0-9]+*'
+    types: [completed]
+
+jobs:
+  test-version:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Check version file matches the version"
+        run: bash dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
+
+  deploy-pypi:
+    runs-on: ubuntu-20.04
+    needs: test-version
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
+      - name: "Build, test, and deploy sdist"
+        shell: bash -l {0}
+        env:
+          TWINE_USERNAME: "${{ secrets.PYPI_USERNAME }}"
+          TWINE_PASSWORD: "${{ secrets.PYPI_PASSWORD }}"
+        run: bash dev/run.sh test-sdist -- deploy-sdist -r testpypi --skip-existing  # FIXME testpypi for testing
