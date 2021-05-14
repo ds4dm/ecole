@@ -9,10 +9,15 @@ import skbuild
 __dir__ = pathlib.Path(__file__).resolve().parent
 
 
+def get_file(file: pathlib.Path) -> str:
+    """Extract all lines from a file."""
+    with open(file, "r") as f:
+        return f.read()
+
+
 def get_version(version_file: pathlib.Path) -> str:
     """Extract version from the Ecole VERSION file."""
-    with open(version_file, "r") as f:
-        lines = f.read()
+    lines = get_file(version_file)
     version_dict = re.search(
         "VERSION_MAJOR\s+(?P<major>\d+).*"
         "VERSION_MINOR\s+(?P<minor>\d+).*"
@@ -34,6 +39,8 @@ skbuild.setup(
     version=get_version(__dir__ / "VERSION"),
     url="https://www.ecole.ai",
     description="Extensible Combinatorial Optimization Learning Environments",
+    long_description=get_file(__dir__ / "README.rst"),
+    long_description_content_type="text/x-rst",
     license="BSD-3-Clause",
     packages=["ecole"],
     package_dir={"": "python/src"},
