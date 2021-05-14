@@ -2,17 +2,32 @@ name: "Release deploy"
 on:
   workflow_run:
     workflows: ["Continuous testing"]
-    tags: 'v[0-9]+.[0-9]+.[0-9]+*'
+    branches: ["**"]
     types: [completed]
 
 jobs:
-  test-version:
+  # Apparently we cannot filter on tag in workflow_run so we do it manually to stop gracefully
+  is-version-tag:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with: {fetch-depth: 0}
+      - name: "Check the git tag if it exists"
+        id: git-tag
+        run: echo -n "::set-output name=result::" && bash dev/run.sh is-version &>/dev/null && echo "true" || echo "false"
+    outputs:
+      result: ${{ steps.git-tag.outputs.result }}
+
+  test-version:
+    needs: is-version-tag
+    if: ${{ needs.is-version-tag.outputs.result == 'true' }}
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with: {fetch-depth: 0}
       - name: "Check version file matches the version"
-        run: bash dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
+        run: bash dev/run.sh test-version "$(bash dev/run.sh is-version)"
 
   deploy-pypi:
     runs-on: ubuntu-20.04

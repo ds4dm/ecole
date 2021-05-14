@@ -1,5 +1,7 @@
-name: Continuous testing
-on: [push]
+name: "Continuous testing"
+on:
+  push:
+    branches: ["**"]
 
 jobs:
   test-from-src:

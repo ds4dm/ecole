@@ -194,7 +194,8 @@ function file_version {
 
 # Check that a string is version and print it without the leading 'v'.
 function is_version {
-	( printf "${1}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$' | sed 's/^v//' )  || return 1
+	local -r candidate="${1-"$(git describe --tags --exact-match  2> /dev/null)"}"
+	( printf "${candidate}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$' | sed 's/^v//' )  || return 1
 }
 
 
