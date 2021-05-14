@@ -290,6 +290,40 @@ function deploy_doc_locally {
 }
 
 
+# Build Python source distribution.
+function build_sdist {
+	local -r dist_dir="${1:-"${build_dir}/dist"}"
+	execute python "${source_dir}/setup.py" sdist --dist-dir="${dist_dir}"
+}
+
+
+# Install sdist into a virtual environment.
+function test_sdist {
+	local -r dist_dir="${build_dir}/dist"
+	if_rebuild_then build_sdist "${dist_dir}"
+	local -r venv="${build_dir}/venv"
+	execute python -m venv --system-site-packages "${venv}"
+	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
+	execute "${venv}/bin/python" -m pip install --ignore-installed "${sdists[@]}"
+	local extra_args=("$@")
+	if [ "${fail_fast}" = "true" ]; then
+		extra_args+=("--exitfirst")
+	fi
+	execute "${venv}/bin/python" -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+}
+
+
+# Deploy sdist to PyPI. Set TWINE_USERNAME and TWINE_PASSWORD environment variables or pass them as arguments.
+function deploy_sdist {
+	local -r dist_dir="${build_dir}/dist"
+	if_rebuild_then build_sdist "${dist_dir}"
+	local -r strict="$([ "${warnings_as_errors}" = "true" ] && echo -n '--strict')"
+	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
+	execute python -m twine check "${strict}" "${sdists[@]}"
+	execute python -m twine upload --non-interactive "$@" "${sdists[@]}"
+}
+
+
 # The usage of this script.
 function help {
 	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
@@ -313,6 +347,7 @@ function help {
 	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
 	echo "  test-lib, test-py, test-doc, test-version, test-all"
 	echo "  check-code"
+	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
