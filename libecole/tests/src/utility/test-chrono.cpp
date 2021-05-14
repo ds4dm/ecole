@@ -7,5 +7,5 @@ using namespace ecole;
 TEST_CASE("cpu_clock is monotonic", "[utility]") {
 	auto const before = utility::cpu_clock::now();
 	auto const after = utility::cpu_clock::now();
-	REQUIRE(before < after);
+	REQUIRE(before <= after);
 }
