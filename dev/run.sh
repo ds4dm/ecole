@@ -35,9 +35,15 @@ function execute {
 }
 
 
-# Add Ecole build tree to PYTHONPATH.
-function add_build_to_pythonpath {
-	execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+# Wrap call and set PYTHONPATH
+function execute_pythonpath {
+	if [ "${fix_pythonpath}" = "true" ]; then
+		execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+		execute "$@"
+		execute unset PYTHONPATH
+	else
+		execute "$@"
+	fi
 }
 
 
@@ -102,7 +108,7 @@ function build_doc {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
-	execute python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
+	execute_pythonpath python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
 }
 
 
@@ -151,7 +157,7 @@ function test_py {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--exitfirst")
 		fi
-		execute python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+		execute_pythonpath python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -166,7 +172,7 @@ function test_doc {
 			extra_args+=("-W")
 		fi
 		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}"
-		execute python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
+		execute_pythonpath python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -177,23 +183,28 @@ function file_version {
 	local -r file_major="$(awk '/VERSION_MAJOR/{print $2}' "${source_dir}/VERSION")"
 	local -r file_minor="$(awk '/VERSION_MINOR/{print $2}' "${source_dir}/VERSION")"
 	local -r file_patch="$(awk '/VERSION_PATCH/{print $2}' "${source_dir}/VERSION")"
-	echo "${file_major:?}.${file_minor:?}.${file_patch:?}"
+	local -r file_pre="$(awk '/VERSION_PRE/{print $2}' "${source_dir}/VERSION")"
+	local -r file_post="$(awk '/VERSION_POST/{print $2}' "${source_dir}/VERSION")"
+	local -r file_dev="$(awk '/VERSION_DEV/{print $2}' "${source_dir}/VERSION")"
+	local version="${file_major:?}.${file_minor:?}.${file_patch:?}"
+	version+="${file_pre}${file_post}${file_dev}"
+	echo "${version}"
 }
 
 
 # Check that a string is version and print it without the leading 'v'.
 function is_version {
-	( printf "${1}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | tr -d 'v' )  || return 1
+	local -r candidate="${1-"$(git describe --tags --exact-match  2> /dev/null)"}"
+	( printf "${candidate}" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$' | sed 's/^v//' )  || return 1
 }
 
 
 function sort_versions {
 	local -r sort_versions=(
-		'import sys, re;'
-		'lines = [l.strip() for l in sys.stdin.readlines()];'
-		'comp = lambda s: [int(n) for n in re.findall(r"\d+", s)];'
-		'versions = sorted(lines, key=comp);'
-		'print(" ".join(versions));'
+		'import sys, distutils.version;'
+		'lines = [distutils.version.LooseVersion(l) for l in sys.stdin.readlines()];'
+		'versions = sorted(lines);'
+		'print(" ".join(str(v) for v in versions));'
 	)
 	python -c "${sort_versions[*]}"
 }
@@ -284,6 +295,40 @@ function deploy_doc_locally {
 }
 
 
+# Build Python source distribution.
+function build_sdist {
+	local -r dist_dir="${1:-"${build_dir}/dist"}"
+	execute python "${source_dir}/setup.py" sdist --dist-dir="${dist_dir}"
+}
+
+
+# Install sdist into a virtual environment.
+function test_sdist {
+	local -r dist_dir="${build_dir}/dist"
+	if_rebuild_then build_sdist "${dist_dir}"
+	local -r venv="${build_dir}/venv"
+	execute python -m venv --system-site-packages "${venv}"
+	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
+	execute "${venv}/bin/python" -m pip install --ignore-installed "${sdists[@]}"
+	local extra_args=("$@")
+	if [ "${fail_fast}" = "true" ]; then
+		extra_args+=("--exitfirst")
+	fi
+	execute "${venv}/bin/python" -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+}
+
+
+# Deploy sdist to PyPI. Set TWINE_USERNAME and TWINE_PASSWORD environment variables or pass them as arguments.
+function deploy_sdist {
+	local -r dist_dir="${build_dir}/dist"
+	if_rebuild_then build_sdist "${dist_dir}"
+	local -r strict="$([ "${warnings_as_errors}" = "true" ] && echo -n '--strict')"
+	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
+	execute python -m twine check "${strict}" "${sdists[@]}"
+	execute python -m twine upload --non-interactive "$@" "${sdists[@]}"
+}
+
+
 # The usage of this script.
 function help {
 	echo "${BASH_SOURCE[0]} [--options...] <cmd1> [<cmd1-args>...] [-- <cmd2> [<cmd2-args>...]]..."
@@ -307,6 +352,7 @@ function help {
 	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
 	echo "  test-lib, test-py, test-doc, test-version, test-all"
 	echo "  check-code"
+	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
@@ -425,11 +471,6 @@ function run_main {
 
 	# Parse all command line arguments.
 	parse_argv "$@"
-
-	# Fix Python ecole import
-	if [ "${fix_pythonpath}" = "true" ]; then
-		add_build_to_pythonpath
-	fi
 
 	# Functions to execute are positional arguments with - replaced by _.
 	parse_and_run_commands "${positional[@]}"

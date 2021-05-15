@@ -78,7 +78,7 @@ Pip source
 
 Building from source requires:
  - A `C++17 compiler <https://en.cppreference.com/w/cpp/compiler_support>`_,
- - A `SCIP <https://www.scipopt.org/>`_ installation.
+ - A `SCIP <https://www.scipopt.org/>`__ installation.
 
 .. code-block:: bash
 

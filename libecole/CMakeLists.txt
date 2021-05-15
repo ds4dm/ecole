@@ -144,11 +144,6 @@ if(LIBRT)
 	target_link_libraries(ecole-lib PRIVATE "${LIBRT}")
 endif()
 
-# Temporary fix for hardcoding SCIP missing RPath. MacOS bug only?
-get_target_property(SCIP_LOCATION libscip LOCATION)
-get_filename_component(SCIP_RPATH "${SCIP_LOCATION}" DIRECTORY)
-list(APPEND CMAKE_BUILD_RPATH "${SCIP_RPATH}")
-
 target_compile_features(ecole-lib PUBLIC cxx_std_17)
 
 # Add test if this is the main project and testing is enabled
