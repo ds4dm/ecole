@@ -2,7 +2,7 @@ name: "Release deploy"
 on:
   workflow_run:
     workflows: ["Continuous testing"]
-    branches: ["**"]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
     types: [completed]
 
 jobs:
