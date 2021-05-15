@@ -15,7 +15,10 @@ jobs:
         with: {fetch-depth: 0}
       - name: "Check the git tag if it exists"
         id: git-tag
-        run: echo -n "::set-output name=result::" && bash dev/run.sh is-version &>/dev/null && echo "true" || echo "false"
+        run: |
+          echo -n "::set-output name=result::" &&
+          bash dev/run.sh is-version "${GITHUB_REF#refs/tags/}" &>/dev/null &&
+          echo "true" || echo "false"
     outputs:
       result: ${{ steps.git-tag.outputs.result }}
 
