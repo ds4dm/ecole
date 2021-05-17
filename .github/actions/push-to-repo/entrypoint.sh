@@ -35,8 +35,10 @@ if [ ! -z "${INPUT_REPOSITORY_BRANCH-}" ]; then
 fi
 
 if [ "${INPUT_DELETE_EXISTING:-false}" = "true" ]; then
-    echo "Removing existing files"
-    rm -rf "${deploy_dir}"
+    echo "Removing existing files in folder inside ${deploy_dir}"
+    for f in "${INPUT_LOCAL_DIR}/"*; do
+        rm -rf "${deploy_dir}/$(basename "${f}")"
+    done
 fi
 
 echo "Copying files"
@@ -57,6 +59,7 @@ else
         if git push origin; then
             break
         else
+            sleep 5
             git pull --rebase
         fi
     done

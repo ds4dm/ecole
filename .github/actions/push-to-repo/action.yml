@@ -31,7 +31,7 @@ inputs:
     description: "Directory with files to deploy"
     required: true
   delete_existing:
-    description: "Whether to delete existing files in the deploy directory (append otherwise)"
+    description: "Whether to delete existing files and folder inside the deploy directory (append otherwise)"
     required: true
     default: true
 

@@ -110,7 +110,7 @@ jobs:
           repository: "git@github.com:ds4dm/doc.ecole.ai.git"
           repository_subdir: "py/en"
           local_dir: "local/docs/"
-          delete_existing: false
+          delete_existing: true
 
 
 #  Release deploy
