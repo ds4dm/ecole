@@ -24,7 +24,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - uses: actions/checkout@v2
-      - name: "Configure, build, and test ecole-lib and ecole-py-ext"
+      - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
   test-with-conda:
@@ -37,11 +37,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: "Add python version to requirements"
+      - name: "Add python version to requirements."
         run: echo '  - python=${{ matrix.python }}' >> dev/conda.yaml
       - uses: mamba-org/provision-with-micromamba@v10
         with: { environment-file: dev/conda.yaml }
-      - name: "Configure, build, and test ecole-lib and ecole-py-ext"
+      - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
         with: { environment-file: dev/conda.yaml }
-      - name: "Configure, build, and test ecole-lib with sanitizer"
+      - name: "Configure, build, and test ecole-lib with sanitizer."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- test-lib
 
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
         with: { environment-file: dev/conda.yaml }
-      - name: "Run pre-commit"
+      - name: "Run pre-commit."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- check-code
 
@@ -84,7 +84,7 @@ jobs:
     needs: [ test-from-src, test-with-conda, test-with-sanitizer, test-doc, check-code]
     runs-on: ubuntu-20.04
     steps:
-      - name: "All tests were successful"
+      - name: "All tests were successful."
         run: ""
 
 
@@ -122,11 +122,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - name: "Check version file matches the version"
+      - name: "Check version file matches the version."
         run: bash dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
 
   deploy-version-doc:
-    # needs: test-version  # FIXME
+    needs: test-version
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -137,9 +137,9 @@ jobs:
         run: |
           version="$(echo "${GITHUB_REF#refs/tags/v}" | grep -E -o '[0-9]+\.[0-9]+')" &&
           bash dev/run.sh --fix-pythonpath --build-doc-dir="local/docs/${version}" configure -- build-doc
-      - name: "Symlink stable documentation"
+      - name: "Symlink stable dnocumentation."
         run: >  # Only symlink on non pre/dev/post releases
-          if "$(echo "${GITHUB_REF#refs/tags/}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$')"; then
+          if echo "${GITHUB_REF#refs/tags/}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
             version="$(echo "${GITHUB_REF#refs/tags/}" | grep -E -o '[0-9]+\.[0-9]+')"
             cd local/docs/
             ln -s "${version}" "stable"
