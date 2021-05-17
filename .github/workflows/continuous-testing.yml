@@ -97,11 +97,17 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with: {fetch-depth: 0}
       - uses: mamba-org/provision-with-micromamba@v10
         with: { environment-file: dev/conda.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath --build-doc-dir=local/docs/latest configure -- build-doc
+      - name: "Symlink stable documentation."
+        run: |
+          version="$(bash dev/run.sh git-version origin/master | grep -E -o '[0-9]+\.[0-9]+')" &&
+          cd local/docs/ &&
+          ln -sf "${version:?}" "stable"
       - uses: ./.github/actions/push-to-repo
         with:
           git_email: "BotEcole@users.noreply.github.com"
@@ -137,13 +143,6 @@ jobs:
         run: |
           version="$(echo "${GITHUB_REF#refs/tags/v}" | grep -E -o '[0-9]+\.[0-9]+')" &&
           bash dev/run.sh --fix-pythonpath --build-doc-dir="local/docs/${version}" configure -- build-doc
-      - name: "Symlink stable dnocumentation."
-        run: >  # Only symlink on non pre/dev/post releases
-          if echo "${GITHUB_REF#refs/tags/}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            version="$(echo "${GITHUB_REF#refs/tags/}" | grep -E -o '[0-9]+\.[0-9]+')"
-            cd local/docs/
-            ln -s "${version}" "stable"
-          fi
       - uses: ./.github/actions/push-to-repo
         with:
           git_email: "BotEcole@users.noreply.github.com"

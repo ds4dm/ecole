@@ -3,6 +3,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+
 readonly ssh_dir="/root/.ssh"
 mkdir -p "${ssh_dir}"
 
