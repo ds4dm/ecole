@@ -1,7 +1,15 @@
-name: "Continuous testing"
-on: push
+name: "Test and deploy"
+on:
+  push:
+    branches: ['**']
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
 
 jobs:
+
+#  Continuous testing
+#  ------------------
+
   test-from-src:
     runs-on: ubuntu-20.04
     strategy:
@@ -67,3 +75,66 @@ jobs:
       - name: "Configure and build ecole-py-ext. Build and test documentation."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-doc
+
+
+#  Deploy checkpoint
+#  -----------------
+
+  all-tests:
+    needs: [ test-from-src, test-with-conda, test-with-sanitizer, test-doc, check-code]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "All tests were successful"
+        run: ""
+
+
+#  Continuous deploy
+#  -----------------
+
+  deploy-latest-doc:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: all-tests
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
+      - name: "Build documentation."
+        shell: bash -l {0}
+        run: bash dev/run.sh --fix-pythonpath --build-doc-dir=local/doc/latest configure -- build-doc
+      - uses: ./.github/actions/push-to-repo
+        with:
+          git_email: "BotEcole@users.noreply.github.com"
+          git_user: "BotEcole"
+          ssh_key: "${{ secrets.BOT_ECOLE_SSH_KEY }}"
+          repository: "git@github.com:ds4dm/doc.ecole.ai.git"
+          repository_subdir: "py/en"
+          local_dir: "local/doc/"
+          delete_existing: false
+
+
+#  Release deploy
+#  --------------
+
+  test-version:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: all-tests
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Check version file matches the version"
+        run: bash dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
+
+  deploy-pypi:
+    runs-on: ubuntu-20.04
+    needs: test-version
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
+      - name: "Build, test, and deploy sdist"
+        shell: bash -l {0}
+        env:
+          TWINE_USERNAME: "${{ secrets.PYPI_USERNAME }}"
+          TWINE_PASSWORD: "${{ secrets.PYPI_PASSWORD }}"
+        run: bash dev/run.sh test-sdist -- deploy-sdist
