@@ -7,9 +7,9 @@
 Ecole
 =====
 
-.. image:: https://img.shields.io/circleci/build/github/ds4dm/ecole/master?logo=circleci
-   :target: https://circleci.com/gh/ds4dm/ecole
-   :alt: CircleCI
+.. image:: https://github.com/ds4dm/ecole/actions/workflows/continuous-testing.yml/badge.svg
+   :target: https://github.com/ds4dm/ecole/actions/workflows/continuous-testing.yml
+   :alt: Test and deploy on Github Actions
 
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
