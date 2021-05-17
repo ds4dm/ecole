@@ -201,8 +201,8 @@ function is_version {
 
 function sort_versions {
 	local -r sort_versions=(
-		'import sys, distutils.version;'
-		'lines = [distutils.version.LooseVersion(l) for l in sys.stdin.readlines()];'
+		'import sys, pkg_resources;'
+		'lines = [pkg_resources.parse_version(l) for l in sys.stdin.readlines()];'
 		'versions = sorted(lines);'
 		'print(" ".join(str(v) for v in versions));'
 	)
