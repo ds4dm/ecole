@@ -52,5 +52,12 @@ else
     # Evaluate to resolve inner variables
     readonly commit_msg="$(eval echo -n ${INPUT_COMMIT_MESSAGE})"
     git commit -m "${commit_msg}"
-    git push origin
+    # Retry n times if other are also pushing changes
+    for i in {1..3}; do
+        if git push origin; then
+            break
+        else
+            git pull --rebase
+        fi
+    done
 fi
