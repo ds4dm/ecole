@@ -1,5 +1,5 @@
 """Unit tests for Ecole Environment."""
-
+import re
 import unittest.mock as mock
 
 import ecole
@@ -54,3 +54,8 @@ def test_primal_heuristics_off(model):
     env = MockEnvironment(primal_heuristics=False)
     env.reset(model)
     all_params = env.model.get_params()
+
+    primal_heuristics_freq = re.compile(r"heuristics\/[^\/]+\/freq$")
+    for key, value in all_params.items():
+        if primal_heuristics_freq.match(key):
+            assert value == -1, f"Heuristic {key} not turned off"
