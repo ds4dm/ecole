@@ -8,6 +8,9 @@
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/reward/nnodes.hpp"
 #include "ecole/reward/solvingtime.hpp"
+#include "ecole/reward/dualintegral.hpp"
+#include "ecole/reward/primalintegral.hpp"
+#include "ecole/reward/primaldualintegral.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -166,6 +169,78 @@ void bind_submodule(py::module_ const& m) {
 		Update the internal clock counter and return the difference.
 
 		The difference in solving time is computed in between calls.
+		)");
+
+	auto dualintegral = py::class_<DualIntegral>(m, "DualIntegral", R"(
+		Dual integral difference.
+
+		The reward is defined as the dual integral since the previous state, where the integral is 
+		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
+		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+	)");
+	dualintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
+		Create a DualIntegral reward function.
+
+		Parameters
+		----------
+		wall :
+			If true, the wall time will be used. If False (default), the process time will be used.
+
+	)");
+	def_operators(dualintegral);
+	def_before_reset(dualintegral, "Reset the internal clock counter and the event handler.");
+	def_extract(dualintegral, R"(
+		Computes the current dual integral and returns the difference.
+
+		The difference is computed based on the dual integral between sequential calls.  
+		)");
+
+	auto primalintegral = py::class_<PrimalIntegral>(m, "PrimalIntegral", R"(
+		Primal integral difference.
+
+		The reward is defined as the primal integral since the previous state, where the integral is 
+		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
+		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+	)");
+	primalintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
+		Create a PrimalIntegral reward function.
+
+		Parameters
+		----------
+		wall :
+			If true, the wall time will be used. If False (default), the process time will be used.
+
+	)");
+	def_operators(primalintegral);
+	def_before_reset(primalintegral, "Reset the internal clock counter and the event handler.");
+	def_extract(primalintegral, R"(
+		Computes the current primal integral and returns the difference.
+
+		The difference is computed based on the dual integral between sequential calls.  
+		)");
+
+	auto primaldualintegral = py::class_<PrimalDualIntegral>(m, "PrimalDualIntegral", R"(
+		Primal-dual integral difference.
+
+		The reward is defined as the primal-dual integral since the previous state, where the integral is 
+		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
+		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+	)");
+	primaldualintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
+		Create a PrimalIntegral reward function.
+
+		Parameters
+		----------
+		wall :
+			If true, the wall time will be used. If False (default), the process time will be used.
+
+	)");
+	def_operators(primaldualintegral);
+	def_before_reset(primaldualintegral, "Reset the internal clock counter and the event handler.");
+	def_extract(primaldualintegral, R"(
+		Computes the current primal-dual integral and returns the difference.
+
+		The difference is computed based on the primal-dual integral between sequential calls.  
 		)");
 }
 

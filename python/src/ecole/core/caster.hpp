@@ -62,7 +62,7 @@ public:
 
 		try {
 			value =
-				std::visit([](auto&& val) -> scip::Param { return std::forward<decltype(val)>(val); }, src.cast<ParamHelper>());
+				std::visit([](auto&& val) -> ecole::scip::Param { return std::forward<decltype(val)>(val); }, src.cast<ParamHelper>());
 			return true;
 		} catch (...) {
 			return false;
