@@ -16,12 +16,13 @@ class Environment:
     __DefaultInformationFunction__ = ecole.information.Nothing
 
     def __init__(
-        self,
-        observation_function="default",
-        reward_function="default",
-        information_function="default",
-        scip_params=None,
-        **dynamics_kwargs
+            self,
+            observation_function="default",
+            reward_function="default",
+            information_function="default",
+            scip_params=None,
+            primal_heuristics=True,
+            **dynamics_kwargs
     ) -> None:
         """Create a new environment object.
 
@@ -38,6 +39,8 @@ class Environment:
             additional information are returned in :meth:`reset` and :meth:`step`.
         scip_params:
             Parameters set on the underlying :py:class:`~ecole.scip.Model` on every episode.
+        primal_heuristics:
+            If false disable all primal heuristics on the underlying :py:class:`~ecole.scip.Model` on every episode.
         **dynamics_kwargs:
             Other arguments are passed to the constructor of the :py:class:`~ecole.typing.Dynamics`.
 
@@ -51,6 +54,7 @@ class Environment:
             information_function, self.__DefaultInformationFunction__()
         )
         self.scip_params = scip_params if scip_params is not None else {}
+        self.primal_heuristics = primal_heuristics
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
@@ -104,7 +108,11 @@ class Environment:
                 self.model = instance.copy_orig()
             else:
                 self.model = ecole.core.scip.Model.from_file(instance)
+
+            # SCIP params
             self.model.set_params(self.scip_params)
+            if not self.primal_heuristics:
+                self.model.as_pyscipopt().setHeuristics(3)  # 3 is off
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
