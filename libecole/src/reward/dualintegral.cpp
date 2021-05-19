@@ -39,7 +39,7 @@ auto compute_dual_integral(std::vector<scip::real> dual_bounds,
 	auto const time_diff = std::chrono::duration<double>(now - times[dual_bounds.size() - 1]).count();
 	dual_integral += dual_bound_diff * time_diff;
 
-	return static_cast<Reward>(dual_integral);
+	return dual_integral;
 }
 
 /* Compute the dual bounds adjusted by the initial bound given. */
@@ -95,7 +95,7 @@ Reward DualIntegral::extract(scip::Model& /*model*/, bool /*done*/) {
 	/* Update last_dual_integral */
 	last_dual_intgral = dual_integral;
 
-	return dual_integral_diff;
+	return static_cast<Reward>(dual_integral_diff);
 }
 
 }  // namespace ecole::reward

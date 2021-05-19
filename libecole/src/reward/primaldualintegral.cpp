@@ -40,9 +40,8 @@ auto compute_primal_dual_integral(std::vector<scip::real> primal_bounds,
 	auto const time_diff = std::chrono::duration<double>(now - times[primal_bounds.size() - 1]).count();
 	primal_dual_integral += primal_dual_bound_diff * time_diff;
 
-	return static_cast<Reward>(primal_dual_integral);
+	return primal_dual_integral;
 }
-
 
 /* Compute the primal bounds adjusted by the initial bound given. */
 auto get_adjusted_primal_bounds(std::vector<scip::real> primal_bounds, scip::real initial_primal_bound) {
@@ -118,12 +117,12 @@ Reward PrimalDualIntegral::extract(scip::Model& /*model*/, bool /*done*/) {
 	auto const adjusted_primal_bounds = get_adjusted_primal_bounds(primal_bounds, initial_primal_bound);
 	auto const adjust_dual_bounds = get_adjusted_dual_bounds(dual_bounds, initial_dual_bound);
 	auto const primal_dual_integral = compute_primal_dual_integral(adjusted_primal_bounds, adjust_dual_bounds, times, now);
-	auto const primal_integral_diff = primal_dual_integral - last_primal_dual_intgral;
+	auto const primal_dual_integral_diff = primal_dual_integral - last_primal_dual_intgral;
 	
 	/* Update last_primal_dual_intgral */
 	last_primal_dual_intgral = primal_dual_integral;
 
-	return primal_integral_diff;
+	return static_cast<Reward>(primal_dual_integral_diff);
 }
 
 }  // namespace ecole::reward

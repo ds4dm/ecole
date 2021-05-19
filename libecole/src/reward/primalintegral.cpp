@@ -39,9 +39,8 @@ auto compute_primal_integral(std::vector<scip::real> primal_bounds,
 	auto const time_diff = std::chrono::duration<double>(now - times[primal_bounds.size() - 1]).count();
 	primal_integral += primal_bound_diff * time_diff;
 
-	return static_cast<Reward>(primal_integral);
+	return primal_integral;
 }
-
 
 /* Compute the primal bounds adjusted by the initial bound given. */
 auto get_adjusted_primal_bounds(std::vector<scip::real> primal_bounds, scip::real initial_primal_bound) {
@@ -95,7 +94,8 @@ Reward PrimalIntegral::extract(scip::Model& /*model*/, bool /*done*/) {
 	
 	/* Update last_primal_integral */
 	last_primal_intgral = primal_integral;
-	return primal_integral_diff;
+	
+	return static_cast<Reward>(primal_integral_diff);
 }
 
 }  // namespace ecole::reward
