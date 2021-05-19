@@ -47,3 +47,10 @@ def test_scip_params(model):
     env = MockEnvironment(scip_params={"concurrent/paramsetprefix": "testname"})
     env.reset(model)
     assert env.model.get_param("concurrent/paramsetprefix") == "testname"
+
+
+def test_primal_heuristics_off(model):
+    """Turn of primal heuristic."""
+    env = MockEnvironment(primal_heuristics=False)
+    env.reset(model)
+    all_params = env.model.get_params()
