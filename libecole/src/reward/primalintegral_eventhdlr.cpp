@@ -5,9 +5,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/chrono.hpp"
 
-
 namespace ecole::reward {
-
 
 namespace {
 
@@ -20,48 +18,47 @@ auto time_now(bool wall) -> std::chrono::nanoseconds {
 }
 
 /* Gets the primal bound of the scip model */
-auto get_primal_bound(SCIP* scip_) {	
+auto get_primal_bound(SCIP* scip_) {
 	switch (SCIPgetStage(scip_)) {
-		case SCIP_STAGE_TRANSFORMED:
-		case SCIP_STAGE_INITPRESOLVE:
-		case SCIP_STAGE_PRESOLVING:
-		case SCIP_STAGE_EXITPRESOLVE:
-		case SCIP_STAGE_PRESOLVED:
-		case SCIP_STAGE_INITSOLVE:
-		case SCIP_STAGE_SOLVING:
-		case SCIP_STAGE_SOLVED:
-			return SCIPgetPrimalbound(scip_);
-		default:
-			return SCIPinfinity(scip_);
+	case SCIP_STAGE_TRANSFORMED:
+	case SCIP_STAGE_INITPRESOLVE:
+	case SCIP_STAGE_PRESOLVING:
+	case SCIP_STAGE_EXITPRESOLVE:
+	case SCIP_STAGE_PRESOLVED:
+	case SCIP_STAGE_INITSOLVE:
+	case SCIP_STAGE_SOLVING:
+	case SCIP_STAGE_SOLVED:
+		return SCIPgetPrimalbound(scip_);
+	default:
+		return SCIPinfinity(scip_);
 	}
 }
 
 }  // namespace
-
 
 /*********************
  Event Handler Methods
 **********************/
 
 /* */
-SCIP_DECL_EVENTFREE(PrimalIntegralEventHandler::scip_free) {  
+SCIP_DECL_EVENTFREE(PrimalIntegralEventHandler::scip_free) {
 	return SCIP_OKAY;
 }
 
 /* */
-SCIP_DECL_EVENTDELETE(PrimalIntegralEventHandler::scip_delete) {  
+SCIP_DECL_EVENTDELETE(PrimalIntegralEventHandler::scip_delete) {
 	return SCIP_OKAY;
 }
 
 /* */
-SCIP_DECL_EVENTINIT(PrimalIntegralEventHandler::scip_init) {  
-	SCIP_CALL(SCIPcatchEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, NULL, NULL));
+SCIP_DECL_EVENTINIT(PrimalIntegralEventHandler::scip_init) {
+	SCIP_CALL(SCIPcatchEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, nullptr, nullptr));
 	return SCIP_OKAY;
 }
 
 /* */
-SCIP_DECL_EVENTEXIT(PrimalIntegralEventHandler::scip_exit) { 
-	SCIP_CALL(SCIPdropEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, NULL, -1));
+SCIP_DECL_EVENTEXIT(PrimalIntegralEventHandler::scip_exit) {
+	SCIP_CALL(SCIPdropEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, nullptr, -1));
 	return SCIP_OKAY;
 }
 
@@ -76,7 +73,7 @@ SCIP_DECL_EVENTEXITSOL(PrimalIntegralEventHandler::scip_exitsol) {
 }
 
 /* */
-SCIP_DECL_EVENTEXEC(PrimalIntegralEventHandler::scip_exec) {  
+SCIP_DECL_EVENTEXEC(PrimalIntegralEventHandler::scip_exec) {
 	extract_metrics();
 	return SCIP_OKAY;
 }
@@ -84,9 +81,9 @@ SCIP_DECL_EVENTEXEC(PrimalIntegralEventHandler::scip_exec) {
 /* Gets and adds primal bounds and times to vectors */
 void PrimalIntegralEventHandler::extract_metrics() {
 	auto const primal_bound = get_primal_bound(scip_);
-	auto const time  = time_now(wall);
-    primal_bounds.push_back(primal_bound);
-    times.push_back(time);
+	auto const time = time_now(wall);
+	primal_bounds.push_back(primal_bound);
+	times.push_back(time);
 }
 
 /* Returns the vector of times */

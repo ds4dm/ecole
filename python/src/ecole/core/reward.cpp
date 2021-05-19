@@ -4,13 +4,13 @@
 #include <pybind11/pybind11.h>
 
 #include "ecole/reward/constant.hpp"
+#include "ecole/reward/dualintegral.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/reward/nnodes.hpp"
-#include "ecole/reward/solvingtime.hpp"
-#include "ecole/reward/dualintegral.hpp"
-#include "ecole/reward/primalintegral.hpp"
 #include "ecole/reward/primaldualintegral.hpp"
+#include "ecole/reward/primalintegral.hpp"
+#include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -174,7 +174,7 @@ void bind_submodule(py::module_ const& m) {
 	auto dualintegral = py::class_<DualIntegral>(m, "DualIntegral", R"(
 		Dual integral difference.
 
-		The reward is defined as the dual integral since the previous state, where the integral is 
+		The reward is defined as the dual integral since the previous state, where the integral is
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
@@ -192,13 +192,13 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(dualintegral, R"(
 		Computes the current dual integral and returns the difference.
 
-		The difference is computed based on the dual integral between sequential calls.  
+		The difference is computed based on the dual integral between sequential calls.
 		)");
 
 	auto primalintegral = py::class_<PrimalIntegral>(m, "PrimalIntegral", R"(
 		Primal integral difference.
 
-		The reward is defined as the primal integral since the previous state, where the integral is 
+		The reward is defined as the primal integral since the previous state, where the integral is
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
@@ -216,13 +216,13 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(primalintegral, R"(
 		Computes the current primal integral and returns the difference.
 
-		The difference is computed based on the dual integral between sequential calls.  
+		The difference is computed based on the dual integral between sequential calls.
 		)");
 
 	auto primaldualintegral = py::class_<PrimalDualIntegral>(m, "PrimalDualIntegral", R"(
 		Primal-dual integral difference.
 
-		The reward is defined as the primal-dual integral since the previous state, where the integral is 
+		The reward is defined as the primal-dual integral since the previous state, where the integral is
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
@@ -240,7 +240,7 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(primaldualintegral, R"(
 		Computes the current primal-dual integral and returns the difference.
 
-		The difference is computed based on the primal-dual integral between sequential calls.  
+		The difference is computed based on the primal-dual integral between sequential calls.
 		)");
 }
 

@@ -9,14 +9,16 @@
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/type.hpp"
 
-
 namespace ecole::reward {
 
 class PrimalDualIntegralEventHandler : public ::scip::ObjEventhdlr {
 public:
-   /* Methods */
-	PrimalDualIntegralEventHandler(SCIP* scip, bool wall_) : ObjEventhdlr(scip, "primal_dual_integral","event handler for primal-dual integral") {wall = wall_;}
-	virtual ~PrimalDualIntegralEventHandler() {}
+	/* Methods */
+	PrimalDualIntegralEventHandler(SCIP* scip, bool wall_) :
+		ObjEventhdlr(scip, "primal_dual_integral", "event handler for primal-dual integral") {
+		wall = wall_;
+	}
+	~PrimalDualIntegralEventHandler() override = default;
 	virtual SCIP_DECL_EVENTFREE(scip_free);
 	virtual SCIP_DECL_EVENTINIT(scip_init);
 	virtual SCIP_DECL_EVENTEXIT(scip_exit);
@@ -38,4 +40,4 @@ private:
 	std::vector<scip::real> dual_bounds;
 };
 
-} // namespace
+}  // namespace ecole::reward

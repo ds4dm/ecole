@@ -1,11 +1,10 @@
 #include "scip/scip.h"
 #include "scip/type_event.h"
 
-#include "ecole/reward/dualintegral_eventhdlr.hpp"
 #include "ecole/reward/dualintegral.hpp"
+#include "ecole/reward/dualintegral_eventhdlr.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/chrono.hpp"
-
 
 namespace ecole::reward {
 
@@ -20,7 +19,8 @@ auto time_now(bool wall) -> std::chrono::nanoseconds {
 }
 
 /* Compute the dual integral */
-auto compute_dual_integral(std::vector<scip::real> dual_bounds, 
+auto compute_dual_integral(
+	std::vector<scip::real> dual_bounds,
 	std::vector<std::chrono::nanoseconds> times,
 	std::chrono::nanoseconds now,
 	scip::real dual_bound_reference) {
@@ -30,7 +30,7 @@ auto compute_dual_integral(std::vector<scip::real> dual_bounds,
 
 	for (size_t i = 0; i < dual_bounds.size() - 1; ++i) {
 		auto const dual_bound_diff = dual_bound_reference - dual_bounds[i];
-		auto const time_diff = std::chrono::duration<double>(times[i+1] - times[i]).count();
+		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
 		dual_integral += dual_bound_diff * time_diff;
 	}
 
@@ -55,8 +55,7 @@ auto get_adjusted_dual_bounds(std::vector<scip::real> dual_bounds, scip::real in
 	return adjusted_dual_bounds;
 }
 
-} // namespace
-
+}  // namespace
 
 /*********************
  Dual Integral Methods
@@ -64,20 +63,19 @@ auto get_adjusted_dual_bounds(std::vector<scip::real> dual_bounds, scip::real in
 
 /* */
 void DualIntegral::before_reset(scip::Model& model) {
-  	last_dual_intgral = 0.0;
+	last_dual_intgral = 0.0;
 
-  	// These are the values we need to figure out how to set
-  	// for each instance.  
+	// These are the values we need to figure out how to set
+	// for each instance.
 	dual_bound_reference = SCIPinfinity(model.get_scip_ptr());
-	initial_dual_bound = - SCIPinfinity(model.get_scip_ptr());
+	initial_dual_bound = -SCIPinfinity(model.get_scip_ptr());
 
 	/* Initalize and add event handler */
 	eventhdlr = new DualIntegralEventHandler(model.get_scip_ptr(), wall);
-    SCIPincludeObjEventhdlr(model.get_scip_ptr(), eventhdlr, TRUE);
+	SCIPincludeObjEventhdlr(model.get_scip_ptr(), eventhdlr, TRUE);
 
-    /* Extract metrics before resetting to get initial reference point */
-    eventhdlr->extract_metrics();
-    
+	/* Extract metrics before resetting to get initial reference point */
+	eventhdlr->extract_metrics();
 }
 
 /* */
@@ -91,7 +89,7 @@ Reward DualIntegral::extract(scip::Model& /*model*/, bool /*done*/) {
 	auto const adjusted_dual_bounds = get_adjusted_dual_bounds(dual_bounds, initial_dual_bound);
 	auto const dual_integral = compute_dual_integral(adjusted_dual_bounds, times, now, dual_bound_reference);
 	auto const dual_integral_diff = dual_integral - last_dual_intgral;
-	
+
 	/* Update last_dual_integral */
 	last_dual_intgral = dual_integral;
 

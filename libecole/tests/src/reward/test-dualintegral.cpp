@@ -17,7 +17,6 @@ TEST_CASE("DualIntegral returns the difference in dual integral between two stat
 
 	SECTION("DualIntegral is positive before presolving") {
 		reward_func.before_reset(model);
-    REQUIRE(reward_func.extract(model) > 0);
+		REQUIRE(reward_func.extract(model) > 0);
 	}
-	
 }

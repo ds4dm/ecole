@@ -9,14 +9,16 @@
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/type.hpp"
 
-
 namespace ecole::reward {
 
 class PrimalIntegralEventHandler : public ::scip::ObjEventhdlr {
 public:
-   /* Methods */
-	PrimalIntegralEventHandler(SCIP* scip, bool wall_) : ObjEventhdlr(scip, "primal_integral","event handler for primal integral") {wall = wall_;}
-	virtual ~PrimalIntegralEventHandler() {}
+	/* Methods */
+	PrimalIntegralEventHandler(SCIP* scip, bool wall_) :
+		ObjEventhdlr(scip, "primal_integral", "event handler for primal integral") {
+		wall = wall_;
+	}
+	~PrimalIntegralEventHandler() override = default;
 	virtual SCIP_DECL_EVENTFREE(scip_free);
 	virtual SCIP_DECL_EVENTINIT(scip_init);
 	virtual SCIP_DECL_EVENTEXIT(scip_exit);
@@ -34,7 +36,6 @@ private:
 	bool wall;
 	std::vector<std::chrono::nanoseconds> times;
 	std::vector<scip::real> primal_bounds;
-
 };
 
-} // namespace
+}  // namespace ecole::reward

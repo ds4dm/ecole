@@ -5,8 +5,8 @@
 
 #include <scip/type_event.h>
 
-#include "ecole/reward/primalintegral_eventhdlr.hpp"
 #include "ecole/reward/abstract.hpp"
+#include "ecole/reward/primalintegral_eventhdlr.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::reward {

@@ -5,8 +5,8 @@
 
 #include <scip/type_event.h>
 
-#include "ecole/reward/dualintegral_eventhdlr.hpp"
 #include "ecole/reward/abstract.hpp"
+#include "ecole/reward/dualintegral_eventhdlr.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::reward {
@@ -23,7 +23,6 @@ private:
 	scip::real initial_dual_bound;
 	scip::real dual_bound_reference;
 	DualIntegralEventHandler* eventhdlr;
-
 };
 
 }  // namespace ecole::reward
