@@ -15,9 +15,9 @@ TEST_CASE("DualIntegral returns the difference in dual integral between two stat
 	auto reward_func = reward::DualIntegral{};
 	auto model = get_model();  // a non-trivial instance is loaded
 
-	SECTION("DualIntegral iterations is 0 before presolving") {
+	SECTION("DualIntegral is positive before presolving") {
 		reward_func.before_reset(model);
-    REQUIRE(reward_func.extract(model) == 0);
+    REQUIRE(reward_func.extract(model) > 0);
 	}
 	
 }
