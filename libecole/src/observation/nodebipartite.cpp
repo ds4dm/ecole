@@ -260,27 +260,29 @@ auto set_features_for_all_rows(xmatrix& out, scip::Model& model, bool const upda
 	auto const n_lps = static_cast<value_type>(SCIPgetNLPs(scip));
 	value_type const obj_norm = obj_l2_norm(scip);
 
-	auto const rows = model.lp_rows();
-	auto const n_rows = rows.size();
-	for (std::size_t row_idx = 0; row_idx < n_rows; ++row_idx) {
-		auto* const row = rows[row_idx];
+	auto feat_row_idx = std::size_t{0};
+	for (auto* const row : model.lp_rows()) {
 		auto const row_norm = static_cast<value_type>(row_l2_norm(row));
-		auto features = xt::row(out, static_cast<std::ptrdiff_t>(row_idx));
 
 		// Rows are counted once per rhs and once per lhs
 		if (scip::get_unshifted_lhs(scip, row).has_value()) {
+			auto features = xt::row(out, static_cast<std::ptrdiff_t>(feat_row_idx));
 			if (update_static) {
 				set_static_features_for_lhs_row(features, scip, row, row_norm);
 			}
 			set_dynamic_features_for_lhs_row(features, scip, row, row_norm, obj_norm, n_lps);
+			feat_row_idx++;
 		}
 		if (scip::get_unshifted_rhs(scip, row).has_value()) {
+			auto features = xt::row(out, static_cast<std::ptrdiff_t>(feat_row_idx));
 			if (update_static) {
 				set_static_features_for_rhs_row(features, scip, row, row_norm);
 			}
 			set_dynamic_features_for_rhs_row(features, scip, row, row_norm, obj_norm, n_lps);
+			feat_row_idx++;
 		}
 	}
+	assert(feat_row_idx == n_ineq_rows(model));
 }
 
 /****************************************
