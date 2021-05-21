@@ -1,10 +1,12 @@
 #include <future>
 #include <limits>
+#include <random>
 #include <string>
 
 #include <catch2/catch.hpp>
 #include <scip/scip.h>
 
+#include "ecole/random.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 
@@ -163,4 +165,37 @@ TEST_CASE("Map parameter management", "[scip]") {
 		model.set_params(vals);
 		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
 	}
+}
+
+TEST_CASE("Iterative branching", "[scip][slow]") {
+	auto model = get_model();
+	model.solve_iter();
+
+	SECTION("Branch on a given variable") {
+		while (!model.solve_iter_is_done()) {
+			auto const cands = model.lp_branch_cands();
+			REQUIRE_FALSE(cands.empty());
+			model.solve_iter_branch(cands[0]);
+		}
+	}
+
+	SECTION("Branch on SCIP default") {
+		while (!model.solve_iter_is_done()) {
+			model.solve_iter_branch();
+		}
+	}
+
+	SECTION("Branch on multiple candidates") {
+		// This is not a great way to select variables because if their sum is integer, an exeception will
+		// be raised.
+		auto rng = ecole::spawn_random_engine();
+		while (!model.solve_iter_is_done()) {
+			auto const cands = model.lp_branch_cands();
+			REQUIRE_FALSE(cands.empty());
+			auto choice = std::uniform_int_distribution<std::size_t>{0, cands.size() - 1};
+			model.solve_iter_branch(cands[choice(rng)]);
+		}
+	}
+
+	REQUIRE(model.is_solved());
 }
