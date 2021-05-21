@@ -7,7 +7,6 @@
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/scip/model.hpp"
-
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::dynamics {
@@ -48,7 +47,9 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& act
 	if (action >= lp_cols.size()) {
 		throw Exception{"Branching index is larger than the number of columns."};
 	}
-	model.solve_iter_branch(SCIPcolGetVar(lp_cols[action]));
+	auto* const var = SCIPcolGetVar(lp_cols[action]);
+	scip::call(SCIPbranchVar, model.get_scip_ptr(), var, nullptr, nullptr, nullptr);
+	model.solve_iter_branch(SCIP_BRANCHED);
 
 	auto const done = model.solve_iter_is_done();
 	if (done) {

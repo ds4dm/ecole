@@ -23,7 +23,7 @@ public:
 	Scimpl copy_orig();
 
 	void solve_iter();
-	void solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars);
+	void solve_iter_branch(SCIP_RESULT result);
 	void solve_iter_stop();
 	bool solve_iter_is_done();
 

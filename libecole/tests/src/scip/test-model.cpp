@@ -9,6 +9,7 @@
 #include "ecole/random.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/utils.hpp"
 
 #include "conftest.hpp"
 
@@ -171,29 +172,18 @@ TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
 	model.solve_iter();
 
-	SECTION("Branch on a given variable") {
+	SECTION("Branch outside of callback") {
 		while (!model.solve_iter_is_done()) {
 			auto const cands = model.lp_branch_cands();
 			REQUIRE_FALSE(cands.empty());
-			model.solve_iter_branch(cands[0]);
+			scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
+			model.solve_iter_branch(SCIP_BRANCHED);
 		}
 	}
 
 	SECTION("Branch on SCIP default") {
 		while (!model.solve_iter_is_done()) {
-			model.solve_iter_branch();
-		}
-	}
-
-	SECTION("Branch on multiple candidates") {
-		// This is not a great way to select variables because if their sum is integer, an exeception will
-		// be raised.
-		auto rng = ecole::spawn_random_engine();
-		while (!model.solve_iter_is_done()) {
-			auto const cands = model.lp_branch_cands();
-			REQUIRE_FALSE(cands.empty());
-			auto choice = std::uniform_int_distribution<std::size_t>{0, cands.size() - 1};
-			model.solve_iter_branch(cands[choice(rng)]);
+			model.solve_iter_branch(SCIP_DIDNOTRUN);
 		}
 	}
 

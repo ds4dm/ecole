@@ -97,22 +97,9 @@ void Scimpl::solve_iter() {
 	m_controller->wait_thread();
 }
 
-void scip::Scimpl::solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars) {
-	assert(std::none_of(vars.begin(), vars.end(), [](auto* var) { return var == nullptr; }));
-	m_controller->resume_thread([vars](SCIP* scip_ptr, SCIP_RESULT* result) {
-		switch (vars.size()) {
-		case 0:
-			*result = SCIP_DIDNOTRUN;
-			break;
-		case 1:
-			SCIP_CALL(SCIPbranchVar(scip_ptr, const_cast<SCIP_VAR*>(vars.front()), nullptr, nullptr, nullptr));
-			*result = SCIP_BRANCHED;
-			break;
-		default:
-			SCIP_CALL(
-				SCIPbranchGUB(scip_ptr, const_cast<SCIP_VAR**>(vars.data()), static_cast<int>(vars.size()), nullptr, nullptr));
-			*result = SCIP_BRANCHED;
-		}
+void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
+	m_controller->resume_thread([result](SCIP* /* scip */, SCIP_RESULT* final_result) {
+		*final_result = result;
 		return SCIP_OKAY;
 	});
 	m_controller->wait_thread();
