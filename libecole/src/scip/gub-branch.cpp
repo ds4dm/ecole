@@ -12,40 +12,6 @@
 
 #include "scip/gub-branch.hpp"
 
-static SCIP_RETCODE SCIPbranchGUB_validate(SCIP* scip, SCIP_VAR** vars, int nvars) {
-	assert(scip != nullptr);
-	if (SCIPgetStage(scip) != SCIP_STAGE_SOLVING) {
-		SCIPerrorMessage("cannot branch when not solving\n");
-		return SCIP_INVALIDCALL;
-	}
-
-	if (nvars <= 0) {
-		SCIPerrorMessage("cannot branch on empty variable set\n");
-		return SCIP_INVALIDDATA;
-	}
-
-	SCIP_VAR const* const* const vars_end = vars + nvars;
-	for (SCIP_VAR** var_iter = vars; var_iter < vars_end; ++var_iter) {
-		// assert((*var_iter)->scip == scip);  FIXME only in SCIP debug builds
-		assert(SCIPvarIsActive(*var_iter));
-		assert(SCIPvarGetProbindex(*var_iter) >= 0);
-		if (SCIPvarGetType(*var_iter) == SCIP_VARTYPE_CONTINUOUS) {
-			SCIPerrorMessage("cannot branch on constraint containing continuous variable <%s>\n", SCIPvarGetName(*var_iter));
-			return SCIP_INVALIDDATA;
-		}
-		if (SCIPisEQ(scip, SCIPvarGetLbLocal(*var_iter), SCIPvarGetUbLocal(*var_iter))) {
-			SCIPerrorMessage(
-				"cannot branch on constraint containing variable <%s> with fixed domain [%.15g,%.15g]\n",
-				SCIPvarGetName(*var_iter),
-				SCIPvarGetLbLocal(*var_iter),
-				SCIPvarGetUbLocal(*var_iter));
-			return SCIP_INVALIDDATA;
-		}
-	}
-
-	return SCIP_OKAY;
-}
-
 static SCIP_RETCODE SCIPbranchGUB_add_child(
 	SCIP* scip,
 	SCIP_Real priority,
@@ -91,20 +57,54 @@ TERM:
 }
 
 SCIP_RETCODE
-SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** eqchild, SCIP_NODE** upchild) {
-	SCIPbranchGUB_validate(scip, vars, nvars);
+SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** upchild) {
+	/* Check input parameters */
+	assert(scip != nullptr);
+	if (SCIPgetStage(scip) != SCIP_STAGE_SOLVING) {
+		SCIPerrorMessage("cannot branch when not solving\n");
+		return SCIP_INVALIDCALL;
+	}
+	if (nvars <= 0) {
+		SCIPerrorMessage("cannot branch on empty variable set\n");
+		return SCIP_INVALIDDATA;
+	}
 
+	/* Check individual variables and compute the sum of their LP relaxation value */
 	SCIP_Real pseudo_sol_sum = 0.;
 	SCIP_VAR const* const* const vars_end = vars + nvars;
 	for (SCIP_VAR** var_iter = vars; var_iter < vars_end; ++var_iter) {
+		/* Validate that variables are integer, not fixed */
+		assert(SCIPvarIsActive(*var_iter));
+		assert(SCIPvarGetProbindex(*var_iter) >= 0);
+		if (SCIPvarGetType(*var_iter) == SCIP_VARTYPE_CONTINUOUS) {
+			SCIPerrorMessage("cannot branch on constraint containing continuous variable <%s>\n", SCIPvarGetName(*var_iter));
+			return SCIP_INVALIDDATA;
+		}
+		if (SCIPisEQ(scip, SCIPvarGetLbLocal(*var_iter), SCIPvarGetUbLocal(*var_iter))) {
+			SCIPerrorMessage(
+				"cannot branch on constraint containing variable <%s> with fixed domain [%.15g,%.15g]\n",
+				SCIPvarGetName(*var_iter),
+				SCIPvarGetLbLocal(*var_iter),
+				SCIPvarGetUbLocal(*var_iter));
+			return SCIP_INVALIDDATA;
+		}
+
 		SCIP_Real val = SCIPvarGetSol(*var_iter, SCIPhasCurrentNodeLP(scip));
 
 		/* avoid branching on infinite values in pseudo solution */
 		if (SCIPisInfinity(scip, -val) || SCIPisInfinity(scip, val)) {
-			// FIXME not sure what to do here
+			SCIPerrorMessage("cannot branch on variables containing infinite values");
 			return SCIP_INVALIDDATA;
 		}
 		pseudo_sol_sum += val;
+	}
+
+	SCIP_Real const downbound = SCIPfeasFloor(scip, pseudo_sol_sum);
+	SCIP_Real const upbound = SCIPfeasCeil(scip, pseudo_sol_sum);
+	SCIP_Real const estimate = SCIPnodeGetLowerbound(SCIPgetCurrentNode(scip));
+	if (SCIPisEQ(scip, downbound, upbound)) {
+		SCIPerrorMessage("cannot branch on a variables whose sum of LP solution value is integer");
+		return SCIP_INVALIDDATA;
 	}
 
 	SCIP_Real inf = SCIPinfinity(scip);
@@ -115,22 +115,10 @@ SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 		ones[i] = 1.;
 	}
 
-	SCIP_Real const downbound = SCIPfeasFloor(scip, pseudo_sol_sum);
-	SCIP_Real const upbound = SCIPfeasCeil(scip, pseudo_sol_sum);
-	SCIP_Real const estimate = SCIPnodeGetLowerbound(SCIPgetCurrentNode(scip));
-	if (SCIPisEQ(scip, downbound, upbound)) {
-		SCIP_CALL_TERMINATE(
-			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, upbound, eqchild), TERM);
-		SCIP_CALL_TERMINATE(
-			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, upbound - 1, downchild), TERM);
-		SCIP_CALL_TERMINATE(
-			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound + 1, inf, upchild), TERM);
-	} else {
-		SCIP_CALL_TERMINATE(
-			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
-		SCIP_CALL_TERMINATE(
-			retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
-	}
+	SCIP_CALL_TERMINATE(
+		retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
+	SCIP_CALL_TERMINATE(
+		retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
 
 TERM:
 	SCIPfreeBufferArray(scip, &ones);

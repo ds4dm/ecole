@@ -109,8 +109,8 @@ void scip::Scimpl::solve_iter_branch(nonstd::span<SCIP_VAR const* const> vars) {
 			*result = SCIP_BRANCHED;
 			break;
 		default:
-			SCIP_CALL(SCIPbranchGUB(
-				scip_ptr, const_cast<SCIP_VAR**>(vars.data()), static_cast<int>(vars.size()), nullptr, nullptr, nullptr));
+			SCIP_CALL(
+				SCIPbranchGUB(scip_ptr, const_cast<SCIP_VAR**>(vars.data()), static_cast<int>(vars.size()), nullptr, nullptr));
 			*result = SCIP_BRANCHED;
 		}
 		return SCIP_OKAY;
