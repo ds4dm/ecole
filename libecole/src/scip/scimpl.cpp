@@ -51,6 +51,21 @@ static std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 	return scip_ptr;
 }
 
+static std::unique_ptr<SCIP, ScipDeleter> copy(SCIP const* const source) {
+	if (source == nullptr) {
+		return nullptr;
+	}
+	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) {
+		return create_scip();
+	}
+	auto dest = create_scip();
+	// Copy operation is not thread safe
+	static std::mutex m{};
+	std::lock_guard<std::mutex> g{m};
+	scip::call(SCIPcopy, const_cast<SCIP*>(source), dest.get(), nullptr, nullptr, "", true, false, false, false, nullptr);
+	return dest;
+}
+
 static std::unique_ptr<SCIP, ScipDeleter> copy_orig(SCIP const* const source) {
 	if (source == nullptr) {
 		return nullptr;

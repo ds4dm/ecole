@@ -20,6 +20,7 @@ public:
 
 	SCIP* get_scip_ptr() noexcept;
 
+	Scimpl copy();
 	Scimpl copy_orig();
 
 	void solve_iter();
