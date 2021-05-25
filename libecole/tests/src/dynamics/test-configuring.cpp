@@ -11,7 +11,8 @@
 using namespace ecole;
 
 TEST_CASE("ConfiguringDynamics unit tests", "[unit][dynamics]") {
-	auto const policy = [](auto const& /*action_set*/) -> trait::action_of_t<dynamics::ConfiguringDynamics> {
+	auto const policy =
+		[](auto const& /*action_set*/, auto const& /*model*/) -> trait::action_of_t<dynamics::ConfiguringDynamics> {
 		return {{"branching/scorefunc", 's'}};
 	};
 	dynamics::unit_tests(dynamics::ConfiguringDynamics{}, policy);
