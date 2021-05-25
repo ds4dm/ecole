@@ -6,7 +6,7 @@
 #include <scip/type_event.h>
 
 #include "ecole/reward/abstract.hpp"
-#include "ecole/reward/primalintegral_eventhdlr.hpp"
+#include "ecole/reward/integral_eventhdlr.hpp"
 #include "ecole/scip/type.hpp"
 
 namespace ecole::reward {
@@ -19,10 +19,9 @@ public:
 
 private:
 	bool wall = false;
-	scip::real last_primal_intgral;
-	scip::real initial_primal_bound;
-	scip::real primal_bound_reference;
-	PrimalIntegralEventHandler* eventhdlr;
+	SCIP_Real last_primal_integral;
+	SCIP_Real initial_primal_bound;
+	SCIP_Real primal_bound_reference;
 };
 
 }  // namespace ecole::reward
