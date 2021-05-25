@@ -1,3 +1,7 @@
+/***********************************************************
+ *  Implementation of SCIPbranchGUB (aim to merge in SCIP) *
+ ***********************************************************/
+
 #include <cassert>
 
 #include <fmt/format.h>
@@ -10,9 +14,9 @@
 #include <scip/struct_scip.h>
 #include <scip/struct_var.h>
 
-#include "scip/gub-branch.hpp"
+namespace {
 
-static SCIP_RETCODE SCIPbranchGUB_add_child(
+SCIP_RETCODE SCIPbranchGUB_add_child(
 	SCIP* scip,
 	SCIP_Real priority,
 	SCIP_Real estimate,
@@ -107,7 +111,7 @@ SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 		return SCIP_INVALIDDATA;
 	}
 
-	SCIP_Real inf = SCIPinfinity(scip);
+	SCIP_Real const inf = SCIPinfinity(scip);
 	SCIP_Real* ones = nullptr;
 	SCIP_Retcode retcode = SCIP_OKAY;
 	SCIP_CALL(SCIPallocBufferArray(scip, &ones, nvars));
@@ -124,3 +128,71 @@ TERM:
 	SCIPfreeBufferArray(scip, &ones);
 	return retcode;
 }
+
+}  // namespace
+
+/********************************************
+ *  Implementation of BranchingGUBDynamics  *
+ ********************************************/
+
+#include <algorithm>
+#include <stdexcept>
+#include <vector>
+
+#include <xtensor/xtensor.hpp>
+
+#include "ecole/dynamics/branching-gub.hpp"
+#include "ecole/scip/model.hpp"
+#include "ecole/scip/utils.hpp"
+
+namespace ecole::dynamics {
+
+namespace {
+
+std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model) {
+	if (model.get_stage() != SCIP_STAGE_SOLVING) {
+		return {};
+	}
+	auto const branch_cands = model.lp_branch_cands();
+	auto branch_cols = xt::xtensor<std::size_t, 1>::from_shape({branch_cands.size()});
+	auto const var_to_idx = [](auto const var) { return SCIPcolGetLPPos(SCIPvarGetCol(var)); };
+	std::transform(branch_cands.begin(), branch_cands.end(), branch_cols.begin(), var_to_idx);
+
+	assert(branch_cols.size() > 0);
+	return branch_cols;
+}
+
+}  // namespace
+
+auto BranchingGUBDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
+	model.solve_iter();
+	if (model.solve_iter_is_done()) {
+		return {true, {}};
+	}
+	return {false, action_set(model)};
+}
+
+auto BranchingGUBDynamics::step_dynamics(scip::Model& model, Action const& var_idx) -> std::tuple<bool, ActionSet> {
+	auto const lp_cols = model.lp_columns();
+
+	// Check that input indices are within range
+	auto const is_out_of_bounds = [size = lp_cols.size()](auto idx) { return idx >= size; };
+	if (std::any_of(var_idx.begin(), var_idx.end(), is_out_of_bounds)) {
+		throw std::invalid_argument{"Branching index is larger than the number of columns."};
+	}
+
+	// Get variables associated with indices
+	auto vars = std::vector<SCIP_VAR*>(var_idx.size());
+	auto const idx_to_var = [lp_cols](auto idx) { return SCIPcolGetVar(lp_cols[idx]); };
+	std::transform(var_idx.begin(), var_idx.end(), vars.begin(), idx_to_var);
+
+	scip::call(SCIPbranchGUB, model.get_scip_ptr(), vars.data(), static_cast<int>(vars.size()), nullptr, nullptr);
+	model.solve_iter_branch(SCIP_BRANCHED);
+
+	if (model.solve_iter_is_done()) {
+		return {true, {}};
+	}
+	return {false, action_set(model)};
+}
+
+}  // namespace ecole::dynamics

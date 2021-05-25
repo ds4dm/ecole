@@ -15,7 +15,6 @@ add_library(
 	src/scip/row.cpp
 	src/scip/col.cpp
 	src/scip/exception.cpp
-	src/scip/gub-branch.cpp  # Temporary
 
 	src/instance/files.cpp
 	src/instance/set-cover.cpp
@@ -36,6 +35,7 @@ add_library(
 	src/observation/pseudocosts.cpp
 
 	src/dynamics/branching.cpp
+	src/dynamics/branching-gub.cpp
 	src/dynamics/configuring.cpp
 )
 set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)

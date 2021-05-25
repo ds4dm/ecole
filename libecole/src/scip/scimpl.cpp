@@ -9,8 +9,6 @@
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
 
-#include "scip/gub-branch.hpp"
-
 namespace ecole::scip {
 
 /******************************************
