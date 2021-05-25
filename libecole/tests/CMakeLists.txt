@@ -38,6 +38,8 @@ add_executable(
 	src/reward/test-nnodes.cpp
 	src/reward/test-solvingtime.cpp
 	src/reward/test-dualintegral.cpp
+	src/reward/test-primalintegral.cpp
+	src/reward/test-primaldualintegral.cpp
 
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-milpbipartite.cpp
