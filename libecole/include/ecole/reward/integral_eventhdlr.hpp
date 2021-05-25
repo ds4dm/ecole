@@ -13,7 +13,7 @@ namespace ecole::reward {
 
 class IntegralEventHandler : public ::scip::ObjEventhdlr {
 public:
-	IntegralEventHandler(SCIP* scip, bool wall_, bool primal_, bool dual_):
+	IntegralEventHandler(SCIP* scip, bool wall_, bool primal_, bool dual_) :
 		ObjEventhdlr(scip, "ecole::reward::IntegralEventHandler", "Event handler for primal and dual integrals") {
 		wall = wall_;
 		primal = primal_;
@@ -27,7 +27,7 @@ public:
 	std::vector<std::chrono::nanoseconds> get_times();
 	std::vector<SCIP_Real> get_primal_bounds();
 	std::vector<SCIP_Real> get_dual_bounds();
-	void extract_metrics(SCIP * scip);
+	void extract_metrics(SCIP* scip);
 
 private:
 	bool wall;

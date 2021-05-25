@@ -1,8 +1,8 @@
 #include "scip/scip.h"
 #include "scip/type_event.h"
 
-#include "ecole/reward/primalintegral.hpp"
 #include "ecole/reward/integral_eventhdlr.hpp"
+#include "ecole/reward/primalintegral.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/chrono.hpp"
 
@@ -39,7 +39,6 @@ auto get_adjusted_primal_bounds(std::vector<SCIP_Real> primal_bounds, SCIP_Real 
 
 }  // namespace
 
-
 void PrimalIntegral::before_reset(scip::Model& model) {
 	last_primal_integral = 0.0;
 
@@ -49,7 +48,8 @@ void PrimalIntegral::before_reset(scip::Model& model) {
 	primal_bound_reference = 0.0;
 
 	/* Initalize and add event handler */
-	SCIPincludeObjEventhdlr(model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, TRUE, FALSE), TRUE);
+	SCIPincludeObjEventhdlr(
+		model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, TRUE, FALSE), TRUE);
 
 	/* Extract metrics before resetting to get initial reference point */
 	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), "ecole::reward::IntegralEventHandler");
@@ -58,7 +58,6 @@ void PrimalIntegral::before_reset(scip::Model& model) {
 	assert(handler != nullptr);
 	handler->extract_metrics(model.get_scip_ptr());
 }
-
 
 Reward PrimalIntegral::extract(scip::Model& model, bool /*done*/) {
 	/* Get info from event handler */
@@ -75,7 +74,7 @@ Reward PrimalIntegral::extract(scip::Model& model, bool /*done*/) {
 	auto const adjusted_primal_bounds = get_adjusted_primal_bounds(primal_bounds, initial_primal_bound);
 	auto const primal_integral = compute_primal_integral(adjusted_primal_bounds, times, primal_bound_reference);
 	auto const primal_integral_diff = primal_integral - last_primal_integral;
-	
+
 	/* Update last_primal_integral */
 	last_primal_integral = primal_integral;
 

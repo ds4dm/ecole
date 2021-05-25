@@ -5,7 +5,6 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/chrono.hpp"
 
-
 namespace ecole::reward {
 
 namespace {
@@ -82,7 +81,7 @@ SCIP_DECL_EVENTEXEC(IntegralEventHandler::scip_exec) {
 }
 
 /* Gets and adds primal/dual bounds and times to vectors */
-void IntegralEventHandler::extract_metrics(SCIP * scip) {
+void IntegralEventHandler::extract_metrics(SCIP* scip) {
 	// TODO: Handle each event individually
 	if (primal) {
 		primal_bounds.push_back(get_primal_bound(scip));

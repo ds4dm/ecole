@@ -39,7 +39,6 @@ auto get_adjusted_dual_bounds(std::vector<SCIP_Real> dual_bounds, SCIP_Real init
 
 }  // namespace
 
-
 void DualIntegral::before_reset(scip::Model& model) {
 	last_dual_integral = 0.0;
 
@@ -49,7 +48,8 @@ void DualIntegral::before_reset(scip::Model& model) {
 	initial_dual_bound = -SCIPinfinity(model.get_scip_ptr());
 
 	/* Initalize and add event handler */
-	SCIPincludeObjEventhdlr(model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, FALSE, TRUE), TRUE);
+	SCIPincludeObjEventhdlr(
+		model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, FALSE, TRUE), TRUE);
 
 	/* Extract metrics before resetting to get initial reference point */
 	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), "ecole::reward::IntegralEventHandler");
@@ -58,7 +58,6 @@ void DualIntegral::before_reset(scip::Model& model) {
 	assert(handler != nullptr);
 	handler->extract_metrics(model.get_scip_ptr());
 }
-
 
 Reward DualIntegral::extract(scip::Model& model, bool /*done*/) {
 	/* Get info from event handler */
