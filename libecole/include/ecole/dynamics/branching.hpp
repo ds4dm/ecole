@@ -19,7 +19,7 @@ public:
 
 	std::tuple<bool, ActionSet> reset_dynamics(scip::Model& model) override;
 
-	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, std::size_t const& action) override;
+	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, std::size_t const& var_idx) override;
 };
 
 }  // namespace ecole::dynamics
