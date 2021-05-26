@@ -8,7 +8,7 @@
 
 namespace ecole::observation {
 
-struct HutterObs {
+struct Hutter2011Obs {
 	static inline std::size_t constexpr n_features = 35;
 
 	enum struct Features : std::size_t {
@@ -59,11 +59,11 @@ struct HutterObs {
 	xt::xtensor<double, 1> features;
 };
 
-class Hutter : public ObservationFunction<std::optional<HutterObs>> {
+class Hutter2011 : public ObservationFunction<std::optional<Hutter2011Obs>> {
 public:
 	// 	void before_reset(scip::Model& model) override;
 
-	std::optional<HutterObs> extract(scip::Model& model, bool done) override;
+	std::optional<Hutter2011Obs> extract(scip::Model& model, bool done) override;
 };
 
 }  // namespace ecole::observation
