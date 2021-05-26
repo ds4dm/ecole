@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <mutex>
+#include <utility>
 
 #include <objscip/objbranchrule.h>
 #include <scip/scip.h>
@@ -42,7 +43,9 @@ void ScipDeleter::operator()(SCIP* ptr) {
 	scip::call(SCIPfree, &ptr);
 }
 
-static std::unique_ptr<SCIP, ScipDeleter> create_scip() {
+namespace {
+
+std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 	SCIP* scip_raw;
 	scip::call(SCIPcreate, &scip_raw);
 	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), 1U);
@@ -51,35 +54,7 @@ static std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 	return scip_ptr;
 }
 
-static std::unique_ptr<SCIP, ScipDeleter> copy(SCIP const* const source) {
-	if (source == nullptr) {
-		return nullptr;
-	}
-	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) {
-		return create_scip();
-	}
-	auto dest = create_scip();
-	// Copy operation is not thread safe
-	static std::mutex m{};
-	std::lock_guard<std::mutex> g{m};
-	scip::call(SCIPcopy, const_cast<SCIP*>(source), dest.get(), nullptr, nullptr, "", true, false, false, false, nullptr);
-	return dest;
-}
-
-static std::unique_ptr<SCIP, ScipDeleter> copy_orig(SCIP const* const source) {
-	if (source == nullptr) {
-		return nullptr;
-	}
-	if (SCIPgetStage(const_cast<SCIP*>(source)) == SCIP_STAGE_INIT) {
-		return create_scip();
-	}
-	auto dest = create_scip();
-	// Copy operation is not thread safe
-	static std::mutex m{};
-	std::lock_guard<std::mutex> g{m};
-	scip::call(SCIPcopyOrig, const_cast<SCIP*>(source), dest.get(), nullptr, nullptr, "", false, false, false, nullptr);
-	return dest;
-}
+}  // namespace
 
 scip::Scimpl::Scimpl() : m_scip(create_scip()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
@@ -91,8 +66,34 @@ SCIP* scip::Scimpl::get_scip_ptr() noexcept {
 	return m_scip.get();
 }
 
-scip::Scimpl scip::Scimpl::copy_orig() {
-	return ::ecole::scip::copy_orig(get_scip_ptr());
+scip::Scimpl scip::Scimpl::copy() const {
+	if (m_scip == nullptr) {
+		return {nullptr};
+	}
+	if (SCIPgetStage(m_scip.get()) == SCIP_STAGE_INIT) {
+		return {create_scip()};
+	}
+	auto dest = create_scip();
+	// Copy operation is not thread safe
+	static auto m = std::mutex{};
+	auto g = std::lock_guard{m};
+	scip::call(SCIPcopy, m_scip.get(), dest.get(), nullptr, nullptr, "", true, false, false, false, nullptr);
+	return {std::move(dest)};
+}
+
+scip::Scimpl scip::Scimpl::copy_orig() const {
+	if (m_scip == nullptr) {
+		return {nullptr};
+	}
+	if (SCIPgetStage(m_scip.get()) == SCIP_STAGE_INIT) {
+		return {create_scip()};
+	}
+	auto dest = create_scip();
+	// Copy operation is not thread safe
+	static auto m = std::mutex{};
+	auto g = std::lock_guard{m};
+	scip::call(SCIPcopyOrig, m_scip.get(), dest.get(), nullptr, nullptr, "", false, false, false, nullptr);
+	return {std::move(dest)};
 }
 
 void Scimpl::solve_iter() {

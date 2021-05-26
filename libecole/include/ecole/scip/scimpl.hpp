@@ -20,8 +20,8 @@ public:
 
 	SCIP* get_scip_ptr() noexcept;
 
-	Scimpl copy();
-	Scimpl copy_orig();
+	[[nodiscard]] Scimpl copy() const;
+	[[nodiscard]] Scimpl copy_orig() const;
 
 	void solve_iter();
 	void solve_iter_branch(SCIP_RESULT result);
