@@ -38,3 +38,8 @@ Khalil et al. 2016
 ^^^^^^^^^^^^^^^^^^
 .. autoclass:: ecole.observation.Khalil2016
 .. autoclass:: ecole.observation.Khalil2016Obs
+
+Hutter et al. 2011
+^^^^^^^^^^^^^^^^^^
+.. autoclass:: ecole.observation.Hutter2011
+.. autoclass:: ecole.observation.Hutter2011Obs
