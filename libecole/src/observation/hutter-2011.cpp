@@ -72,12 +72,56 @@ template <typename Tensor> void set_constraint_degrees(Tensor&& out, scip::Model
 	out[idx(Features::constraint_node_degree_min)] = stats.min;
 	out[idx(Features::constraint_node_degree_std)] = stats.stddev;
 }
+    
+/*
+* Solves the LP relaxation of a model by making a copy, and setting all its variables continuous.
+*/
+auto solve_lp_relaxation(scip::Model& model) {
+    auto relax_model = model.copy();
+	auto* const relax_scip = relax_model.get_scip_ptr();
+    auto* const variables = SCIPgetVars(relax_scip);
+    int nb_variables = SCIPgetNVars(relax_scip);
+    SCIP_Bool infeasible;
+    
+    // Change active variables to continuous
+    for (std::size_t var_idx = 0; var_idx < static_cast<std::size_t>(nb_variables); ++var_idx) {
+        scip::call(SCIPchgVarType, relax_scip, variables[var_idx], SCIP_VARTYPE_CONTINUOUS, &infeasible);
+    }
+    
+    // Change constraint variables to continuous
+    int nb_cons_variables;
+    SCIP_Bool success;
+	for (auto* const constraint : relax_model.constraints()) {
+        scip::call(SCIPgetConsNVars, relax_scip, constraint, &nb_cons_variables, &success);
+        auto cons_variables = std::vector<SCIP_VAR*>(static_cast<std::size_t>(nb_cons_variables));
+        scip::call(SCIPgetConsVars, relax_scip, constraint, cons_variables.data(), nb_cons_variables, &success);
+        
+        for (std::size_t var_idx = 0; var_idx < static_cast<std::size_t>(nb_cons_variables); ++var_idx) {
+            scip::call(SCIPchgVarType, relax_scip, cons_variables[var_idx], SCIP_VARTYPE_CONTINUOUS, &infeasible);
+        }
+	}
+    
+    // Solve the LP
+    scip::call(SCIPsolve, relax_scip);
+    
+    // Collect the solution
+    // Note: technically this is the solution with respect to the copy model's active variables
+    // Hopefully this should match 1-1 the original model's active variables?
+    SCIP_SOL* optimal_sol = SCIPgetBestSol(relax_scip);
+    SCIP_Real optimal_value = SCIPgetSolOrigObj(relax_scip, optimal_sol);
+    auto optimal_sol_coefs = std::vector<SCIP_Real>(static_cast<std::size_t>(nb_variables));
+    scip::call(SCIPgetSolVals, relax_scip, optimal_sol, nb_variables, variables, optimal_sol_coefs.data());
+    
+    return std::tuple{optimal_sol_coefs, optimal_value};
+}
 
-auto extract_features(scip::Model& model) {
+auto extract_features(scip::Model& model) {    
 	xt::xtensor<value_type, 1> observation({Hutter2011Obs::n_features});
 	set_problem_size(observation, model);
 	set_variable_degrees(observation, model);
 	set_constraint_degrees(observation, model);
+    
+    auto [lp_solution, lp_objective] = solve_lp_relaxation(model);
 	return observation;
 }
 
