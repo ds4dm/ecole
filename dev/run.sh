@@ -150,8 +150,8 @@ function test_lib {
 
 
 function test_py {
-	local -r relevant_files=('CMakeLists.txt' 'libecole/CMakeLists' 'libecole/src' 'libecole/include' 'python')
-	if files_have_changed "${relevant_files}";  then
+	local -r relevant_files=('CMakeLists.txt' 'libecole/CMakeLists.txt' 'libecole/src' 'libecole/include' 'python')
+	if files_have_changed "${relevant_files[@]}";  then
 		if_rebuild_then build_py
 		local extra_args=("$@")
 		if [ "${fail_fast}" = "true" ]; then
