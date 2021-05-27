@@ -13,7 +13,7 @@ struct Hutter2011Obs {
 
 	enum struct Features : std::size_t {
 		/* Problem size features */
-		nb_variables,
+		nb_variables = 0,
 		nb_constraints,
 		nb_nonzero_coefs,
 		/* Variable-constraint graph features */
