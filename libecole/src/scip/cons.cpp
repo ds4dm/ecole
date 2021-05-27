@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "ecole/scip/cons.hpp"
 
 namespace ecole::scip {
@@ -58,46 +60,64 @@ auto get_cons_n_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<s
 	return {static_cast<std::size_t>(n_vars)};
 }
 
-auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_VAR const*>> {
+auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VAR const*> out) -> bool {
 	auto const maybe_n_vars = get_cons_n_vars(scip, cons);
 	if (!maybe_n_vars.has_value()) {
-		return {};
+		return false;
 	}
 	auto const n_vars = maybe_n_vars.value();
-	auto vars = std::vector<SCIP_VAR const*>(n_vars);
+	if (out.size() < n_vars) {
+		throw std::invalid_argument{"Out memory is not large enough to fit variables."};
+	}
 	SCIP_Bool success = false;
 	scip::call(
 		SCIPgetConsVars,
 		const_cast<SCIP*>(scip),
 		const_cast<SCIP_CONS*>(cons),
-		const_cast<SCIP_VAR**>(vars.data()),
-		static_cast<int>(n_vars),
+		const_cast<SCIP_VAR**>(out.data()),
+		static_cast<int>(out.size()),
 		&success);
-	if (!success) {
-		return {};
-	}
-	return {std::move(vars)};
+	return success;
 }
 
-auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_Real>> {
+auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_VAR const*>> {
+	if (auto const n_vars = get_cons_n_vars(scip, cons); n_vars.has_value()) {
+		auto vars = std::vector<SCIP_VAR const*>(n_vars.value());
+		if (get_cons_vars(scip, cons, vars)) {
+			return {std::move(vars)};
+		}
+	}
+	return {};
+}
+
+auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_Real> out) -> bool {
 	auto const maybe_n_vars = get_cons_n_vars(scip, cons);
 	if (!maybe_n_vars.has_value()) {
-		return {};
+		return false;
 	}
 	auto const n_vars = maybe_n_vars.value();
-	auto vals = std::vector<SCIP_Real>(n_vars);
+	if (out.size() < n_vars) {
+		throw std::invalid_argument{"Out memory is not large enough to fit variables."};
+	}
 	SCIP_Bool success = false;
 	scip::call(
 		SCIPgetConsVals,
 		const_cast<SCIP*>(scip),
 		const_cast<SCIP_CONS*>(cons),
-		vals.data(),
-		static_cast<int>(n_vars),
+		out.data(),
+		static_cast<int>(out.size()),
 		&success);
-	if (!success) {
-		return {};
+	return success;
+}
+
+auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_Real>> {
+	if (auto const n_vars = get_cons_n_vars(scip, cons); n_vars.has_value()) {
+		auto vals = std::vector<SCIP_Real>(n_vars.value());
+		if (get_cons_vals(scip, cons, vals)) {
+			return {std::move(vals)};
+		}
 	}
-	return {std::move(vals)};
+	return {};
 }
 
 auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_Real const> {
