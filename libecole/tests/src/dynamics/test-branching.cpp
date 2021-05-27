@@ -53,7 +53,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		REQUIRE_FALSE(done);
 		REQUIRE(action_set.has_value());
 		auto const action = model.lp_columns().size() + 1;
-		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::exception);
+		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::invalid_argument);
 	}
 }
 
