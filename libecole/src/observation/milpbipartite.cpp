@@ -185,20 +185,18 @@ auto get_constraint_linear_coefs(SCIP* const scip, SCIP_CONS* const constraint) 
 	variables.resize(static_cast<std::size_t>(n_constraint_variables));
 	coefficients.resize(static_cast<std::size_t>(n_constraint_variables));
 
-	// Obtain the left hand side
-	std::optional<SCIP_Real> lhs;
-	SCIP_Real lhs_value = SCIPconsGetLhs(scip, constraint, &success);
-	if (success && !SCIPisInfinity(scip, std::abs(lhs_value))) {
-		lhs = lhs_value - constant_offset;
+	// Obtain the left and right hand side if their are finite and shift them accordingly.
+	auto lhs = scip::cons_get_finite_lhs(scip, constraint);
+	if (lhs.has_value()) {
+		lhs = lhs.value() - constant_offset;
 	}
 
-	std::optional<SCIP_Real> rhs;
-	SCIP_Real rhs_value = SCIPconsGetRhs(scip, constraint, &success);
-	if (success && !SCIPisInfinity(scip, std::abs(rhs_value))) {
-		rhs = rhs_value - constant_offset;
+	auto rhs = scip::cons_get_finite_rhs(scip, constraint);
+	if (rhs.has_value()) {
+		rhs = rhs.value() - constant_offset;
 	}
 
-	return std::optional{std::tuple{variables, coefficients, lhs, rhs}};
+	return {{variables, coefficients, lhs, rhs}};
 }
 
 auto get_constraint_coefs(SCIP* const scip, SCIP_CONS* const constraint)

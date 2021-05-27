@@ -1,3 +1,4 @@
+#include <cmath>
 #include <stdexcept>
 
 #include "ecole/scip/cons.hpp"
@@ -37,7 +38,16 @@ auto cons_get_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::opti
 	if (success == FALSE) {
 		return {};
 	}
-	return rhs;
+	return {rhs};
+}
+
+auto cons_get_finite_rhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {
+	if (auto rhs = cons_get_rhs(scip, cons); rhs.has_value()) {
+		if (!SCIPisInfinity(const_cast<SCIP*>(scip), std::abs(rhs.value()))) {
+			return rhs;
+		}
+	}
+	return {};
 }
 
 auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {
@@ -46,7 +56,16 @@ auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::opti
 	if (success == FALSE) {
 		return {};
 	}
-	return lhs;
+	return {lhs};
+}
+
+auto cons_get_finite_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real> {
+	if (auto lhs = cons_get_lhs(scip, cons); lhs.has_value()) {
+		if (!SCIPisInfinity(const_cast<SCIP*>(scip), std::abs(lhs.value()))) {
+			return lhs;
+		}
+	}
+	return {};
 }
 
 auto get_cons_n_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::size_t> {
@@ -69,7 +88,7 @@ auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VA
 	if (out.size() < n_vars) {
 		throw std::invalid_argument{"Out memory is not large enough to fit variables."};
 	}
-	SCIP_Bool success = false;
+	SCIP_Bool success = FALSE;
 	scip::call(
 		SCIPgetConsVars,
 		const_cast<SCIP*>(scip),
@@ -99,7 +118,7 @@ auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_Re
 	if (out.size() < n_vars) {
 		throw std::invalid_argument{"Out memory is not large enough to fit variables."};
 	}
-	SCIP_Bool success = false;
+	SCIP_Bool success = FALSE;
 	scip::call(
 		SCIPgetConsVals,
 		const_cast<SCIP*>(scip),
