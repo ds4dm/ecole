@@ -98,7 +98,7 @@ public:
 	 * by SCIP.
 	 */
 	template <ParamType T> void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
-	template <ParamType T>[[nodiscard]] param_t<T> get_param(std::string const& name) const;
+	template <ParamType T> [[nodiscard]] param_t<T> get_param(std::string const& name) const;
 
 	/**
 	 * Get and set parameters with automatic casting.
@@ -108,7 +108,7 @@ public:
 	 * These methods do their best to convert to and from the required type.
 	 */
 	template <typename T> void set_param(std::string const& name, T value);
-	template <typename T>[[nodiscard]] T get_param(std::string const& name) const;
+	template <typename T> [[nodiscard]] T get_param(std::string const& name) const;
 
 	void set_params(std::map<std::string, Param> name_values);
 	[[nodiscard]] std::map<std::string, Param> get_params() const;
