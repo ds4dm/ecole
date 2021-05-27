@@ -1,10 +1,10 @@
 #include <algorithm>
-#include <map>
 #include <optional>
 #include <utility>
 
 #include <range/v3/view/map.hpp>
 #include <range/v3/view/transform.hpp>
+#include <robin_hood.h>
 #include <scip/scip.h>
 #include <xtensor/xtensor.hpp>
 
@@ -36,11 +36,10 @@ template <typename Tensor> void set_problem_size(Tensor&& out, scip::Model const
 }
 
 template <typename Tensor> void set_variable_degrees(Tensor&& out, scip::Model const& model) {
-	// FIXME use a cache friendly robin hood has map such as
-	// https://github.com/Tessil/robin-map
 	// Fill a map variable -> degree with all variables and 0.
-	auto var_degrees = std::map<SCIP_VAR const*, std::size_t>{};
 	auto const variables = model.variables();
+	auto var_degrees = robin_hood::unordered_flat_map<SCIP_VAR const*, std::size_t>{};
+	var_degrees.reserve(variables.size());
 	std::for_each(variables.begin(), variables.end(), [&var_degrees](auto var) { var_degrees[var] = 0; });
 
 	// Compute degrees by iterating over the constraints.
