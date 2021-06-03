@@ -50,15 +50,29 @@ auto get_adjusted_dual_bounds(std::vector<SCIP_Real> dual_bounds, SCIP_Real init
 	return adjusted_dual_bounds;
 }
 
+/* Default function for returning +/-infinity for the bounds in computing primal-dual integral */
+std::tuple<SCIP_Real, SCIP_Real> default_bound_function(scip::Model& model) {
+	return std::make_tuple(- SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr()));
+}
+
 }  // namespace
+
+PrimalDualIntegral::PrimalDualIntegral(bool wall_, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
+	wall = wall_;
+	if (bound_function_) {
+		bound_function = bound_function_;
+	} else {
+		bound_function = default_bound_function;
+	}
+}
 
 void PrimalDualIntegral::before_reset(scip::Model& model) {
 	last_primal_dual_integral = 0.0;
 
-	// These are the values we need to figure out how to set
-	// for each instance.
-	initial_primal_bound = SCIPinfinity(model.get_scip_ptr());
-	initial_dual_bound = -SCIPinfinity(model.get_scip_ptr());
+	/* Get bounds for computing primal-dual integral on instance */
+	auto [lb, ub] = bound_function(model);
+	initial_primal_bound = ub;
+	initial_dual_bound = lb;
 
 	/* Initalize and add event handler */
 	SCIPincludeObjEventhdlr(model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, TRUE, TRUE), TRUE);

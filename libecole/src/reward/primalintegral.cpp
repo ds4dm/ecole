@@ -37,15 +37,29 @@ auto get_adjusted_primal_bounds(std::vector<SCIP_Real> primal_bounds, SCIP_Real 
 	return adjusted_primal_bounds;
 }
 
+/* Default function for returning +/-infinity for the bounds in computing primal integral */
+std::tuple<SCIP_Real, SCIP_Real> default_bound_function(scip::Model& model) {
+	return std::make_tuple(- SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr()));
+}
+
 }  // namespace
+
+PrimalIntegral::PrimalIntegral(bool wall_, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
+	wall = wall_;
+	if (bound_function_) {
+		bound_function = bound_function_;
+	} else {
+		bound_function = default_bound_function;
+	}
+}
 
 void PrimalIntegral::before_reset(scip::Model& model) {
 	last_primal_integral = 0.0;
 
-	// These are the values we need to figure out how to set
-	// for each instance.
-	initial_primal_bound = SCIPinfinity(model.get_scip_ptr());
-	primal_bound_reference = 0.0;
+	/* Get bounds for computing primal integral on instance */
+	auto [lb, ub] = bound_function(model);
+	initial_primal_bound = ub;
+	primal_bound_reference = lb;
 
 	/* Initalize and add event handler */
 	SCIPincludeObjEventhdlr(

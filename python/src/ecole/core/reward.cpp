@@ -1,7 +1,9 @@
 #include <utility>
+#include <functional>
 
 #include <pybind11/eval.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 
 #include "ecole/reward/constant.hpp"
 #include "ecole/reward/dualintegral.hpp"
@@ -178,13 +180,19 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	dualintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
+	dualintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
+		py::arg("wall") = false, 
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+		R"(
 		Create a DualIntegral reward function.
 
 		Parameters
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+		bound_function :
+			A function which takes an ecole model and returns a tuple of an initial dual bound and the value
+			to compute the dual bound with respect to. Values should be ordered as (initial_dual_bound, dual_bound_reference).
 
 	)");
 	def_operators(dualintegral);
@@ -193,7 +201,7 @@ void bind_submodule(py::module_ const& m) {
 		Computes the current dual integral and returns the difference.
 
 		The difference is computed based on the dual integral between sequential calls.
-		)");
+	)");
 
 	auto primalintegral = py::class_<PrimalIntegral>(m, "PrimalIntegral", R"(
 		Primal integral difference.
@@ -202,14 +210,20 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	primalintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
+	primalintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
+		py::arg("wall") = false, 
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+		R"(
 		Create a PrimalIntegral reward function.
 
 		Parameters
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
-
+		bound_function :
+			A function which takes an ecole model and returns a tuple of the value
+			to compute the primal bound with respect to and an initial primal bound.
+			Values should be ordered as (primal_bound_reference, initial_primal_bound).
 	)");
 	def_operators(primalintegral);
 	def_before_reset(primalintegral, "Reset the internal clock counter and the event handler.");
@@ -226,13 +240,19 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	primaldualintegral.def(py::init<bool>(), py::arg("wall") = false, R"(
-		Create a PrimalIntegral reward function.
+	primaldualintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
+		py::arg("wall") = false, 
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+		R"(
+		Create a PrimalDualIntegral reward function.
 
 		Parameters
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+		bound_function :
+			A function which takes an ecole model and returns a tuple of an initial primal bound and dual bound.
+			Values should be ordered as (initial_dual_bound, initial_primal_bound).
 
 	)");
 	def_operators(primaldualintegral);
