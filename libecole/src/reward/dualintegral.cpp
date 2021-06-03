@@ -39,12 +39,14 @@ auto get_adjusted_dual_bounds(std::vector<SCIP_Real> dual_bounds, SCIP_Real init
 
 /* Default function for returning +/-infinity for the bounds in computing dual integral */
 std::tuple<SCIP_Real, SCIP_Real> default_bound_function(scip::Model& model) {
-	return std::make_tuple(- SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr()));
+	return std::make_tuple(-SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr()));
 }
 
 }  // namespace
 
-DualIntegral::DualIntegral(bool wall_, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
+DualIntegral::DualIntegral(
+	bool wall_,
+	std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
 	wall = wall_;
 	if (bound_function_) {
 		bound_function = bound_function_;

@@ -1,9 +1,9 @@
-#include <utility>
 #include <functional>
+#include <utility>
 
 #include <pybind11/eval.h>
-#include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
+#include <pybind11/pybind11.h>
 
 #include "ecole/reward/constant.hpp"
 #include "ecole/reward/dualintegral.hpp"
@@ -180,9 +180,10 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	dualintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
-		py::arg("wall") = false, 
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+	dualintegral.def(
+		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::arg("wall") = false,
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
 		R"(
 		Create a DualIntegral reward function.
 
@@ -210,9 +211,10 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	primalintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
-		py::arg("wall") = false, 
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+	primalintegral.def(
+		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::arg("wall") = false,
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
 		R"(
 		Create a PrimalIntegral reward function.
 
@@ -240,9 +242,10 @@ void bind_submodule(py::module_ const& m) {
 		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
-	primaldualintegral.def(py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>>(), 
-		py::arg("wall") = false, 
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>(),
+	primaldualintegral.def(
+		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::arg("wall") = false,
+		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
 		R"(
 		Create a PrimalDualIntegral reward function.
 
