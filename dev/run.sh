@@ -10,6 +10,9 @@ readonly __ECOLE_DIR__="$(cd "${__DIR__:?}/.." && pwd)"
 # If CI is defined then "true", otherwise "false" (string, not bools).
 readonly __CI__="$([ -z "${CI+x}" ] && printf "false" || printf "true")"
 
+# Number of spaces to shift the commands outputs by.
+readonly __SHIFT__=4
+
 
 # Print in yellow with a new line.
 function echo_yellow {
@@ -24,13 +27,31 @@ function log {
 	echo_yellow "$@"
 }
 
+# Read each character of stdin, indenting each line.
+# Not using sed as explained in this SO post https://stackoverflow.com/a/46495830/5862073
+function interactive_indent {
+	local -r spaces="$(printf "%${__SHIFT__}s")"
+	echo -n "$spaces"
+	while IFS= read -r -d '' -n1 chr; do
+			[[ $chr == $'\n' ]] && chr="\\n\\r$spaces"
+			[[ $chr == $'\r' ]] && chr="\\r$spaces"
+			echo -ne "$chr"
+	done
+	echo -ne '\r'
+}
+
+# Execute a command, indenting its output while preserving colors.
+function execute_shift_output {
+	local -r columns=$((${COLUMNS:-$(tput cols)} - ${__SHIFT__}))
+	script -feqc "COLUMNS=${columns} $*" /dev/null | interactive_indent
+}
 
 # Wrap calls to manage verbosity, dry-run, ...
 function execute {
 	log "$@"
 	if [ "${dry_run}" = "false" ]; then
 		## Run the command. Indent both stdout and stderr but preserve them.
-		"$@" > >(sed 's/^/  /')  2> >(sed 's/^/  /')
+		execute_shift_output "$@"
 	fi
 }
 
