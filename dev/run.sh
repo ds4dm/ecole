@@ -42,18 +42,21 @@ function interactive_indent {
 
 # Execute a command, indenting its output while preserving colors.
 function execute_shift_output {
-	local -r columns=$((${COLUMNS:-$(tput cols)} - ${__SHIFT__}))
-	# Usage of `script` for MacOS
-	if [[ "$(uname -s)" = Darwin* ]]; then
-		# `script` cannot run builtin command like `export`
-		if [ "$(type -t "$1")" = "builtin" ]; then
-			COLUMNS=${columns} "$@"
-		else
-			COLUMNS=${columns} script -q /dev/null "$@" | interactive_indent
-		fi
-	# Usage of `script` for Linux
+	# Number of columns to use is reduced by the indentation
+	local -r columns=$((${COLUMNS:-$(tput -T "${TERM:-xterm}" cols)} - ${__SHIFT__}))
+	# `script` cannot run builtin command like `export`
+	if [ "$(type -t "$1")" = "builtin" ]; then
+		COLUMNS=${columns} "$@"
 	else
-		script -feqc "COLUMNS=${columns} $*" /dev/null | interactive_indent
+		# Usage of `script` for MacOS
+		if [[ "$(uname -s)" = Darwin* ]]; then
+			COLUMNS=${columns} script -q /dev/null "$@" | interactive_indent
+		# Usage of `script` for Linux
+		else
+			# Quote-expand command to avoid space splitting words https://stackoverflow.com/a/12985540/5862073
+			local -r command="$(printf "'%s' " "$@")"
+			script -feqc "COLUMNS=${columns} ${command}" /dev/null | interactive_indent
+		fi
 	fi
 }
 
@@ -189,7 +192,7 @@ function test_py {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--exitfirst")
 		fi
-		execute_pythonpath python -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+		execute_pythonpath python -m pytest "${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
