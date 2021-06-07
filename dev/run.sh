@@ -43,7 +43,18 @@ function interactive_indent {
 # Execute a command, indenting its output while preserving colors.
 function execute_shift_output {
 	local -r columns=$((${COLUMNS:-$(tput cols)} - ${__SHIFT__}))
-	script -feqc "COLUMNS=${columns} $*" /dev/null | interactive_indent
+	# Usage of `script` for MacOS
+	if [[ "$(uname -s)" = Darwin* ]]; then
+		# `script` cannot run builtin command like `export`
+		if [ "$(type -t "$1")" = "builtin" ]; then
+			COLUMNS=${columns} "$@"
+		else
+			COLUMNS=${columns} script -q /dev/null "$@" | interactive_indent
+		fi
+	# Usage of `script` for Linux
+	else
+		script -feqc "COLUMNS=${columns} $*" /dev/null | interactive_indent
+	fi
 }
 
 # Wrap calls to manage verbosity, dry-run, ...
@@ -376,7 +387,7 @@ function help {
 	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
 	echo "Example:"
-	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py"
+	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py --no-slow"
 }
 
 
