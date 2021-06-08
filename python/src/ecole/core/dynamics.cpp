@@ -130,9 +130,51 @@ void bind_submodule(pybind11::module_ const& m) {
 
 	using idx_t = typename BranchingGUBDynamics::Action::value_type;
 	using array_t = py::array_t<idx_t, py::array::c_style | py::array::forcecast>;
-	dynamics_class<BranchingGUBDynamics>{m, "BranchingGUBDynamics"}
-		.def_reset_dynamics()
-		.def_set_dynamics_random_state()
+	dynamics_class<BranchingGUBDynamics>{m, "BranchingGUBDynamics", R"(
+		Global Upper Bound branching Dynamics.
+
+		Based on a SCIP branching callback with maximal priority and no depth limit.
+		The dynamics give the control back to the user every time the callback would be called.
+		The user recieves as an action set the list of branching candiates, and is expected to select
+		a subset of them to branch on their sum.
+
+		.. warning::
+			The function used to perform branching is provided by Ecole and has not been extensively tested on
+			a large variety of problem instances.
+	)"}
+		.def_reset_dynamics(R"(
+			Start solving up to first branching node.
+
+			Start solving with SCIP defaults (``SCIPsolve``) and give back control to the user on the
+			first branching decision.
+			Users can inherit from this dynamics to change the defaults settings such as presolving
+			and cutting planes.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved.
+					This can happen without branching, for instance if the instance is solved during presolving.
+				action_set:
+					List of branching candidates (``SCIPgetPseudoBranchCands``).
+		)")
+		.def_set_dynamics_random_state(R"(
+			Set seeds on the :py:class:`~ecole.scip.Model`.
+
+			Set seed parameters, inculing permutation, LP, and shift.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				random_engine:
+					The source of randomness. Passed by the environment.
+		)")
 		.def(
 			"step_dynamics",
 			[](BranchingGUBDynamics& self, scip::Model& model, array_t const& action) {
@@ -141,7 +183,31 @@ void bind_submodule(pybind11::module_ const& m) {
 				return self.step_dynamics(model, vars);
 			},
 			py::arg("model"),
-			py::arg("action"))
+			py::arg("action"),
+			R"(
+			Branch and resume solving until next branching.
+
+			Branching is done on a the sum of the given variables using their LP or pseudo solution value.
+			To make a valid branching, the sum of the LP or pseudo solution value of the given variables
+			must be non integer.
+			In the opposite case, an exception will be thrown,
+			The control is given back to the user on the next branching decision or when done.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				action:
+					A subset of of the variables of given in the aaction set.
+					Not all subsets are valid.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved.
+				action_set:
+					List of branching candidates (``SCIPgetPseudoBranchCands``).
+		)")
 		.def(py::init<>());
 
 	dynamics_class<ConfiguringDynamics>{m, "ConfiguringDynamics", R"(
