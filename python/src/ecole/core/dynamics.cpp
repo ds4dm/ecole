@@ -57,11 +57,76 @@ template <typename Class, typename... ClassArgs> struct dynamics_class : public 
 void bind_submodule(pybind11::module_ const& m) {
 	m.doc() = "Ecole collection of environment dynamics.";
 
-	dynamics_class<BranchingDynamics>{m, "BranchingDynamics"}
-		.def_reset_dynamics()
-		.def_step_dynamics()
-		.def_set_dynamics_random_state()
-		.def(py::init<bool>(), py::arg("pseudo_candidates") = false);
+	dynamics_class<BranchingDynamics>{m, "BranchingDynamics", R"(
+		Single variable branching Dynamics.
+
+		Based on a SCIP branching callback with maximal priority and no depth limit.
+		The dynamics give the control back to the user every time the callback would be called.
+		The user recieves as an action set the list of branching candiates, and is expected to select
+		one of them as the action.
+	)"}
+		.def_reset_dynamics(R"(
+			Start solving up to first branching node.
+
+			Start solving with SCIP defaults (``SCIPsolve``) and give back control to the user on the
+			first branching decision.
+			Users can inherit from this dynamics to change the defaults settings such as presolving
+			and cutting planes.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved.
+					This can happen without branching, for instance if the instance is solved during presolving.
+				action_set:
+					List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
+		)")
+		.def_step_dynamics(R"(
+			Branch and resume solving until next branching.
+
+			Branching is done on a single variable using ``SCIPbranchVar``.
+			The control is given back to the user on the next branching decision or when done.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				action:
+					The index the LP column of the variable to branch on. One element of the action set.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved.
+				action_set:
+					List of branching canddidates. Candidates depend on parameters in :py:meth:`__init__`.
+				)")
+		.def_set_dynamics_random_state(R"(
+			Set seeds on the :py:class:`~ecole.scip.Model`.
+
+			Set seed parameters, inculing permutation, LP, and shift.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				random_engine:
+					The source of randomness. Passed by the environment.
+		)")
+		.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
+			Create new dynamics.
+
+			Parameters
+			----------
+			pseudo_candidates:
+				Whether the action set contains pseudo branching variable candidates (``SCIPgetPseudoBranchCands``)
+				or LP branching variable candidates (``SCIPgetPseudoBranchCands``).
+		)");
 
 	using idx_t = typename BranchingGUBDynamics::Action::value_type;
 	using array_t = py::array_t<idx_t, py::array::c_style | py::array::forcecast>;
