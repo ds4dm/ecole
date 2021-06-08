@@ -144,10 +144,58 @@ void bind_submodule(pybind11::module_ const& m) {
 			py::arg("action"))
 		.def(py::init<>());
 
-	dynamics_class<ConfiguringDynamics>{m, "ConfiguringDynamics"}
-		.def_reset_dynamics()
-		.def_step_dynamics()
-		.def_set_dynamics_random_state()
+	dynamics_class<ConfiguringDynamics>{m, "ConfiguringDynamics", R"(
+		Setting solving parameters dynamics.
+
+		This dynamics are meant to be used as a (contextual) bandit to find good parameters for SCIP.
+	)"}
+		.def_reset_dynamics(R"(
+			Does nothing.
+
+			Users can inherit from this dynamics to change when in the solving process parameters will be set
+			(for instance after presolving).
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved. Always false.
+				action_set:
+					Unused.
+		)")
+		.def_step_dynamics(R"(
+			Set parameters and solve the instance.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				action:
+					A mapping of parameter names and values.
+
+			Returns
+			-------
+				done:
+					Whether the instance is solved. Always true.
+				action_set:
+					Unused.
+		)")
+		.def_set_dynamics_random_state(R"(
+			Set seeds on the :py:class:`~ecole.scip.Model`.
+
+			Set seed parameters, inculing permutation, LP, and shift.
+
+			Parameters
+			----------
+				model:
+					The state of the Markov Decision Process. Passed by the environment.
+				random_engine:
+					The source of randomness.Passed by the environment.
+		)")
 		.def(py::init<>());
 }
 
