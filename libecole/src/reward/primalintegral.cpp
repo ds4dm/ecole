@@ -79,8 +79,8 @@ Reward PrimalIntegral::extract(scip::Model& model, bool /*done*/) {
 	/* Compute primal integral and difference */
 	auto const primal_integral = compute_primal_integral(primal_bounds, 
 		times, 
-		primal_bound_reference,
-		initial_primal_bound);
+		initial_primal_bound,
+		primal_bound_reference);
 	auto const primal_integral_diff = primal_integral - last_primal_integral;
 
 	/* Update last_primal_integral */
