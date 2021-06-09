@@ -1,15 +1,9 @@
 #pragma once
 
-#include <chrono>
 #include <functional>
-#include <vector>
-
-#include <scip/type_event.h>
 
 #include "ecole/reward/abstract.hpp"
-#include "ecole/reward/integral_eventhdlr.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
 
 namespace ecole::reward {
 

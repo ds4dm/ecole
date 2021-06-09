@@ -50,14 +50,31 @@ auto get_dual_bound(SCIP* scip) {
 	}
 }
 
+auto is_lp_event(SCIP_EVENTTYPE event) {
+
+	if ((event == SCIP_EVENTTYPE_LPEVENT) | 
+		(event == SCIP_EVENTTYPE_FIRSTLPSOLVED) |
+		(event == SCIP_EVENTTYPE_LPSOLVED)) {
+		return true;
+	}
+	return false;
+}
+
+auto is_bestsol_event(SCIP_EVENTTYPE event) {
+	if (event == SCIP_EVENTTYPE_BESTSOLFOUND) {
+		return true;
+	}
+	return false;
+}
+
 }  // namespace
 
 /* Catches primal and dual related events */
 SCIP_DECL_EVENTINIT(IntegralEventHandler::scip_init) {
-	if (primal) {
+	if (extract_primal) {
 		SCIP_CALL(SCIPcatchEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, nullptr, nullptr));
 	}
-	if (dual) {
+	if (extract_dual) {
 		SCIP_CALL(SCIPcatchEvent(scip, SCIP_EVENTTYPE_LPEVENT, eventhdlr, nullptr, nullptr));
 	}
 	return SCIP_OKAY;
@@ -65,10 +82,10 @@ SCIP_DECL_EVENTINIT(IntegralEventHandler::scip_init) {
 
 /* Drops primal and dual related events */
 SCIP_DECL_EVENTEXIT(IntegralEventHandler::scip_exit) {
-	if (primal) {
+	if (extract_primal) {
 		SCIP_CALL(SCIPdropEvent(scip, SCIP_EVENTTYPE_BESTSOLFOUND, eventhdlr, nullptr, -1));
 	}
-	if (dual) {
+	if (extract_dual) {
 		SCIP_CALL(SCIPdropEvent(scip, SCIP_EVENTTYPE_LPEVENT, eventhdlr, nullptr, -1));
 	}
 	return SCIP_OKAY;
@@ -76,35 +93,27 @@ SCIP_DECL_EVENTEXIT(IntegralEventHandler::scip_exit) {
 
 /* Calls extract_metrics() to obtain bounds/times at events */
 SCIP_DECL_EVENTEXEC(IntegralEventHandler::scip_exec) {
-	extract_metrics(scip_);
+	extract_metrics(scip_, SCIPeventGetType(event));
 	return SCIP_OKAY;
 }
 
 /* Gets and adds primal/dual bounds and times to vectors */
-void IntegralEventHandler::extract_metrics(SCIP* scip) {
-	// TODO: Handle each event individually
-	if (primal) {
-		primal_bounds.push_back(get_primal_bound(scip));
+void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type) {
+	if (extract_primal) {
+		if ((is_lp_event(event_type)) | (primal_bounds.size() == 0)) {
+			primal_bounds.push_back(get_primal_bound(scip));
+		} else {
+			primal_bounds.push_back(primal_bounds[primal_bounds.size()-1]);
+		}
 	}
-	if (dual) {
-		dual_bounds.push_back(get_dual_bound(scip));
+	if (extract_dual) {
+		if ((is_bestsol_event(event_type)) | (dual_bounds.size() == 0)) {
+			dual_bounds.push_back(get_dual_bound(scip));
+		} else {
+			dual_bounds.push_back(dual_bounds[dual_bounds.size()-1]);
+		}
 	}
 	times.push_back(time_now(scip));
-}
-
-/* Returns the vector of times */
-std::vector<std::chrono::nanoseconds> IntegralEventHandler::get_times() {
-	return times;
-}
-
-/* Returns the vector of primal bounds */
-std::vector<SCIP_Real> IntegralEventHandler::get_primal_bounds() {
-	return primal_bounds;
-}
-
-/* Returns the vector of dual bounds */
-std::vector<SCIP_Real> IntegralEventHandler::get_dual_bounds() {
-	return dual_bounds;
 }
 
 }  // namespace ecole::reward

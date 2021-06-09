@@ -11,12 +11,16 @@ namespace ecole::reward {
 namespace {
 
 auto compute_primal_dual_integral(
-	std::vector<SCIP_Real> primal_bounds,
-	std::vector<SCIP_Real> dual_bounds,
-	std::vector<std::chrono::nanoseconds> times) {
+	std::vector<SCIP_Real> const & primal_bounds,
+	std::vector<SCIP_Real> const & dual_bounds,
+	std::vector<std::chrono::nanoseconds> const & times,
+	SCIP_Real const initial_dual_bound,
+	SCIP_Real const initial_primal_bound) {
 	SCIP_Real primal_dual_integral = 0.0;
 	for (size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-		auto const primal_dual_bound_diff = primal_bounds[i] - dual_bounds[i];
+		auto const pb = std::min(primal_bounds[i], initial_primal_bound);
+		auto const db = std::max(dual_bounds[i], initial_dual_bound);
+		auto const primal_dual_bound_diff = pb - db;
 		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
 		primal_dual_integral += primal_dual_bound_diff * time_diff;
 	}
@@ -24,42 +28,25 @@ auto compute_primal_dual_integral(
 	return primal_dual_integral;
 }
 
-/* Compute the primal bounds adjusted by the initial bound given. */
-auto get_adjusted_primal_bounds(std::vector<SCIP_Real> primal_bounds, SCIP_Real initial_primal_bound) {
-	std::vector<SCIP_Real> adjusted_primal_bounds(primal_bounds.size());
-	for (std::size_t i = 0; i < primal_bounds.size(); ++i) {
-		if (primal_bounds[i] > initial_primal_bound) {
-			adjusted_primal_bounds[i] = initial_primal_bound;
-		} else {
-			adjusted_primal_bounds[i] = primal_bounds[i];
-		}
-	}
-	return adjusted_primal_bounds;
-}
-
-/* Compute the dual bounds adjusted by the initial bound given. */
-auto get_adjusted_dual_bounds(std::vector<SCIP_Real> dual_bounds, SCIP_Real initial_dual_bound) {
-	std::vector<SCIP_Real> adjusted_dual_bounds(dual_bounds.size());
-	for (std::size_t i = 0; i < dual_bounds.size(); ++i) {
-		if (dual_bounds[i] < initial_dual_bound) {
-			adjusted_dual_bounds[i] = initial_dual_bound;
-		} else {
-			adjusted_dual_bounds[i] = dual_bounds[i];
-		}
-	}
-	return adjusted_dual_bounds;
+/* Returns the integral event handler and check that it exists.  */
+auto get_eventhdlr(scip::Model& model) {
+	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), "ecole::reward::IntegralEventHandler");
+	assert(base_handler != nullptr);
+	auto* const handler = dynamic_cast<IntegralEventHandler*>(base_handler);
+	assert(handler != nullptr);
+	return handler;
 }
 
 /* Default function for returning +/-infinity for the bounds in computing primal-dual integral */
 std::tuple<SCIP_Real, SCIP_Real> default_bound_function(scip::Model& model) {
-	return std::make_tuple(-SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr()));
+	return {-SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr())};
 }
 
 }  // namespace
 
 PrimalDualIntegral::PrimalDualIntegral(
 	bool wall_,
-	std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
+	const std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
 	wall = wall_;
 	if (bound_function_) {
 		bound_function = bound_function_;
@@ -72,27 +59,19 @@ void PrimalDualIntegral::before_reset(scip::Model& model) {
 	last_primal_dual_integral = 0.0;
 
 	/* Get bounds for computing primal-dual integral on instance */
-	auto [lb, ub] = bound_function(model);
-	initial_primal_bound = ub;
-	initial_dual_bound = lb;
+	std::tie(initial_dual_bound, initial_primal_bound) = bound_function(model);
 
 	/* Initalize and add event handler */
 	SCIPincludeObjEventhdlr(model.get_scip_ptr(), new IntegralEventHandler(model.get_scip_ptr(), wall, TRUE, TRUE), TRUE);
 
 	/* Extract metrics before resetting to get initial reference point */
-	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), "ecole::reward::IntegralEventHandler");
-	assert(base_handler != nullptr);
-	auto* const handler = dynamic_cast<IntegralEventHandler*>(base_handler);
-	assert(handler != nullptr);
+	auto handler = get_eventhdlr(model);
 	handler->extract_metrics(model.get_scip_ptr());
 }
 
 Reward PrimalDualIntegral::extract(scip::Model& model, bool /*done*/) {
 	/* Get info from event handler */
-	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), "ecole::reward::IntegralEventHandler");
-	assert(base_handler != nullptr);
-	auto* const handler = dynamic_cast<IntegralEventHandler*>(base_handler);
-	assert(handler != nullptr);
+	auto handler = get_eventhdlr(model);
 	handler->extract_metrics(model.get_scip_ptr());
 
 	auto const dual_bounds = handler->get_dual_bounds();
@@ -100,9 +79,11 @@ Reward PrimalDualIntegral::extract(scip::Model& model, bool /*done*/) {
 	auto const times = handler->get_times();
 
 	/* Compute primal integral and difference */
-	auto const adjusted_primal_bounds = get_adjusted_primal_bounds(primal_bounds, initial_primal_bound);
-	auto const adjusted_dual_bounds = get_adjusted_dual_bounds(dual_bounds, initial_dual_bound);
-	auto const primal_dual_integral = compute_primal_dual_integral(adjusted_primal_bounds, adjusted_dual_bounds, times);
+	auto const primal_dual_integral = compute_primal_dual_integral(primal_bounds, 
+		dual_bounds, 
+		times,
+		initial_dual_bound,
+		initial_primal_bound);
 	auto const primal_dual_integral_diff = primal_dual_integral - last_primal_dual_integral;
 
 	/* Update last_primal_dual_integral */

@@ -15,8 +15,8 @@ TEST_CASE("DualInPrimalDualIntegraltegral returns the difference in dual integra
 	auto reward_func = reward::PrimalDualIntegral{};
 	auto model = get_model();  // a non-trivial instance is loaded
 
-	SECTION("PrimalDualIntegral is positive before presolving") {
+	SECTION("PrimalDualIntegral is non-negative before presolving") {
 		reward_func.before_reset(model);
-		REQUIRE(reward_func.extract(model) > 0);
+		REQUIRE(reward_func.extract(model) >= 0);
 	}
 }
