@@ -31,6 +31,7 @@ add_library(
 	src/reward/primalintegral.cpp
 	src/reward/primaldualintegral.cpp
 	src/reward/integral_eventhdlr.cpp
+	src/reward/boundintegral.cpp
 
 	src/observation/nodebipartite.cpp
 	src/observation/milpbipartite.cpp
