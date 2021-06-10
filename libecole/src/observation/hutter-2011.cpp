@@ -71,11 +71,11 @@ template <typename Tensor> void set_constraint_degrees(Tensor&& out, scip::Model
 	out[idx(Features::constraint_node_degree_min)] = stats.min;
 	out[idx(Features::constraint_node_degree_std)] = stats.stddev;
 }
-    
+
 /*
 * Solves the LP relaxation of a model by making a copy, and setting all its variables continuous.
 */
-auto solve_lp_relaxation(scip::Model& model) {
+auto solve_lp_relaxation(scip::Model const& model) {
     auto relax_model = model.copy();
 	auto* const relax_scip = relax_model.get_scip_ptr();
     auto* const variables = SCIPgetVars(relax_scip);
@@ -113,14 +113,54 @@ auto solve_lp_relaxation(scip::Model& model) {
     
     return std::tuple{optimal_sol_coefs, optimal_value};
 }
+    
+
+template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model const& model) {
+    auto [lp_solution, lp_objective] = solve_lp_relaxation(model);
+    
+    // Compute the integer slack vector
+    auto variables = model.variables();
+    auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
+    int nb_integer_variables = SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip);
+    
+    if (nb_integer_variables > 0) {
+        // Compute the integer slack vector
+        auto integer_slack = std::vector<SCIP_Real>(static_cast<std::size_t>(nb_integer_variables));
+        std::size_t int_var_idx = 0;
+        for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
+            if (SCIPvarIsIntegral(variables[var_idx])) {
+                auto lp_solution_coef = lp_solution[int_var_idx];
+                integer_slack[int_var_idx] = std::abs(lp_solution_coef - std::round(lp_solution_coef));
+                int_var_idx++;
+            }
+        }
+
+        // Compute statistics of the integer slack vector
+        auto const slack_stats = utility::compute_stats(integer_slack);
+        SCIP_Real slack_l2_norm = 0;
+        for (auto const coefficient : integer_slack) {
+            slack_l2_norm += utility::square(coefficient);
+        }
+
+        out[idx(Features::lp_slack_mean)] = slack_stats.mean;
+        out[idx(Features::lp_slack_max)] = slack_stats.max;
+        out[idx(Features::lp_slack_l2)] = slack_l2_norm;
+    }
+    else {
+        out[idx(Features::lp_slack_mean)] = 0;
+        out[idx(Features::lp_slack_max)] = 0;
+        out[idx(Features::lp_slack_l2)] = 0;
+    }
+    out[idx(Features::lp_objective_value)] = lp_objective;
+}
 
 auto extract_features(scip::Model& model) {    
 	xt::xtensor<value_type, 1> observation({Hutter2011Obs::n_features});
 	set_problem_size(observation, model);
 	set_variable_degrees(observation, model);
 	set_constraint_degrees(observation, model);
+    set_lp_based_features(observation, model);
     
-    auto [lp_solution, lp_objective] = solve_lp_relaxation(model);
 	return observation;
 }
 
