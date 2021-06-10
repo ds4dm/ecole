@@ -83,6 +83,7 @@ PYBIND11_MODULE(core, m) {
 	)");
 
 	py::register_exception<ecole::Exception>(m, "Exception");
+	py::register_exception<ecole::IteratorExhausted>(m, "IteratorExhausted", PyExc_StopIteration);
 
 	scip::bind_submodule(m.def_submodule("scip"));
 	instance::bind_submodule(m.def_submodule("instance"));

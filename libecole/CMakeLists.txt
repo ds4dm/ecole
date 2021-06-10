@@ -16,6 +16,7 @@ add_library(
 	src/scip/col.cpp
 	src/scip/exception.cpp
 
+	src/instance/files.cpp
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
 	src/instance/independent-set-graph.cpp

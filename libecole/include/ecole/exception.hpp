@@ -15,4 +15,11 @@ private:
 	std::string message;
 };
 
+class IteratorExhausted : public Exception {
+public:
+	using Exception::Exception;
+
+	IteratorExhausted() : Exception{"No item to iterate over."} {}
+};
+
 }  // namespace ecole

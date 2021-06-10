@@ -4,6 +4,8 @@ add_executable(
 	src/main.cpp
 	src/conftest.cpp
 
+	src/test-utility/tmp-folder.cpp
+
 	src/test-traits.cpp
 	src/test-random.cpp
 
@@ -15,6 +17,7 @@ add_executable(
 	src/scip/test-model.cpp
 
 	src/instance/unit-tests.cpp
+	src/instance/test-files.cpp
 	src/instance/test-set-cover.cpp
 	src/instance/test-independent-set.cpp
 	src/instance/test-independent-set-graph.cpp

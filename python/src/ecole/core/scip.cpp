@@ -17,8 +17,15 @@ void bind_submodule(py::module_ const& m) {
 
 	py::register_exception<scip::Exception>(m, "Exception");
 
-	py::class_<Model, std::shared_ptr<Model>>(m, "Model")  //
-		.def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
+	// FIXME std::filesystem::path bound in 2.7 https://github.com/pybind/pybind11/pull/2730
+	// .def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
+	// .def("write_problem", &Model::write_problem, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
+	py::class_<Model>(m, "Model")  //
+		.def_static(
+			"from_file",
+			[](std::string filepath) { return Model::from_file(std::move(filepath)); },
+			py::arg("filepath"),
+			py::call_guard<py::gil_scoped_release>())
 		.def_static("prob_basic", &Model::prob_basic, py::arg("name") = "Model")
 		.def_static(
 			"from_pyscipopt",
@@ -57,7 +64,11 @@ void bind_submodule(py::module_ const& m) {
 		.def("set_params", &Model::set_params, py::arg("name_values"))
 		.def("disable_cuts", &Model::disable_cuts)
 		.def("disable_presolve", &Model::disable_presolve)
-		.def("write_problem", &Model::write_problem, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
+		.def(
+			"write_problem",
+			[](Model& self, std::string filepath) { self.write_problem(std::move(filepath)); },
+			py::arg("filepath"),
+			py::call_guard<py::gil_scoped_release>())
 
 		.def("transform_prob", &Model::transform_prob, py::call_guard<py::gil_scoped_release>())
 		.def("presolve", &Model::presolve, py::call_guard<py::gil_scoped_release>())

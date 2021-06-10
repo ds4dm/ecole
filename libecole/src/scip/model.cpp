@@ -49,9 +49,9 @@ bool Model::operator!=(Model const& other) const noexcept {
 	return !(*this == other);
 }
 
-Model Model::from_file(const std::string& filename) {
+Model Model::from_file(std::filesystem::path const& filename) {
 	auto model = Model{};
-	model.read_problem(filename);
+	model.read_problem(filename.c_str());
 	return model;
 }
 
@@ -61,7 +61,7 @@ Model Model::prob_basic(std::string const& name) {
 	return model;
 }
 
-void Model::write_problem(const std::string& filename) const {
+void Model::write_problem(std::filesystem::path const& filename) const {
 	scip::call(SCIPwriteOrigProblem, const_cast<SCIP*>(get_scip_ptr()), filename.c_str(), nullptr, true);
 }
 
