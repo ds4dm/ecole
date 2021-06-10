@@ -155,10 +155,13 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 
 auto extract_features(scip::Model& model) {
 	xt::xtensor<value_type, 1> observation({Hutter2011Obs::n_features});
-	auto const constraint_matrix = utility::coo_matrix<SCIP_Real>{};
+    auto [edge_features, constraint_features] = scip::get_all_constraints(model.get_scip_ptr());
+    
 	set_problem_size(observation, model);
 	set_variable_degrees(observation, model);
 	set_constraint_degrees(observation, model);
+    
+    
 	set_lp_based_features(observation, model);
 
 	return observation;

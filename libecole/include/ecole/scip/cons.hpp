@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <xtensor/xtensor.hpp>
 
 #include <nonstd/span.hpp>
 #include <scip/cons_linear.h>
@@ -10,6 +11,7 @@
 #include <scip/scip_cons.h>
 
 #include "ecole/scip/utils.hpp"
+#include "ecole/utility/sparse-matrix.hpp"
 
 namespace ecole::scip {
 
@@ -58,4 +60,10 @@ auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std
 auto get_vals_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_Real const>;
 auto get_vars_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd::span<SCIP_VAR const* const>;
 
+auto get_constraint_linear_coefs(SCIP* const scip, SCIP_CONS* const constraint) -> std::optional<
+	std::tuple<std::vector<SCIP_VAR*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>>>;
+auto get_constraint_coefs(SCIP* const scip, SCIP_CONS* const constraint)
+	-> std::tuple<std::vector<SCIP_VAR*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>>;
+auto get_all_constraints(SCIP* const scip, bool normalize=false) -> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 2>>;
+    
 }  // namespace ecole::scip
