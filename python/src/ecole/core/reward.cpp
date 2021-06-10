@@ -13,8 +13,6 @@
 #include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
 
-
-
 #include "core.hpp"
 
 namespace py = pybind11;
@@ -215,7 +213,7 @@ void bind_submodule(py::module_ const& m) {
 	primalintegral.def(
 		py::init<bool, PrimalIntegral::BoundFunction>(),
 		py::arg("wall") = false,
-		py::arg("bound_function") = PrimalIntegral::BoundFunction{}, 
+		py::arg("bound_function") = PrimalIntegral::BoundFunction{},
 		R"(
 		Create a PrimalIntegral reward function.
 

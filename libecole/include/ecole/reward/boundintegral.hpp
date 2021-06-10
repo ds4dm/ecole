@@ -7,15 +7,12 @@
 
 namespace ecole::reward {
 
-enum struct Bound {primal, dual, primal_dual};
+enum struct Bound { primal, dual, primal_dual };
 
-template<Bound bound> class BoundIntegral : public RewardFunction {
+template <Bound bound> class BoundIntegral : public RewardFunction {
 public:
 	using BoundFunction = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)>;
-	BoundIntegral(
-		bool wall_ = false,
-		BoundFunction bound_function_ = {}
-	);
+	BoundIntegral(bool wall_ = false, const BoundFunction& bound_function_ = {});
 	void before_reset(scip::Model& model) override;
 	Reward extract(scip::Model& model, bool done = false) override;
 
@@ -27,8 +24,8 @@ private:
 	SCIP_Real initial_dual_bound = 0.0;
 };
 
-using PrimalIntegral = BoundIntegral<Bound::primal>; 
-using DualIntegral = BoundIntegral<Bound::dual>; 
-using PrimalDualIntegral = BoundIntegral<Bound::primal_dual>; 
+using PrimalIntegral = BoundIntegral<Bound::primal>;
+using DualIntegral = BoundIntegral<Bound::dual>;
+using PrimalDualIntegral = BoundIntegral<Bound::primal_dual>;
 
 }  // namespace ecole::reward
