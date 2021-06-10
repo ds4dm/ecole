@@ -6,7 +6,7 @@
 
 #include "ecole/random.hpp"
 
-namespace ecole::instance {
+namespace ecole::utility {
 
 /** A simple symetric graph based on adjacency lists.  */
 class Graph {
@@ -86,4 +86,4 @@ template <typename Func> void Graph::edges_visit(Func&& func) const {
 	}
 }
 
-}  // namespace ecole::instance
+}  // namespace ecole::utility

@@ -12,11 +12,11 @@
 
 #include "ecole/utility/random.hpp"
 
-#include "instance/independent-set-graph.hpp"
+#include "utility/graph.hpp"
 
 namespace views = ranges::views;
 
-namespace ecole::instance {
+namespace ecole::utility {
 
 auto Graph::Edge::operator==(Edge const& other) const noexcept -> bool {
 	return ((first == other.first) && (second == other.second)) || ((first == other.second) && (second == other.first));
@@ -175,4 +175,4 @@ auto Graph::greedy_clique_partition() const -> std::vector<std::vector<Node>> {
 	return clique_partition;
 }
 
-}  // namespace ecole::instance
+}  // namespace ecole::utility

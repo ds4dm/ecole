@@ -12,6 +12,7 @@ add_executable(
 	src/utility/test-chrono.cpp
 	src/utility/test-vector.cpp
 	src/utility/test-random.cpp
+	src/utility/test-graph.cpp
 
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
@@ -20,7 +21,6 @@ add_executable(
 	src/instance/test-files.cpp
 	src/instance/test-set-cover.cpp
 	src/instance/test-independent-set.cpp
-	src/instance/test-independent-set-graph.cpp
 	src/instance/test-combinatorial-auction.cpp
 	src/instance/test-capacitated-facility-location.cpp
 

@@ -7,6 +7,7 @@ add_library(
 
 	src/utility/reverse-control.cpp
 	src/utility/chrono.cpp
+	src/utility/graph.cpp
 
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
@@ -19,7 +20,6 @@ add_library(
 	src/instance/files.cpp
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
-	src/instance/independent-set-graph.cpp
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
 

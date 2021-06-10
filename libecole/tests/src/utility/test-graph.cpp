@@ -5,11 +5,10 @@
 
 #include <catch2/catch.hpp>
 
-#include "instance/independent-set-graph.hpp"
-#include "instance/unit-tests.hpp"
+#include "utility/graph.hpp"
 
 using namespace ecole;
-using Graph = instance::Graph;
+using Graph = utility::Graph;
 using Edge = Graph::Edge;
 
 template <typename Container>
