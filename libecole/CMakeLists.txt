@@ -27,10 +27,6 @@ add_library(
 	src/reward/lpiterations.cpp
 	src/reward/solvingtime.cpp
 	src/reward/nnodes.cpp
-	src/reward/dualintegral.cpp
-	src/reward/primalintegral.cpp
-	src/reward/primaldualintegral.cpp
-	src/reward/integral_eventhdlr.cpp
 	src/reward/boundintegral.cpp
 
 	src/observation/nodebipartite.cpp
