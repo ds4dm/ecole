@@ -1,4 +1,5 @@
 #include <chrono>
+#include <vector>
 
 #include "scip/scip.h"
 #include "scip/type_event.h"
@@ -146,7 +147,7 @@ void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type
 			dual_bounds.push_back(dual_bounds[dual_bounds.size() - 1]);
 		}
 	}
-	times.push_back(time_now(scip));
+	times.push_back(time_now(wall));
 }
 
 /*
