@@ -79,7 +79,7 @@ std::tuple<SCIP_Real, SCIP_Real> default_bound_function(scip::Model& model) {
 template <Bound bound> 
 BoundIntegral<bound>::BoundIntegral(
 	bool wall_,
-	std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model& model)> bound_function_) {
+	BoundFunction bound_function_) {
 	wall = wall_;
 	if (bound_function_) {
 		bound_function = bound_function_;
@@ -149,5 +149,9 @@ Reward BoundIntegral<bound>::extract(scip::Model& model, bool /*done*/) {
 
 	return static_cast<Reward>(integral_diff);
 }
+
+template class BoundIntegral<Bound::primal>; 
+template class BoundIntegral<Bound::dual>; 
+template class BoundIntegral<Bound::primal_dual>; 
 
 }  // namespace ecole::reward

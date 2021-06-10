@@ -5,15 +5,15 @@
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 
+#include "ecole/reward/boundintegral.hpp"
 #include "ecole/reward/constant.hpp"
-#include "ecole/reward/dualintegral.hpp"
 #include "ecole/reward/isdone.hpp"
 #include "ecole/reward/lpiterations.hpp"
 #include "ecole/reward/nnodes.hpp"
-#include "ecole/reward/primaldualintegral.hpp"
-#include "ecole/reward/primalintegral.hpp"
 #include "ecole/reward/solvingtime.hpp"
 #include "ecole/scip/model.hpp"
+
+
 
 #include "core.hpp"
 
@@ -181,9 +181,10 @@ void bind_submodule(py::module_ const& m) {
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	dualintegral.def(
-		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::init<bool, DualIntegral::BoundFunction>(),
 		py::arg("wall") = false,
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
+		py::arg("bound_function") = DualIntegral::BoundFunction{},
+
 		R"(
 		Create a DualIntegral reward function.
 
@@ -212,9 +213,9 @@ void bind_submodule(py::module_ const& m) {
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primalintegral.def(
-		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::init<bool, PrimalIntegral::BoundFunction>(),
 		py::arg("wall") = false,
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
+		py::arg("bound_function") = PrimalIntegral::BoundFunction{}, 
 		R"(
 		Create a PrimalIntegral reward function.
 
@@ -243,9 +244,9 @@ void bind_submodule(py::module_ const& m) {
 		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primaldualintegral.def(
-		py::init<bool, std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>>(),
+		py::init<bool, PrimalDualIntegral::BoundFunction>(),
 		py::arg("wall") = false,
-		py::arg("bound_function") = std::function<std::tuple<SCIP_Real, SCIP_Real>(scip::Model & model)>(),
+		py::arg("bound_function") = PrimalDualIntegral::BoundFunction{},
 		R"(
 		Create a PrimalDualIntegral reward function.
 
