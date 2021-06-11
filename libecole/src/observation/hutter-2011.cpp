@@ -121,7 +121,7 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 
 	if (nb_integer_variables > 0) {
 		// Compute the integer slack vector
-		auto integer_slack = std::vector<SCIP_Real>(static_cast<std::size_t>(nb_integer_variables));
+		auto integer_slack = std::vector<value_type>(static_cast<std::size_t>(nb_integer_variables));
 		std::size_t int_var_idx = 0;
 		for (auto& variable : variables) {
 			if (SCIPvarIsIntegral(variable)) {
@@ -133,7 +133,7 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 
 		// Compute statistics of the integer slack vector
 		auto const slack_stats = utility::compute_stats(integer_slack);
-		SCIP_Real slack_l2_norm = 0;
+		value_type slack_l2_norm = 0;
 		for (auto const coefficient : integer_slack) {
 			slack_l2_norm += utility::square(coefficient);
 		}
@@ -179,15 +179,66 @@ template <typename Tensor> void set_obj_features(Tensor&& out, scip::Model const
     out[idx(Features::objective_coef_n_std)] = coefficients_n_stats.stddev;
     out[idx(Features::objective_coef_sqrtn_std)] = coefficients_sqrtn_stats.stddev;
 }
+    
+    
+template <typename Tensor> void set_cons_matrix_features(Tensor&& out, ConstraintMatrix const& cons_matrix,
+                                                         xt::xtensor<SCIP_Real, 2> const& cons_biases) {
+    auto nb_constraints = cons_matrix.shape[cons_axis];
+    std::vector<value_type> normalized_coefs;
+    auto norm_abs_coefs_counts = std::vector<value_type>(nb_constraints, 0);
+    auto norm_abs_coefs_means = std::vector<value_type>(nb_constraints, 0);
+    auto norm_abs_coefs_ssms = std::vector<value_type>(nb_constraints, 0);
+    
+    for (std::size_t coef_idx=0; coef_idx <  cons_matrix.nnz(); ++coef_idx) {
+        auto cons_idx = cons_matrix.indices(cons_axis, coef_idx);
+        auto bias = cons_biases(cons_idx);
+        if (bias != 0){
+            auto normalized_coef = cons_matrix.values(coef_idx) / bias;
+            normalized_coefs.push_back(normalized_coef);
+        
+            normalized_coef = std::abs(normalized_coef);
+            
+            // Online update formula
+            norm_abs_coefs_counts[cons_idx]++;
+            auto count = norm_abs_coefs_counts[cons_idx];
+            if (count == 1) {
+                norm_abs_coefs_means[cons_idx] = normalized_coef;
+            } else { 
+                // At least two elements
+                auto delta = normalized_coef - norm_abs_coefs_means[cons_idx];
+                norm_abs_coefs_means[cons_idx] += delta / count;
+                auto delta2 = normalized_coef - norm_abs_coefs_means[cons_idx];
+                norm_abs_coefs_ssms[cons_idx] += delta*delta2;
+            }
+        }
+    }
+    
+    auto norm_abs_var_coefs = std::vector<value_type>(nb_constraints, 0);
+    for (std::size_t cons_idx=0; cons_idx <  nb_constraints; ++cons_idx) {
+        auto ssm = norm_abs_coefs_ssms[cons_idx];
+        if (ssm != 0) {
+            norm_abs_var_coefs[cons_idx] = norm_abs_coefs_means[cons_idx]*norm_abs_coefs_counts[cons_idx]/ssm;
+        }
+    }
+    
+    auto const normalized_coefs_stats = utility::compute_stats(normalized_coefs);
+    auto const norm_abs_var_coefs_stats = utility::compute_stats(norm_abs_var_coefs);
+    
+    out[idx(Features::constraint_coef_mean)] = normalized_coefs_stats.mean;
+    out[idx(Features::constraint_coef_std)] = normalized_coefs_stats.stddev;
+    out[idx(Features::constraint_var_coef_mean)] = norm_abs_var_coefs_stats.mean;
+    out[idx(Features::constraint_var_coef_std)] = norm_abs_var_coefs_stats.stddev;
+}
 
 auto extract_features(scip::Model& model) {
 	auto observation = xt::xtensor<value_type, 1>::from_shape({Hutter2011Obs::n_features});
 	auto [cons_matrix, cons_biases] = scip::get_all_constraints(model.get_scip_ptr());
 
 	set_problem_size(observation, cons_matrix);
-	set_var_cons_degrees(observation, const_matrix);
+	set_var_cons_degrees(observation, cons_matrix);
 	set_lp_based_features(observation, model);
 	set_obj_features(observation, model, cons_matrix);
+	set_cons_matrix_features(observation, cons_matrix, cons_biases);
 
 	return observation;
 }
