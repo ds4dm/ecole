@@ -2,6 +2,7 @@
 #include <optional>
 #include <utility>
 #include <vector>
+#include <cmath>
 
 #include <scip/scip.h>
 #include <xtensor/xtensor.hpp>
@@ -13,6 +14,8 @@
 #include "ecole/utility/sparse-matrix.hpp"
 
 #include "utility/math.hpp"
+
+#include <iostream>
 
 namespace ecole::observation {
 
@@ -29,19 +32,19 @@ template <typename E> constexpr auto idx(E e) {
 	return static_cast<std::underlying_type_t<E>>(e);
 }
 
-template <typename Tensor> void set_problem_size(Tensor&& out, ConstraintMatrix const& matrix) {
-	out[idx(Features::nb_variables)] = static_cast<value_type>(matrix.shape[var_axis]);
-	out[idx(Features::nb_constraints)] = static_cast<value_type>(matrix.shape[cons_axis]);
-	out[idx(Features::nb_nonzero_coefs)] = static_cast<value_type>(matrix.nnz());
+template <typename Tensor> void set_problem_size(Tensor&& out, ConstraintMatrix const& cons_matrix) {
+	out[idx(Features::nb_variables)] = static_cast<value_type>(cons_matrix.shape[var_axis]);
+	out[idx(Features::nb_constraints)] = static_cast<value_type>(cons_matrix.shape[cons_axis]);
+	out[idx(Features::nb_nonzero_coefs)] = static_cast<value_type>(cons_matrix.nnz());
 }
 
-template <typename Tensor> void set_var_cons_degrees(Tensor&& out, ConstraintMatrix const& matrix) {
+template <typename Tensor> void set_var_cons_degrees(Tensor&& out, ConstraintMatrix const& cons_matrix) {
 	// A degree counter to be reused.
-	auto degrees = std::vector<std::size_t>(std::max(matrix.shape[var_axis], matrix.shape[cons_axis]));
+	auto degrees = std::vector<std::size_t>(std::max(cons_matrix.shape[var_axis], cons_matrix.shape[cons_axis]));
 
 	{  // Compute variables degrees
-		degrees.resize(matrix.shape[var_axis]);
-		for (auto var_idx : xt::row(matrix.indices, var_axis)) {
+		degrees.resize(cons_matrix.shape[var_axis]);
+		for (auto var_idx : xt::row(cons_matrix.indices, var_axis)) {
 			assert(var_idx < degrees.size());
 			degrees[var_idx]++;
 		}
@@ -52,9 +55,9 @@ template <typename Tensor> void set_var_cons_degrees(Tensor&& out, ConstraintMat
 		out[idx(Features::variable_node_degree_std)] = var_stats.stddev;
 	}
 	{  // Reset degree vector and compute constraint degrees
-		degrees.resize(matrix.shape[cons_axis]);
+		degrees.resize(cons_matrix.shape[cons_axis]);
 		std::fill(degrees.begin(), degrees.end(), 0);
-		for (auto cons_idx : xt::row(matrix.indices, cons_axis)) {
+		for (auto cons_idx : xt::row(cons_matrix.indices, cons_axis)) {
 			assert(cons_idx < degrees.size());
 			degrees[cons_idx]++;
 		}
@@ -145,14 +148,46 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 	}
 	out[idx(Features::lp_objective_value)] = lp_objective;
 }
+    
+
+template <typename Tensor> void set_obj_features(Tensor&& out, scip::Model const& model, 
+                                                 ConstraintMatrix const& cons_matrix) {
+    auto variables = model.variables();
+    auto coefficients_m = std::vector<SCIP_Real>(variables.size());
+    auto coefficients_n = std::vector<SCIP_Real>(variables.size());
+    auto coefficients_sqrtn = std::vector<SCIP_Real>(variables.size());
+    
+    auto nb_cons_of_vars = std::vector<long unsigned int>(variables.size(), 0);
+    for (std::size_t coef_idx=0; coef_idx <  cons_matrix.nnz(); ++coef_idx) {
+        nb_cons_of_vars[cons_matrix.indices(var_axis, coef_idx)]++;
+    }
+    
+	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
+    int nb_constraints = SCIPgetNConss(scip);
+	for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
+        auto c = SCIPvarGetObj(variables[var_idx]);
+        coefficients_m[var_idx] = c / nb_constraints;
+        coefficients_n[var_idx] = c / static_cast<double>(nb_cons_of_vars[var_idx]);
+        coefficients_n[var_idx] = c / std::sqrt(nb_cons_of_vars[var_idx]);
+    }
+    
+    auto const coefficients_m_stats = utility::compute_stats(coefficients_m);
+    auto const coefficients_n_stats = utility::compute_stats(coefficients_n);
+    auto const coefficients_sqrtn_stats = utility::compute_stats(coefficients_sqrtn);
+    
+    out[idx(Features::objective_coef_m_std)] = coefficients_m_stats.stddev;
+    out[idx(Features::objective_coef_n_std)] = coefficients_n_stats.stddev;
+    out[idx(Features::objective_coef_sqrtn_std)] = coefficients_sqrtn_stats.stddev;
+}
 
 auto extract_features(scip::Model& model) {
-	xt::xtensor<value_type, 1> observation({Hutter2011Obs::n_features});
+	auto observation = xt::xtensor<value_type, 1>::from_shape({Hutter2011Obs::n_features});
 	auto [cons_matrix, cons_biases] = scip::get_all_constraints(model.get_scip_ptr());
 
 	set_problem_size(observation, cons_matrix);
 	set_var_cons_degrees(observation, const_matrix);
 	set_lp_based_features(observation, model);
+	set_obj_features(observation, model, cons_matrix);
 
 	return observation;
 }
