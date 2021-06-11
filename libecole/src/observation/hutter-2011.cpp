@@ -1,10 +1,17 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
+#include <range/v3/range/conversion.hpp>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/transform.hpp>
 #include <scip/scip.h>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xindex_view.hpp>
+#include <xtensor/xsort.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
@@ -13,6 +20,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
+#include "utility/graph.hpp"
 #include "utility/math.hpp"
 
 #include <iostream>
@@ -20,6 +28,8 @@
 namespace ecole::observation {
 
 namespace {
+
+namespace views = ranges::views;
 
 using Features = Hutter2011Obs::Features;
 using value_type = decltype(Hutter2011Obs::features)::value_type;
@@ -67,6 +77,83 @@ template <typename Tensor> void set_var_cons_degrees(Tensor&& out, ConstraintMat
 		out[idx(Features::constraint_node_degree_min)] = cons_stats.min;
 		out[idx(Features::constraint_node_degree_std)] = cons_stats.stddev;
 	}
+}
+
+/**
+ * Compute the quantile of an xtensor expression.
+ *
+ * The quantiles are computed by linear interpolation of the two data points in which it falls.
+ *
+ * @param data The (unsorted) data from which to extract the quantiles.
+ * @param percentages Quantiles to compute, between 0 and 1.
+ */
+template <typename E, typename QT, std::size_t QN> auto quantiles(E&& data, std::array<QT, QN> const& percentages) {
+	static_assert(std::is_floating_point_v<QT>);
+	assert(std::all_of(percentages.begin(), percentages.end(), [](auto p) { return (0 <= p) && (p <= 1); }));
+
+	auto const data_size = static_cast<QT>(data.size());
+
+	// IILF Fill an array with upper and lower index of each quantile
+	auto const quantile_idx = [&]() {
+		auto pos = std::array<std::size_t, 2 * QN>{};
+		auto pos_iter = pos.begin();
+		for (auto p : percentages) {
+			auto const continuous_idx = p * data_size;
+			*(pos_iter++) = static_cast<std::size_t>(std::floor(continuous_idx));
+			*(pos_iter++) = static_cast<std::size_t>(std::ceil(continuous_idx));
+		}
+		return pos;
+	}();
+
+	// Partially sort data so that the element whose index are given by quantile_idx are in the correct postiion.
+	auto const partially_sorted_data = xt::partition(std::forward<E>(data), quantile_idx);
+
+	//
+	auto quants = std::array<QT, QN>{};
+	auto* quants_iter = quants.begin();
+	for (auto p : percentages) {
+		auto const continuous_idx = p * data_size;
+		auto const down_idx = static_cast<std::size_t>(std::floor(continuous_idx));
+		auto const down_val = static_cast<QT>(partially_sorted_data[down_idx]);
+		auto const up_idx = static_cast<std::size_t>(std::floor(continuous_idx));
+		auto const up_val = static_cast<QT>(partially_sorted_data[up_idx]);
+		auto const frac = continuous_idx - std::floor(continuous_idx);
+		*(quants_iter++) = (1 - frac) * down_val + frac * up_val;
+	}
+	return quants;
+}
+
+template <typename Tensor> void set_var_degrees(Tensor&& out, ConstraintMatrix const& matrix) {
+	auto const n_var = matrix.shape[var_axis];
+	auto const n_cons = matrix.shape[cons_axis];
+	// Build variable graph.
+	// TODO could be optimized if we know matrix.indices[cons_axis] is sorted (or sort it).
+	auto graph = utility::Graph{n_var};
+	for (std::size_t cons = 0; cons < n_cons; ++cons) {
+		auto const vars =
+			xt::eval(xt::filter(xt::row(matrix.indices, var_axis), xt::equal(xt::row(matrix.indices, cons_axis), cons)));
+		auto const* const var_end = vars.end();
+		for (auto const* var1_iter = vars.begin(); var1_iter < var_end; ++var1_iter) {
+			for (auto const* var2_iter = var1_iter + 1; var2_iter < var_end; ++var2_iter) {
+				if (!graph.are_connected(*var1_iter, *var2_iter)) {
+					graph.add_edge({*var1_iter, *var2_iter});
+				}
+			}
+		}
+	}
+
+	// Compute stats
+	auto get_var_degree = [&graph](auto var) { return graph.neighbors(var).size(); };
+	auto var_degrees = views::ints(0UL, n_var) | views::transform(get_var_degree) | ranges::to<std::vector>();
+
+	auto const stats = utility::compute_stats(var_degrees);
+	out[idx(Features::node_degree_mean)] = stats.mean;
+	out[idx(Features::node_degree_max)] = stats.max;
+	out[idx(Features::node_degree_min)] = stats.min;
+	out[idx(Features::node_degree_std)] = stats.stddev;
+	auto const quants = quantiles(xt::adapt(var_degrees), std::array<double, 2>{0.25, 0.75});
+	out[idx(Features::node_degree_25q)] = quants[0];
+	out[idx(Features::node_degree_75q)] = quants[1];
 }
 
 /*
@@ -262,10 +349,11 @@ template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::M
 
 auto extract_features(scip::Model& model) {
 	auto observation = xt::xtensor<value_type, 1>::from_shape({Hutter2011Obs::n_features});
-	auto [cons_matrix, cons_biases] = scip::get_all_constraints(model.get_scip_ptr());
+	auto const [cons_matrix, cons_biases] = scip::get_all_constraints(model.get_scip_ptr());
 
 	set_problem_size(observation, cons_matrix);
 	set_var_cons_degrees(observation, cons_matrix);
+	set_var_degrees(observation, cons_matrix);
 	set_lp_based_features(observation, model);
 	set_obj_features(observation, model, cons_matrix);
 	set_cons_matrix_features(observation, cons_matrix, cons_biases);
