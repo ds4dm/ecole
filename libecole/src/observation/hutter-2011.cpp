@@ -179,8 +179,7 @@ template <typename Tensor> void set_obj_features(Tensor&& out, scip::Model const
     out[idx(Features::objective_coef_n_std)] = coefficients_n_stats.stddev;
     out[idx(Features::objective_coef_sqrtn_std)] = coefficients_sqrtn_stats.stddev;
 }
-    
-    
+
 template <typename Tensor> void set_cons_matrix_features(Tensor&& out, ConstraintMatrix const& cons_matrix,
                                                          xt::xtensor<SCIP_Real, 2> const& cons_biases) {
     auto nb_constraints = cons_matrix.shape[cons_axis];
@@ -229,6 +228,38 @@ template <typename Tensor> void set_cons_matrix_features(Tensor&& out, Constrain
     out[idx(Features::constraint_var_coef_mean)] = norm_abs_var_coefs_stats.mean;
     out[idx(Features::constraint_var_coef_std)] = norm_abs_var_coefs_stats.stddev;
 }
+    
+
+template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::Model const& model) {
+    auto variables = model.variables();
+	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
+	auto nb_int_vars = static_cast<long unsigned int>(SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip));
+    long unsigned int nb_unbounded_int_vars = 0;
+	auto nb_cont_vars = static_cast<long unsigned int>(SCIPgetNContVars(scip));
+    
+    std::vector<long unsigned int> support_sizes;
+    for (auto* const variable : variables) {
+        
+        if (SCIPvarGetType(variable) == SCIP_VARTYPE_BINARY) {
+            support_sizes.push_back(2);
+        } else if (SCIPvarGetType(variable) == SCIP_VARTYPE_INTEGER) {
+            auto ub = SCIPvarGetUbGlobal(variable);
+            auto lb = SCIPvarGetLbGlobal(variable);
+            if (SCIPisInfinity(scip, std::abs(ub)) || SCIPisInfinity(scip, std::abs(lb))) {
+                nb_unbounded_int_vars++;
+            } else {
+                support_sizes.push_back(static_cast<long unsigned int>(ub - lb));
+            }
+        }
+    }
+    
+    auto const support_sizes_stats = utility::compute_stats(support_sizes);
+    
+    out[idx(Features::discrete_vars_support_size_mean)] = support_sizes_stats.mean;
+    out[idx(Features::discrete_vars_support_size_std)] = support_sizes_stats.stddev;
+    out[idx(Features::percent_unbounded_discrete_vars)] = nb_unbounded_int_vars / static_cast<double>(nb_int_vars);
+    out[idx(Features::percent_continuous_vars)] = nb_cont_vars / static_cast<double>(nb_int_vars + nb_cont_vars);
+}
 
 auto extract_features(scip::Model& model) {
 	auto observation = xt::xtensor<value_type, 1>::from_shape({Hutter2011Obs::n_features});
@@ -239,6 +270,7 @@ auto extract_features(scip::Model& model) {
 	set_lp_based_features(observation, model);
 	set_obj_features(observation, model, cons_matrix);
 	set_cons_matrix_features(observation, cons_matrix, cons_biases);
+	set_variable_type_features(observation, model);
 
 	return observation;
 }
