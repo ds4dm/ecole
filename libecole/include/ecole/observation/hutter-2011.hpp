@@ -61,8 +61,6 @@ struct Hutter2011Obs {
 
 class Hutter2011 : public ObservationFunction<std::optional<Hutter2011Obs>> {
 public:
-	// 	void before_reset(scip::Model& model) override;
-
 	std::optional<Hutter2011Obs> extract(scip::Model& model, bool done) override;
 };
 

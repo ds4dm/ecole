@@ -1,9 +1,9 @@
 #include <cmath>
 #include <fmt/format.h>
 #include <stdexcept>
-#include <xtensor/xtensor.hpp>
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xnorm.hpp>
+#include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 #include "ecole/scip/cons.hpp"
@@ -158,7 +158,7 @@ auto get_vars_linear(SCIP const* scip, SCIP_CONS const* cons) noexcept -> nonstd
 		static_cast<std::size_t>(SCIPgetNVarsLinear(const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons))),
 	};
 }
-    
+
 /**
  * Obtains the variables involved in a linear constraint and their coefficients in the constraint
  */
@@ -236,17 +236,18 @@ auto get_constraint_coefs(SCIP* const scip, SCIP_CONS* const constraint)
 		SCIPconsGetPos(constraint),
 		SCIPconshdlrGetName(SCIPconsGetHdlr(constraint))));
 }
-    
+
 SCIP_Real cons_l2_norm(std::vector<SCIP_Real> const& constraint_coefs) {
 	auto xt_constraint_coefs = xt::adapt(constraint_coefs, {constraint_coefs.size()});
 
 	auto const norm = xt::norm_l2(xt_constraint_coefs)();
 	return norm > 0. ? norm : 1.;
 }
-    
-auto get_all_constraints(SCIP* const scip, bool normalize) -> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 2>> {
-    auto* const constraints = SCIPgetConss(scip);
-    auto nb_constraints = static_cast<std::size_t>(SCIPgetNConss(scip));
+
+auto get_all_constraints(SCIP* const scip, bool normalize)
+	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 2>> {
+	auto* const constraints = SCIPgetConss(scip);
+	auto nb_constraints = static_cast<std::size_t>(SCIPgetNConss(scip));
 
 	std::size_t n_rows = 0;
 	auto n_cols = static_cast<std::size_t>(SCIPgetNVars(scip));
