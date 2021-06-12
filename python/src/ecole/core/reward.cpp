@@ -175,8 +175,8 @@ void bind_submodule(py::module_ const& m) {
 		Dual integral difference.
 
 		The reward is defined as the dual integral since the previous state, where the integral is
-		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
-		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+		computed with respect to the solving time. The solving time is specific to the operating system:
+		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	dualintegral.def(
 		py::init<bool, DualIntegral::BoundFunction>(),
@@ -192,7 +192,8 @@ void bind_submodule(py::module_ const& m) {
 			If true, the wall time will be used. If False (default), the process time will be used.
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial dual bound and the value
-			to compute the dual bound with respect to. Values should be ordered as (initial_dual_bound, dual_bound_reference).
+			to compute the dual bound with respect to.
+			Values should be ordered as (initial_dual_bound, dual_bound_reference).
 
 	)");
 	def_operators(dualintegral);
@@ -207,8 +208,8 @@ void bind_submodule(py::module_ const& m) {
 		Primal integral difference.
 
 		The reward is defined as the primal integral since the previous state, where the integral is
-		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
-		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+		computed with respect to the solving time. The solving time is specific to the operating system:
+		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primalintegral.def(
 		py::init<bool, PrimalIntegral::BoundFunction>(),
@@ -238,8 +239,8 @@ void bind_submodule(py::module_ const& m) {
 		Primal-dual integral difference.
 
 		The reward is defined as the primal-dual integral since the previous state, where the integral is
-		computed with respect to the solving time. The solving time is specific to the operating system: it includes time spent in
-		:py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
+		computed with respect to the solving time. The solving time is specific to the operating system:
+		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primaldualintegral.def(
 		py::init<bool, PrimalDualIntegral::BoundFunction>(),
@@ -255,7 +256,6 @@ void bind_submodule(py::module_ const& m) {
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial primal bound and dual bound.
 			Values should be ordered as (initial_dual_bound, initial_primal_bound).
-
 	)");
 	def_operators(primaldualintegral);
 	def_before_reset(primaldualintegral, "Reset the internal clock counter and the event handler.");
