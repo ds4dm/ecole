@@ -42,12 +42,14 @@ template <typename E> constexpr auto idx(E e) {
 	return static_cast<std::underlying_type_t<E>>(e);
 }
 
+/** [1-3] Problem size features. */
 template <typename Tensor> void set_problem_size(Tensor&& out, ConstraintMatrix const& cons_matrix) {
 	out[idx(Features::nb_variables)] = static_cast<value_type>(cons_matrix.shape[var_axis]);
 	out[idx(Features::nb_constraints)] = static_cast<value_type>(cons_matrix.shape[cons_axis]);
 	out[idx(Features::nb_nonzero_coefs)] = static_cast<value_type>(cons_matrix.nnz());
 }
 
+/** [4-11] Variable-constraint graph features. */
 template <typename Tensor> void set_var_cons_degrees(Tensor&& out, ConstraintMatrix const& cons_matrix) {
 	// A degree counter to be reused.
 	auto degrees = std::vector<std::size_t>(std::max(cons_matrix.shape[var_axis], cons_matrix.shape[cons_axis]));
@@ -123,6 +125,7 @@ template <typename E, typename QT, std::size_t QN> auto quantiles(E&& data, std:
 	return quants;
 }
 
+/** [12-17,20] Variable graph features. */
 template <typename Tensor> void set_var_degrees(Tensor&& out, ConstraintMatrix const& matrix) {
 	auto const n_var = matrix.shape[var_axis];
 	auto const n_cons = matrix.shape[cons_axis];
@@ -154,11 +157,11 @@ template <typename Tensor> void set_var_degrees(Tensor&& out, ConstraintMatrix c
 	auto const quants = quantiles(xt::adapt(var_degrees), std::array<double, 2>{0.25, 0.75});
 	out[idx(Features::node_degree_25q)] = quants[0];
 	out[idx(Features::node_degree_75q)] = quants[1];
+	auto const n_edges_complete_graph = static_cast<value_type>(n_var * (n_var - 1)) / 2.;
+	out[idx(Features::edge_density)] = static_cast<value_type>(graph.n_edges()) / n_edges_complete_graph;
 }
 
-/*
- * Solves the LP relaxation of a model by making a copy, and setting all its variables continuous.
- */
+/** Solves the LP relaxation of a model by making a copy, and setting all its variables continuous. */
 auto solve_lp_relaxation(scip::Model const& model) {
 	auto relax_model = model.copy();
 	auto* const relax_scip = relax_model.get_scip_ptr();
@@ -198,6 +201,7 @@ auto solve_lp_relaxation(scip::Model const& model) {
 	return std::tuple{optimal_sol_coefs, optimal_value};
 }
 
+/** [21-24] LP based features. */
 template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model const& model) {
 	auto [lp_solution, lp_objective] = solve_lp_relaxation(model);
 
@@ -236,6 +240,7 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 	out[idx(Features::lp_objective_value)] = lp_objective;
 }
 
+/** [25-27] Objective function features. */
 template <typename Tensor>
 void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix const& cons_matrix) {
 	auto variables = model.variables();
@@ -266,6 +271,7 @@ void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix c
 	out[idx(Features::objective_coef_sqrtn_std)] = coefficients_sqrtn_stats.stddev;
 }
 
+/** [28-31] Linear contraint martix features. */
 template <typename Tensor>
 void set_cons_matrix_features(
 	Tensor&& out,
@@ -318,6 +324,7 @@ void set_cons_matrix_features(
 	out[idx(Features::constraint_var_coef_std)] = norm_abs_var_coefs_stats.stddev;
 }
 
+/** [32-35] Variable type features. */
 template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::Model const& model) {
 	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
 	std::size_t nb_unbounded_int_vars = 0;

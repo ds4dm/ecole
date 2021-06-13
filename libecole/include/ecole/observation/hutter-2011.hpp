@@ -32,8 +32,9 @@ struct Hutter2011Obs {
 		node_degree_std,
 		node_degree_25q,
 		node_degree_75q,
-		clustering_coef_mean,
-		clustering_coef_std,
+		// Not computed because too expensive
+		// clustering_coef_mean,
+		// clustering_coef_std,
 		edge_density,
 		/* LP features */
 		lp_slack_mean,
@@ -54,6 +55,12 @@ struct Hutter2011Obs {
 		discrete_vars_support_size_std,
 		percent_unbounded_discrete_vars,
 		percent_continuous_vars,
+		/* General Problem type features */
+		// Not computed due to SCIP not supporting MIQP
+		// problem_type,
+		// nb_quadratic_constraints,
+		// nb_quadratic_nonzero_coefs,
+		// nb_quadratic_variables,
 	};
 
 	xt::xtensor<double, 1> features;
