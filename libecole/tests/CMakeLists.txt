@@ -44,6 +44,7 @@ add_executable(
 	src/observation/test-strongbranchingscores.cpp
 	src/observation/test-pseudocosts.cpp
 	src/observation/test-khalil-2016.cpp
+	src/observation/test-hutter-2011.cpp
 
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-branching-gub.cpp

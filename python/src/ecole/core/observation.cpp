@@ -403,8 +403,6 @@ void bind_submodule(py::module_ const& m) {
 		.value("node_degree_std", Hutter2011Obs::Features::node_degree_std)
 		.value("node_degree_25q", Hutter2011Obs::Features::node_degree_25q)
 		.value("node_degree_75q", Hutter2011Obs::Features::node_degree_75q)
-		.value("clustering_coef_mean", Hutter2011Obs::Features::clustering_coef_mean)
-		.value("clustering_coef_std", Hutter2011Obs::Features::clustering_coef_std)
 		.value("edge_density", Hutter2011Obs::Features::edge_density)
 		.value("lp_slack_mean", Hutter2011Obs::Features::lp_slack_mean)
 		.value("lp_slack_max", Hutter2011Obs::Features::lp_slack_max)

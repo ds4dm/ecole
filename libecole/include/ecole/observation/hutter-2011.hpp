@@ -9,7 +9,7 @@
 namespace ecole::observation {
 
 struct Hutter2011Obs {
-	static inline std::size_t constexpr n_features = 35;
+	static inline std::size_t constexpr n_features = 33;
 
 	enum struct Features : std::size_t {
 		/* Problem size features */
