@@ -19,7 +19,7 @@ TEST_CASE("Constant reward always return the same value", "[data]") {
 	auto model = get_model();
 
 	data_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 
 	REQUIRE(data_func.extract(model, done) == constant);
 

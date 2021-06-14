@@ -19,7 +19,7 @@ TEST_CASE("Timed data function is positive", "[data]") {
 	auto model = get_model();
 
 	timed_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 	auto const time = timed_func.extract(model, false);
 	REQUIRE(time >= 0.);
 }

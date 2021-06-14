@@ -19,7 +19,7 @@ TEST_CASE("Combine data functions into a tuple", "[data]") {
 	auto model = get_model();
 
 	data_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 	auto const data = data_func.extract(model, false);
 	STATIC_REQUIRE(std::is_same_v<std::remove_const_t<decltype(data)>, std::tuple<int, double>>);
 	REQUIRE(std::get<0>(data) == 1);

@@ -18,7 +18,7 @@ TEST_CASE("IsDone always return one when done", "[reward]") {
 
 	reward_func.before_reset(model);
 
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 
 	REQUIRE(reward_func.extract(model, done) == (done ? 1. : 0.));
 

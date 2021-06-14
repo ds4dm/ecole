@@ -19,7 +19,7 @@ TEST_CASE("StrongBranchingScores return correct branchig scores", "[obs]") {
 	auto obs_func = observation::StrongBranchingScores{pseudo_candidates};
 	auto model = get_model();
 	obs_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 	auto const obs = obs_func.extract(model, true);
 
 	REQUIRE(obs.has_value());

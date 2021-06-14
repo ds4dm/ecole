@@ -25,7 +25,7 @@ TEST_CASE("UnaryFunction negate the number", "[data]") {
 	auto model = get_model();
 
 	reward_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 
 	REQUIRE(reward_func.extract(model) < 0);
 }
@@ -35,7 +35,7 @@ TEST_CASE("BinaryFunction substract two numbers", "[data]") {
 	auto model = get_model();
 
 	reward_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 
 	REQUIRE(reward_func.extract(model) == 0);
 }
