@@ -243,23 +243,22 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 /** [25-27] Objective function features. */
 template <typename Tensor>
 void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix const& cons_matrix) {
-	auto variables = model.variables();
-	auto coefficients_m = std::vector<SCIP_Real>(variables.size());
-	auto coefficients_n = std::vector<SCIP_Real>(variables.size());
-	auto coefficients_sqrtn = std::vector<SCIP_Real>(variables.size());
+	auto const variables = model.variables();
+	auto coefficients_m = std::vector<value_type>(variables.size());
+	auto coefficients_n = std::vector<value_type>(variables.size());
+	auto coefficients_sqrtn = std::vector<value_type>(variables.size());
 
-	auto nb_cons_of_vars = std::vector<long unsigned int>(variables.size(), 0);
+	auto nb_cons_of_vars = std::vector<value_type>(variables.size(), 0);
 	for (std::size_t coef_idx = 0; coef_idx < cons_matrix.nnz(); ++coef_idx) {
 		nb_cons_of_vars[cons_matrix.indices(var_axis, coef_idx)]++;
 	}
 
-	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
-	int nb_constraints = SCIPgetNConss(scip);
+	auto const nb_constraints = static_cast<value_type>(model.constraints().size());
 	for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
 		auto c = SCIPvarGetObj(variables[var_idx]);
 		coefficients_m[var_idx] = c / nb_constraints;
-		coefficients_n[var_idx] = c / static_cast<double>(nb_cons_of_vars[var_idx]);
-		coefficients_n[var_idx] = c / std::sqrt(nb_cons_of_vars[var_idx]);
+		coefficients_n[var_idx] = c / nb_cons_of_vars[var_idx];
+		coefficients_sqrtn[var_idx] = c / std::sqrt(nb_cons_of_vars[var_idx]);
 	}
 
 	auto const coefficients_m_stats = utility::compute_stats(coefficients_m);
@@ -299,9 +298,9 @@ void set_cons_matrix_features(
 				norm_abs_coefs_means[cons_idx] = normalized_coef;
 			} else {
 				// At least two elements
-				auto delta = normalized_coef - norm_abs_coefs_means[cons_idx];
+				auto const delta = normalized_coef - norm_abs_coefs_means[cons_idx];
 				norm_abs_coefs_means[cons_idx] += delta / count;
-				auto delta2 = normalized_coef - norm_abs_coefs_means[cons_idx];
+				auto const delta2 = normalized_coef - norm_abs_coefs_means[cons_idx];
 				norm_abs_coefs_ssms[cons_idx] += delta * delta2;
 			}
 		}
@@ -309,8 +308,7 @@ void set_cons_matrix_features(
 
 	auto norm_abs_var_coefs = std::vector<value_type>(nb_constraints, 0);
 	for (std::size_t cons_idx = 0; cons_idx < nb_constraints; ++cons_idx) {
-		auto ssm = norm_abs_coefs_ssms[cons_idx];
-		if (ssm != 0) {
+		if (auto const ssm = norm_abs_coefs_ssms[cons_idx]; ssm != 0) {
 			norm_abs_var_coefs[cons_idx] = norm_abs_coefs_means[cons_idx] * norm_abs_coefs_counts[cons_idx] / ssm;
 		}
 	}
