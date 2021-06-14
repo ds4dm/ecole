@@ -6,9 +6,9 @@ Thank you for contributing to Ecole!
 
 Except for very small fixes, please open an issue to discuss the changes and fill
 the number bellow.
-Refer to the README for help on running the tests, checks, formatters, and documentation.
+Refer to the documentation for help on running the tests, checks, formatters, and documentation.
 -->
-- [ ] I have open an issue to discuss the proposed changes. Fix #
+- [ ] I have opened an issue to discuss the proposed changes: Fix #XX.
 - [ ] I have modified/added tests to cover the new changes/features.
 - [ ] I have modified/added the documentation to cover the new changes/features.
 - [ ] I have ran the tests, checks, and code formatters.
