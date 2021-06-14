@@ -351,7 +351,7 @@ template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::M
 	out[idx(Features::discrete_vars_support_size_mean)] = support_sizes_stats.mean;
 	out[idx(Features::discrete_vars_support_size_std)] = support_sizes_stats.stddev;
 	out[idx(Features::percent_unbounded_discrete_vars)] = static_cast<double>(nb_unbounded_int_vars) / nb_int_vars;
-	out[idx(Features::percent_continuous_vars)] = nb_cont_vars / nb_int_vars + nb_cont_vars;
+	out[idx(Features::percent_continuous_vars)] = nb_cont_vars / (nb_int_vars + nb_cont_vars);
 }
 
 auto extract_features(scip::Model& model) {
