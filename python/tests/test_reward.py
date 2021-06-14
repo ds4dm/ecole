@@ -26,6 +26,9 @@ def pytest_generate_tests(metafunc):
             ecole.reward.NNodes(),
             ecole.reward.LpIterations(),
             ecole.reward.SolvingTime(),
+            ecole.reward.PrimalIntegral(bound_function=lambda x: (-1e3, 1e3)),
+            ecole.reward.DualIntegral(bound_function=lambda x: (-1e3, 1e3)),
+            ecole.reward.PrimalDualIntegral(bound_function=lambda x: (-1e3, 1e3)),
         )
         metafunc.parametrize("reward_function", all_reward_functions)
 
@@ -42,10 +45,10 @@ def test_default_init(reward_function):
     type(reward_function)()
 
 
-def test_before_reset(reward_function, model):
+def test_before_reset(reward_function, model, model_copy):
     """Successive calls to before_reset."""
     reward_function.before_reset(model)
-    reward_function.before_reset(model)
+    reward_function.before_reset(model_copy)
 
 
 @pytest.mark.parametrize("done", [True, False])
@@ -112,3 +115,36 @@ def test_cumsum(reward_function, model, model_copy):
 
     assert cum_reward1 == pytest.approx(reward1, rel=1.0)
     assert cum_reward2 == pytest.approx(reward1 + reward2, rel=1.0)
+
+
+def test_primal_integral_lambda(model):
+    """Tests passing a lambda function into primal integral class."""
+    reward_function = ecole.reward.PrimalIntegral(bound_function=lambda x: (-1e3, 1e3))
+
+    reward_function.before_reset(model)
+    advance_to_root_node(model)
+    reward = reward_function.extract(model)
+
+    assert reward >= 0
+
+
+def test_dual_integral_lambda(model):
+    """Tests passing a lambda function into dual integral class."""
+    reward_function = ecole.reward.DualIntegral(bound_function=lambda x: (-1e3, 1e3))
+
+    reward_function.before_reset(model)
+    advance_to_root_node(model)
+    reward = reward_function.extract(model)
+
+    assert reward >= 0
+
+
+def test_primal_dual_integral_lambda(model):
+    """Tests passing a lambda function into primal-dual integral class."""
+    reward_function = ecole.reward.PrimalDualIntegral(bound_function=lambda x: (-1e3, 1e3))
+
+    reward_function.before_reset(model)
+    advance_to_root_node(model)
+    reward = reward_function.extract(model)
+
+    assert reward >= 0
