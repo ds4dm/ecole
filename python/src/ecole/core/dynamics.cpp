@@ -62,7 +62,7 @@ void bind_submodule(pybind11::module_ const& m) {
 
 		Based on a SCIP branching callback with maximal priority and no depth limit.
 		The dynamics give the control back to the user every time the callback would be called.
-		The user recieves as an action set the list of branching candiates, and is expected to select
+		The user recieves as an action set the list of branching candidates, and is expected to select
 		one of them as the action.
 	)"}
 		.def_reset_dynamics(R"(
@@ -104,12 +104,12 @@ void bind_submodule(pybind11::module_ const& m) {
 				done:
 					Whether the instance is solved.
 				action_set:
-					List of branching canddidates. Candidates depend on parameters in :py:meth:`__init__`.
+					List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
 				)")
 		.def_set_dynamics_random_state(R"(
 			Set seeds on the :py:class:`~ecole.scip.Model`.
 
-			Set seed parameters, inculing permutation, LP, and shift.
+			Set seed parameters, including permutation, LP, and shift.
 
 			Parameters
 			----------
@@ -135,7 +135,7 @@ void bind_submodule(pybind11::module_ const& m) {
 
 		Based on a SCIP branching callback with maximal priority and no depth limit.
 		The dynamics give the control back to the user every time the callback would be called.
-		The user recieves as an action set the list of branching candiates, and is expected to select
+		The user recieves as an action set the list of branching candidates, and is expected to select
 		a subset of them to branch on their sum.
 
 		.. warning::
@@ -166,7 +166,7 @@ void bind_submodule(pybind11::module_ const& m) {
 		.def_set_dynamics_random_state(R"(
 			Set seeds on the :py:class:`~ecole.scip.Model`.
 
-			Set seed parameters, inculing permutation, LP, and shift.
+			Set seed parameters, including permutation, LP, and shift.
 
 			Parameters
 			----------
@@ -187,7 +187,7 @@ void bind_submodule(pybind11::module_ const& m) {
 			R"(
 			Branch and resume solving until next branching.
 
-			Branching is done on a the sum of the given variables using their LP or pseudo solution value.
+			Branching is done on the sum of the given variables using their LP or pseudo solution value.
 			To make a valid branching, the sum of the LP or pseudo solution value of the given variables
 			must be non integer.
 			In the opposite case, an exception will be thrown,
@@ -198,8 +198,8 @@ void bind_submodule(pybind11::module_ const& m) {
 				model:
 					The state of the Markov Decision Process. Passed by the environment.
 				action:
-					A subset of of the variables of given in the aaction set.
-					Not all subsets are valid.
+					A subset of of the variables of given in the action set.
+					Not all subsets are valid (see above).
 
 			Returns
 			-------
@@ -213,7 +213,7 @@ void bind_submodule(pybind11::module_ const& m) {
 	dynamics_class<ConfiguringDynamics>{m, "ConfiguringDynamics", R"(
 		Setting solving parameters dynamics.
 
-		This dynamics are meant to be used as a (contextual) bandit to find good parameters for SCIP.
+		These dynamics are meant to be used as a (contextual) bandit to find good parameters for SCIP.
 	)"}
 		.def_reset_dynamics(R"(
 			Does nothing.
@@ -253,14 +253,14 @@ void bind_submodule(pybind11::module_ const& m) {
 		.def_set_dynamics_random_state(R"(
 			Set seeds on the :py:class:`~ecole.scip.Model`.
 
-			Set seed parameters, inculing permutation, LP, and shift.
+			Set seed parameters, including permutation, LP, and shift.
 
 			Parameters
 			----------
 				model:
 					The state of the Markov Decision Process. Passed by the environment.
 				random_engine:
-					The source of randomness.Passed by the environment.
+					The source of randomness. Passed by the environment.
 		)")
 		.def(py::init<>());
 }

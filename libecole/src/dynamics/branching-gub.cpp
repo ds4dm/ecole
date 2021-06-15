@@ -172,22 +172,23 @@ auto BranchingGUBDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool
 	return {false, action_set(model)};
 }
 
-auto BranchingGUBDynamics::step_dynamics(scip::Model& model, Action const& var_idx) -> std::tuple<bool, ActionSet> {
+auto BranchingGUBDynamics::step_dynamics(scip::Model& model, Action const& var_indices) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 
 	// Check that input indices are within range
 	auto const is_out_of_bounds = [size = lp_cols.size()](auto idx) { return idx >= size; };
-	if (std::any_of(var_idx.begin(), var_idx.end(), is_out_of_bounds)) {
+	if (std::any_of(var_indices.begin(), var_indices.end(), is_out_of_bounds)) {
 		throw std::invalid_argument{"Branching index is larger than the number of columns."};
 	}
 
-	// Get variables associated with indices
-	auto vars = std::vector<SCIP_VAR*>(var_idx.size());
-	auto const idx_to_var = [lp_cols](auto idx) { return SCIPcolGetVar(lp_cols[idx]); };
-	std::transform(var_idx.begin(), var_idx.end(), vars.begin(), idx_to_var);
+	{  // Get variables associated with indices and branch
+		auto vars = std::vector<SCIP_VAR*>(var_indices.size());
+		auto const idx_to_var = [lp_cols](auto idx) { return SCIPcolGetVar(lp_cols[idx]); };
+		std::transform(var_indices.begin(), var_indices.end(), vars.begin(), idx_to_var);
 
-	scip::call(SCIPbranchGUB, model.get_scip_ptr(), vars.data(), static_cast<int>(vars.size()), nullptr, nullptr);
-	model.solve_iter_branch(SCIP_BRANCHED);
+		scip::call(SCIPbranchGUB, model.get_scip_ptr(), vars.data(), static_cast<int>(vars.size()), nullptr, nullptr);
+		model.solve_iter_branch(SCIP_BRANCHED);
+	}
 
 	if (model.solve_iter_is_done()) {
 		return {true, {}};
