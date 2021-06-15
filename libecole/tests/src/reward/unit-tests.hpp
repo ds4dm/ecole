@@ -12,9 +12,10 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 	SECTION("has default constructor") { RewardFunc{}; }
 
 	SECTION("before_reset, before_reset, and delete") {
-		auto model = get_model();
-		reward_func.before_reset(model);
-		reward_func.before_reset(model);
+		auto model1 = get_model();
+		reward_func.before_reset(model1);
+		auto model2 = get_model();
+		reward_func.before_reset(model2);
 	}
 
 	SECTION("before_reset, obtain reward, and delete") {

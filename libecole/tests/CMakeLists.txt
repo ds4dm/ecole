@@ -37,6 +37,7 @@ add_executable(
 	src/reward/test-isdone.cpp
 	src/reward/test-nnodes.cpp
 	src/reward/test-solvingtime.cpp
+	src/reward/test-boundintegral.cpp
 
 	src/observation/test-nodebipartite.cpp
 	src/observation/test-milpbipartite.cpp

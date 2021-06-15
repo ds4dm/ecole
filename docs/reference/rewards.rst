@@ -35,6 +35,18 @@ Solving Time
    :no-members:
    :members: before_reset, extract
 
+Primal and dual Integrals
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: ecole.reward.PrimalIntegral
+   :no-members:
+   :members: before_reset, extract
+.. autoclass:: ecole.reward.DualIntegral
+   :no-members:
+   :members: before_reset, extract
+.. autoclass:: ecole.reward.PrimalDualIntegral
+   :no-members:
+   :members: before_reset, extract
+
 
 Utilities
 ---------

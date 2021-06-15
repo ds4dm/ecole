@@ -61,8 +61,8 @@ public:
 		using ParamHelper = std::variant<bool, SCIP_Longint, SCIP_Real, std::string>;
 
 		try {
-			value =
-				std::visit([](auto&& val) -> scip::Param { return std::forward<decltype(val)>(val); }, src.cast<ParamHelper>());
+			value = std::visit(
+				[](auto&& val) -> ecole::scip::Param { return std::forward<decltype(val)>(val); }, src.cast<ParamHelper>());
 			return true;
 		} catch (...) {
 			return false;
