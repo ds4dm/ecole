@@ -85,7 +85,7 @@ auto get_cons_n_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<s
 	return {static_cast<std::size_t>(n_vars)};
 }
 
-auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VAR const*> out) -> bool {
+auto get_cons_vars(SCIP* scip, SCIP_CONS* cons, nonstd::span<SCIP_VAR*> out) -> bool {
 	auto const maybe_n_vars = get_cons_n_vars(scip, cons);
 	if (!maybe_n_vars.has_value()) {
 		return false;
@@ -95,14 +95,23 @@ auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VA
 		throw std::invalid_argument{"Out memory is not large enough to fit variables."};
 	}
 	SCIP_Bool success = FALSE;
-	scip::call(
-		SCIPgetConsVars,
-		const_cast<SCIP*>(scip),
-		const_cast<SCIP_CONS*>(cons),
-		const_cast<SCIP_VAR**>(out.data()),
-		static_cast<int>(out.size()),
-		&success);
+	scip::call(SCIPgetConsVars, scip, cons, out.data(), static_cast<int>(out.size()), &success);
 	return success;
+}
+
+auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VAR const*> out) -> bool {
+	return get_cons_vars(
+		const_cast<SCIP*>(scip), const_cast<SCIP_CONS*>(cons), {const_cast<SCIP_VAR**>(out.data()), out.size()});
+}
+
+auto get_cons_vars(SCIP* scip, SCIP_CONS* cons) -> std::optional<std::vector<SCIP_VAR*>> {
+	if (auto const n_vars = get_cons_n_vars(scip, cons); n_vars.has_value()) {
+		auto vars = std::vector<SCIP_VAR*>(n_vars.value());
+		if (get_cons_vars(scip, cons, vars)) {
+			return {std::move(vars)};
+		}
+	}
+	return {};
 }
 
 auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_VAR const*>> {
@@ -248,7 +257,7 @@ auto get_all_constraints(SCIP* const scip, bool normalize, bool include_variable
 	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 1>> {
 	auto* const variables = SCIPgetVars(scip);
 	auto* const constraints = SCIPgetConss(scip);
-    auto nb_variables = static_cast<std::size_t>(SCIPgetNVars(scip));
+	auto nb_variables = static_cast<std::size_t>(SCIPgetNVars(scip));
 	auto nb_constraints = static_cast<std::size_t>(SCIPgetNConss(scip));
 
 	std::size_t n_rows = 0;
@@ -299,28 +308,28 @@ auto get_all_constraints(SCIP* const scip, bool normalize, bool include_variable
 			n_rows++;
 		}
 	}
-    
-    if (include_variable_bounds) {
-        // Add variable bounds as additional constraints
-        for (std::size_t var_idx = 0; var_idx < nb_variables; ++var_idx) {
-            auto lb = SCIPvarGetLbGlobal(variables[var_idx]);
-            auto ub = SCIPvarGetUbGlobal(variables[var_idx]);
-            if (!SCIPisInfinity(scip, std::abs(lb))) {
-                values.push_back(-1.);
-                row_indices.push_back(n_rows);
-                column_indices.push_back(static_cast<std::size_t>(var_idx));
-                biases.push_back(-lb);
-                n_rows++;
-            }
-            if (!SCIPisInfinity(scip, std::abs(ub))) {
-                values.push_back(1.);
-                row_indices.push_back(n_rows);
-                column_indices.push_back(static_cast<std::size_t>(var_idx));
-                biases.push_back(ub);
-                n_rows++;
-            }
-        }
-    }
+
+	if (include_variable_bounds) {
+		// Add variable bounds as additional constraints
+		for (std::size_t var_idx = 0; var_idx < nb_variables; ++var_idx) {
+			auto lb = SCIPvarGetLbGlobal(variables[var_idx]);
+			auto ub = SCIPvarGetUbGlobal(variables[var_idx]);
+			if (!SCIPisInfinity(scip, std::abs(lb))) {
+				values.push_back(-1.);
+				row_indices.push_back(n_rows);
+				column_indices.push_back(static_cast<std::size_t>(var_idx));
+				biases.push_back(-lb);
+				n_rows++;
+			}
+			if (!SCIPisInfinity(scip, std::abs(ub))) {
+				values.push_back(1.);
+				row_indices.push_back(n_rows);
+				column_indices.push_back(static_cast<std::size_t>(var_idx));
+				biases.push_back(ub);
+				n_rows++;
+			}
+		}
+	}
 
 	// Turn values and indices into xt::xarray's
 	auto const nnz = values.size();

@@ -122,6 +122,11 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
 	}
 }
 
+/** Convert a xtensor of size (N) into an xtensor of size (N, 1) without copy. */
+template <typename T> auto vec_to_col(xt::xtensor<T, 1>&& t) -> xt::xtensor<T, 2> {
+	return xt::xtensor<T, 2>{std::move(t.storage()), {t.size(), 1}, {1, 0}};
+}
+
 }  // namespace
 
 /*************************************
@@ -135,7 +140,11 @@ auto MilpBipartite::extract(scip::Model& model, bool /* done */) -> std::optiona
 		auto variable_features = xmatrix::from_shape({model.variables().size(), MilpBipartiteObs::n_variable_features});
 		set_features_for_all_vars(variable_features, model, normalize);
 
-		return MilpBipartiteObs{variable_features, xt::view(constraint_features, xt::all(),xt::newaxis()), edge_features};
+		return MilpBipartiteObs{
+			std::move(variable_features),
+			vec_to_col(std::move(constraint_features)),
+			std::move(edge_features),
+		};
 	}
 	return {};
 }

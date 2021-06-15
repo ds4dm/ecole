@@ -52,7 +52,9 @@ auto cons_get_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::opti
 auto cons_get_finite_lhs(SCIP const* scip, SCIP_CONS const* cons) noexcept -> std::optional<SCIP_Real>;
 
 auto get_cons_n_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::size_t>;
+auto get_cons_vars(SCIP* scip, SCIP_CONS* cons, nonstd::span<SCIP_VAR*> out) -> bool;
 auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_VAR const*> out) -> bool;
+auto get_cons_vars(SCIP* scip, SCIP_CONS* cons) -> std::optional<std::vector<SCIP_VAR*>>;
 auto get_cons_vars(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_VAR const*>>;
 auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons, nonstd::span<SCIP_Real> out) -> bool;
 auto get_cons_vals(SCIP const* scip, SCIP_CONS const* cons) -> std::optional<std::vector<SCIP_Real>>;

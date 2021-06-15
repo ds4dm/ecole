@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
@@ -163,25 +164,23 @@ template <typename Tensor> void set_var_degrees(Tensor&& out, ConstraintMatrix c
 auto solve_lp_relaxation(scip::Model const& model) {
 	auto relax_model = model.copy();
 	auto* const relax_scip = relax_model.get_scip_ptr();
-	auto* const variables = SCIPgetVars(relax_scip);
-	int nb_variables = SCIPgetNVars(relax_scip);
-	SCIP_Bool infeasible;
+	auto const variables = relax_model.variables();
 
 	// Change active variables to continuous
-	for (std::size_t var_idx = 0; var_idx < static_cast<std::size_t>(nb_variables); ++var_idx) {
-		scip::call(SCIPchgVarType, relax_scip, variables[var_idx], SCIP_VARTYPE_CONTINUOUS, &infeasible);
+	for (auto* const var : variables) {
+		SCIP_Bool infeasible = FALSE;
+		scip::call(SCIPchgVarType, relax_scip, var, SCIP_VARTYPE_CONTINUOUS, &infeasible);
+		assert(!infeasible);
 	}
 
 	// Change constraint variables to continuous
-	int nb_cons_variables;
-	SCIP_Bool success;
 	for (auto* const constraint : relax_model.constraints()) {
-		scip::call(SCIPgetConsNVars, relax_scip, constraint, &nb_cons_variables, &success);
-		auto cons_variables = std::vector<SCIP_VAR*>(static_cast<std::size_t>(nb_cons_variables));
-		scip::call(SCIPgetConsVars, relax_scip, constraint, cons_variables.data(), nb_cons_variables, &success);
-
-		for (std::size_t var_idx = 0; var_idx < static_cast<std::size_t>(nb_cons_variables); ++var_idx) {
-			scip::call(SCIPchgVarType, relax_scip, cons_variables[var_idx], SCIP_VARTYPE_CONTINUOUS, &infeasible);
+		auto const cons_vars = scip::get_cons_vars(relax_scip, constraint);
+		assert(cons_vars.has_value());
+		for (auto* const var : cons_vars.value()) {
+			SCIP_Bool infeasible = FALSE;
+			scip::call(SCIPchgVarType, relax_scip, var, SCIP_VARTYPE_CONTINUOUS, &infeasible);
+			assert(!infeasible);
 		}
 	}
 
@@ -193,26 +192,31 @@ auto solve_lp_relaxation(scip::Model const& model) {
 	// Hopefully this should match 1-1 the original model's active variables?
 	SCIP_SOL* optimal_sol = SCIPgetBestSol(relax_scip);
 	SCIP_Real optimal_value = SCIPgetSolOrigObj(relax_scip, optimal_sol);
-	auto optimal_sol_coefs = std::vector<SCIP_Real>(static_cast<std::size_t>(nb_variables));
-	scip::call(SCIPgetSolVals, relax_scip, optimal_sol, nb_variables, variables, optimal_sol_coefs.data());
+	auto optimal_sol_coefs = std::vector<SCIP_Real>(variables.size());
+	scip::call(
+		SCIPgetSolVals,
+		relax_scip,
+		optimal_sol,
+		static_cast<int>(variables.size()),
+		variables.data(),
+		optimal_sol_coefs.data());
 
-	return std::tuple{optimal_sol_coefs, optimal_value};
+	return std::tuple{std::move(optimal_sol_coefs), optimal_value};
 }
 
 /** [21-24] LP based features. */
 template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model const& model) {
-	auto [lp_solution, lp_objective] = solve_lp_relaxation(model);
+	auto const [lp_solution, lp_objective] = solve_lp_relaxation(model);
 
 	// Compute the integer slack vector
-	auto variables = model.variables();
 	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
-	int nb_integer_variables = SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip);
+	int const nb_integer_variables = SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip);
 
 	if (nb_integer_variables > 0) {
 		// Compute the integer slack vector
 		auto integer_slack = std::vector<value_type>(static_cast<std::size_t>(nb_integer_variables));
 		std::size_t int_var_idx = 0;
-		for (auto& variable : variables) {
+		for (auto& variable : model.variables()) {
 			if (SCIPvarIsIntegral(variable)) {
 				auto lp_solution_coef = lp_solution[int_var_idx];
 				integer_slack[int_var_idx] = std::abs(lp_solution_coef - std::round(lp_solution_coef));
@@ -222,10 +226,8 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 
 		// Compute statistics of the integer slack vector
 		auto const slack_stats = utility::compute_stats(integer_slack);
-		value_type slack_l2_norm = 0;
-		for (auto const coefficient : integer_slack) {
-			slack_l2_norm += utility::square(coefficient);
-		}
+		auto const square = [](auto val) { return val * val; };
+		auto const slack_l2_norm = ranges::accumulate(integer_slack | views::transform(square), 0.);
 
 		out[idx(Features::lp_slack_mean)] = slack_stats.mean;
 		out[idx(Features::lp_slack_max)] = slack_stats.max;
@@ -242,26 +244,26 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 template <typename Tensor>
 void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix const& cons_matrix) {
 	auto const variables = model.variables();
-	std::vector<value_type> coefficients_m;
-	std::vector<value_type> coefficients_n;
-	std::vector<value_type> coefficients_sqrtn;
+	auto coefficients_m = std::vector<value_type>{};
+	auto coefficients_n = std::vector<value_type>{};
+	auto coefficients_sqrtn = std::vector<value_type>{};
 
 	auto nb_cons_of_vars = std::vector<value_type>(variables.size(), 0);
 	for (std::size_t coef_idx = 0; coef_idx < cons_matrix.nnz(); ++coef_idx) {
 		nb_cons_of_vars[cons_matrix.indices(var_axis, coef_idx)]++;
 	}
 
-    coefficients_n.resize(variables.size());
-    coefficients_n.resize(variables.size());
-    coefficients_sqrtn.resize(variables.size());
+	coefficients_m.resize(variables.size());
+	coefficients_n.resize(variables.size());
+	coefficients_sqrtn.resize(variables.size());
 	auto const nb_constraints = static_cast<value_type>(cons_matrix.shape[cons_axis]);
 	for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
 		auto c = SCIPvarGetObj(variables[var_idx]);
 		coefficients_m.push_back(c / nb_constraints);
-        if (nb_cons_of_vars[var_idx] != 0) {
-            coefficients_n.push_back(c / nb_cons_of_vars[var_idx]);
-            coefficients_sqrtn.push_back(c / std::sqrt(nb_cons_of_vars[var_idx]));
-        }
+		if (nb_cons_of_vars[var_idx] != 0) {
+			coefficients_n.push_back(c / nb_cons_of_vars[var_idx]);
+			coefficients_sqrtn.push_back(c / std::sqrt(nb_cons_of_vars[var_idx]));
+		}
 	}
 
 	auto const coefficients_m_stats = utility::compute_stats(coefficients_m);
@@ -280,7 +282,7 @@ void set_cons_matrix_features(
 	ConstraintMatrix const& cons_matrix,
 	xt::xtensor<SCIP_Real, 1> const& cons_biases) {
 	auto nb_constraints = cons_matrix.shape[cons_axis];
-	std::vector<value_type> normalized_coefs;
+	auto normalized_coefs = std::vector<value_type>{};
 	auto norm_abs_coefs_counts = std::vector<value_type>(nb_constraints, 0);
 	auto norm_abs_coefs_means = std::vector<value_type>(nb_constraints, 0);
 	auto norm_abs_coefs_ssms = std::vector<value_type>(nb_constraints, 0);
@@ -288,7 +290,7 @@ void set_cons_matrix_features(
 	for (std::size_t coef_idx = 0; coef_idx < cons_matrix.nnz(); ++coef_idx) {
 		auto cons_idx = cons_matrix.indices(cons_axis, coef_idx);
 		auto bias = cons_biases(cons_idx);
-        
+
 		if (bias != 0) {
 			auto normalized_coef = cons_matrix.values(coef_idx) / bias;
 			normalized_coefs.push_back(normalized_coef);
@@ -352,11 +354,11 @@ template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::M
 
 	out[idx(Features::discrete_vars_support_size_mean)] = support_sizes_stats.mean;
 	out[idx(Features::discrete_vars_support_size_std)] = support_sizes_stats.stddev;
-    if (nb_int_vars > 0) {
-        out[idx(Features::ratio_unbounded_discrete_vars)] = nb_unbounded_int_vars / nb_int_vars;
-    } else {
-        out[idx(Features::ratio_unbounded_discrete_vars)] = 1.0;
-    }
+	if (nb_int_vars > 0) {
+		out[idx(Features::ratio_unbounded_discrete_vars)] = nb_unbounded_int_vars / nb_int_vars;
+	} else {
+		out[idx(Features::ratio_unbounded_discrete_vars)] = 1.0;
+	}
 	out[idx(Features::ratio_continuous_vars)] = nb_cont_vars / (nb_int_vars + nb_cont_vars);
 }
 
