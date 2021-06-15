@@ -18,11 +18,11 @@ public:
 	Reward extract(scip::Model& model, bool done = false) override;
 
 private:
-	bool wall = false;
 	BoundFunction bound_function;
 	Reward last_integral = 0.0;
 	Reward initial_primal_bound = 0.0;
 	Reward initial_dual_bound = 0.0;
+	bool wall = false;
 };
 
 using PrimalIntegral = BoundIntegral<Bound::primal>;

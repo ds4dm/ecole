@@ -142,14 +142,14 @@ void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type
 		if ((is_lp_event(event_type)) || (primal_bounds.empty())) {
 			primal_bounds.push_back(get_primal_bound(scip));
 		} else {
-			primal_bounds.push_back(primal_bounds[primal_bounds.size() - 1]);
+			primal_bounds.push_back(primal_bounds.back());
 		}
 	}
 	if (extract_dual) {
 		if ((is_bestsol_event(event_type)) || (dual_bounds.empty())) {
 			dual_bounds.push_back(get_dual_bound(scip));
 		} else {
-			dual_bounds.push_back(dual_bounds[dual_bounds.size() - 1]);
+			dual_bounds.push_back(dual_bounds.back());
 		}
 	}
 	times.push_back(time_now(wall));
@@ -236,7 +236,7 @@ auto default_bound_function(scip::Model& model) -> std::tuple<Reward, Reward> {
 
 template <Bound bound>
 ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFunction& bound_function_) :
-	wall{wall_}, bound_function{bound_function_ ? bound_function_ : default_bound_function} {}
+	bound_function{bound_function_ ? bound_function_ : default_bound_function}, wall{wall_} {}
 
 template <Bound bound> void BoundIntegral<bound>::before_reset(scip::Model& model) {
 	last_integral = 0.0;
@@ -262,9 +262,9 @@ template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, 
 	auto& handler = get_eventhdlr(model);
 	handler.extract_metrics(model.get_scip_ptr());
 
-	auto const dual_bounds = handler.get_dual_bounds();
-	auto const primal_bounds = handler.get_primal_bounds();
-	auto const times = handler.get_times();
+	auto const& dual_bounds = handler.get_dual_bounds();
+	auto const& primal_bounds = handler.get_primal_bounds();
+	auto const& times = handler.get_times();
 
 	// Compute primal integral and difference
 	SCIP_Real integral = 0.;

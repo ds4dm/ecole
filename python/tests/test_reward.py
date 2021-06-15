@@ -26,9 +26,9 @@ def pytest_generate_tests(metafunc):
             ecole.reward.NNodes(),
             ecole.reward.LpIterations(),
             ecole.reward.SolvingTime(),
-            ecole.reward.PrimalIntegral(bound_function=lambda x: (-1e3, 1e3)),
-            ecole.reward.DualIntegral(bound_function=lambda x: (-1e3, 1e3)),
-            ecole.reward.PrimalDualIntegral(bound_function=lambda x: (-1e3, 1e3)),
+            ecole.reward.PrimalIntegral(bound_function=lambda x: (0.0, 0.0)),
+            ecole.reward.DualIntegral(bound_function=lambda x: (0.0, 0.0)),
+            ecole.reward.PrimalDualIntegral(bound_function=lambda x: (0.0, 0.0)),
         )
         metafunc.parametrize("reward_function", all_reward_functions)
 
