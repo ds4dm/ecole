@@ -11,7 +11,7 @@
 
 namespace ecole::dynamics {
 
-template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func const policy) {
+template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func policy) {
 	auto model = get_model();
 
 	SECTION("Has default constructor") { Dynamics{}; }
@@ -34,20 +34,20 @@ template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func
 	SECTION("Reset, step, and delete") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
-		std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set));
+		std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set, model));
 	}
 
 	SECTION("Run full trajectory") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
-			std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set));
+			std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set, model));
 		}
 
 		SECTION("Run another trajectory") {
 			model = get_model();
 			std::tie(done, action_set) = dyn.reset_dynamics(model);
 			while (!done) {
-				std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set));
+				std::tie(done, action_set) = dyn.step_dynamics(model, policy(action_set, model));
 			}
 		}
 	}

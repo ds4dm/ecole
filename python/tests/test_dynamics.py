@@ -43,9 +43,9 @@ class DynamicsUnitTests:
 
     def test_exception(self, model):
         """Bad action raise exceptions."""
-        with pytest.raises((ecole.Exception, ecole.scip.Exception)):
-            self.dynamics.reset_dynamics(model)
-            self.dynamics.step_dynamics(model, self.bad_action)
+        with pytest.raises((ecole.scip.Exception, ValueError)):
+            _, action_set = self.dynamics.reset_dynamics(model)
+            self.dynamics.step_dynamics(model, self.bad_policy(action_set))
 
     def test_set_random_state(self, model):
         """Random engine is consumed."""
@@ -62,13 +62,24 @@ class TestBranching(DynamicsUnitTests):
         assert action_set.size > 0
         assert action_set.dtype == np.uint64
 
+    @staticmethod
+    def policy(action_set):
+        return action_set[0]
+
+    @staticmethod
+    def bad_policy(action_set):
+        return 1 << 31
+
     def setup_method(self, method):
         self.dynamics = ecole.dynamics.BranchingDynamics(False)
-        self.policy = lambda action_set: action_set[0]
-        self.bad_action = 1 << 31
 
 
-class TestBranchingPseudocost(DynamicsUnitTests):
+class TestBranching_Pseudocandidate(TestBranching):
+    def setup_method(self, method):
+        self.dynamics = ecole.dynamics.BranchingDynamics(True)
+
+
+class TestBranchingGUB_List(DynamicsUnitTests):
     @staticmethod
     def assert_action_set(action_set):
         assert isinstance(action_set, np.ndarray)
@@ -76,10 +87,22 @@ class TestBranchingPseudocost(DynamicsUnitTests):
         assert action_set.size > 0
         assert action_set.dtype == np.uint64
 
+    @staticmethod
+    def policy(action_set):
+        return [action_set[0]]
+
+    @staticmethod
+    def bad_policy(action_set):
+        return [1 << 31]
+
     def setup_method(self, method):
-        self.dynamics = ecole.dynamics.BranchingDynamics(True)
-        self.policy = lambda action_set: action_set[0]
-        self.bad_action = 1 << 31
+        self.dynamics = ecole.dynamics.BranchingGUBDynamics()
+
+
+class TestBranchingGUB_Numpy(TestBranchingGUB_List):
+    @staticmethod
+    def policy(action_set):
+        return np.array([action_set[0]])
 
 
 class TestConfiguring(DynamicsUnitTests):
@@ -87,13 +110,19 @@ class TestConfiguring(DynamicsUnitTests):
     def assert_action_set(action_set):
         assert action_set is None
 
-    def setup_method(self, method):
-        self.dynamics = ecole.dynamics.ConfiguringDynamics()
-        self.policy = lambda _: {
+    @staticmethod
+    def policy(action_set):
+        return {
             "branching/scorefunc": "s",
             "branching/scorefac": 0.1,
             "branching/divingpscost": False,
             "conflict/lpiterations": 0,
             "heuristics/undercover/fixingalts": "ln",
         }
-        self.bad_action = {"not/a/parameter": 44}
+
+    @staticmethod
+    def bad_policy(action_set):
+        return {"not/a/parameter": 44}
+
+    def setup_method(self, method):
+        self.dynamics = ecole.dynamics.ConfiguringDynamics()

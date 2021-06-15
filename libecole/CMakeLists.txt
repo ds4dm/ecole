@@ -35,6 +35,7 @@ add_library(
 	src/observation/pseudocosts.cpp
 
 	src/dynamics/branching.cpp
+	src/dynamics/branching-gub.cpp
 	src/dynamics/configuring.cpp
 )
 set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)

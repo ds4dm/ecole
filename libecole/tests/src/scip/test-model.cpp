@@ -1,12 +1,15 @@
 #include <future>
 #include <limits>
+#include <random>
 #include <string>
 
 #include <catch2/catch.hpp>
 #include <scip/scip.h>
 
+#include "ecole/random.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/utils.hpp"
 
 #include "conftest.hpp"
 
@@ -163,4 +166,26 @@ TEST_CASE("Map parameter management", "[scip]") {
 		model.set_params(vals);
 		REQUIRE(vals[int_param] == scip::Param{model.get_param<int>(int_param)});
 	}
+}
+
+TEST_CASE("Iterative branching", "[scip][slow]") {
+	auto model = get_model();
+	model.solve_iter();
+
+	SECTION("Branch outside of callback") {
+		while (!model.solve_iter_is_done()) {
+			auto const cands = model.lp_branch_cands();
+			REQUIRE_FALSE(cands.empty());
+			scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
+			model.solve_iter_branch(SCIP_BRANCHED);
+		}
+	}
+
+	SECTION("Branch on SCIP default") {
+		while (!model.solve_iter_is_done()) {
+			model.solve_iter_branch(SCIP_DIDNOTRUN);
+		}
+	}
+
+	REQUIRE(model.is_solved());
 }

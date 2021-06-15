@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cassert>
 #include <mutex>
 
 #include <objscip/objbranchrule.h>
@@ -5,7 +7,6 @@
 #include <scip/scipdefplugins.h>
 
 #include "ecole/scip/scimpl.hpp"
-
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
@@ -94,14 +95,9 @@ void Scimpl::solve_iter() {
 	m_controller->wait_thread();
 }
 
-void scip::Scimpl::solve_iter_branch(SCIP_VAR* var) {
-	m_controller->resume_thread([var](SCIP* scip_ptr, SCIP_RESULT* result) {
-		if (var == nullptr) {
-			*result = SCIP_DIDNOTRUN;
-		} else {
-			SCIP_CALL(SCIPbranchVar(scip_ptr, var, nullptr, nullptr, nullptr));
-			*result = SCIP_BRANCHED;
-		}
+void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
+	m_controller->resume_thread([result](SCIP* /* scip */, SCIP_RESULT* final_result) {
+		*final_result = result;
 		return SCIP_OKAY;
 	});
 	m_controller->wait_thread();

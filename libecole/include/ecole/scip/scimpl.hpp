@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <nonstd/span.hpp>
 #include <scip/scip.h>
 
 #include "ecole/utility/reverse-control.hpp"
@@ -22,7 +23,7 @@ public:
 	Scimpl copy_orig();
 
 	void solve_iter();
-	void solve_iter_branch(SCIP_VAR* var);
+	void solve_iter_branch(SCIP_RESULT result);
 	void solve_iter_stop();
 	bool solve_iter_is_done();
 

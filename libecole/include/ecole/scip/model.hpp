@@ -124,7 +124,7 @@ public:
 	[[nodiscard]] bool is_solved() const noexcept;
 
 	void solve_iter();
-	void solve_iter_branch(SCIP_VAR* var);
+	void solve_iter_branch(SCIP_RESULT result);
 	void solve_iter_stop();
 	[[nodiscard]] bool solve_iter_is_done();
 

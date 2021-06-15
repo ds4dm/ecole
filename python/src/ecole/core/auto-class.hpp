@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 #include <xtensor-python/pytensor.hpp>
 

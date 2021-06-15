@@ -45,6 +45,7 @@ add_executable(
 	src/observation/test-khalil-2016.cpp
 
 	src/dynamics/test-branching.cpp
+	src/dynamics/test-branching-gub.cpp
 	src/dynamics/test-configuring.cpp
 
 	src/environment/test-environment.cpp

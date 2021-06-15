@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 
 #include <fmt/format.h>
@@ -201,8 +201,8 @@ void Model::solve_iter() {
 	scimpl->solve_iter();
 }
 
-void Model::solve_iter_branch(SCIP_VAR* var) {
-	scimpl->solve_iter_branch(var);
+void Model::solve_iter_branch(SCIP_RESULT result) {
+	scimpl->solve_iter_branch(result);
 }
 
 void Model::solve_iter_stop() {

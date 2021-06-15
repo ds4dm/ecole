@@ -16,7 +16,7 @@ using namespace ecole;
 TEST_CASE("BranchingDynamics unit tests", "[unit][dynamics]") {
 	bool const pseudo_candidates = GENERATE(true, false);
 	bool const branch_first = GENERATE(true, false);
-	auto const policy = [branch_first](auto const& action_set) {
+	auto const policy = [branch_first](auto const& action_set, auto const& /*model*/) {
 		auto const branch_idx = branch_first ? 0 : action_set.value().size() - 1;
 		return action_set.value()[branch_idx];
 	};
@@ -53,7 +53,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		REQUIRE_FALSE(done);
 		REQUIRE(action_set.has_value());
 		auto const action = model.lp_columns().size() + 1;
-		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::exception);
+		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::invalid_argument);
 	}
 }
 
