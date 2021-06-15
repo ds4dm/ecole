@@ -131,12 +131,11 @@ void set_features_for_all_vars(xmatrix& out, scip::Model& model, bool normalize)
 auto MilpBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<MilpBipartiteObs> {
 	if (model.get_stage() < SCIP_STAGE_SOLVING) {
 		auto [edge_features, constraint_features] = scip::get_all_constraints(model.get_scip_ptr(), normalize);
-        constraint_features.reshape({-1, 1});
 
 		auto variable_features = xmatrix::from_shape({model.variables().size(), MilpBipartiteObs::n_variable_features});
 		set_features_for_all_vars(variable_features, model, normalize);
 
-		return MilpBipartiteObs{variable_features, constraint_features, edge_features};
+		return MilpBipartiteObs{variable_features, xt::view(constraint_features, xt::all(),xt::newaxis()), edge_features};
 	}
 	return {};
 }
