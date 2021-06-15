@@ -254,7 +254,7 @@ void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix c
     coefficients_n.resize(variables.size());
     coefficients_n.resize(variables.size());
     coefficients_sqrtn.resize(variables.size());
-	auto const nb_constraints = static_cast<value_type>(model.constraints().size());
+	auto const nb_constraints = static_cast<value_type>(cons_matrix.shape[cons_axis]);
 	for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
 		auto c = SCIPvarGetObj(variables[var_idx]);
 		coefficients_m.push_back(c / nb_constraints);

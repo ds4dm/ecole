@@ -246,11 +246,12 @@ SCIP_Real cons_l2_norm(std::vector<SCIP_Real> const& constraint_coefs) {
 
 auto get_all_constraints(SCIP* const scip, bool normalize)
 	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 1>> {
+	auto* const variables = SCIPgetVars(scip);
 	auto* const constraints = SCIPgetConss(scip);
+    auto nb_variables = static_cast<std::size_t>(SCIPgetNVars(scip));
 	auto nb_constraints = static_cast<std::size_t>(SCIPgetNConss(scip));
 
 	std::size_t n_rows = 0;
-	auto n_cols = static_cast<std::size_t>(SCIPgetNVars(scip));
 
 	std::vector<SCIP_Real> values;
 	std::vector<std::size_t> column_indices;
@@ -298,6 +299,26 @@ auto get_all_constraints(SCIP* const scip, bool normalize)
 			n_rows++;
 		}
 	}
+    
+    // Add variable bounds as additional constraints
+    for (std::size_t var_idx = 0; var_idx < nb_variables; ++var_idx) {
+        auto lb = SCIPvarGetLbGlobal(variables[var_idx]);
+        auto ub = SCIPvarGetUbGlobal(variables[var_idx]);
+        if (!SCIPisInfinity(scip, std::abs(lb))) {
+            values.push_back(-1.);
+            row_indices.push_back(n_rows);
+			column_indices.push_back(static_cast<std::size_t>(var_idx));
+            biases.push_back(-lb);
+            n_rows++;
+        }
+        if (!SCIPisInfinity(scip, std::abs(ub))) {
+            values.push_back(1.);
+            row_indices.push_back(n_rows);
+			column_indices.push_back(static_cast<std::size_t>(var_idx));
+            biases.push_back(ub);
+            n_rows++;
+        }
+    }
 
 	// Turn values and indices into xt::xarray's
 	auto const nnz = values.size();
@@ -307,7 +328,7 @@ auto get_all_constraints(SCIP* const scip, bool normalize)
 	constraint_matrix.indices = decltype(utility::coo_matrix<SCIP_Real>::indices)::from_shape({2, nnz});
 	xt::row(constraint_matrix.indices, 0) = xt::adapt(std::move(row_indices), {nnz});
 	xt::row(constraint_matrix.indices, 1) = xt::adapt(std::move(column_indices), {nnz});
-	constraint_matrix.shape = {n_rows, n_cols};
+	constraint_matrix.shape = {n_rows, nb_variables};
 
 	xt::xtensor<SCIP_Real, 1> constraint_biases = xt::adapt(std::move(biases), {n_rows});
 
