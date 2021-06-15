@@ -244,7 +244,7 @@ SCIP_Real cons_l2_norm(std::vector<SCIP_Real> const& constraint_coefs) {
 	return norm > 0. ? norm : 1.;
 }
 
-auto get_all_constraints(SCIP* const scip, bool normalize)
+auto get_all_constraints(SCIP* const scip, bool normalize, bool include_variable_bounds)
 	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 1>> {
 	auto* const variables = SCIPgetVars(scip);
 	auto* const constraints = SCIPgetConss(scip);
@@ -300,23 +300,25 @@ auto get_all_constraints(SCIP* const scip, bool normalize)
 		}
 	}
     
-    // Add variable bounds as additional constraints
-    for (std::size_t var_idx = 0; var_idx < nb_variables; ++var_idx) {
-        auto lb = SCIPvarGetLbGlobal(variables[var_idx]);
-        auto ub = SCIPvarGetUbGlobal(variables[var_idx]);
-        if (!SCIPisInfinity(scip, std::abs(lb))) {
-            values.push_back(-1.);
-            row_indices.push_back(n_rows);
-			column_indices.push_back(static_cast<std::size_t>(var_idx));
-            biases.push_back(-lb);
-            n_rows++;
-        }
-        if (!SCIPisInfinity(scip, std::abs(ub))) {
-            values.push_back(1.);
-            row_indices.push_back(n_rows);
-			column_indices.push_back(static_cast<std::size_t>(var_idx));
-            biases.push_back(ub);
-            n_rows++;
+    if (include_variable_bounds) {
+        // Add variable bounds as additional constraints
+        for (std::size_t var_idx = 0; var_idx < nb_variables; ++var_idx) {
+            auto lb = SCIPvarGetLbGlobal(variables[var_idx]);
+            auto ub = SCIPvarGetUbGlobal(variables[var_idx]);
+            if (!SCIPisInfinity(scip, std::abs(lb))) {
+                values.push_back(-1.);
+                row_indices.push_back(n_rows);
+                column_indices.push_back(static_cast<std::size_t>(var_idx));
+                biases.push_back(-lb);
+                n_rows++;
+            }
+            if (!SCIPisInfinity(scip, std::abs(ub))) {
+                values.push_back(1.);
+                row_indices.push_back(n_rows);
+                column_indices.push_back(static_cast<std::size_t>(var_idx));
+                biases.push_back(ub);
+                n_rows++;
+            }
         }
     }
 

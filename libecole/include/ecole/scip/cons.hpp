@@ -64,7 +64,7 @@ auto get_constraint_linear_coefs(SCIP* scip, SCIP_CONS* constraint) -> std::opti
 	std::tuple<std::vector<SCIP_VAR*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>>>;
 auto get_constraint_coefs(SCIP* scip, SCIP_CONS* constraint)
 	-> std::tuple<std::vector<SCIP_VAR*>, std::vector<SCIP_Real>, std::optional<SCIP_Real>, std::optional<SCIP_Real>>;
-auto get_all_constraints(SCIP* scip, bool normalize = false)
+auto get_all_constraints(SCIP* scip, bool normalize = false, bool include_variable_bounds = false)
 	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 1>>;
 
 }  // namespace ecole::scip
