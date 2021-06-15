@@ -23,8 +23,6 @@
 #include "utility/graph.hpp"
 #include "utility/math.hpp"
 
-#include <iostream>
-
 namespace ecole::observation {
 
 namespace {
@@ -244,21 +242,26 @@ template <typename Tensor> void set_lp_based_features(Tensor&& out, scip::Model 
 template <typename Tensor>
 void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix const& cons_matrix) {
 	auto const variables = model.variables();
-	auto coefficients_m = std::vector<value_type>(variables.size());
-	auto coefficients_n = std::vector<value_type>(variables.size());
-	auto coefficients_sqrtn = std::vector<value_type>(variables.size());
+	std::vector<value_type> coefficients_m;
+	std::vector<value_type> coefficients_n;
+	std::vector<value_type> coefficients_sqrtn;
 
 	auto nb_cons_of_vars = std::vector<value_type>(variables.size(), 0);
 	for (std::size_t coef_idx = 0; coef_idx < cons_matrix.nnz(); ++coef_idx) {
 		nb_cons_of_vars[cons_matrix.indices(var_axis, coef_idx)]++;
 	}
 
+    coefficients_n.resize(variables.size());
+    coefficients_n.resize(variables.size());
+    coefficients_sqrtn.resize(variables.size());
 	auto const nb_constraints = static_cast<value_type>(model.constraints().size());
 	for (std::size_t var_idx = 0; var_idx < variables.size(); ++var_idx) {
 		auto c = SCIPvarGetObj(variables[var_idx]);
-		coefficients_m[var_idx] = c / nb_constraints;
-		coefficients_n[var_idx] = c / nb_cons_of_vars[var_idx];
-		coefficients_sqrtn[var_idx] = c / std::sqrt(nb_cons_of_vars[var_idx]);
+		coefficients_m.push_back(c / nb_constraints);
+        if (nb_cons_of_vars[var_idx] != 0) {
+            coefficients_n.push_back(c / nb_cons_of_vars[var_idx]);
+            coefficients_sqrtn.push_back(c / std::sqrt(nb_cons_of_vars[var_idx]));
+        }
 	}
 
 	auto const coefficients_m_stats = utility::compute_stats(coefficients_m);
@@ -270,12 +273,12 @@ void set_obj_features(Tensor&& out, scip::Model const& model, ConstraintMatrix c
 	out[idx(Features::objective_coef_sqrtn_std)] = coefficients_sqrtn_stats.stddev;
 }
 
-/** [28-31] Linear contraint martix features. */
+/** [28-31] Linear constraint matrix features. */
 template <typename Tensor>
 void set_cons_matrix_features(
 	Tensor&& out,
 	ConstraintMatrix const& cons_matrix,
-	xt::xtensor<SCIP_Real, 2> const& cons_biases) {
+	xt::xtensor<SCIP_Real, 1> const& cons_biases) {
 	auto nb_constraints = cons_matrix.shape[cons_axis];
 	std::vector<value_type> normalized_coefs;
 	auto norm_abs_coefs_counts = std::vector<value_type>(nb_constraints, 0);
@@ -285,6 +288,7 @@ void set_cons_matrix_features(
 	for (std::size_t coef_idx = 0; coef_idx < cons_matrix.nnz(); ++coef_idx) {
 		auto cons_idx = cons_matrix.indices(cons_axis, coef_idx);
 		auto bias = cons_biases(cons_idx);
+        
 		if (bias != 0) {
 			auto normalized_coef = cons_matrix.values(coef_idx) / bias;
 			normalized_coefs.push_back(normalized_coef);
@@ -325,7 +329,7 @@ void set_cons_matrix_features(
 /** [32-35] Variable type features. */
 template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::Model const& model) {
 	auto* const scip = const_cast<SCIP*>(model.get_scip_ptr());
-	std::size_t nb_unbounded_int_vars = 0;
+	double nb_unbounded_int_vars = 0.;
 
 	auto support_sizes = std::vector<std::size_t>{};
 	for (auto* const variable : model.variables()) {
@@ -343,13 +347,17 @@ template <typename Tensor> void set_variable_type_features(Tensor&& out, scip::M
 	}
 
 	auto const support_sizes_stats = utility::compute_stats(support_sizes);
-	auto const nb_int_vars = static_cast<value_type>(SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip));
-	auto const nb_cont_vars = static_cast<value_type>(SCIPgetNContVars(scip));
+	auto const nb_int_vars = static_cast<double>(SCIPgetNBinVars(scip) + SCIPgetNIntVars(scip));
+	auto const nb_cont_vars = static_cast<double>(SCIPgetNContVars(scip));
 
 	out[idx(Features::discrete_vars_support_size_mean)] = support_sizes_stats.mean;
 	out[idx(Features::discrete_vars_support_size_std)] = support_sizes_stats.stddev;
-	out[idx(Features::percent_unbounded_discrete_vars)] = static_cast<double>(nb_unbounded_int_vars) / nb_int_vars;
-	out[idx(Features::percent_continuous_vars)] = nb_cont_vars / (nb_int_vars + nb_cont_vars);
+    if (nb_int_vars > 0) {
+        out[idx(Features::ratio_unbounded_discrete_vars)] = nb_unbounded_int_vars / nb_int_vars;
+    } else {
+        out[idx(Features::ratio_unbounded_discrete_vars)] = 1.0;
+    }
+	out[idx(Features::ratio_continuous_vars)] = nb_cont_vars / (nb_int_vars + nb_cont_vars);
 }
 
 auto extract_features(scip::Model& model) {

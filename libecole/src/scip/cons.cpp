@@ -245,7 +245,7 @@ SCIP_Real cons_l2_norm(std::vector<SCIP_Real> const& constraint_coefs) {
 }
 
 auto get_all_constraints(SCIP* const scip, bool normalize)
-	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 2>> {
+	-> std::tuple<utility::coo_matrix<SCIP_Real>, xt::xtensor<SCIP_Real, 1>> {
 	auto* const constraints = SCIPgetConss(scip);
 	auto nb_constraints = static_cast<std::size_t>(SCIPgetNConss(scip));
 
@@ -309,7 +309,7 @@ auto get_all_constraints(SCIP* const scip, bool normalize)
 	xt::row(constraint_matrix.indices, 1) = xt::adapt(std::move(column_indices), {nnz});
 	constraint_matrix.shape = {n_rows, n_cols};
 
-	xt::xtensor<SCIP_Real, 2> constraint_biases = xt::adapt(std::move(biases), {n_rows, 1UL});
+	xt::xtensor<SCIP_Real, 1> constraint_biases = xt::adapt(std::move(biases), {n_rows});
 
 	return std::tuple{std::move(constraint_matrix), std::move(constraint_biases)};
 }

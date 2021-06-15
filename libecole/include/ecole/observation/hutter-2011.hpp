@@ -53,8 +53,8 @@ struct Hutter2011Obs {
 		/* Variable type features */
 		discrete_vars_support_size_mean,
 		discrete_vars_support_size_std,
-		percent_unbounded_discrete_vars,
-		percent_continuous_vars,
+		ratio_unbounded_discrete_vars,
+		ratio_continuous_vars,
 		/* General Problem type features */
 		// Not computed due to SCIP not supporting MIQP
 		// problem_type,

@@ -417,8 +417,8 @@ void bind_submodule(py::module_ const& m) {
 		.value("constraint_var_coef_std", Hutter2011Obs::Features::constraint_var_coef_std)
 		.value("discrete_vars_support_size_mean", Hutter2011Obs::Features::discrete_vars_support_size_mean)
 		.value("discrete_vars_support_size_std", Hutter2011Obs::Features::discrete_vars_support_size_std)
-		.value("percent_unbounded_discrete_vars", Hutter2011Obs::Features::percent_unbounded_discrete_vars)
-		.value("percent_continuous_vars", Hutter2011Obs::Features::percent_continuous_vars);
+		.value("percent_unbounded_discrete_vars", Hutter2011Obs::Features::ratio_unbounded_discrete_vars)
+		.value("percent_continuous_vars", Hutter2011Obs::Features::ratio_continuous_vars);
 
 	auto hutter = py::class_<Hutter2011>(m, "Hutter2011", R"(
 		Instance features from Hutter et al. (2011).

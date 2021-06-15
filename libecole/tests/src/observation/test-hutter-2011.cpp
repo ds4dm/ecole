@@ -122,8 +122,8 @@ TEST_CASE("Hutter2011 return correct observation", "[obs]") {
 		SECTION("Variable type features") {
 			REQUIRE(0. <= get_feature(Features::discrete_vars_support_size_mean));
 			REQUIRE(0. <= get_feature(Features::discrete_vars_support_size_std));
-			REQUIRE(is_sorted(0., get_feature(Features::percent_unbounded_discrete_vars), 1.));
-			REQUIRE(is_sorted(0., get_feature(Features::percent_continuous_vars), 1.));
+			REQUIRE(is_sorted(0., get_feature(Features::ratio_unbounded_discrete_vars), 1.));
+			REQUIRE(is_sorted(0., get_feature(Features::ratio_continuous_vars), 1.));
 		}
 	}
 }
