@@ -16,7 +16,7 @@
 
 namespace {
 
-SCIP_RETCODE SCIPbranchGUB_add_child(
+SCIP_RETCODE SCIPbranchGUB_AddChild(
 	SCIP* scip,
 	SCIP_Real priority,
 	SCIP_Real estimate,
@@ -41,7 +41,7 @@ SCIP_RETCODE SCIPbranchGUB_add_child(
 		rhs,
 		/*initial=*/TRUE,
 		/*separate=*/TRUE,
-		/*enforce=*/FALSE,
+		/*enforce=*/TRUE,
 		/*check=*/FALSE,
 		/*propagate=*/TRUE,
 		/*local=*/TRUE,
@@ -120,9 +120,9 @@ SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 	}
 
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
+		retcode, SCIPbranchGUB_AddChild(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchGUB_add_child(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
+		retcode, SCIPbranchGUB_AddChild(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
 
 TERM:
 	SCIPfreeBufferArray(scip, &ones);
