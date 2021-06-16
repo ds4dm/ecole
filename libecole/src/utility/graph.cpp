@@ -12,19 +12,18 @@
 
 #include "ecole/utility/random.hpp"
 
-#include "instance/independent-set-graph.hpp"
+#include "utility/graph.hpp"
 
 namespace views = ranges::views;
 
-namespace ecole::instance {
+namespace ecole::utility {
 
 auto Graph::Edge::operator==(Edge const& other) const noexcept -> bool {
 	return ((first == other.first) && (second == other.second)) || ((first == other.second) && (second == other.first));
 }
 
 auto Graph::are_connected(Node popular, Node unpopular) const -> bool {
-	// We search in neighborhood of unpopular node rather than popular to reduce compexity of linear scan
-	return std::find(neighbors(unpopular).begin(), neighbors(unpopular).end(), popular) != neighbors(unpopular).end();
+	return neighbors(unpopular).contains(popular);
 }
 
 auto Graph::n_edges() const noexcept -> std::size_t {
@@ -39,8 +38,8 @@ auto Graph::n_edges() const noexcept -> std::size_t {
 
 void Graph::add_edge(Edge edge) {
 	assert(!are_connected(edge.first, edge.second));
-	edges[edge.first].push_back(edge.second);
-	edges[edge.second].push_back(edge.first);
+	edges[edge.first].insert(edge.second);
+	edges[edge.second].insert(edge.first);
 }
 
 void Graph::reserve(std::size_t degree) {
@@ -102,39 +101,43 @@ auto Graph::barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEng
 	return graph;
 }
 
-/** Set with comparison function in decreasing order. */
-template <typename T> using max_set = std::set<T, std::greater<T>>;
+template <typename K, typename V> using map = robin_hood::unordered_flat_map<K, V>;
+template <typename T> using set = robin_hood::unordered_flat_set<T>;
 
-/** Create a set of nodes from 0 to n_nodes */
-auto node_set(std::size_t n_nodes) -> max_set<Graph::Node> {
-	auto nodes = max_set<Graph::Node>{};
-	for (auto n = Graph::Node{0}; n < Graph::Node{n_nodes}; ++n) {
-		nodes.insert(n);
+/** Create a set of mapping of nodes to their degrees. */
+auto create_nodes_degrees(Graph const& g) -> map<Graph::Node, std::size_t> {
+	auto nodes = map<Graph::Node, std::size_t>{};
+	nodes.reserve(g.n_nodes());
+	for (auto n = Graph::Node{0}; n < Graph::Node{g.n_nodes()}; ++n) {
+		nodes[n] = g.degree(n);
 	}
 	return nodes;
 }
 
-/** Find, remove, and return the maximum value from a set. */
-template <typename T> auto extract_max(max_set<T>& elements) -> T {
-	assert(!elements.empty());
-	// std::set are sorted so we get the max with an iterator to the begining (inverse comparasion function).
-	return elements.extract(elements.begin()).value();
+/** Find, remove, and return the node with maximum degree. */
+auto extract_node_with_max_degree(map<Graph::Node, std::size_t>& nodes_degrees) -> Graph::Node {
+	assert(!nodes_degrees.empty());
+	auto cmp_degrees = [](auto const& nd_1, auto const& nd_2) { return nd_1.second < nd_2.second; };
+	auto const max_iter = std::max_element(nodes_degrees.begin(), nodes_degrees.end(), cmp_degrees);
+	auto node = max_iter->first;
+	nodes_degrees.erase(max_iter);
+	return node;
 }
 
-/** Compute intersection between a vector and a set. */
-template <typename T>
-auto intersection(std::vector<T> const& vect_elems, max_set<T> const& set_elems) -> std::vector<T> {
-	auto result = vect_elems;
-	auto const in_set = [&set_elems](auto const& x) { return set_elems.find(x) != set_elems.cend(); };
-	auto const copied_iter = std::copy_if(vect_elems.cbegin(), vect_elems.cend(), result.begin(), in_set);
-	result.resize(static_cast<std::size_t>(std::distance(result.begin(), copied_iter)));
-	return result;
-}
-
-/** Out of place sort a vector in decreasing order using the given key as comparison. */
-template <typename T, typename Key> auto reverse_sorted(std::vector<T> vec, Key&& key) -> std::vector<T> {
-	std::sort(vec.begin(), vec.end(), [key](auto const& x, auto const& y) { return key(x) > key(y); });
-	return vec;
+/** Compute intersection between neighborhood and leftovers nodes and sort them by decreasing degree. */
+auto best_clique_candidates(set<Graph::Node> const& neighborhood, map<Graph::Node, std::size_t> const& leftover_nodes)
+	-> std::vector<Graph::Node> {
+	auto candidates = std::vector<Graph::Node>{};
+	candidates.reserve(std::min(neighborhood.size(), leftover_nodes.size()));
+	auto in_leftover_nodes = [&leftover_nodes](auto node) { return leftover_nodes.contains(node); };
+	std::copy_if(neighborhood.begin(), neighborhood.end(), std::back_inserter(candidates), in_leftover_nodes);
+	// Decreasing sort by degree using > comparison.
+	auto cmp_degrees = [&leftover_nodes](auto node1, auto node2) {
+		assert(leftover_nodes.contains(node1) && leftover_nodes.contains(node2));
+		return leftover_nodes.find(node1)->second > leftover_nodes.find(node2)->second;
+	};
+	std::sort(candidates.begin(), candidates.end(), cmp_degrees);
+	return candidates;
 }
 
 /** Return a vector of Node with the center and an allocated size. */
@@ -149,14 +152,13 @@ auto Graph::greedy_clique_partition() const -> std::vector<std::vector<Node>> {
 	auto clique_partition = std::vector<std::vector<Node>>{};
 	clique_partition.reserve(n_nodes());
 
-	auto leftover_nodes = node_set(n_nodes());
-	auto const get_degree = [this](Graph::Node n) { return degree(n); };
+	auto leftover_nodes = create_nodes_degrees(*this);
 
 	// Process all nodes to put them in a new clique
 	while (!leftover_nodes.empty()) {
 		// Start clique from the node with most neighbors
-		auto const clique_center = extract_max(leftover_nodes);
-		auto const clique_candidates = reverse_sorted(intersection(neighbors(clique_center), leftover_nodes), get_degree);
+		auto const clique_center = extract_node_with_max_degree(leftover_nodes);
+		auto const clique_candidates = best_clique_candidates(neighbors(clique_center), leftover_nodes);
 		auto clique = allocate_clique(clique_center, clique_candidates.size());
 
 		// Candidate clique members are among the neighbors
@@ -165,7 +167,8 @@ auto Graph::greedy_clique_partition() const -> std::vector<std::vector<Node>> {
 			if (std::all_of(
 						clique.begin(), clique.end(), [&](auto clique_node) { return are_connected(node, clique_node); })) {
 				clique.push_back(node);
-				leftover_nodes.extract(node);
+				[[maybe_unused]] auto const n_removed = leftover_nodes.erase(node);
+				assert(n_removed == 1);
 			}
 		}
 
@@ -175,4 +178,4 @@ auto Graph::greedy_clique_partition() const -> std::vector<std::vector<Node>> {
 	return clique_partition;
 }
 
-}  // namespace ecole::instance
+}  // namespace ecole::utility

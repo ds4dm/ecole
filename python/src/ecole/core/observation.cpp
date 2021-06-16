@@ -8,6 +8,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/observation/hutter-2011.hpp"
 #include "ecole/observation/khalil-2016.hpp"
 #include "ecole/observation/milpbipartite.hpp"
 #include "ecole/observation/nodebipartite.hpp"
@@ -366,6 +367,67 @@ void bind_submodule(py::module_ const& m) {
 	khalil2016.def(py::init<>());
 	def_before_reset(khalil2016, R"(Reset static features cache.)");
 	def_extract(khalil2016, "Extract the observation matrix.");
+
+	// Hutter2011 observation
+	auto hutter_obs = auto_class<Hutter2011Obs>(m, "Hutter2011Obs", R"(
+		Instance features from Hutter et al. (2011).
+
+		The observation is a vector of features that globally characterize the instance.
+		See [Hutter2011]_ for a complete reference on this observation function.
+
+		.. [Hutter2011]
+			Hutter, Frank, Hoos, Holger H., and Leyton-Brown, Kevin.
+			"`Sequential model-based optimization for general algorithm configuration.
+			<https://www.cs.ubc.ca/~hutter/papers/10-TR-SMAC.pdf>`_"
+			*International Conference on Learning and Intelligent Optimization*. 2011.
+	)")
+											.def_auto_copy()
+											.def_auto_pickle(std::array{"features"})
+											.def_readwrite_xtensor("features", &Hutter2011Obs::features, "A vector of instance features.");
+
+	py::enum_<Hutter2011Obs::Features>(hutter_obs, "Features")
+		.value("nb_variables", Hutter2011Obs::Features::nb_variables)
+		.value("nb_constraints", Hutter2011Obs::Features::nb_constraints)
+		.value("nb_nonzero_coefs", Hutter2011Obs::Features::nb_nonzero_coefs)
+		.value("variable_node_degree_mean", Hutter2011Obs::Features::variable_node_degree_mean)
+		.value("variable_node_degree_max", Hutter2011Obs::Features::variable_node_degree_max)
+		.value("variable_node_degree_min", Hutter2011Obs::Features::variable_node_degree_min)
+		.value("variable_node_degree_std", Hutter2011Obs::Features::variable_node_degree_std)
+		.value("constraint_node_degree_mean", Hutter2011Obs::Features::constraint_node_degree_mean)
+		.value("constraint_node_degree_max", Hutter2011Obs::Features::constraint_node_degree_max)
+		.value("constraint_node_degree_min", Hutter2011Obs::Features::constraint_node_degree_min)
+		.value("constraint_node_degree_std", Hutter2011Obs::Features::constraint_node_degree_std)
+		.value("node_degree_mean", Hutter2011Obs::Features::node_degree_mean)
+		.value("node_degree_max", Hutter2011Obs::Features::node_degree_max)
+		.value("node_degree_min", Hutter2011Obs::Features::node_degree_min)
+		.value("node_degree_std", Hutter2011Obs::Features::node_degree_std)
+		.value("node_degree_25q", Hutter2011Obs::Features::node_degree_25q)
+		.value("node_degree_75q", Hutter2011Obs::Features::node_degree_75q)
+		.value("edge_density", Hutter2011Obs::Features::edge_density)
+		.value("lp_slack_mean", Hutter2011Obs::Features::lp_slack_mean)
+		.value("lp_slack_max", Hutter2011Obs::Features::lp_slack_max)
+		.value("lp_slack_l2", Hutter2011Obs::Features::lp_slack_l2)
+		.value("lp_objective_value", Hutter2011Obs::Features::lp_objective_value)
+		.value("objective_coef_m_std", Hutter2011Obs::Features::objective_coef_m_std)
+		.value("objective_coef_n_std", Hutter2011Obs::Features::objective_coef_n_std)
+		.value("objective_coef_sqrtn_std", Hutter2011Obs::Features::objective_coef_sqrtn_std)
+		.value("constraint_coef_mean", Hutter2011Obs::Features::constraint_coef_mean)
+		.value("constraint_coef_std", Hutter2011Obs::Features::constraint_coef_std)
+		.value("constraint_var_coef_mean", Hutter2011Obs::Features::constraint_var_coef_mean)
+		.value("constraint_var_coef_std", Hutter2011Obs::Features::constraint_var_coef_std)
+		.value("discrete_vars_support_size_mean", Hutter2011Obs::Features::discrete_vars_support_size_mean)
+		.value("discrete_vars_support_size_std", Hutter2011Obs::Features::discrete_vars_support_size_std)
+		.value("ratio_unbounded_discrete_vars", Hutter2011Obs::Features::ratio_unbounded_discrete_vars)
+		.value("ratio_continuous_vars", Hutter2011Obs::Features::ratio_continuous_vars);
+
+	auto hutter = py::class_<Hutter2011>(m, "Hutter2011", R"(
+		Instance features from Hutter et al. (2011).
+
+		This observation function extracts a structured :py:class:`Hutter2011Obs`.
+	)");
+	hutter.def(py::init<>());
+	def_before_reset(hutter, R"(Do nothing.)");
+	def_extract(hutter, "Extract the observation matrix.");
 }
 
 }  // namespace ecole::observation

@@ -32,6 +32,7 @@ def pytest_generate_tests(metafunc):
             ecole.observation.StrongBranchingScores(False),
             ecole.observation.Pseudocosts(),
             ecole.observation.Khalil2016(),
+            ecole.observation.Hutter2011(),
         )
         metafunc.parametrize("observation_function", all_observation_functions)
 
@@ -126,10 +127,19 @@ def test_Pseudocosts_observation(model):
     assert_array(obs)
 
 
-def test_Khalil2016_observatio(model):
+def test_Khalil2016_observation(model):
     """Observation of Khalil2016 is a numpy matrix."""
     obs = make_obs(ecole.observation.Khalil2016(), model)
     assert_array(obs.features, ndim=2)
 
     # Check that there are enums describing feeatures
     assert len(obs.Features.__members__) == obs.features.shape[1]
+
+
+def test_Hutter2011_observation(model):
+    """Observation of Hutter2011 is a numpy vector."""
+    obs = make_obs(ecole.observation.Hutter2011(), model, stage=ecole.scip.Stage.Problem)
+    assert_array(obs.features, ndim=1)
+
+    # Check that there are enums describing feeatures
+    assert len(obs.Features.__members__) == obs.features.shape[0]

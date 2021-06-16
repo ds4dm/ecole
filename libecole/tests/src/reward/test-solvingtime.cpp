@@ -24,7 +24,7 @@ TEST_CASE("Solving time rewards are positive initially", "[reward]") {
 
 	SECTION("Solving time is stricly positive after root node processing") {
 		reward_func.before_reset(model);
-		advance_to_root_node(model);
+		advance_to_stage(model, SCIP_STAGE_SOLVING);
 		REQUIRE(reward_func.extract(model) > 0);
 	}
 }

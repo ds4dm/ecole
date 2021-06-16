@@ -21,7 +21,7 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 	SECTION("before_reset, obtain reward, and delete") {
 		auto model = get_model();
 		reward_func.before_reset(model);
-		advance_to_root_node(model);
+		advance_to_stage(model, SCIP_STAGE_SOLVING);
 		reward_func.extract(model, done);
 	}
 }

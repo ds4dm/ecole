@@ -4,9 +4,11 @@
 #include <utility>
 #include <vector>
 
+#include <robin_hood.h>
+
 #include "ecole/random.hpp"
 
-namespace ecole::instance {
+namespace ecole::utility {
 
 /** A simple symetric graph based on adjacency lists.  */
 class Graph {
@@ -46,7 +48,9 @@ public:
 
 	[[nodiscard]] auto n_nodes() const noexcept -> std::size_t { return edges.size(); }
 	[[nodiscard]] auto degree(Node n) const noexcept -> std::size_t { return edges[n].size(); }
-	[[nodiscard]] auto neighbors(Node n) const noexcept -> std::vector<Node> const& { return edges[n]; }
+	[[nodiscard]] auto neighbors(Node n) const noexcept -> robin_hood::unordered_flat_set<Node> const& {
+		return edges[n];
+	}
 	[[nodiscard]] auto are_connected(Node popular, Node unpopular) const -> bool;
 	[[nodiscard]] auto n_edges() const noexcept -> std::size_t;
 
@@ -66,7 +70,7 @@ public:
 
 private:
 	// Vector likely more performant than list on small-sized small-count data due to more predictable cache usage
-	using AdjacencyLists = std::vector<std::vector<Node>>;
+	using AdjacencyLists = std::vector<robin_hood::unordered_flat_set<Node>>;
 
 	AdjacencyLists edges;
 };
@@ -86,4 +90,4 @@ template <typename Func> void Graph::edges_visit(Func&& func) const {
 	}
 }
 
-}  // namespace ecole::instance
+}  // namespace ecole::utility

@@ -1,5 +1,4 @@
 #include <cmath>
-#include <limits>
 #include <set>
 #include <type_traits>
 #include <utility>
@@ -18,6 +17,8 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/row.hpp"
 
+#include "utility/math.hpp"
+
 namespace ecole::observation {
 
 namespace {
@@ -27,83 +28,12 @@ namespace views = ranges::views;
 using Features = Khalil2016Obs::Features;
 using value_type = decltype(Khalil2016Obs::features)::value_type;
 
+using ecole::utility::safe_div;
+using ecole::utility::square;
+
 /*************************
  *  Algorithm functions  *
  *************************/
-
-/**
- * Square of a number.
- */
-template <typename T> auto square(T x) noexcept -> T {
-	return x * x;
-}
-
-/**
- * Floating points division that return 0 when the denominator is 0.
- * Also ensures that it isn't accidentally called with integers which would lead to euclidian
- * division.
- */
-template <typename T> auto safe_div(T x, T y) noexcept -> T {
-	static_assert(std::is_floating_point_v<T>, "Inputs are not decimals");
-	return y != 0. ? x / y : 0.;
-}
-
-/**
- * Compute the sum of and count of elements.
- *
- * @param range The container to iteratre over.
- * @param transform A callable to apply on every element of the container.
- * @param filter A callable to filter in elements (after transformation).
- */
-template <typename Range> auto count_sum(Range range) noexcept {
-	auto sum = ranges::range_value_t<Range>{0};
-	auto count = std::size_t{0};
-
-	for (auto const element : range) {
-		count++;
-		sum += element;
-	}
-	return std::pair{count, sum};
-}
-
-struct StatsFeatures {
-	value_type count = 0.;
-	value_type sum = 0.;
-	value_type mean = 0.;
-	value_type stddev = 0.;
-	value_type min = 0.;
-	value_type max = 0.;
-};
-
-template <typename Range> auto compute_stats(Range range) noexcept -> StatsFeatures {
-	auto const [count, sum] = count_sum(range);
-
-	// We can assume count to be always positive after this point and that the (filtered) iteration
-	// will contain at least one element.
-	if (count == 0) {
-		return {};
-	}
-
-	auto const mean = static_cast<value_type>(sum) / static_cast<value_type>(count);
-	auto stddev = value_type{0.};
-	auto min = std::numeric_limits<ranges::range_value_t<Range>>::max();
-	auto max = std::numeric_limits<ranges::range_value_t<Range>>::min();
-
-	for (auto const element : range) {
-		min = std::min(min, element);
-		max = std::max(max, element);
-		stddev += square(static_cast<value_type>(element) - mean);
-	}
-	stddev = std::sqrt(stddev / static_cast<value_type>(count));
-
-	return {
-		static_cast<value_type>(count),
-		static_cast<value_type>(sum),
-		mean,
-		stddev,
-		static_cast<value_type>(min),
-		static_cast<value_type>(max)};
-}
 
 /**
  * Return the sum of positive numbers and the sum of negative numbers in a range.
@@ -168,7 +98,7 @@ template <typename Tensor> void set_number_constraints(Tensor&& out, SCIP_COL* c
 template <typename Tensor>
 void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<SCIP_ROW*> const rows) noexcept {
 	auto row_get_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNNonz(row)); };
-	auto const stats = compute_stats(rows | ranges::views::transform(row_get_nnz));
+	auto const stats = utility::compute_stats(rows | ranges::views::transform(row_get_nnz));
 	out[idx(Features::rows_deg_mean)] = stats.mean;
 	out[idx(Features::rows_deg_stddev)] = stats.stddev;
 	out[idx(Features::rows_deg_min)] = stats.min;
@@ -183,7 +113,7 @@ void set_static_stats_for_constraint_degree(Tensor&& out, nonstd::span<SCIP_ROW*
  */
 template <typename Tensor>
 void set_stats_for_constraint_positive_coefficients(Tensor&& out, nonstd::span<SCIP_Real> const coefficients) noexcept {
-	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
+	auto const stats = utility::compute_stats(coefficients | views::filter([](auto x) { return x > 0.; }));
 	out[idx(Features::rows_pos_coefs_count)] = stats.count;
 	out[idx(Features::rows_pos_coefs_mean)] = stats.mean;
 	out[idx(Features::rows_pos_coefs_stddev)] = stats.stddev;
@@ -199,7 +129,7 @@ void set_stats_for_constraint_positive_coefficients(Tensor&& out, nonstd::span<S
  */
 template <typename Tensor>
 void set_stats_for_constraint_negative_coefficients(Tensor&& out, nonstd::span<SCIP_Real> const coefficients) noexcept {
-	auto const stats = compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
+	auto const stats = utility::compute_stats(coefficients | views::filter([](auto x) { return x < 0.; }));
 	out[idx(Features::rows_neg_coefs_count)] = stats.count;
 	out[idx(Features::rows_neg_coefs_mean)] = stats.mean;
 	out[idx(Features::rows_neg_coefs_stddev)] = stats.stddev;
@@ -311,7 +241,7 @@ template <typename Tensor> void set_infeasibility_statistics(Tensor&& out, SCIP_
 template <typename Tensor>
 void set_dynamic_stats_for_constraint_degree(Tensor&& out, nonstd::span<SCIP_ROW*> const rows) noexcept {
 	auto row_get_lp_nnz = [](auto const row) { return static_cast<std::size_t>(SCIProwGetNLPNonz(row)); };
-	auto const stats = compute_stats(rows | views::transform(row_get_lp_nnz));
+	auto const stats = utility::compute_stats(rows | views::transform(row_get_lp_nnz));
 	auto const root_deg_mean = out[idx(Features::rows_deg_mean)];
 	auto const root_deg_min = out[idx(Features::rows_deg_min)];
 	auto const root_deg_max = out[idx(Features::rows_deg_max)];
@@ -509,7 +439,7 @@ void set_stats_for_active_constraint_coefficients(
 	nonstd::span<SCIP_Real> const coefficients,
 	xt::xtensor<value_type, 2> const& active_rows_weights) noexcept {
 
-	auto weights_stats = std::array<StatsFeatures, 4>{};
+	auto weights_stats = std::array<utility::StatsFeatures<value_type>, 4>{};
 	for (auto& stats : weights_stats) {
 		stats.min = std::numeric_limits<decltype(stats.min)>::max();
 		stats.max = std::numeric_limits<decltype(stats.max)>::min();

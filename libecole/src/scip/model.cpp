@@ -37,6 +37,10 @@ SCIP const* Model::get_scip_ptr() const noexcept {
 	return scimpl->get_scip_ptr();
 }
 
+Model Model::copy() const {
+	return std::make_unique<Scimpl>(scimpl->copy());
+}
+
 Model Model::copy_orig() const {
 	return std::make_unique<Scimpl>(scimpl->copy_orig());
 }

@@ -39,7 +39,9 @@ auto same_constraint_permutation(SCIP* scip1, SCIP_CONS* constraint1, SCIP* scip
 	auto const vars2 = scip::get_vars_linear(scip2, constraint2);
 	auto const zipped_vars = views::zip(vars1, vars2);
 	return std::all_of(zipped_vars.begin(), zipped_vars.end(), [](auto const& var_pair) {
-		return SCIPvarGetIndex(var_pair.first) == SCIPvarGetIndex(var_pair.second);
+		auto const idx1 = SCIPvarGetIndex(const_cast<SCIP_VAR*>(var_pair.first));
+		auto const idx2 = SCIPvarGetIndex(const_cast<SCIP_VAR*>(var_pair.second));
+		return idx1 == idx2;
 	});
 }
 

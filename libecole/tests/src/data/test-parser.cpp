@@ -28,7 +28,7 @@ TEST_CASE("Recursively parse data functions", "[data]") {
 	auto model = get_model();
 
 	aggregate_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 	auto const aggregate_obs = aggregate_func.extract(model, false);
 
 	using AggregateObs = std::remove_const_t<decltype(aggregate_obs)>;

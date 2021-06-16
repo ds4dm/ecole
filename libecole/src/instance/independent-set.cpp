@@ -13,11 +13,13 @@
 #include "ecole/scip/utils.hpp"
 #include "ecole/scip/var.hpp"
 
-#include "instance/independent-set-graph.hpp"
+#include "utility/graph.hpp"
 
 namespace views = ranges::views;
 
 namespace ecole::instance {
+
+using Graph = ecole::utility::Graph;
 
 /*************************************
  *  IndependentSetGenerator methods  *

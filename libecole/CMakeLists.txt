@@ -7,6 +7,7 @@ add_library(
 
 	src/utility/reverse-control.cpp
 	src/utility/chrono.cpp
+	src/utility/graph.cpp
 
 	src/scip/scimpl.cpp
 	src/scip/model.cpp
@@ -19,7 +20,6 @@ add_library(
 	src/instance/files.cpp
 	src/instance/set-cover.cpp
 	src/instance/independent-set.cpp
-	src/instance/independent-set-graph.cpp
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
 
@@ -32,6 +32,7 @@ add_library(
 	src/observation/nodebipartite.cpp
 	src/observation/milpbipartite.cpp
 	src/observation/khalil-2016.cpp
+	src/observation/hutter-2011.cpp
 	src/observation/strongbranchingscores.cpp
 	src/observation/pseudocosts.cpp
 
@@ -125,6 +126,12 @@ find_or_download_package(
 		-D CMAKE_BUILD_TYPE=Release
 		-D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
 )
+find_or_download_package(
+	NAME robin_hood
+	URL https://github.com/martinus/robin-hood-hashing/archive/refs/tags/3.11.2.tar.gz
+	URL_HASH SHA256=148b4fbd4fbb30ba10cc97143dcbe385078801b9c9e329cd477c1ea27477cb73
+	CONFIGURE_ARGS -D RH_STANDALONE_PROJECT=OFF
+)
 
 target_link_libraries(
 	ecole-lib
@@ -139,6 +146,7 @@ target_link_libraries(
 		Threads::Threads
 		fmt::fmt
 		range-v3::range-v3
+		robin_hood::robin_hood
 )
 
 # System CPU time, silently ignored if LibRT is not present

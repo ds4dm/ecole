@@ -55,6 +55,7 @@ public:
 	[[nodiscard]] SCIP* get_scip_ptr() noexcept;
 	[[nodiscard]] SCIP const* get_scip_ptr() const noexcept;
 
+	[[nodiscard]] Model copy() const;
 	[[nodiscard]] Model copy_orig() const;
 
 	/**

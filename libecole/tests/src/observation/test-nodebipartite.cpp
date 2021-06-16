@@ -23,7 +23,7 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 		model.disable_cuts();
 	}
 	obs_func.before_reset(model);
-	advance_to_root_node(model);
+	advance_to_stage(model, SCIP_STAGE_SOLVING);
 	auto const optional_obs = obs_func.extract(model, false);
 
 	SECTION("Observation is not empty on non terminal state") { REQUIRE(optional_obs.has_value()); }
