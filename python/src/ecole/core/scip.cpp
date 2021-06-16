@@ -17,6 +17,22 @@ void bind_submodule(py::module_ const& m) {
 
 	py::register_exception<scip::Exception>(m, "Exception");
 
+	py::enum_<SCIP_STAGE>{m, "Stage"}
+		.value("Init", SCIP_STAGE_INIT)
+		.value("Problem", SCIP_STAGE_PROBLEM)
+		.value("Transforming", SCIP_STAGE_TRANSFORMING)
+		.value("Transformed", SCIP_STAGE_TRANSFORMED)
+		.value("InitPresolve", SCIP_STAGE_INITPRESOLVE)
+		.value("Presolving", SCIP_STAGE_PRESOLVING)
+		.value("ExitPresolve", SCIP_STAGE_EXITPRESOLVE)
+		.value("Presolved", SCIP_STAGE_PRESOLVED)
+		.value("InitSolve", SCIP_STAGE_INITSOLVE)
+		.value("Solving", SCIP_STAGE_SOLVING)
+		.value("Solved", SCIP_STAGE_SOLVED)
+		.value("ExitSolve", SCIP_STAGE_EXITSOLVE)
+		.value("FreeTrans", SCIP_STAGE_FREETRANS)
+		.value("Free", SCIP_STAGE_FREE);
+
 	// FIXME std::filesystem::path bound in 2.7 https://github.com/pybind/pybind11/pull/2730
 	// .def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
 	// .def("write_problem", &Model::write_problem, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
@@ -57,6 +73,9 @@ void bind_submodule(py::module_ const& m) {
 			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
 			// is alive, as PyScipOpt is a view on the ecole Model.
 			py::keep_alive<0, 1>())
+
+		.def_property("name", &Model::name, &Model::set_name)
+		.def_property_readonly("stage", &Model::get_stage)
 
 		.def("get_param", &Model::get_param<Param>, py::arg("name"))
 		.def("set_param", &Model::set_param<Param>, py::arg("name"), py::arg("value"))

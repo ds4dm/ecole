@@ -76,6 +76,16 @@ def test_as_pyscipopt_ownership(model):
     pyscipopt_model.getParams()
 
 
+def test_name(model):
+    """Set and get problem name."""
+    model.name = "foo"
+    assert model.name == "foo"
+
+
+def test_stage(model):
+    assert model.stage == ecole.scip.Stage.Problem
+
+
 def test_exception(model):
     with pytest.raises(ecole.scip.Exception):
         model.get_param("not_a_param")
