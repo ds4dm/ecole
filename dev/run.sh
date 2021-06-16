@@ -175,9 +175,9 @@ function test_lib {
 		if_rebuild_then build_lib_test
 		local extra_args=("$@")
 		if [ "${fail_fast}" = "true" ]; then
-			extra_args+=("--stop-on-failure ")
+			extra_args+=("--abort")
 		fi
-		cmake_build test -- ARGS="--parallel ${extra_args[@]}"
+		execute "${build_dir}/libecole/tests/ecole-lib-test" "${extra_args[@]}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
