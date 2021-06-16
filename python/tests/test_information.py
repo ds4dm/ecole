@@ -38,13 +38,13 @@ def test_before_reset(information_function, model):
 def test_extract(information_function, model):
     """Obtain information."""
     information_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     information_function.extract(model, False)
 
 
 def make_info(info_func, model):
     info_func.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     return info_func.extract(model, False)
 
 

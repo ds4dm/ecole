@@ -52,8 +52,21 @@ def model_copy(model):
 
 
 @pytest.helpers.register
-def advance_to_root_node(the_model):
+def advance_to_stage(the_model: ecole.scip.Model, stage: ecole.scip.Stage) -> ecole.scip.Model:
     """Utility to advance a model to the root node."""
-    dyn = ecole.dynamics.BranchingDynamics()
-    dyn.reset_dynamics(the_model)
-    return the_model
+    if stage == ecole.scip.Stage.Problem:
+        return the_model
+    if stage == ecole.scip.Stage.Transformed:
+        the_model.transform_prob()
+        return the_model
+    if stage == ecole.scip.Stage.Presolved:
+        the_model.presolve()
+        return the_model
+    if stage == ecole.scip.Stage.Solving:
+        dyn = ecole.dynamics.BranchingDynamics()
+        dyn.reset_dynamics(the_model)
+        return the_model
+    if stage == ecole.scip.Stage.Solved:
+        the_model.solve()
+        return the_model
+    raise NotImplementedError(f"Not implemented for stage {stage}")

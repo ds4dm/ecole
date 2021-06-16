@@ -48,7 +48,7 @@ def test_before_reset(reward_function, model, model_copy):
 def test_extract(reward_function, done, model):
     """Rewards are floats."""
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward = reward_function.extract(model, done)
     assert isinstance(reward, float)
 
@@ -57,11 +57,11 @@ def test_extract(reward_function, done, model):
 def test_reproducability(reward_function, done, model, model_copy):
     """Same trajectories yield same rewards."""
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward1 = reward_function.extract(model, done)
 
     reward_function.before_reset(model_copy)
-    pytest.helpers.advance_to_root_node(model_copy)
+    pytest.helpers.advance_to_stage(model_copy, ecole.scip.Stage.Solving)
     reward2 = reward_function.extract(model_copy, done=done)
 
     assert reward1 == pytest.approx(reward2, rel=1.0)
@@ -81,13 +81,13 @@ def test_reproducability(reward_function, done, model, model_copy):
 def test_operators(reward_function, model, model_copy, func_formula, reward_formula):
     """Operators produce operations on rewards."""
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward = reward_function.extract(model)
     # WARNING reward_function and formula_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     formula_reward_function = func_formula(reward_function)
     formula_reward_function.before_reset(model_copy)
-    pytest.helpers.advance_to_root_node(model_copy)
+    pytest.helpers.advance_to_stage(model_copy, ecole.scip.Stage.Solving)
     formula_reward = formula_reward_function.extract(model_copy)
     assert formula_reward == pytest.approx(reward_formula(reward), rel=1.0)
 
@@ -95,14 +95,14 @@ def test_operators(reward_function, model, model_copy, func_formula, reward_form
 def test_cumsum(reward_function, model, model_copy):
     """Operators produce operations on rewards."""
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward1 = reward_function.extract(model)
     reward2 = reward_function.extract(model)
     # WARNING reward_function and cum_reward_function share underlying reference with current
     # Python implementation but the test works due to reward function reproducability.
     cum_reward_function = reward_function.cumsum()
     cum_reward_function.before_reset(model_copy)
-    pytest.helpers.advance_to_root_node(model_copy)
+    pytest.helpers.advance_to_stage(model_copy, ecole.scip.Stage.Solving)
     cum_reward1 = cum_reward_function.extract(model_copy)
     cum_reward2 = cum_reward_function.extract(model_copy)
 
@@ -115,7 +115,7 @@ def test_primal_integral_lambda(model):
     reward_function = ecole.reward.PrimalIntegral(bound_function=lambda x: (-1e3, 1e3))
 
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward = reward_function.extract(model)
 
     assert reward >= 0
@@ -126,7 +126,7 @@ def test_dual_integral_lambda(model):
     reward_function = ecole.reward.DualIntegral(bound_function=lambda x: (-1e3, 1e3))
 
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward = reward_function.extract(model)
 
     assert reward >= 0
@@ -137,7 +137,7 @@ def test_primal_dual_integral_lambda(model):
     reward_function = ecole.reward.PrimalDualIntegral(bound_function=lambda x: (-1e3, 1e3))
 
     reward_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     reward = reward_function.extract(model)
 
     assert reward >= 0

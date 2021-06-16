@@ -16,6 +16,7 @@ import pytest
 import ecole
 
 
+# TODO adapt for MilpBiparite that must not be in stage solving
 def pytest_generate_tests(metafunc):
     """Parametrize the `observation_function` fixture.
 
@@ -49,15 +50,14 @@ def test_before_reset(observation_function, model):
 def test_extract(observation_function, model):
     """Obtain observation."""
     observation_function.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     observation_function.extract(model, False)
 
 
-def make_obs(obs_func, model):
+def make_obs(obs_func, model, stage=ecole.scip.Stage.Solving):
     """Utility function to extract observation on root node."""
-    # TODO adapt for MilpBiparite that must not be in stage solving
     obs_func.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, stage)
     return obs_func.extract(model, False)
 
 
@@ -102,9 +102,7 @@ def test_NodeBipartite_observation(model):
 
 def test_MilpBipartite_observation(model):
     """Observation of MilpBipartite is a type with array attributes."""
-    obs_func = ecole.observation.MilpBipartite()
-    obs_func.before_reset(model)
-    obs = obs_func.extract(model, False)
+    obs = make_obs(ecole.observation.MilpBipartite(), model, stage=ecole.scip.Stage.Problem)
     assert isinstance(obs, ecole.observation.MilpBipartiteObs)
     assert_array(obs.variable_features, ndim=2)
     assert_array(obs.constraint_features, ndim=2)

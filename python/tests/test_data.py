@@ -12,7 +12,7 @@ def test_ConstantFunction(model, done, cste):
     """Always return the same constant."""
     cste_func = ecole.data.ConstantFunction(cste)
     cste_func.before_reset(model)
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     data = cste_func.extract(model, done)
     assert data == cste
 
@@ -27,7 +27,7 @@ def test_VectorFunction(model, done):
     data_func1.before_reset.assert_called_once_with(model)
     data_func2.before_reset.assert_called_once_with(model)
 
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"
     data = tuple_data_func.extract(model, done)
@@ -44,7 +44,7 @@ def test_MapFunction(model, done):
     data_func1.before_reset.assert_called_once_with(model)
     data_func2.before_reset.assert_called_once_with(model)
 
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     data_func1.extract.return_value = "something"
     data_func2.extract.return_value = "else"
     data = dict_data_func.extract(model, done)
@@ -108,6 +108,6 @@ def test_MapFunction(model, done, wall):
     time_data_func.before_reset(model)
     data_func.before_reset.assert_called_once_with(model)
 
-    pytest.helpers.advance_to_root_node(model)
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
     time = time_data_func.extract(model, done)
     assert time > 0
