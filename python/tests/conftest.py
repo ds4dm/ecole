@@ -4,8 +4,7 @@ import pathlib
 
 import pytest
 
-import ecole.scip
-import ecole.environment
+import ecole
 
 
 TEST_SOURCE_DIR = pathlib.Path(__file__).parent.resolve()
@@ -52,11 +51,9 @@ def model_copy(model):
     return model.copy_orig()
 
 
-@pytest.fixture(scope="module")
-def tmp_dataset(tmp_path_factory, problem_file):
-    """Create a local dataset of problem files."""
-    model = ecole.scip.Model.from_file(str(problem_file))
-    path = tmp_path_factory.mktemp("instances")
-    for name in "abc":
-        model.write_problem(str(path / f"model-{name}.lp"))
-    return path
+@pytest.helpers.register
+def advance_to_root_node(the_model):
+    """Utility to advance a model to the root node."""
+    dyn = ecole.dynamics.BranchingDynamics()
+    dyn.reset_dynamics(the_model)
+    return the_model

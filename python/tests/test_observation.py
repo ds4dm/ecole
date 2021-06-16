@@ -11,6 +11,7 @@ import copy
 import pickle
 
 import numpy as np
+import pytest
 
 import ecole
 
@@ -34,13 +35,6 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("observation_function", all_observation_functions)
 
 
-def advance_to_root_node(model):
-    """Utility to advance a model to the root node."""
-    dyn = ecole.dynamics.BranchingDynamics()
-    dyn.reset_dynamics(model)
-    return model
-
-
 def test_default_init(observation_function):
     """Construct with default arguments."""
     type(observation_function)()
@@ -55,7 +49,7 @@ def test_before_reset(observation_function, model):
 def test_extract(observation_function, model):
     """Obtain observation."""
     observation_function.before_reset(model)
-    advance_to_root_node(model)
+    pytest.helpers.advance_to_root_node(model)
     observation_function.extract(model, False)
 
 
@@ -63,7 +57,7 @@ def make_obs(obs_func, model):
     """Utility function to extract observation on root node."""
     # TODO adapt for MilpBiparite that must not be in stage solving
     obs_func.before_reset(model)
-    advance_to_root_node(model)
+    pytest.helpers.advance_to_root_node(model)
     return obs_func.extract(model, False)
 
 

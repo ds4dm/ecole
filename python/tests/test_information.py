@@ -8,6 +8,7 @@ Here,
 """
 
 import numpy as np
+import pytest
 
 import ecole
 
@@ -21,13 +22,6 @@ def pytest_generate_tests(metafunc):
     if "information_function" in metafunc.fixturenames:
         all_information_functions = (ecole.information.Nothing(),)
         metafunc.parametrize("information_function", all_information_functions)
-
-
-def advance_to_root_node(model):
-    """Utility to advance a model to the root node."""
-    dyn = ecole.dynamics.BranchingDynamics()
-    dyn.reset_dynamics(model)
-    return model
 
 
 def test_default_init(information_function):
@@ -44,13 +38,13 @@ def test_before_reset(information_function, model):
 def test_extract(information_function, model):
     """Obtain information."""
     information_function.before_reset(model)
-    advance_to_root_node(model)
+    pytest.helpers.advance_to_root_node(model)
     information_function.extract(model, False)
 
 
 def make_info(info_func, model):
     info_func.before_reset(model)
-    advance_to_root_node(model)
+    pytest.helpers.advance_to_root_node(model)
     return info_func.extract(model, False)
 
 

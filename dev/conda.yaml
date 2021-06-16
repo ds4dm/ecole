@@ -35,6 +35,7 @@ dependencies:
   - cli11
   # Python dev tools
   - pytest
+  - pytest-helpers-namespace
   - black
   - ipython
   - pyscipopt >= 3.0.1  # optional
