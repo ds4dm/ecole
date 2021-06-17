@@ -138,11 +138,12 @@ class TestPrimalSearch(DynamicsUnitTests):
 
     @staticmethod
     def policy(action_set):
-        return {a: 0.0 for a in action_set}
+        # Mixed numpy array and list
+        return (action_set, [0.0] * len(action_set))
 
     @staticmethod
     def bad_policy(action_set):
-        return {1 << 31: 0.0}
+        return ([1 << 31], [0.0])
 
     def setup_method(self, method):
         self.dynamics = ecole.dynamics.PrimalSearchDynamics()
