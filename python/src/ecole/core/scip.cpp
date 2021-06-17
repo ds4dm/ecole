@@ -75,7 +75,7 @@ void bind_submodule(py::module_ const& m) {
 			py::keep_alive<0, 1>())
 
 		.def_property("name", &Model::name, &Model::set_name)
-		.def_property_readonly("stage", &Model::get_stage)
+		.def_property_readonly("stage", &Model::stage)
 
 		.def("get_param", &Model::get_param<Param>, py::arg("name"))
 		.def("set_param", &Model::set_param<Param>, py::arg("name"), py::arg("value"))

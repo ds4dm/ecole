@@ -18,7 +18,7 @@ auto InstanceFeatures::from_model(scip::Model model) -> InstanceFeatures {
 	auto dyn = dynamics::BranchingDynamics{};
 	dyn.reset_dynamics(model);
 	// FIXME in practice there is might be LP even if we never branch. Should use SCIP_EVENTTYPE_FIRSTLPSOLVED
-	if (model.get_stage() != SCIP_STAGE_SOLVING) {
+	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {
 			model.variables().size(),
 			model.constraints().size(),

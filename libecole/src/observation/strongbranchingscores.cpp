@@ -33,7 +33,7 @@ auto scip_get_vanillafullstrong_data(SCIP* const scip) noexcept {
 StrongBranchingScores::StrongBranchingScores(bool pseudo_candidates_) : pseudo_candidates(pseudo_candidates_) {}
 
 std::optional<xt::xtensor<double, 1>> StrongBranchingScores::extract(scip::Model& model, bool /* done */) {
-	if (model.get_stage() != SCIP_STAGE_SOLVING) {
+	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
 

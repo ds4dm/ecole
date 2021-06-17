@@ -81,7 +81,7 @@ void Model::set_name(std::string const& name) {
 	scip::call(SCIPsetProbName, get_scip_ptr(), name.c_str());
 }
 
-SCIP_STAGE Model::get_stage() const noexcept {
+SCIP_STAGE Model::stage() const noexcept {
 	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr()));
 }
 

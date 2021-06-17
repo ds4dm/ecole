@@ -603,7 +603,7 @@ void Khalil2016::before_reset(scip::Model& /* model */) {
 }
 
 auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<Khalil2016Obs> {
-	if (model.get_stage() == SCIP_STAGE_SOLVING) {
+	if (model.stage() == SCIP_STAGE_SOLVING) {
 		if (is_on_root_node(model)) {
 			static_features = extract_static_features(model);
 		}

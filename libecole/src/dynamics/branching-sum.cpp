@@ -150,7 +150,7 @@ namespace ecole::dynamics {
 namespace {
 
 std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model) {
-	if (model.get_stage() != SCIP_STAGE_SOLVING) {
+	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
 	auto const branch_cands = model.lp_branch_cands();

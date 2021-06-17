@@ -381,7 +381,7 @@ auto NodeBipartite::before_reset(scip::Model& /* model */) -> void {
 }
 
 auto NodeBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<NodeBipartiteObs> {
-	if (model.get_stage() == SCIP_STAGE_SOLVING) {
+	if (model.stage() == SCIP_STAGE_SOLVING) {
 		if (use_cache) {
 			if (is_on_root_node(model)) {
 				the_cache = extract_observation_fully(model);

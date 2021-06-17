@@ -87,7 +87,7 @@ public:
 	[[nodiscard]] std::string name() const noexcept;
 	void set_name(std::string const& name);
 
-	[[nodiscard]] SCIP_STAGE get_stage() const noexcept;
+	[[nodiscard]] SCIP_STAGE stage() const noexcept;
 
 	[[nodiscard]] ParamType get_param_type(std::string const& name) const;
 

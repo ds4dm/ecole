@@ -6,7 +6,7 @@ namespace ecole::reward {
 namespace {
 
 auto n_lp_iterations(scip::Model& model) -> std::uint64_t {
-	switch (model.get_stage()) {
+	switch (model.stage()) {
 	// Only stages when the following call is authorized
 	case SCIP_STAGE_PRESOLVING:
 	case SCIP_STAGE_PRESOLVED:

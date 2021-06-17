@@ -384,7 +384,7 @@ auto extract_features(scip::Model& model) {
  *************************************/
 
 auto Hutter2011::extract(scip::Model& model, bool /* done */) -> std::optional<Hutter2011Obs> {
-	if (model.get_stage() >= SCIP_STAGE_SOLVING) {
+	if (model.stage() >= SCIP_STAGE_SOLVING) {
 		return {};
 	}
 	return {{extract_features(model)}};
