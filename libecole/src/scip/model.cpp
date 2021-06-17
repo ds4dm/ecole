@@ -185,38 +185,6 @@ std::map<std::string, Param> Model::get_params() const {
 	return name_values;
 }
 
-void Model::transform_prob() {
-	scip::call(SCIPtransformProb, get_scip_ptr());
-}
-
-void Model::presolve() {
-	scip::call(SCIPpresolve, get_scip_ptr());
-}
-
-void Model::solve() {
-	scip::call(SCIPsolve, get_scip_ptr());
-}
-
-bool Model::is_solved() const noexcept {
-	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr())) == SCIP_STAGE_SOLVED;
-}
-
-void Model::solve_iter() {
-	scimpl->solve_iter();
-}
-
-void Model::solve_iter_branch(SCIP_RESULT result) {
-	scimpl->solve_iter_branch(result);
-}
-
-void Model::solve_iter_stop() {
-	scimpl->solve_iter_stop();
-}
-
-bool Model::solve_iter_is_done() {
-	return scimpl->solve_iter_is_done();
-}
-
 void Model::disable_presolve() {
 	scip::call(SCIPsetPresolving, get_scip_ptr(), SCIP_PARAMSETTING_OFF, true);
 }
@@ -267,6 +235,72 @@ nonstd::span<SCIP_ROW*> Model::lp_rows() const {
 
 std::size_t Model::nnz() const noexcept {
 	return static_cast<std::size_t>(SCIPgetNNZs(const_cast<SCIP*>(get_scip_ptr())));
+}
+
+void Model::transform_prob() {
+	scip::call(SCIPtransformProb, get_scip_ptr());
+}
+
+void Model::presolve() {
+	scip::call(SCIPpresolve, get_scip_ptr());
+}
+
+void Model::solve() {
+	scip::call(SCIPsolve, get_scip_ptr());
+}
+
+bool Model::is_solved() const noexcept {
+	return SCIPgetStage(const_cast<SCIP*>(get_scip_ptr())) == SCIP_STAGE_SOLVED;
+}
+
+SCIP_Real Model::primal_bound() const noexcept {
+	auto* const scip = const_cast<SCIP*>(get_scip_ptr());
+	switch (SCIPgetStage(scip)) {
+	case SCIP_STAGE_TRANSFORMED:
+	case SCIP_STAGE_INITPRESOLVE:
+	case SCIP_STAGE_PRESOLVING:
+	case SCIP_STAGE_EXITPRESOLVE:
+	case SCIP_STAGE_PRESOLVED:
+	case SCIP_STAGE_INITSOLVE:
+	case SCIP_STAGE_SOLVING:
+	case SCIP_STAGE_SOLVED:
+		return SCIPgetPrimalbound(scip);
+	default:
+		return SCIPinfinity(scip);
+	}
+}
+
+SCIP_Real Model::dual_bound() const noexcept {
+	auto* const scip = const_cast<SCIP*>(get_scip_ptr());
+	switch (SCIPgetStage(scip)) {
+	case SCIP_STAGE_TRANSFORMED:
+	case SCIP_STAGE_INITPRESOLVE:
+	case SCIP_STAGE_PRESOLVING:
+	case SCIP_STAGE_EXITPRESOLVE:
+	case SCIP_STAGE_PRESOLVED:
+	case SCIP_STAGE_INITSOLVE:
+	case SCIP_STAGE_SOLVING:
+	case SCIP_STAGE_SOLVED:
+		return SCIPgetDualbound(scip);
+	default:
+		return -SCIPinfinity(scip);
+	}
+}
+
+void Model::solve_iter() {
+	scimpl->solve_iter();
+}
+
+void Model::solve_iter_branch(SCIP_RESULT result) {
+	scimpl->solve_iter_branch(result);
+}
+
+void Model::solve_iter_stop() {
+	scimpl->solve_iter_stop();
+}
+
+bool Model::solve_iter_is_done() {
+	return scimpl->solve_iter_is_done();
 }
 
 namespace internal {

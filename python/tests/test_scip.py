@@ -145,3 +145,11 @@ def test_presolve(model):
 @pytest.mark.slow
 def test_presolve(model):
     model.solve()
+
+
+def test_is_solved(model):
+    assert not model.is_solved
+
+
+def test_bounds(model):
+    assert model.dual_bound < model.primal_bound

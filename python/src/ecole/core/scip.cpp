@@ -92,7 +92,10 @@ void bind_submodule(py::module_ const& m) {
 		.def("transform_prob", &Model::transform_prob, py::call_guard<py::gil_scoped_release>())
 		.def("presolve", &Model::presolve, py::call_guard<py::gil_scoped_release>())
 		.def("solve", &Model::solve, py::call_guard<py::gil_scoped_release>())
-		.def("is_solved", &Model::is_solved);
+
+		.def_property_readonly("is_solved", &Model::is_solved)
+		.def_property_readonly("primal_bound", &Model::primal_bound)
+		.def_property_readonly("dual_bound", &Model::dual_bound);
 }
 
 }  // namespace ecole::scip

@@ -116,19 +116,6 @@ public:
 	void disable_presolve();
 	void disable_cuts();
 
-	/**
-	 * Transform, presolve, and solve problem.
-	 */
-	void transform_prob();
-	void presolve();
-	void solve();
-	[[nodiscard]] bool is_solved() const noexcept;
-
-	void solve_iter();
-	void solve_iter_branch(SCIP_RESULT result);
-	void solve_iter_stop();
-	[[nodiscard]] bool solve_iter_is_done();
-
 	[[nodiscard]] nonstd::span<SCIP_VAR*> variables() const noexcept;
 	[[nodiscard]] nonstd::span<SCIP_VAR*> lp_branch_cands() const;
 	[[nodiscard]] nonstd::span<SCIP_VAR*> pseudo_branch_cands() const;
@@ -136,6 +123,22 @@ public:
 	[[nodiscard]] nonstd::span<SCIP_CONS*> constraints() const noexcept;
 	[[nodiscard]] nonstd::span<SCIP_ROW*> lp_rows() const;
 	[[nodiscard]] std::size_t nnz() const noexcept;
+
+	/**
+	 * Transform, presolve, and solve problem.
+	 */
+	void transform_prob();
+	void presolve();
+	void solve();
+
+	[[nodiscard]] bool is_solved() const noexcept;
+	[[nodiscard]] SCIP_Real primal_bound() const noexcept;
+	[[nodiscard]] SCIP_Real dual_bound() const noexcept;
+
+	void solve_iter();
+	void solve_iter_branch(SCIP_RESULT result);
+	void solve_iter_stop();
+	[[nodiscard]] bool solve_iter_is_done();
 
 private:
 	std::unique_ptr<Scimpl> scimpl;
