@@ -8,7 +8,7 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp>
 
-#include "ecole/dynamics/branching-gub.hpp"
+#include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/random.hpp"
 #include "ecole/traits.hpp"
@@ -18,9 +18,9 @@
 
 using namespace ecole;
 
-TEST_CASE("BranchingGUBDynamics unit tests with single branching", "[unit][dynamics]") {
+TEST_CASE("BranchingSumDynamics unit tests with single branching", "[unit][dynamics]") {
 	auto const policy = [](auto const& action_set, auto const& /*model*/) { return std::array{action_set.value()[0]}; };
-	dynamics::unit_tests(dynamics::BranchingGUBDynamics{}, policy);
+	dynamics::unit_tests(dynamics::BranchingSumDynamics{}, policy);
 }
 
 /**
@@ -33,7 +33,7 @@ struct MultiBranchingPolicy {
 	std::size_t n_multi = 0;
 	RandomEngine rng{0};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducibility in tests
 
-	auto operator()(trait::action_set_of_t<dynamics::BranchingGUBDynamics> const& action_set, scip::Model& model)
+	auto operator()(trait::action_set_of_t<dynamics::BranchingSumDynamics> const& action_set, scip::Model& model)
 		-> std::vector<std::size_t> {
 		auto const& as = action_set.value();
 		auto choice = std::uniform_int_distribution<std::size_t>{0, as.size() - 1};
@@ -56,13 +56,13 @@ struct MultiBranchingPolicy {
 	}
 };
 
-TEST_CASE("BranchingGUBDynamics unit tests with multi branching", "[unit][dynamics]") {
+TEST_CASE("BranchingSumDynamics unit tests with multi branching", "[unit][dynamics]") {
 	auto policy = MultiBranchingPolicy{};
-	dynamics::unit_tests(dynamics::BranchingGUBDynamics{}, policy);
+	dynamics::unit_tests(dynamics::BranchingSumDynamics{}, policy);
 }
 
-TEST_CASE("BranchingGUBDynamics can solve instance", "[dynamics][slow]") {
-	auto dyn = dynamics::BranchingGUBDynamics{};
+TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
+	auto dyn = dynamics::BranchingSumDynamics{};
 	auto model = get_model();
 	auto policy = MultiBranchingPolicy{};
 
@@ -98,8 +98,8 @@ TEST_CASE("BranchingGUBDynamics can solve instance", "[dynamics][slow]") {
 	}
 }
 
-TEST_CASE("BranchingGUBDynamics handles invalid inputs", "[dynamics]") {
-	auto dyn = dynamics::BranchingGUBDynamics{};
+TEST_CASE("BranchingSumDynamics handles invalid inputs", "[dynamics]") {
+	auto dyn = dynamics::BranchingSumDynamics{};
 	auto model = get_model();
 
 	SECTION("Throw on invalid branching variable") {

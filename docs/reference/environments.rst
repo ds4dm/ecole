@@ -16,10 +16,10 @@ Branching
 .. autoclass:: ecole.environment.Branching
 .. autoclass:: ecole.dynamics.BranchingDynamics
 
-BranchingGUB
+BranchingSum
 ^^^^^^^^^^^^
-.. autoclass:: ecole.environment.BranchingGUB
-.. autoclass:: ecole.dynamics.BranchingGUBDynamics
+.. autoclass:: ecole.environment.BranchingSum
+.. autoclass:: ecole.dynamics.BranchingSumDynamics
 
 Configuring
 ^^^^^^^^^^^

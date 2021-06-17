@@ -195,8 +195,8 @@ class Branching(Environment):
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
-class BranchingGUB(Environment):
-    __Dynamics__ = ecole.dynamics.BranchingGUBDynamics
+class BranchingSum(Environment):
+    __Dynamics__ = ecole.dynamics.BranchingSumDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 

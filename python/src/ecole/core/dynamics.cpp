@@ -4,7 +4,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
-#include "ecole/dynamics/branching-gub.hpp"
+#include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/dynamics/configuring.hpp"
 #include "ecole/scip/model.hpp"
@@ -128,10 +128,10 @@ void bind_submodule(pybind11::module_ const& m) {
 				or LP branching variable candidates (``SCIPgetPseudoBranchCands``).
 		)");
 
-	using idx_t = typename BranchingGUBDynamics::Action::value_type;
+	using idx_t = typename BranchingSumDynamics::Action::value_type;
 	using array_t = py::array_t<idx_t, py::array::c_style | py::array::forcecast>;
-	dynamics_class<BranchingGUBDynamics>{m, "BranchingGUBDynamics", R"(
-		Global Upper Bound branching Dynamics.
+	dynamics_class<BranchingSumDynamics>{m, "BranchingSumDynamics", R"(
+		Branching on the sum of variables.
 
 		Based on a SCIP branching callback with maximal priority and no depth limit.
 		The dynamics give the control back to the user every time the callback would be called.
@@ -177,7 +177,7 @@ void bind_submodule(pybind11::module_ const& m) {
 		)")
 		.def(
 			"step_dynamics",
-			[](BranchingGUBDynamics& self, scip::Model& model, array_t const& action) {
+			[](BranchingSumDynamics& self, scip::Model& model, array_t const& action) {
 				auto const vars = nonstd::span{action.data(), static_cast<std::size_t>(action.size())};
 				auto const release = py::gil_scoped_release{};
 				return self.step_dynamics(model, vars);

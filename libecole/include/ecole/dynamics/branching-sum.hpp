@@ -10,7 +10,7 @@
 
 namespace ecole::dynamics {
 
-class BranchingGUBDynamics :
+class BranchingSumDynamics :
 	public EnvironmentDynamics<nonstd::span<std::size_t const>, std::optional<xt::xtensor<std::size_t, 1>>> {
 public:
 	using Action = nonstd::span<std::size_t const>;

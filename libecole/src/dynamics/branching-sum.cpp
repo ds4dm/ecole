@@ -1,5 +1,5 @@
 /***********************************************************
- *  Implementation of SCIPbranchGUB (aim to merge in SCIP) *
+ *  Implementation of SCIPbranchSum (aim to merge in SCIP) *
  ***********************************************************/
 
 #include <cassert>
@@ -16,7 +16,7 @@
 
 namespace {
 
-SCIP_RETCODE SCIPbranchGUB_AddChild(
+SCIP_RETCODE SCIPbranchSum_AddChild(
 	SCIP* scip,
 	SCIP_Real priority,
 	SCIP_Real estimate,
@@ -61,7 +61,7 @@ TERM:
 }
 
 SCIP_RETCODE
-SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** upchild) {
+SCIPbranchSum(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCIP_NODE** upchild) {
 	/* Check input parameters */
 	assert(scip != nullptr);
 	if (SCIPgetStage(scip) != SCIP_STAGE_SOLVING) {
@@ -120,9 +120,9 @@ SCIPbranchGUB(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 	}
 
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchGUB_AddChild(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
+		retcode, SCIPbranchSum_AddChild(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchGUB_AddChild(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
+		retcode, SCIPbranchSum_AddChild(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
 
 TERM:
 	SCIPfreeBufferArray(scip, &ones);
@@ -132,7 +132,7 @@ TERM:
 }  // namespace
 
 /********************************************
- *  Implementation of BranchingGUBDynamics  *
+ *  Implementation of BranchingSumDynamics  *
  ********************************************/
 
 #include <algorithm>
@@ -141,7 +141,7 @@ TERM:
 
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/dynamics/branching-gub.hpp"
+#include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 
@@ -164,7 +164,7 @@ std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model) 
 
 }  // namespace
 
-auto BranchingGUBDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
+auto BranchingSumDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
 	model.solve_iter();
 	if (model.solve_iter_is_done()) {
 		return {true, {}};
@@ -172,7 +172,7 @@ auto BranchingGUBDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool
 	return {false, action_set(model)};
 }
 
-auto BranchingGUBDynamics::step_dynamics(scip::Model& model, Action const& var_indices) -> std::tuple<bool, ActionSet> {
+auto BranchingSumDynamics::step_dynamics(scip::Model& model, Action const& var_indices) -> std::tuple<bool, ActionSet> {
 	auto const lp_cols = model.lp_columns();
 
 	// Check that input indices are within range
@@ -186,7 +186,7 @@ auto BranchingGUBDynamics::step_dynamics(scip::Model& model, Action const& var_i
 		auto const idx_to_var = [lp_cols](auto idx) { return SCIPcolGetVar(lp_cols[idx]); };
 		std::transform(var_indices.begin(), var_indices.end(), vars.begin(), idx_to_var);
 
-		scip::call(SCIPbranchGUB, model.get_scip_ptr(), vars.data(), static_cast<int>(vars.size()), nullptr, nullptr);
+		scip::call(SCIPbranchSum, model.get_scip_ptr(), vars.data(), static_cast<int>(vars.size()), nullptr, nullptr);
 		model.solve_iter_branch(SCIP_BRANCHED);
 	}
 

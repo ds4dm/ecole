@@ -79,7 +79,7 @@ class TestBranching_Pseudocandidate(TestBranching):
         self.dynamics = ecole.dynamics.BranchingDynamics(True)
 
 
-class TestBranchingGUB_List(DynamicsUnitTests):
+class TestBranchingSum_List(DynamicsUnitTests):
     @staticmethod
     def assert_action_set(action_set):
         assert isinstance(action_set, np.ndarray)
@@ -96,10 +96,10 @@ class TestBranchingGUB_List(DynamicsUnitTests):
         return [1 << 31]
 
     def setup_method(self, method):
-        self.dynamics = ecole.dynamics.BranchingGUBDynamics()
+        self.dynamics = ecole.dynamics.BranchingSumDynamics()
 
 
-class TestBranchingGUB_Numpy(TestBranchingGUB_List):
+class TestBranchingSum_Numpy(TestBranchingSum_List):
     @staticmethod
     def policy(action_set):
         return np.array([action_set[0]])
