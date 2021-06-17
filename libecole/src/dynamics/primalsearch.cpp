@@ -31,7 +31,7 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 		vars.begin(),
 		vars.end(),
 		var_ids.begin(),
-		[](auto const var) { return SCIPvarGetProbindex(var); });
+		SCIPvarGetProbindex);
 
 	return var_ids;
 }
