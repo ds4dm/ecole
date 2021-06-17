@@ -4,6 +4,7 @@
 #include "ecole/dynamics/primalsearch.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/utils.hpp"
 
 namespace ecole::dynamics {
 
@@ -38,7 +39,7 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 }  // namespace
 
 auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
-	model.solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
+	heur = model.solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
 	auto const done = model.solve_iter_is_done();
 	if (done) {
 		return {done, {}};
@@ -46,23 +47,85 @@ auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool
 	return {done, action_set(model)};
 }
 
-auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdVals const& action) -> std::tuple<bool, ActionSet> {
-	// transform (var_id, value) pairs into (var, value) pairs
+auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& action) -> std::tuple<bool, ActionSet> {
+	auto [var_indices, vals] = action;
 	auto problem_vars = model.variables();
-	auto varvals = std::vector<std::pair<SCIP_VAR*, SCIP_Real>>(action.size());
-	std::transform(  //
-		action.begin(),
-		action.end(),
-		varvals.begin(),
-		[&problem_vars](auto& pair) -> decltype(varvals)::value_type {
-			auto const [var_id, val] = pair;
-			if (var_id >= problem_vars.size()) {
-				throw std::invalid_argument{fmt::format("Variable index {} is out of range.", var_id)};
-			}
-			return {problem_vars[var_id], val};
-		});
 
-	model.solve_iter_primalsearch(varvals);
+	// check that both spans have same size
+	if (var_indices.size() != vals.size()) {
+		throw std::invalid_argument{
+			fmt::format("Invalid action: {} variable indices for {} values.", var_indices.size(), vals.size())};
+	}
+
+	// check that variable indices are within range
+	for (auto var_id : var_indices) {
+		if (var_id >= problem_vars.size()) {
+			throw std::invalid_argument{fmt::format("Invalid action: variable index {} is out of range.", var_id)};
+		}
+	}
+
+	auto* scip_ptr = model.get_scip_ptr();
+	SCIP_Bool success = false;  // result of the current action (solution found or not)
+
+	// if the action is not empty, run a search iteration
+	// try to improve the (partial) solution by fixing variables and then re-solving the LP
+	if (not var_indices.empty()) {
+		SCIP_Bool lperror = false;
+		SCIP_Bool cutoff = false;
+
+		// enter probing mode
+		scip::call(SCIPstartProbing, scip_ptr);
+
+		// fix variables in the (partial) solution to their given values
+		for (std::size_t i = 0; i < var_indices.size(); i++) {
+			auto id = var_indices[i];
+			auto* var = problem_vars[id];
+			auto val = vals[i];
+			scip::call(SCIPfixVarProbing, scip_ptr, var, val);
+		}
+
+		// propagate
+		scip::call(SCIPpropagateProbing, scip_ptr, 0, &cutoff, nullptr);
+		if (!cutoff) {
+			// build the LP if needed
+			if (!SCIPisLPConstructed(scip_ptr)) {
+				scip::call(SCIPconstructLP, scip_ptr, &cutoff);
+			}
+			if (!cutoff) {
+				// solve the LP
+				scip::call(SCIPsolveProbingLP, scip_ptr, -1, &lperror, &cutoff);
+				if (!lperror && !cutoff) {
+					// try the LP solution in the original problem
+					SCIP_SOL* sol = nullptr;
+					scip::call(SCIPcreateSol, scip_ptr, &sol, heur);
+					scip::call(SCIPlinkLPSol, scip_ptr, sol);
+					scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
+				}
+			}
+		}
+
+		// exit probing mode
+		scip::call(SCIPendProbing, scip_ptr);
+	}
+
+	// update the final search result depending on the action result
+	if (success) {
+		result = SCIP_FOUNDSOL;
+	} else if (result == SCIP_DIDNOTRUN) {
+		result = SCIP_DIDNOTFIND;
+	}
+
+	// increment the number of search trials spent
+	trials_spent++;
+
+	// if all trials are exhausted, or if SCIP should be stopped, stop the search and let SCIP proceed
+	if (trials_spent == trials_per_node or SCIPisStopped(scip_ptr)) {
+		model.solve_iter_primalsearch(result);
+
+		// reset data for the next time the search is triggered
+		trials_spent = 0;
+		result = SCIP_DIDNOTRUN;
+	}
 
 	auto const done = model.solve_iter_is_done();
 	if (done) {

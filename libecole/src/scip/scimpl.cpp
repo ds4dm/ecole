@@ -148,10 +148,11 @@ void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
 		*final_result = result;
 		return SCIP_OKAY;
 	});
+
 	m_controller->wait_thread();
 }
 
-void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
+SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller = std::make_unique<utility::Controller>([=](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 		scip::call(
@@ -162,57 +163,14 @@ void Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, 
 			true);
 		scip::call(SCIPsolve, scip_ptr);  // NOLINT
 	});
+
 	m_controller->wait_thread();
+	return SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
 }
 
-void scip::Scimpl::solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals) {
-	m_controller->resume_thread([&varvals](SCIP* scip_ptr, SCIP_RESULT* result) {
-		SCIP_HEUR* heur = SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
-		SCIP_Bool lperror = false;
-		SCIP_Bool cutoff = false;
-		SCIP_Bool success = false;
-
-		// if action is empty, do nothing
-		if (varvals.empty()) {
-			*result = SCIP_DIDNOTFIND;
-			return SCIP_OKAY;
-		}
-
-		// try to improve the (partial) solution by fixing variables and
-		// then re-solving the LP
-
-		// enter probing mode
-		scip::call(SCIPstartProbing, scip_ptr);
-
-		// fix the given variables to the given values
-		for (auto const& [var, val] : varvals) {
-			scip::call(SCIPfixVarProbing, scip_ptr, var, val);
-		}
-
-		// propagate
-		scip::call(SCIPpropagateProbing, scip_ptr, 0, &cutoff, nullptr);
-		if (!cutoff) {
-			// build the LP if needed
-			if (!SCIPisLPConstructed(scip_ptr)) {
-				scip::call(SCIPconstructLP, scip_ptr, &cutoff);
-			}
-			if (!cutoff) {
-				// solve the LP
-				scip::call(SCIPsolveProbingLP, scip_ptr, -1, &lperror, &cutoff);
-				if (!lperror && !cutoff) {
-					// try the LP solution in the original problem
-					SCIP_SOL* sol = nullptr;
-					scip::call(SCIPcreateSol, scip_ptr, &sol, heur);
-					scip::call(SCIPlinkLPSol, scip_ptr, sol);
-					scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
-				}
-			}
-		}
-
-		// exit probing mode
-		scip::call(SCIPendProbing, scip_ptr);
-
-		*result = success ? SCIP_FOUNDSOL : SCIP_DIDNOTFIND;
+void scip::Scimpl::solve_iter_primalsearch(SCIP_RESULT result) {
+	m_controller->resume_thread([result](SCIP* /* scip */, SCIP_RESULT* final_result) {
+		*final_result = result;
 		return SCIP_OKAY;
 	});
 
@@ -291,33 +249,12 @@ auto ReverseHeur::scip_exec(
 	SCIP_HEURTIMING /*heurtiming*/,
 	SCIP_Bool /*nodeinfeasible*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	*result = SCIP_DIDNOTRUN;
-	auto retcode = SCIP_OKAY;
-
-	for (int trial = 0; trial < trials_per_node || trials_per_node < 0; trial++) {
-		if (weak_executor.expired()) {
-			return SCIP_OKAY;
-		}
-
-		auto action_func = weak_executor.lock()->hold_env();
-
-		SCIP_RESULT action_result = SCIP_DIDNOTRUN;
-		retcode = action_func(scip, &action_result);
-
-		assert(action_result == SCIP_FOUNDSOL || action_result == SCIP_DIDNOTFIND || action_result == SCIP_DIDNOTRUN);
-
-		// update primal heuristic result depending on search action result
-		if (*result == SCIP_DIDNOTRUN || action_result == SCIP_FOUNDSOL) {
-			*result = action_result;
-		}
-
-		// stop if anything went wrong, or if SCIP should be stopped
-		if (retcode != SCIP_OKAY || action_result == SCIP_DIDNOTRUN || SCIPisStopped(scip)) {
-			break;
-		}
+	if (weak_executor.expired() or trials_per_node == 0) {
+		*result = SCIP_DIDNOTRUN;
+		return SCIP_OKAY;
 	}
-
-	return retcode;
+	auto action_func = weak_executor.lock()->hold_env();  // could we pass heur here ?
+	return action_func(scip, result);
 }
 
 }  // namespace

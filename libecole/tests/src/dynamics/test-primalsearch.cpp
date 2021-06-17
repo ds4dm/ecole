@@ -15,24 +15,12 @@
 
 using namespace ecole;
 
-auto filled_action(dynamics::PrimalSearchDynamics::ActionSet const& action_set, SCIP_Real val)
-	-> dynamics::PrimalSearchDynamics::Action {
-	auto const& var_ids = action_set.value();
-	std::map<std::size_t, SCIP_Real> action;
-	std::transform(  //
-		var_ids.begin(),
-		var_ids.end(),
-		std::inserter(action, action.end()),
-		[&val](auto const& var_id) -> decltype(action)::value_type {
-			return {var_id, val};
-		});
-	return action;
-}
-
 TEST_CASE("PrimalSearchDynamics unit tests", "[unit][dynamics]") {
 	dynamics::unit_tests(
 		dynamics::PrimalSearchDynamics{},
-		[](auto const& /*action_set*/, auto const& /*model*/) -> dynamics::PrimalSearchDynamics::Action { return {}; });
+		[](auto const& /*action_set*/, auto const& /*model*/) -> dynamics::PrimalSearchDynamics::Action {
+			return {{}, {}};
+		});
 }
 
 TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
@@ -41,9 +29,9 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 	auto model = get_model();
 
 	SECTION("Return valid action set") {
-		auto const [done, action_set] = dyn.reset_dynamics(model);
+		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
+		auto var_ids = action_set.value();
 		REQUIRE(var_ids.size() > 0);
 		REQUIRE(var_ids.size() <= model.variables().size());
 		REQUIRE(xt::all(var_ids >= 0));
@@ -54,9 +42,9 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 	SECTION("Handle extreme action - empty") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
+		auto var_ids = action_set.value();
 		REQUIRE(var_ids.size() > 0);
-		std::tie(done, action_set) = dyn.step_dynamics(model, {});
+		std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 		REQUIRE_FALSE(done);
 	}
 
@@ -71,10 +59,14 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE(action_set.has_value());
-		auto const& var_ids = action_set.value();
+		auto var_ids = action_set.value();
 		REQUIRE(var_ids.size() > 0);
-		auto const& action = filled_action(action_set, val);
+		auto var_vals = std::vector<SCIP_Real>(var_ids.size(), val);
+		auto action = dynamics::PrimalSearchDynamics::Action{
+			nonstd::span<std::size_t>{var_ids.data(), var_ids.size()},
+			nonstd::span<SCIP_Real>{var_vals.data(), var_vals.size()}};
 		std::tie(done, action_set) = dyn.step_dynamics(model, action);
+
 		REQUIRE_FALSE(done);
 	}
 
@@ -82,7 +74,7 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			REQUIRE(action_set.has_value());
-			std::tie(done, action_set) = dyn.step_dynamics(model, {});
+			std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 		}
 		REQUIRE(model.is_solved());
 	}
@@ -91,7 +83,11 @@ TEST_CASE("PrimalSearchDynamics functional tests", "[dynamics]") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
 		REQUIRE(action_set.has_value());
-		std::map<std::size_t, SCIP_Real> const action = {{model.variables().size(), 0.0}};
+		auto var_ids = std::vector<std::size_t>{model.variables().size()};
+		auto var_vals = std::vector<SCIP_Real>{0.0};
+		auto action = dynamics::PrimalSearchDynamics::Action{
+			nonstd::span<std::size_t>{var_ids.data(), var_ids.size()},
+			nonstd::span<SCIP_Real>{var_vals.data(), var_vals.size()}};
 		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::exception);
 	}
 }
@@ -113,7 +109,7 @@ TEST_CASE("PrimalSearchDynamics handles limits", "[dynamics]") {
 	auto [done, action_set] = dyn.reset_dynamics(model);
 	while (!done) {
 		REQUIRE(action_set.has_value());
-		std::tie(done, action_set) = dyn.step_dynamics(model, {});
+		std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 	}
 }
 
@@ -128,7 +124,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			REQUIRE(action_set.has_value());
-			std::tie(done, action_set) = dyn.step_dynamics(model, {});
+			std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 		}
 	}
 
@@ -146,7 +142,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
-		std::tie(done, action_set) = dyn.step_dynamics(model, {});
+		std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 		REQUIRE(done);
 	}
 
@@ -156,7 +152,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		REQUIRE_FALSE(done);
-		std::tie(done, action_set) = dyn.step_dynamics(model, {});
+		std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 		REQUIRE(done);
 	}
 
@@ -169,7 +165,7 @@ TEST_CASE("PrimalSearchDynamics extreme parameterizations", "[dynamics]") {
 
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
-			std::tie(done, action_set) = dyn.step_dynamics(model, {});
+			std::tie(done, action_set) = dyn.step_dynamics(model, {{}, {}});
 			nsteps++;
 		}
 		REQUIRE(nsteps % trials_per_node == 0);

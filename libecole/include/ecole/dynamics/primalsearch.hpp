@@ -1,8 +1,9 @@
 #pragma once
 
-#include <map>
+#include <cstddef>
 #include <optional>
 
+#include <nonstd/span.hpp>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/dynamics.hpp"
@@ -15,14 +16,14 @@ namespace ecole::dynamics {
 using VarIds = xt::xtensor<std::size_t, 1>;
 
 /**
- * A dictionnary of variable identifiers to variable values.
+ * A tuple of variable identifiers and variable values.
  */
-using VarIdVals = std::map<std::size_t, SCIP_Real>;
+using VarIdsVals = std::tuple<nonstd::span<std::size_t>, nonstd::span<SCIP_Real>>;
 
-class PrimalSearchDynamics : public EnvironmentDynamics<VarIdVals, std::optional<VarIds>> {
+class PrimalSearchDynamics : public EnvironmentDynamics<VarIdsVals, std::optional<VarIds>> {
 public:
+	using Action = VarIdsVals;
 	using ActionSet = std::optional<VarIds>;
-	using Action = VarIdVals;
 
 	PrimalSearchDynamics(int trials_per_node = 1, int depth_freq = 1, int depth_start = 0, int depth_stop = -1);
 
@@ -35,6 +36,10 @@ private:
 	int depth_freq;
 	int depth_start;
 	int depth_stop;
+
+	int trials_spent = 0;                 // to keep track of the number of trials during each search
+	SCIP_HEUR* heur = nullptr;            // to tell SCIP where primal solutions come from
+	SCIP_RESULT result = SCIP_DIDNOTRUN;  // the final result of each search (several trials)
 };
 
 }  // namespace ecole::dynamics

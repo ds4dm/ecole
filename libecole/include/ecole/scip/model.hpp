@@ -138,8 +138,8 @@ public:
 
 	void solve_iter_start_branch();
 	void solve_iter_branch(SCIP_RESULT result);
-	void solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
-	void solve_iter_primalsearch(nonstd::span<std::pair<SCIP_VAR*, SCIP_Real>> const& varvals);
+	SCIP_HEUR* solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
+	void solve_iter_primalsearch(SCIP_RESULT result);
 	void solve_iter_stop();
 	[[nodiscard]] bool solve_iter_is_done();
 
