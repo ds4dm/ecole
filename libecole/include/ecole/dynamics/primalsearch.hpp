@@ -37,7 +37,7 @@ private:
 	int depth_start;
 	int depth_stop;
 
-	int trials_spent = 0;                 // to keep track of the number of trials during each search
+	unsigned int trials_spent = 0;                 // to keep track of the number of trials during each search
 	SCIP_HEUR* heur = nullptr;            // to tell SCIP where primal solutions come from
 	SCIP_RESULT result = SCIP_DIDNOTRUN;  // the final result of each search (several trials)
 };
