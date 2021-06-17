@@ -8,11 +8,7 @@
 
 namespace ecole::dynamics {
 
-PrimalSearchDynamics::PrimalSearchDynamics(
-	int trials_per_node_,
-	int depth_freq_,
-	int depth_start_,
-	int depth_stop_) :
+PrimalSearchDynamics::PrimalSearchDynamics(int trials_per_node_, int depth_freq_, int depth_start_, int depth_stop_) :
 	trials_per_node(trials_per_node_), depth_freq(depth_freq_), depth_start(depth_start_), depth_stop(depth_stop_) {
 	if (trials_per_node < -1) {
 		throw std::invalid_argument{fmt::format("Illegal value for number of trials per node: {}.", trials_per_node)};
@@ -27,11 +23,7 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 	}
 	auto vars = model.pseudo_branch_cands();  // non-fixed discrete variables
 	auto var_ids = xt::xtensor<std::size_t, 1>::from_shape({vars.size()});
-	std::transform(  //
-		vars.begin(),
-		vars.end(),
-		var_ids.begin(),
-		SCIPvarGetProbindex);
+	std::transform(vars.begin(), vars.end(), var_ids.begin(), SCIPvarGetProbindex);
 
 	return var_ids;
 }
@@ -40,15 +32,14 @@ std::optional<VarIds> action_set(scip::Model const& model) {
 
 auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
 	heur = model.solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
-	auto const done = model.solve_iter_is_done();
-	if (done) {
-		return {done, {}};
+	if (model.solve_iter_is_done()) {
+		return {true, {}};
 	}
-	return {done, action_set(model)};
+	return {false, action_set(model)};
 }
 
 auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& action) -> std::tuple<bool, ActionSet> {
-	auto [var_indices, vals] = action;
+	auto const [var_indices, vals] = action;
 	auto problem_vars = model.variables();
 
 	// check that both spans have same size
@@ -58,7 +49,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& a
 	}
 
 	// check that variable indices are within range
-	for (auto var_id : var_indices) {
+	for (auto const var_id : var_indices) {
 		if (var_id >= problem_vars.size()) {
 			throw std::invalid_argument{fmt::format("Invalid action: variable index {} is out of range.", var_id)};
 		}
@@ -119,7 +110,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& a
 	trials_spent++;
 
 	// if all trials are exhausted, or if SCIP should be stopped, stop the search and let SCIP proceed
-	if (trials_spent == trials_per_node or SCIPisStopped(scip_ptr)) {
+	if ((trials_spent == static_cast<unsigned int>(trials_per_node)) || SCIPisStopped(scip_ptr)) {
 		model.solve_iter_primalsearch(result);
 
 		// reset data for the next time the search is triggered
@@ -127,11 +118,10 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& a
 		result = SCIP_DIDNOTRUN;
 	}
 
-	auto const done = model.solve_iter_is_done();
-	if (done) {
-		return {done, {}};
+	if (model.solve_iter_is_done()) {
+		return {true, {}};
 	}
-	return {done, action_set(model)};
+	return {false, action_set(model)};
 }
 
 }  // namespace ecole::dynamics

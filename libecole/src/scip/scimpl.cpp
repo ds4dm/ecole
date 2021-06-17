@@ -249,7 +249,7 @@ auto ReverseHeur::scip_exec(
 	SCIP_HEURTIMING /*heurtiming*/,
 	SCIP_Bool /*nodeinfeasible*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_executor.expired() or trials_per_node == 0) {
+	if (weak_executor.expired() || (trials_per_node == 0)) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;
 	}

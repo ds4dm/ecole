@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <utility>
 
 #include <nonstd/span.hpp>
 #include <xtensor/xtensor.hpp>
@@ -18,7 +19,7 @@ using VarIds = xt::xtensor<std::size_t, 1>;
 /**
  * A tuple of variable identifiers and variable values.
  */
-using VarIdsVals = std::tuple<nonstd::span<std::size_t>, nonstd::span<SCIP_Real>>;
+using VarIdsVals = std::pair<nonstd::span<std::size_t const>, nonstd::span<SCIP_Real const>>;
 
 class PrimalSearchDynamics : public EnvironmentDynamics<VarIdsVals, std::optional<VarIds>> {
 public:
@@ -37,7 +38,7 @@ private:
 	int depth_start;
 	int depth_stop;
 
-	unsigned int trials_spent = 0;                 // to keep track of the number of trials during each search
+	unsigned int trials_spent = 0;        // to keep track of the number of trials during each search
 	SCIP_HEUR* heur = nullptr;            // to tell SCIP where primal solutions come from
 	SCIP_RESULT result = SCIP_DIDNOTRUN;  // the final result of each search (several trials)
 };
