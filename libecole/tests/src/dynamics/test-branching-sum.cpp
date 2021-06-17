@@ -98,8 +98,8 @@ TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
 			std::tie(done, action_set) = dyn.step_dynamics(model, action);
 		}
 		REQUIRE(model.is_solved());
-		REQUIRE(model.dual_bound() == dual_bound);
-		REQUIRE(model.primal_bound() == dual_bound);
+		REQUIRE(model.dual_bound() == Approx(dual_bound));    // Floating point approximation
+		REQUIRE(model.primal_bound() == Approx(dual_bound));  // Floating point approximation
 	}
 
 	SECTION("Solve instance with single variables") {
@@ -110,8 +110,8 @@ TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
 			std::tie(done, action_set) = dyn.step_dynamics(model, {&action, 1});
 		}
 		REQUIRE(model.is_solved());
-		REQUIRE(model.dual_bound() == dual_bound);
-		REQUIRE(model.primal_bound() == dual_bound);
+		REQUIRE(model.dual_bound() == Approx(dual_bound));    // Floating point approximation
+		REQUIRE(model.primal_bound() == Approx(dual_bound));  // Floating point approximation
 	}
 }
 
