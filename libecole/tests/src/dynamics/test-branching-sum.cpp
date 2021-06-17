@@ -61,10 +61,9 @@ TEST_CASE("BranchingSumDynamics unit tests with multi branching", "[unit][dynami
 	dynamics::unit_tests(dynamics::BranchingSumDynamics{}, policy);
 }
 
-TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
+TEST_CASE("BranchingSumDynamics return valid action set", "[dynamics][slow]") {
 	auto dyn = dynamics::BranchingSumDynamics{};
 	auto model = get_model();
-	auto policy = MultiBranchingPolicy{};
 
 	SECTION("Return valid action set") {
 		auto const [done, action_set] = dyn.reset_dynamics(model);
@@ -76,8 +75,22 @@ TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
 		REQUIRE(xt::all(branch_cands < model.lp_columns().size()));
 		REQUIRE(xt::unique(branch_cands).size() == branch_cands.size());
 	}
+}
+
+/** Compute the final dual bound of a Model solving a copy. */
+auto final_dual_bound(scip::Model const& model) {
+	auto model_copy = model.copy_orig();
+	model_copy.solve();
+	return model_copy.dual_bound();
+}
+
+TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
+	auto dyn = dynamics::BranchingSumDynamics{};
+	auto model = get_model();
+	auto const dual_bound = final_dual_bound(model);
 
 	SECTION("Solve instance with multiple variables") {
+		auto policy = MultiBranchingPolicy{};
 		auto [done, action_set] = dyn.reset_dynamics(model);
 		while (!done) {
 			REQUIRE(action_set.has_value());
@@ -85,6 +98,8 @@ TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
 			std::tie(done, action_set) = dyn.step_dynamics(model, action);
 		}
 		REQUIRE(model.is_solved());
+		REQUIRE(model.dual_bound() == dual_bound);
+		REQUIRE(model.primal_bound() == dual_bound);
 	}
 
 	SECTION("Solve instance with single variables") {
@@ -95,6 +110,8 @@ TEST_CASE("BranchingSumDynamics can solve instance", "[dynamics][slow]") {
 			std::tie(done, action_set) = dyn.step_dynamics(model, {&action, 1});
 		}
 		REQUIRE(model.is_solved());
+		REQUIRE(model.dual_bound() == dual_bound);
+		REQUIRE(model.primal_bound() == dual_bound);
 	}
 }
 

@@ -16,6 +16,31 @@
 
 namespace {
 
+/** Validate that variables are integer, not fixed, and their LP solution value finite. */
+SCIP_RETCODE SCIPbranchSum_ValidateVar(SCIP* scip, SCIP_VAR* var, SCIP_Real var_sol) {
+	assert(SCIPvarIsActive(var));
+	assert(SCIPvarGetProbindex(var) >= 0);
+	if (SCIPvarGetType(var) == SCIP_VARTYPE_CONTINUOUS) {
+		SCIPerrorMessage("cannot branch on constraint containing continuous variable <%s>\n", SCIPvarGetName(var));
+		return SCIP_INVALIDDATA;
+	}
+	if (SCIPisEQ(scip, SCIPvarGetLbLocal(var), SCIPvarGetUbLocal(var))) {
+		SCIPerrorMessage(
+			"cannot branch on constraint containing variable <%s> with fixed domain [%.15g,%.15g]\n",
+			SCIPvarGetName(var),
+			SCIPvarGetLbLocal(var),
+			SCIPvarGetUbLocal(var));
+		return SCIP_INVALIDDATA;
+	}
+
+	if (SCIPisInfinity(scip, -var_sol) || SCIPisInfinity(scip, var_sol)) {
+		SCIPerrorMessage("cannot branch on variables containing infinite values");
+		return SCIP_INVALIDDATA;
+	}
+
+	return SCIP_OKAY;
+}
+
 SCIP_RETCODE SCIPbranchSum_AddChild(
 	SCIP* scip,
 	SCIP_Real priority,
@@ -73,56 +98,55 @@ SCIPbranchSum(SCIP* scip, SCIP_VAR** vars, int nvars, SCIP_NODE** downchild, SCI
 		return SCIP_INVALIDDATA;
 	}
 
-	/* Check individual variables and compute the sum of their LP relaxation value */
+	/* Compute the node estimate and priority but taking the average of the variables'.
+	 * Compute the sum of the LP solution value of the variables. */
 	SCIP_Real pseudo_sol_sum = 0.;
-	SCIP_VAR const* const* const vars_end = vars + nvars;
-	for (SCIP_VAR** var_iter = vars; var_iter < vars_end; ++var_iter) {
-		/* Validate that variables are integer, not fixed */
-		assert(SCIPvarIsActive(*var_iter));
-		assert(SCIPvarGetProbindex(*var_iter) >= 0);
-		if (SCIPvarGetType(*var_iter) == SCIP_VARTYPE_CONTINUOUS) {
-			SCIPerrorMessage("cannot branch on constraint containing continuous variable <%s>\n", SCIPvarGetName(*var_iter));
-			return SCIP_INVALIDDATA;
+	SCIP_Real estimate_down = 0.;
+	SCIP_Real estimate_up = 0.;
+	SCIP_Real priority_down = 0.;
+	SCIP_Real priority_up = 0.;
+	{
+		SCIP_VAR const* const* const vars_end = vars + nvars;
+		for (SCIP_VAR** var_iter = vars; var_iter < vars_end; ++var_iter) {
+			SCIP_Real const sol = SCIPvarGetSol(*var_iter, SCIPhasCurrentNodeLP(scip));
+			SCIP_Real const sol_floor = SCIPfeasFloor(scip, sol);
+			SCIP_Real const sol_ceil = SCIPfeasCeil(scip, sol);
+			SCIPbranchSum_ValidateVar(scip, *var_iter, sol);
+			estimate_down += SCIPcalcChildEstimate(scip, *var_iter, sol_floor);
+			estimate_up += SCIPcalcChildEstimate(scip, *var_iter, sol_ceil);
+			priority_down += SCIPcalcNodeselPriority(scip, *var_iter, SCIP_BRANCHDIR_DOWNWARDS, sol_floor);
+			priority_up += SCIPcalcNodeselPriority(scip, *var_iter, SCIP_BRANCHDIR_UPWARDS, sol_ceil);
+			pseudo_sol_sum += sol;
 		}
-		if (SCIPisEQ(scip, SCIPvarGetLbLocal(*var_iter), SCIPvarGetUbLocal(*var_iter))) {
-			SCIPerrorMessage(
-				"cannot branch on constraint containing variable <%s> with fixed domain [%.15g,%.15g]\n",
-				SCIPvarGetName(*var_iter),
-				SCIPvarGetLbLocal(*var_iter),
-				SCIPvarGetUbLocal(*var_iter));
-			return SCIP_INVALIDDATA;
-		}
-
-		SCIP_Real val = SCIPvarGetSol(*var_iter, SCIPhasCurrentNodeLP(scip));
-
-		/* avoid branching on infinite values in pseudo solution */
-		if (SCIPisInfinity(scip, -val) || SCIPisInfinity(scip, val)) {
-			SCIPerrorMessage("cannot branch on variables containing infinite values");
-			return SCIP_INVALIDDATA;
-		}
-		pseudo_sol_sum += val;
+		estimate_down /= static_cast<SCIP_Real>(nvars);
+		estimate_up /= static_cast<SCIP_Real>(nvars);
+		priority_down /= static_cast<SCIP_Real>(nvars);
+		priority_up /= static_cast<SCIP_Real>(nvars);
 	}
 
+	/* If the sum of the LP solution values is integral, we cannot branch without portentially excluding feasible
+	 * solutions */
 	SCIP_Real const downbound = SCIPfeasFloor(scip, pseudo_sol_sum);
 	SCIP_Real const upbound = SCIPfeasCeil(scip, pseudo_sol_sum);
-	SCIP_Real const estimate = SCIPnodeGetLowerbound(SCIPgetCurrentNode(scip));
 	if (SCIPisEQ(scip, downbound, upbound)) {
 		SCIPerrorMessage("cannot branch on a variables whose sum of LP solution value is integer");
 		return SCIP_INVALIDDATA;
 	}
 
-	SCIP_Real const inf = SCIPinfinity(scip);
 	SCIP_Real* ones = nullptr;
-	SCIP_Retcode retcode = SCIP_OKAY;
 	SCIP_CALL(SCIPallocBufferArray(scip, &ones, nvars));
 	for (int i = 0; i < nvars; ++i) {
 		ones[i] = 1.;
 	}
 
+	SCIP_Retcode retcode = SCIP_OKAY;
+	SCIP_Real const inf = SCIPinfinity(scip);
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchSum_AddChild(scip, 1, estimate, vars, ones, nvars, -inf, downbound, downchild), TERM);
+		retcode,
+		SCIPbranchSum_AddChild(scip, priority_down, estimate_down, vars, ones, nvars, -inf, downbound, downchild),
+		TERM);
 	SCIP_CALL_TERMINATE(
-		retcode, SCIPbranchSum_AddChild(scip, 1, estimate, vars, ones, nvars, upbound, inf, upchild), TERM);
+		retcode, SCIPbranchSum_AddChild(scip, priority_up, estimate_up, vars, ones, nvars, upbound, inf, upchild), TERM);
 
 TERM:
 	SCIPfreeBufferArray(scip, &ones);
