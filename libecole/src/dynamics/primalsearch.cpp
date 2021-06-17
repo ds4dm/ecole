@@ -12,7 +12,7 @@ PrimalSearchDynamics::PrimalSearchDynamics(
 	int trials_per_node_,
 	int depth_freq_,
 	int depth_start_,
-	int depth_stop_) noexcept(false) :
+	int depth_stop_) :
 	trials_per_node(trials_per_node_), depth_freq(depth_freq_), depth_start(depth_start_), depth_stop(depth_stop_) {
 	if (trials_per_node < -1) {
 		throw std::invalid_argument{fmt::format("Illegal value for number of trials per node: {}.", trials_per_node)};
