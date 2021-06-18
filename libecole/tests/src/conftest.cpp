@@ -23,7 +23,7 @@ void advance_to_stage(ecole::scip::Model& model, SCIP_STAGE stage) {
 		model.presolve();
 		break;
 	case SCIP_STAGE_SOLVING:
-		model.solve_iter();
+		model.solve_iter_start_branch();
 		break;
 	case SCIP_STAGE_SOLVED:
 		model.solve();

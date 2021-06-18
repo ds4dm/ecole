@@ -21,7 +21,7 @@ def test_reset(model):
     env = MockEnvironment()
     _, _, _, _, _ = env.reset(model)
     assert model is not env.model  # Model is copied
-    assert not env.model.is_solved()
+    assert not env.model.is_solved
 
     env.dynamics.reset_dynamics.assert_called_with(env.model)
     env.dynamics.set_dynamics_random_state.assert_called()

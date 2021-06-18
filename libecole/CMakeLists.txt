@@ -39,6 +39,7 @@ add_library(
 	src/dynamics/branching.cpp
 	src/dynamics/branching-sum.cpp
 	src/dynamics/configuring.cpp
+	src/dynamics/primalsearch.cpp
 )
 set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)
 
