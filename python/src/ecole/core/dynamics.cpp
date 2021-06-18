@@ -63,9 +63,10 @@ void bind_submodule(pybind11::module_ const& m) {
 		dynamics_class<BranchingDynamics>{m, "BranchingDynamics", R"(
 			Single variable branching Dynamics.
 
-			Based on a SCIP branching callback with maximal priority and no depth limit.
+			Based on a SCIP `branching callback <https://www.scipopt.org/doc/html/BRANCH.php>`_
+			with maximal priority and no depth limit.
 			The dynamics give the control back to the user every time the callback would be called.
-			The user recieves as an action set the list of branching candidates, and is expected to select
+			The user receives as an action set the list of branching candidates, and is expected to select
 			one of them as the action.
 		)"}
 			.def_reset_dynamics(R"(
@@ -135,11 +136,12 @@ void bind_submodule(pybind11::module_ const& m) {
 	{
 		using idx_t = typename BranchingSumDynamics::Action::value_type;
 		dynamics_class<BranchingSumDynamics>{m, "BranchingSumDynamics", R"(
-			Branching on the sum of variables.
+			Sum of variables branching Dynamics.
 
-			Based on a SCIP branching callback with maximal priority and no depth limit.
+			Based on a SCIP `branching callback <https://www.scipopt.org/doc/html/BRANCH.php>`_
+			with maximal priority and no depth limit.
 			The dynamics give the control back to the user every time the callback would be called.
-			The user recieves as an action set the list of branching candidates, and is expected to select
+			The user receives as an action set the list of branching candidates, and is expected to select
 			a subset of them to branch on their sum.
 
 			.. warning::
@@ -202,7 +204,7 @@ void bind_submodule(pybind11::module_ const& m) {
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
 					action:
-						A subset of of the variables of given in the action set.
+						A subset of the variables given in the action set.
 						Not all subsets are valid (see above).
 
 				Returns
@@ -217,7 +219,7 @@ void bind_submodule(pybind11::module_ const& m) {
 
 	{
 		dynamics_class<ConfiguringDynamics>{m, "ConfiguringDynamics", R"(
-			Setting solving parameters dynamics.
+			Setting solving parameters Dynamics.
 
 			These dynamics are meant to be used as a (contextual) bandit to find good parameters for SCIP.
 		)"}
@@ -274,7 +276,29 @@ void bind_submodule(pybind11::module_ const& m) {
 	{
 		using idx_t = typename PrimalSearchDynamics::Action::first_type::value_type;
 		using val_t = typename PrimalSearchDynamics::Action::second_type::value_type;
-		dynamics_class<PrimalSearchDynamics>(m, "PrimalSearchDynamics")  //
+		dynamics_class<PrimalSearchDynamics>{m, "PrimalSearchDynamics", R"(
+			Search for primal solutions Dynamics.
+
+			Based on a SCIP `primal heuristic <https://www.scipopt.org/doc/html/HEUR.php>`_
+			callback with maximal priority, which executes
+			after the processing of a node is finished (``SCIP_HEURTIMING_AFTERNODE``).
+			The dynamics give the control back to the user a few times (trials) each time
+			the callback is called. The agent receives as an action set the list of all non-fixed
+			discrete variables at the current node (pseudo branching candidates), and is
+			expected to give back as an action a partial primal solution, i.e., a value
+			assignment for a subset of these variables.
+
+			Parameters
+			----------
+				trials_per_node: int
+					Number of primal searches performed at each node (or -1 for an infinite number of trials).
+				depth_freq: int
+					Depth frequency of when the primal search is called (``HEUR_FREQ`` in SCIP).
+				depth_start: int
+					Tree depth at which the primal search starts being called (``HEUR_FREQOFS`` in SCIP).
+				depth_stop: int
+					Tree depth after which the primal search stops being called (``HEUR_MAXDEPTH`` in SCIP).
+		)"}
 			.def_set_dynamics_random_state(R"(
 				Set seeds on the :py:class:`~ecole.scip.Model`.
 
@@ -287,7 +311,27 @@ void bind_submodule(pybind11::module_ const& m) {
 					random_engine:
 						The source of randomness. Passed by the environment.
 			)")
-			.def_reset_dynamics()
+			.def_reset_dynamics(R"(
+				Start solving up to first primal heuristic call.
+
+				Start solving with SCIP defaults (``SCIPsolve``) and give back control to the user on the
+				first heuristic call.
+				Users can inherit from this dynamics to change the defaults settings such as presolving
+				and cutting planes.
+
+				Parameters
+				----------
+					model:
+						The state of the Markov Decision Process. Passed by the environment.
+
+				Returns
+				-------
+					done:
+						Whether the instance is solved.
+						This can happen before the heuristic gets called, for instance if the instance is solved during presolving.
+					action_set:
+						List of non-fixed discrete variables (``SCIPgetPseudoBranchCands``).
+			)")
 			.def(
 				"step_dynamics",
 				[](PrimalSearchDynamics& self, scip::Model& model, std::pair<Numpy<idx_t>, Numpy<val_t>> const& action) {
@@ -297,7 +341,30 @@ void bind_submodule(pybind11::module_ const& m) {
 					return self.step_dynamics(model, {indices, values});
 				},
 				py::arg("model"),
-				py::arg("action"))
+				py::arg("action"),
+				R"(
+				Tries to obtain a feasible primal solution from the given (partial) primal solution.
+				If the number of search trials per node is exceeded, then continue solving until
+				the next time the heuristic gets called.
+
+				To obtain a complete feasible solution, variables are fixed to their partial assignment
+				values, and the rest of the variable assigments is deduced by solving an LP in probing
+				mode. If the provided partial assigment is empty, then nothing is done.
+
+				Parameters
+				----------
+					model:
+						The state of the Markov Decision Process. Passed by the environment.
+					action:
+						A subset of the variables given in the action set, and their assigned values.
+
+				Returns
+				-------
+					done:
+						Whether the instance is solved.
+					action_set:
+						List of non-fixed discrete variables (``SCIPgetPseudoBranchCands``).
+			)")
 			.def(
 				py::init<int, int, int, int>(),
 				py::arg("trials_per_node") = 1,

@@ -6,7 +6,7 @@ import ecole
 class Environment:
     """Ecole Partially Observable Markov Decision Process (POMDP).
 
-    Similar to OpenAI Gym, environments represent the environment that an agent is supposed to solved.
+    Similar to OpenAI Gym, environments represent the task that an agent is supposed to solve.
     For maximum customizability, different components are composed/orchestrated in this class.
     """
 
@@ -28,16 +28,16 @@ class Environment:
         Parameters
         ----------
         observation_function:
-            An object of type :py:class:`~ecole.observation.ObservationFunction` used to custotize what
-            observation are returned in :meth:`reset` and :meth:`step`.
+            An object of type :py:class:`~ecole.observation.ObservationFunction` used to customize the
+            observation returned by :meth:`reset` and :meth:`step`.
         reward_function:
-            An object of type :py:class:`~ecole.reward.RewardFunction` used to customize what reward
-            are returned in :meth:`reset` and :meth:`step`.
+            An object of type :py:class:`~ecole.reward.RewardFunction` used to customize the reward
+            returned by :meth:`reset` and :meth:`step`.
         information_function:
-            An object of type :py:class:`~ecole.information.InformationFunction` used to customize what
-            additional information are returned in :meth:`reset` and :meth:`step`.
+            An object of type :py:class:`~ecole.information.InformationFunction` used to customize the
+            additional information returned by :meth:`reset` and :meth:`step`.
         scip_params:
-            Parameters set on the underlying :py:class:`~ecole.scip.Model` on every episode.
+            Parameters set on the underlying :py:class:`~ecole.scip.Model` at the start of every episode.
         **dynamics_kwargs:
             Other arguments are passed to the constructor of the :py:class:`~ecole.typing.Dynamics`.
 
@@ -66,7 +66,7 @@ class Environment:
         Parameters
         ----------
         instance:
-            The combinatorial optimization problem to tackle during the newly startedre
+            The combinatorial optimization problem to tackle during the newly started
             episode.
             Either a file path to an instance that can be read by SCIP, or a `Model` whose problem
             definition data will be copied.
@@ -78,20 +78,21 @@ class Environment:
         Returns
         -------
         observation:
-            The observation of extracted from the initial state.
+            The observation extracted from the initial state.
             Typically used to take the next action.
         action_set:
-            An optional subset of accepted action in the next transition.
-            For some environment, this may change at every transition.
+            An optional subset that defines which actions are accepted in the next transition.
+            For some environment, the action set may change at every transition.
         reward_offset:
-            An offset on the initial state.
-            This reward is not used for learning (as no action has yet been taken) but is used in
-            evaluation for the sum of rewards when one needs to account for computations that
-            happened during :py:meth:`reset` (*e.g.* computation time, number of LP iteration in
-            presolving...).
+            An offset on the total cumulated reward, a.k.a. the initial reward.
+            This reward does not impact learning (as no action has yet been taken) but can nonetheless
+            be used for evaluation purposes. For example, in the total cumulated reward of an episode
+            one may want to account for computations that happened during :py:meth:`reset`
+            (*e.g.* computation time, number of LP iteration in presolving...).
         done:
-            A boolean flag indicating wether the current state is terminal.
-            If this is true, the episode is finished, and :meth:`step` cannot be called.
+            A boolean flag indicating whether the current state is terminal.
+            If this flag is true, then the current episode is finished, and :meth:`step`
+            cannot be called any more.
         info:
             A collection of environment specific information about the transition.
             This is not necessary for the control problem, but is useful to gain
@@ -129,14 +130,14 @@ class Environment:
         This method takes a user action to transition from the current state to the
         next.
         The method **cannot** be called if the environment has not been reset since its
-        instantiation or since a terminal state.
+        instantiation or since a terminal state has been reached.
 
         Parameters
         ----------
         action:
             The action to take in as part of the Markov Decision Process.
             If an action set has been given in the latest call (inluding calls to
-            :meth:`reset`), then the action **must** be in that set.
+            :meth:`reset`), then the action **must** comply with the action set.
         dynamics_args:
             Extra arguments are forwarded as is to the underlying :py:class:`~ecole.typing.Dynamics`.
         dynamics_kwargs:
@@ -145,17 +146,17 @@ class Environment:
         Returns
         -------
         observation:
-            The observation of extracted from the current state.
+            The observation extracted from the initial state.
             Typically used to take the next action.
         action_set:
-            An optional subset of accepted action in the next transition.
-            For some environment, this may change at every transition.
+            An optional subset that defines which actions are accepted in the next transition.
+            For some environment, the action set may change at every transition.
         reward:
             A real number to use for reinforcement learning.
         done:
-            A boolean flag indicating wether the current state is terminal.
-            If this is true, the episode is finished, and this method cannot be called
-            until :meth:`reset` has been called.
+            A boolean flag indicating whether the current state is terminal.
+            If this flag is true, then the current episode is finished, and :meth:`step`
+            cannot be called any more.
         info:
             A collection of environment specific information about the transition.
             This is not necessary for the control problem, but is useful to gain
@@ -180,7 +181,7 @@ class Environment:
     def seed(self, value: int) -> None:
         """Set the random seed of the environment.
 
-        The the random seed is used to seed the environment :py:class:`~ecole.RandomEngine`.
+        The random seed is used to seed the environment :py:class:`~ecole.RandomEngine`.
         At every call to :py:meth:`reset`, the random engine is used to create new seeds
         for the solver.
         Setting the seed once will ensure determinism for the next trajectories.
