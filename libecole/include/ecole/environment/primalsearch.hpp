@@ -12,6 +12,7 @@ template <
 	typename ObservationFunction = observation::NodeBipartite,
 	typename RewardFunction = reward::IsDone,
 	typename InformationFunction = information::Nothing>
-using Branching = Environment<dynamics::PrimalSearchDynamics, ObservationFunction, RewardFunction, InformationFunction>;
+using PrimalSearch =
+	Environment<dynamics::PrimalSearchDynamics, ObservationFunction, RewardFunction, InformationFunction>;
 
 }  // namespace ecole::environment
