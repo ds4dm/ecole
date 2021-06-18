@@ -288,16 +288,6 @@ void bind_submodule(pybind11::module_ const& m) {
 			expected to give back as an action a partial primal solution, i.e., a value
 			assignment for a subset of these variables.
 
-			Parameters
-			----------
-				trials_per_node: int
-					Number of primal searches performed at each node (or -1 for an infinite number of trials).
-				depth_freq: int
-					Depth frequency of when the primal search is called (``HEUR_FREQ`` in SCIP).
-				depth_start: int
-					Tree depth at which the primal search starts being called (``HEUR_FREQOFS`` in SCIP).
-				depth_stop: int
-					Tree depth after which the primal search stops being called (``HEUR_MAXDEPTH`` in SCIP).
 		)"}
 			.def_set_dynamics_random_state(R"(
 				Set seeds on the :py:class:`~ecole.scip.Model`.
@@ -343,7 +333,8 @@ void bind_submodule(pybind11::module_ const& m) {
 				py::arg("model"),
 				py::arg("action"),
 				R"(
-				Tries to obtain a feasible primal solution from the given (partial) primal solution.
+				Try to obtain a feasible primal solution from the given (partial) primal solution.
+
 				If the number of search trials per node is exceeded, then continue solving until
 				the next time the heuristic gets called.
 
@@ -370,7 +361,21 @@ void bind_submodule(pybind11::module_ const& m) {
 				py::arg("trials_per_node") = 1,
 				py::arg("depth_freq") = 1,
 				py::arg("depth_start") = 0,
-				py::arg("depth_stop") = -1);
+				py::arg("depth_stop") = -1,
+				R"(
+					Initialize new PrimalSearchDynamics.
+
+					Parameters
+					----------
+						trials_per_node:
+							Number of primal searches performed at each node (or -1 for an infinite number of trials).
+						depth_freq:
+							Depth frequency of when the primal search is called (``HEUR_FREQ`` in SCIP).
+						depth_start:
+							Tree depth at which the primal search starts being called (``HEUR_FREQOFS`` in SCIP).
+						depth_stop:
+							Tree depth after which the primal search stops being called (``HEUR_MAXDEPTH`` in SCIP).
+				)");
 	}
 }
 
