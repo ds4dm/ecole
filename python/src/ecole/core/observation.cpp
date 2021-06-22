@@ -206,7 +206,7 @@ void bind_submodule(py::module_ const& m) {
 
 		Parameters
 		----------
-		use_normalization :
+		normalize :
 			Should the features be normalized?
 			This is recommended for some application such as deep learning models.
 	)");
