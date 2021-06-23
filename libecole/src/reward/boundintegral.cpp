@@ -44,6 +44,7 @@ public:
 
 	/** Get and adds primal/dual bounds and times to vectors. */
 	void extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type = 0);
+	void clear_bounds();
 
 private:
 	bool wall;
@@ -158,6 +159,22 @@ void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type
 		}
 	}
 	times.push_back(time_now(wall));
+}
+
+void IntegralEventHandler::clear_bounds() {
+	if (extract_dual) {
+		auto last_dual = dual_bounds[dual_bounds.size() - 1];
+		dual_bounds.clear();
+		dual_bounds.push_back(last_dual);
+	}
+	if (extract_primal) {
+		auto last_primal = primal_bounds[primal_bounds.size() - 1];
+		primal_bounds.clear();
+		primal_bounds.push_back(last_primal);
+	}
+	auto last_time = times[times.size() - 1];
+	times.clear();
+	times.push_back(last_time);
 }
 
 /*************************************
@@ -302,8 +319,6 @@ ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFuncti
 }
 
 template <Bound bound> void BoundIntegral<bound>::before_reset(scip::Model& model) {
-	last_integral = 0.0;
-
 	// Initalize bounds and event handler
 	if constexpr (bound == Bound::dual) {
 		std::tie(offset, initial_dual_bound) = bound_function(model);
@@ -341,11 +356,9 @@ template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, 
 			primal_bounds, dual_bounds, times, initial_primal_bound, initial_dual_bound, obj_sense);
 	}
 
-	/* Compute diff and update last_integral */
-	auto const integral_diff = integral - last_integral;
-	last_integral = integral;
-
-	return static_cast<Reward>(integral_diff);
+	// Reset arrays for storing bounds
+	handler.clear_bounds();
+	return static_cast<Reward>(integral);
 }
 
 template class BoundIntegral<Bound::primal>;
