@@ -112,7 +112,7 @@ def test_cumsum(reward_function, model, model_copy):
 
 def test_primal_integral_lambda(model):
     """Tests passing a lambda function into primal integral class."""
-    reward_function = ecole.reward.PrimalIntegral(bound_function=lambda x: (-1e3, 1e3))
+    reward_function = ecole.reward.PrimalIntegral(bound_function=lambda x: (0, 1e3))
 
     reward_function.before_reset(model)
     pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
@@ -123,7 +123,7 @@ def test_primal_integral_lambda(model):
 
 def test_dual_integral_lambda(model):
     """Tests passing a lambda function into dual integral class."""
-    reward_function = ecole.reward.DualIntegral(bound_function=lambda x: (-1e3, 1e3))
+    reward_function = ecole.reward.DualIntegral(bound_function=lambda x: (0, -1e3))
 
     reward_function.before_reset(model)
     pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
@@ -134,7 +134,7 @@ def test_dual_integral_lambda(model):
 
 def test_primal_dual_integral_lambda(model):
     """Tests passing a lambda function into primal-dual integral class."""
-    reward_function = ecole.reward.PrimalDualIntegral(bound_function=lambda x: (-1e3, 1e3))
+    reward_function = ecole.reward.PrimalDualIntegral(bound_function=lambda x: (1e3, -1e3))
 
     reward_function.before_reset(model)
     pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
