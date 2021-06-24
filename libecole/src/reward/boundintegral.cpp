@@ -1,7 +1,6 @@
 #include <chrono>
 #include <memory>
 #include <vector>
-//#include <string>
 
 #include "scip/scip.h"
 #include "scip/type_event.h"
@@ -11,8 +10,6 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/chrono.hpp"
-
-#include <iostream>
 
 namespace ecole::reward {
 
