@@ -165,16 +165,16 @@ void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type
 
 void IntegralEventHandler::clear_bounds() {
 	if (extract_dual) {
-		auto last_dual = dual_bounds[dual_bounds.size() - 1];
+		auto last_dual = dual_bounds.back();
 		dual_bounds.clear();
 		dual_bounds.push_back(last_dual);
 	}
 	if (extract_primal) {
-		auto last_primal = primal_bounds[primal_bounds.size() - 1];
+		auto last_primal = primal_bounds.back();
 		primal_bounds.clear();
 		primal_bounds.push_back(last_primal);
 	}
-	auto last_time = times[times.size() - 1];
+	auto last_time = times.back();
 	times.clear();
 	times.push_back(last_time);
 }
@@ -190,23 +190,15 @@ auto compute_dual_integral(
 	SCIP_Real const initial_dual_bound,
 	SCIP_Objsense obj_sense) {
 	SCIP_Real dual_integral = 0.0;
-
-	if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
-		for (std::size_t i = 0; i < dual_bounds.size() - 1; ++i) {
-			auto const db = std::max(dual_bounds[i], initial_dual_bound);
-			auto const dual_bound_diff = offset - db;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			dual_integral += dual_bound_diff * time_diff;
-		}
-	} else {
-		for (std::size_t i = 0; i < dual_bounds.size() - 1; ++i) {
-			auto const db = std::min(dual_bounds[i], initial_dual_bound);
-			auto const dual_bound_diff = db - offset;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			dual_integral += dual_bound_diff * time_diff;
+	for (std::size_t i = 0; i < dual_bounds.size() - 1; ++i) {
+		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
+		auto const dual_bound = dual_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			dual_integral += (offset - std::max(dual_bound, initial_dual_bound)) * time_diff;
+		} else {
+			dual_integral += -(offset - std::min(dual_bound, initial_dual_bound)) * time_diff;
 		}
 	}
-
 	return dual_integral;
 }
 
@@ -217,22 +209,15 @@ auto compute_primal_integral(
 	SCIP_Real const initial_primal_bound,
 	SCIP_Objsense obj_sense) {
 	SCIP_Real primal_integral = 0.0;
-	if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
-		for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-			auto const pb = std::min(primal_bounds[i], initial_primal_bound);
-			auto const primal_bound_diff = pb - offset;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			primal_integral += primal_bound_diff * time_diff;
-		}
-	} else {
-		for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-			auto const pb = std::max(primal_bounds[i], initial_primal_bound);
-			auto const primal_bound_diff = offset - pb;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			primal_integral += primal_bound_diff * time_diff;
+	for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
+		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
+		auto const primal_bound = primal_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			primal_integral += -(offset - std::min(primal_bound, initial_primal_bound)) * time_diff;
+		} else {
+			primal_integral += (offset - std::max(primal_bound, initial_primal_bound)) * time_diff;
 		}
 	}
-
 	return primal_integral;
 }
 
@@ -244,24 +229,19 @@ auto compute_primal_dual_integral(
 	SCIP_Real const initial_dual_bound,
 	SCIP_Objsense obj_sense) {
 	SCIP_Real primal_dual_integral = 0.0;
-	if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
-		for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-			auto const pb = std::min(primal_bounds[i], initial_primal_bound);
-			auto const db = std::max(dual_bounds[i], initial_dual_bound);
-			auto const primal_dual_bound_diff = pb - db;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			primal_dual_integral += primal_dual_bound_diff * time_diff;
-		}
-	} else {
-		for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-			auto const pb = std::max(primal_bounds[i], initial_primal_bound);
-			auto const db = std::min(dual_bounds[i], initial_dual_bound);
-			auto const primal_dual_bound_diff = db - pb;
-			auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-			primal_dual_integral += primal_dual_bound_diff * time_diff;
+
+	for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
+		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
+		auto const dual_bound = dual_bounds[i];
+		auto const primal_bound = primal_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			primal_dual_integral +=
+				-(std::max(dual_bound, initial_dual_bound) - std::min(primal_bound, initial_primal_bound)) * time_diff;
+		} else {
+			primal_dual_integral +=
+				(std::min(dual_bound, initial_dual_bound) - std::max(primal_bound, initial_primal_bound)) * time_diff;
 		}
 	}
-
 	return primal_dual_integral;
 }
 
