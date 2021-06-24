@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 #include "ecole/reward/abstract.hpp"
 
@@ -19,9 +20,10 @@ public:
 
 private:
 	BoundFunction bound_function;
-	Reward last_integral = 0.0;
+	std::string name;
 	Reward initial_primal_bound = 0.0;
 	Reward initial_dual_bound = 0.0;
+	Reward offset = 0.0;
 	bool wall = false;
 };
 

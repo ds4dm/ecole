@@ -191,9 +191,9 @@ void bind_submodule(py::module_ const& m) {
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
 		bound_function :
-			A function which takes an ecole model and returns a tuple of an initial dual bound and the value
-			to compute the dual bound with respect to.
-			Values should be ordered as (initial_dual_bound, dual_bound_reference).
+			A function which takes an ecole model and returns a tuple of an initial dual bound and the offset
+			to compute the dual bound with respect to.  Values should be ordered as (offset, initial_dual_bound).
+			The default function returns (0, 1e20) if the problem is a maximization and (0, -1e20) otherwise.
 
 	)");
 	def_operators(dualintegral);
@@ -223,9 +223,9 @@ void bind_submodule(py::module_ const& m) {
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
 		bound_function :
-			A function which takes an ecole model and returns a tuple of the value
-			to compute the primal bound with respect to and an initial primal bound.
-			Values should be ordered as (primal_bound_reference, initial_primal_bound).
+			A function which takes an ecole model and returns a tuple of an initial primal bound and the offset
+			to compute the primal bound with respect to. Values should be ordered as (offset, initial_primal_bound).
+			The default function returns (0, -1e20) if the problem is a maximization and (0, 1e20) otherwise.
 	)");
 	def_operators(primalintegral);
 	def_before_reset(primalintegral, "Reset the internal clock counter and the event handler.");
@@ -255,7 +255,8 @@ void bind_submodule(py::module_ const& m) {
 			If true, the wall time will be used. If False (default), the process time will be used.
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial primal bound and dual bound.
-			Values should be ordered as (initial_dual_bound, initial_primal_bound).
+			Values should be ordered as (initial_primal_bound, initial_dual_bound). The default function returns
+			(-1e20, 1e20) if the problem is a maximization and (1e20, -1e20) otherwise.
 	)");
 	def_operators(primaldualintegral);
 	def_before_reset(primaldualintegral, "Reset the internal clock counter and the event handler.");
