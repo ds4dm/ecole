@@ -1,6 +1,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+//#include <string>
 
 #include "scip/scip.h"
 #include "scip/type_event.h"
@@ -10,6 +11,8 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/chrono.hpp"
+
+#include <iostream>
 
 namespace ecole::reward {
 
@@ -21,10 +24,11 @@ namespace {
 
 class IntegralEventHandler : public ::scip::ObjEventhdlr {
 public:
-	inline static auto constexpr name = "ecole::reward::IntegralEventHandler";
+	inline static auto constexpr base_name = "ecole::reward::IntegralEventHandler";
+	inline static auto integral_reward_function_counter = 0;
 
-	IntegralEventHandler(SCIP* scip, bool wall_, bool extract_primal_, bool extract_dual_) :
-		ObjEventhdlr(scip, name, "Event handler for primal and dual integrals"),
+	IntegralEventHandler(SCIP* scip, bool wall_, bool extract_primal_, bool extract_dual_, const char* name_) :
+		ObjEventhdlr(scip, name_, "Event handler for primal and dual integrals"),
 		wall{wall_},
 		extract_primal{extract_primal_},
 		extract_dual{extract_dual_} {}
@@ -264,8 +268,8 @@ auto compute_primal_dual_integral(
 }
 
 /** Return the integral event handler */
-auto get_eventhdlr(scip::Model& model) -> auto& {
-	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), IntegralEventHandler::name);
+auto get_eventhdlr(scip::Model& model, const char* name) -> auto& {
+	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), name);
 	assert(base_handler != nullptr);
 	auto* const handler = dynamic_cast<IntegralEventHandler*>(base_handler);
 	assert(handler != nullptr);
@@ -273,8 +277,8 @@ auto get_eventhdlr(scip::Model& model) -> auto& {
 }
 
 /** Add the integral event handler to the model. */
-void add_eventhdlr(scip::Model& model, bool wall, bool extract_primal, bool extract_dual) {
-	auto handler = std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, extract_primal, extract_dual);
+void add_eventhdlr(scip::Model& model, bool wall, bool extract_primal, bool extract_dual, const char* name) {
+	auto handler = std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, extract_primal, extract_dual, name);
 	scip::call(SCIPincludeObjEventhdlr, model.get_scip_ptr(), handler.get(), true);
 	// NOLINTNEXTLINE memory ownership is passed to SCIP
 	handler.release();
@@ -316,28 +320,30 @@ ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFuncti
 	} else if constexpr (bound == Bound::primal_dual) {
 		bound_function = bound_function_ ? bound_function_ : default_primal_dual_bound_function;
 	}
+	name = IntegralEventHandler::base_name + std::to_string(IntegralEventHandler::integral_reward_function_counter);
+	IntegralEventHandler::integral_reward_function_counter++;
 }
 
 template <Bound bound> void BoundIntegral<bound>::before_reset(scip::Model& model) {
 	// Initalize bounds and event handler
 	if constexpr (bound == Bound::dual) {
 		std::tie(offset, initial_dual_bound) = bound_function(model);
-		add_eventhdlr(model, wall, false, true);
+		add_eventhdlr(model, wall, false, true, name.c_str());
 	} else if constexpr (bound == Bound::primal) {
 		std::tie(offset, initial_primal_bound) = bound_function(model);
-		add_eventhdlr(model, wall, true, false);
+		add_eventhdlr(model, wall, true, false, name.c_str());
 	} else if constexpr (bound == Bound::primal_dual) {
 		std::tie(initial_primal_bound, initial_dual_bound) = bound_function(model);
-		add_eventhdlr(model, wall, true, true);
+		add_eventhdlr(model, wall, true, true, name.c_str());
 	}
 
 	// Extract metrics before resetting to get initial reference point
-	get_eventhdlr(model).extract_metrics(model.get_scip_ptr());
+	get_eventhdlr(model, name.c_str()).extract_metrics(model.get_scip_ptr());
 }
 
 template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, bool /*done*/) {
 	// Get info from event handler
-	auto& handler = get_eventhdlr(model);
+	auto& handler = get_eventhdlr(model, name.c_str());
 	handler.extract_metrics(model.get_scip_ptr());
 
 	auto const& dual_bounds = handler.get_dual_bounds();

@@ -19,6 +19,7 @@ public:
 
 private:
 	BoundFunction bound_function;
+	std::string name;
 	Reward initial_primal_bound = 0.0;
 	Reward initial_dual_bound = 0.0;
 	Reward offset = 0.0;
