@@ -1,5 +1,6 @@
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "scip/scip.h"
@@ -317,6 +318,9 @@ ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFuncti
 	} else if constexpr (bound == Bound::primal_dual) {
 		bound_function = bound_function_ ? bound_function_ : default_primal_dual_bound_function;
 	}
+
+	static auto m = std::mutex{};
+	auto g = std::lock_guard{m};
 	name = IntegralEventHandler::base_name + std::to_string(IntegralEventHandler::integral_reward_function_counter);
 	IntegralEventHandler::integral_reward_function_counter++;
 }
