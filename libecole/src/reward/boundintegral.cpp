@@ -103,10 +103,7 @@ auto get_primal_bound(SCIP* scip) {
 	case SCIP_STAGE_SOLVED:
 		return SCIPgetPrimalbound(scip);
 	default:
-		if (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MINIMIZE) {
-			return SCIPinfinity(scip);
-		}
-		return -SCIPinfinity(scip);
+		return SCIPgetObjlimit(scip);
 	}
 }
 
