@@ -116,9 +116,14 @@ class Environment:
                 self.model, *dynamics_args, **dynamics_kwargs
             )
 
+            if not done:
+                observation = self.observation_function.extract(self.model, done)
+            else:
+                observation = None
             reward_offset = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
+            
             return observation, action_set, reward_offset, done, information
         except Exception as e:
             self.can_transition = False
@@ -170,9 +175,14 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
+            if not done:
+                observation = self.observation_function.extract(self.model, done)
+            else:
+                observation = None
             reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
+            
             return observation, action_set, reward, done, information
         except Exception as e:
             self.can_transition = False
