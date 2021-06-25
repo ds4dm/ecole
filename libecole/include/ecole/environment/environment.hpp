@@ -15,6 +15,14 @@
 #include "ecole/scip/type.hpp"
 #include "ecole/traits.hpp"
 
+#include <iostream>
+
+namespace {
+    template <typename T> struct is_optional : std::false_type {};
+    template <typename T> struct is_optional<std::optional<T>> : std::true_type {};
+    template <typename T> inline constexpr bool is_optional_v = is_optional<T>::value;
+}
+
 namespace ecole::environment {
 
 /**
@@ -38,6 +46,7 @@ class Environment {
 public:
 	using Seed = ecole::Seed;
 	using Observation = trait::observation_of_t<ObservationFunction>;
+    using OptionalObservation = std::conditional_t<is_optional_v<Observation>, Observation, std::optional<Observation>>;
 	using Action = trait::action_of_t<Dynamics>;
 	using ActionSet = trait::action_set_of_t<Dynamics>;
 	using Reward = reward::Reward;
@@ -96,7 +105,7 @@ public:
 	 */
 	template <typename... Args>
 	auto reset(scip::Model&& new_model, Args&&... args)
-		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
+		-> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		can_transition = true;
 		try {
 			// Create clean new Model
@@ -111,8 +120,16 @@ public:
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 
 			can_transition = !done;
+            OptionalObservation observation;
+            if (!done) {
+                observation = observation_function().extract(model(), done);
+            } else if constexpr (is_optional_v<Observation>) {
+                observation = Observation{};
+            } else {
+                observation = std::optional<Observation>{};
+            }
 			return {
-				observation_function().extract(model(), done),
+				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
@@ -126,13 +143,13 @@ public:
 
 	template <typename... Args>
 	auto reset(scip::Model const& model, Args&&... args)
-		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
+		-> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		return reset(model.copy_orig(), std::forward<Args>(args)...);
 	}
 
 	template <typename... Args>
 	auto reset(std::string const& filename, Args&&... args)
-		-> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
+		-> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		return reset(scip::Model::from_file(filename), std::forward<Args>(args)...);
 	}
 
@@ -153,7 +170,7 @@ public:
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
 	template <typename... Args>
-	auto step(Action const& action, Args&&... args) -> std::tuple<Observation, ActionSet, Reward, bool, InformationMap> {
+	auto step(Action const& action, Args&&... args) -> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		if (!can_transition) {
 			throw Exception("Environment need to be reset.");
 		}
@@ -161,8 +178,16 @@ public:
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
+            OptionalObservation observation;
+            if (!done) {
+                observation = observation_function().extract(model(), done);
+            } else if constexpr (is_optional_v<Observation>) {
+                observation = Observation{};
+            } else {
+                observation = std::optional<Observation>{};
+            }
 			return {
-				observation_function().extract(model(), done),
+				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
