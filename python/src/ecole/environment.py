@@ -43,10 +43,10 @@ class Environment:
 
         """
 
+        self.reward_function = ecole.data.parse(reward_function, self.__DefaultRewardFunction__())
         self.observation_function = ecole.data.parse(
             observation_function, self.__DefaultObservationFunction__()
         )
-        self.reward_function = ecole.data.parse(reward_function, self.__DefaultRewardFunction__())
         self.information_function = ecole.data.parse(
             information_function, self.__DefaultInformationFunction__()
         )
@@ -109,15 +109,15 @@ class Environment:
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
-            self.observation_function.before_reset(self.model)
             self.reward_function.before_reset(self.model)
+            self.observation_function.before_reset(self.model)
             self.information_function.before_reset(self.model)
             done, action_set = self.dynamics.reset_dynamics(
                 self.model, *dynamics_args, **dynamics_kwargs
             )
 
-            observation = self.observation_function.extract(self.model, done)
             reward_offset = self.reward_function.extract(self.model, done)
+            observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
             return observation, action_set, reward_offset, done, information
         except Exception as e:
@@ -170,8 +170,8 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
-            observation = self.observation_function.extract(self.model, done)
             reward = self.reward_function.extract(self.model, done)
+            observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
             return observation, action_set, reward, done, information
         except Exception as e:
