@@ -175,6 +175,7 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
+            
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:

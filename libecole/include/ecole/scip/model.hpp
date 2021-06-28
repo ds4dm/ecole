@@ -100,6 +100,7 @@ public:
 	 */
 	template <ParamType T> void set_param(std::string const& name, utility::value_or_const_ref_t<param_t<T>> value);
 	template <ParamType T> [[nodiscard]] param_t<T> get_param(std::string const& name) const;
+	template <ParamType T> [[nodiscard]] param_t<T> get_param_default(std::string const& name) const;
 
 	/**
 	 * Get and set parameters with automatic casting.
@@ -110,9 +111,11 @@ public:
 	 */
 	template <typename T> void set_param(std::string const& name, T value);
 	template <typename T> [[nodiscard]] T get_param(std::string const& name) const;
+	template <typename T> [[nodiscard]] T get_param_default(std::string const& name) const;
 
 	void set_params(std::map<std::string, Param> name_values);
 	[[nodiscard]] std::map<std::string, Param> get_params() const;
+	std::map<std::string, Param> pause_limits();
 
 	void disable_presolve();
 	void disable_cuts();
@@ -234,6 +237,28 @@ template <typename T> T Model::get_param(std::string const& name) const {
 		return cast<T>(get_param<ParamType::Char>(name));
 	case ParamType::String:
 		return cast<T>(get_param<ParamType::String>(name));
+	default:
+		assert(false);  // All enum value should be handled
+		// Non void return for optimized build
+		throw Exception("Could not find type for given parameter");
+	}
+}
+    
+template <typename T> T Model::get_param_default(std::string const& name) const {
+	using namespace internal;
+	switch (get_param_type(name)) {
+	case ParamType::Bool:
+		return cast<T>(get_param_default<ParamType::Bool>(name));
+	case ParamType::Int:
+		return cast<T>(get_param_default<ParamType::Int>(name));
+	case ParamType::LongInt:
+		return cast<T>(get_param_default<ParamType::LongInt>(name));
+	case ParamType::Real:
+		return cast<T>(get_param_default<ParamType::Real>(name));
+	case ParamType::Char:
+		return cast<T>(get_param_default<ParamType::Char>(name));
+	case ParamType::String:
+		return cast<T>(get_param_default<ParamType::String>(name));
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build

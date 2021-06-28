@@ -17,11 +17,9 @@
 
 #include <iostream>
 
-namespace {
-    template <typename T> struct is_optional : std::false_type {};
-    template <typename T> struct is_optional<std::optional<T>> : std::true_type {};
-    template <typename T> inline constexpr bool is_optional_v = is_optional<T>::value;
-}
+template <typename T> struct is_optional : std::false_type {};
+template <typename T> struct is_optional<std::optional<T>> : std::true_type {};
+template <typename T> inline constexpr bool is_optional_v = is_optional<T>::value;
 
 namespace ecole::environment {
 
@@ -118,23 +116,26 @@ public:
 			reward_function().before_reset(model());
 			information_function().before_reset(model());
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
-
 			can_transition = !done;
+            
+            auto limit_values = model().pause_limits();
             OptionalObservation observation;
-            if (!done) {
+            if (can_transition) {
                 observation = observation_function().extract(model(), done);
             } else if constexpr (is_optional_v<Observation>) {
                 observation = Observation{};
             } else {
                 observation = std::optional<Observation>{};
             }
-			return {
+            std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
-			};
+            };
+            model().set_params(limit_values);
+			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -178,21 +179,24 @@ public:
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
+            auto limit_values = model().pause_limits();
             OptionalObservation observation;
-            if (!done) {
+            if (can_transition) {
                 observation = observation_function().extract(model(), done);
             } else if constexpr (is_optional_v<Observation>) {
                 observation = Observation{};
             } else {
                 observation = std::optional<Observation>{};
             }
-			return {
+            std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
-			};
+            };
+            model().set_params(limit_values);
+			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
