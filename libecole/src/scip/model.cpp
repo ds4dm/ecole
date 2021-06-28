@@ -159,34 +159,34 @@ template <> std::string Model::get_param<ParamType::String>(std::string const& n
 	scip::call(SCIPgetStringParam, const_cast<SCIP*>(get_scip_ptr()), name.c_str(), &ptr);
 	return ptr;
 }
-    
+
 template <> bool Model::get_param_default<ParamType::Bool>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	SCIP_Bool default_value = SCIPparamGetBoolDefault(param);
 	return static_cast<bool>(default_value);
 }
 template <> int Model::get_param_default<ParamType::Int>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	int default_value = SCIPparamGetIntDefault(param);
 	return default_value;
 }
 template <> SCIP_Longint Model::get_param_default<ParamType::LongInt>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	SCIP_Longint default_value = SCIPparamGetLongintDefault(param);
 	return default_value;
 }
 template <> SCIP_Real Model::get_param_default<ParamType::Real>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	SCIP_Real default_value = SCIPparamGetRealDefault(param);
 	return default_value;
 }
 template <> char Model::get_param_default<ParamType::Char>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	char default_value = SCIPparamGetCharDefault(param);
 	return default_value;
 }
 template <> std::string Model::get_param_default<ParamType::String>(std::string const& name) const {
-    auto param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
+	auto* param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	char* default_value = SCIPparamGetStringDefault(param);
 	return default_value;
 }
@@ -217,17 +217,27 @@ std::map<std::string, Param> Model::get_params() const {
 }
 
 std::map<std::string, Param> Model::pause_limits() {
-    static auto constexpr names = std::array{
-        "limits/time", "limits/nodes", "limits/totalnodes", "limits/stallnodes", "limits/memory",
-        "limits/gap", "limits/absgap", "limits/solutions", "limits/bestsol", "limits/maxsol",
-        "limits/maxorigsol", "limits/restarts", "limits/autorestartnodes",
-    };
+	static auto constexpr names = std::array{
+		"limits/time",
+		"limits/nodes",
+		"limits/totalnodes",
+		"limits/stallnodes",
+		"limits/memory",
+		"limits/gap",
+		"limits/absgap",
+		"limits/solutions",
+		"limits/bestsol",
+		"limits/maxsol",
+		"limits/maxorigsol",
+		"limits/restarts",
+		"limits/autorestartnodes",
+	};
 	auto saved = std::map<std::string, Param>{};
-    for (auto const& name : names) {
-        saved[name] = get_param<Param>(name);
+	for (auto const& name : names) {
+		saved[name] = get_param<Param>(name);
 		set_param(name, get_param_default<Param>(name));
 	}
-    return saved;
+	return saved;
 }
 
 void Model::disable_presolve() {

@@ -243,7 +243,7 @@ template <typename T> T Model::get_param(std::string const& name) const {
 		throw Exception("Could not find type for given parameter");
 	}
 }
-    
+
 template <typename T> T Model::get_param_default(std::string const& name) const {
 	using namespace internal;
 	switch (get_param_type(name)) {
