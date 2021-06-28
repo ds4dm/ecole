@@ -118,17 +118,21 @@ public:
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			can_transition = !done;
 
+			auto limit_values = model().pause_limits();
 			auto observation = OptionalObservation{};
 			if (!done) {
 				observation = observation_function().extract(model(), done);
 			}
-			return {
+			std::tuple<Observation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				std::move(observation),
+				observation_function().extract(model(), done),
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
 			};
+			model().set_params(limit_values);
+			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
@@ -173,17 +177,20 @@ public:
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
+			auto limit_values = model().pause_limits();
 			auto observation = OptionalObservation{};
 			if (!done) {
 				observation = observation_function().extract(model(), done);
 			}
-			return {
+			std::tuple<Observation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				std::move(observation),
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
 			};
+			model().set_params(limit_values);
+			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
 			throw;
