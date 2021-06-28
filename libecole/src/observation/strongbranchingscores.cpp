@@ -68,12 +68,12 @@ std::optional<xt::xtensor<double, 1>> StrongBranchingScores::extract(scip::Model
 	model.set_param("branching/vanillafullstrong/idempotent", idempotent);
 
 	/* Store strong branching scores in tensor */
-	auto const nb_vars = static_cast<std::size_t>(SCIPgetNVars(scip));
-	auto strong_branching_scores = xt::xtensor<double, 1>({nb_vars}, std::nan(""));
+	auto const num_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
+	auto strong_branching_scores = xt::xtensor<double, 1>({num_lp_columns}, std::nan(""));
 
 	for (auto const [var, score] : views::zip(cands, cands_scores)) {
-		auto const var_index = static_cast<std::size_t>(SCIPvarGetProbindex(var));
-		strong_branching_scores[var_index] = static_cast<double>(score);
+		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(SCIPvarGetCol(var)));
+		strong_branching_scores[lp_index] = static_cast<double>(score);
 	}
 
 	return strong_branching_scores;
