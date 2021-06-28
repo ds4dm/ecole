@@ -175,7 +175,12 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
+<<<<<<< HEAD
             
+=======
+
+            limit_values = self.model.pause_limits()
+>>>>>>> a00fa4a... Style fixes
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:
@@ -183,7 +188,12 @@ class Environment:
             reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
+<<<<<<< HEAD
             
+=======
+            self.model.set_params(limit_values)
+
+>>>>>>> a00fa4a... Style fixes
             return observation, action_set, reward, done, information
         except Exception as e:
             self.can_transition = False

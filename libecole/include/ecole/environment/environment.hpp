@@ -44,7 +44,7 @@ class Environment {
 public:
 	using Seed = ecole::Seed;
 	using Observation = trait::observation_of_t<ObservationFunction>;
-    using OptionalObservation = std::conditional_t<is_optional_v<Observation>, Observation, std::optional<Observation>>;
+	using OptionalObservation = std::conditional_t<is_optional_v<Observation>, Observation, std::optional<Observation>>;
 	using Action = trait::action_of_t<Dynamics>;
 	using ActionSet = trait::action_set_of_t<Dynamics>;
 	using Reward = reward::Reward;
@@ -117,24 +117,24 @@ public:
 			information_function().before_reset(model());
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			can_transition = !done;
-            
-            auto limit_values = model().pause_limits();
-            OptionalObservation observation;
-            if (can_transition) {
-                observation = observation_function().extract(model(), done);
-            } else if constexpr (is_optional_v<Observation>) {
-                observation = Observation{};
-            } else {
-                observation = std::optional<Observation>{};
-            }
-            std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
+
+			auto limit_values = model().pause_limits();
+			OptionalObservation observation;
+			if (can_transition) {
+				observation = observation_function().extract(model(), done);
+			} else if constexpr (is_optional_v<Observation>) {
+				observation = Observation{};
+			} else {
+				observation = std::optional<Observation>{};
+			}
+			std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
-            };
-            model().set_params(limit_values);
+			};
+			model().set_params(limit_values);
 			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -171,7 +171,8 @@ public:
 	 *      In such cases, a call to reset must be perform before continuing.
 	 */
 	template <typename... Args>
-	auto step(Action const& action, Args&&... args) -> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
+	auto step(Action const& action, Args&&... args)
+		-> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		if (!can_transition) {
 			throw Exception("Environment need to be reset.");
 		}
@@ -179,23 +180,23 @@ public:
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
-            auto limit_values = model().pause_limits();
-            OptionalObservation observation;
-            if (can_transition) {
-                observation = observation_function().extract(model(), done);
-            } else if constexpr (is_optional_v<Observation>) {
-                observation = Observation{};
-            } else {
-                observation = std::optional<Observation>{};
-            }
-            std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
+			auto limit_values = model().pause_limits();
+			OptionalObservation observation;
+			if (can_transition) {
+				observation = observation_function().extract(model(), done);
+			} else if constexpr (is_optional_v<Observation>) {
+				observation = Observation{};
+			} else {
+				observation = std::optional<Observation>{};
+			}
+			std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> transition_data = {
 				observation,
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
 				information_function().extract(model(), done),
-            };
-            model().set_params(limit_values);
+			};
+			model().set_params(limit_values);
 			return transition_data;
 		} catch (std::exception const&) {
 			can_transition = false;
