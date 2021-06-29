@@ -118,19 +118,19 @@ public:
 			information_function().before_reset(model());
 
 			// Place the environment in its initial state
-			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
+			auto && [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			can_transition = !done;
 
 			// Extract reward, observation and information (in that order)
-			auto&& reward = reward_function().extract(model(), done);
-			auto&& observation = [&]() -> OptionalObservation {
-				if (done) {  // Don't extract in final states
+			auto && reward = reward_function().extract(model(), done);
+			auto && observation = [&]() -> OptionalObservation {
+				if (done) {  // Don't extract observations in final states
 					return OptionalObservation{};
 				} else {
 					return observation_function().extract(model(), done);
 				}
 			}();
-			auto&& information = information_function().extract(model(), done);
+			auto && information = information_function().extract(model(), done);
 
 			return {
 				observation,
@@ -181,19 +181,19 @@ public:
 		}
 		try {
 			// Transition the environment to the next state
-			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
+			auto && [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
 			// Extract reward, observation and information (in that order)
-			auto&& reward = reward_function().extract(model(), done);
-			auto&& observation = [&]() -> OptionalObservation {
-				if (done) {  // Don't extract in final states
+			auto && reward = reward_function().extract(model(), done);
+			auto && observation = [&]() -> OptionalObservation {
+				if (done) {  // Don't extract observations in final states
 					return OptionalObservation{};
 				} else {
 					return observation_function().extract(model(), done);
 				}
 			}();
-			auto&& information = information_function().extract(model(), done);
+			auto && information = information_function().extract(model(), done);
 
 			return {
 				observation,
