@@ -16,6 +16,7 @@
 #include "ecole/traits.hpp"
 
 #include <iostream>
+#include <optional>
 
 template <typename T> struct is_optional : std::false_type {};
 template <typename T> struct is_optional<std::optional<T>> : std::true_type {};
@@ -67,8 +68,8 @@ public:
 		std::map<std::string, scip::Param> scip_params = {},
 		Args&&... args) :
 		the_dynamics(std::forward<Args>(args)...),
-		the_observation_function(data::parse(std::move(observation_function))),
 		the_reward_function(data::parse(std::move(reward_function))),
+		the_observation_function(data::parse(std::move(observation_function))),
 		the_information_function(data::parse(std::move(information_function))),
 		the_scip_params(std::move(scip_params)),
 		the_random_engine(spawn_random_engine()) {}
@@ -112,22 +113,31 @@ public:
 			dynamics().set_dynamics_random_state(model(), random_engine());
 
 			// Reset data extraction function and bring model to initial state.
-			observation_function().before_reset(model());
 			reward_function().before_reset(model());
+			observation_function().before_reset(model());
 			information_function().before_reset(model());
+
+			// Place the environment in its initial state
 			auto const [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			can_transition = !done;
 
-			auto observation = OptionalObservation{};
-			if (!done) {
-				observation = observation_function().extract(model(), done);
-			}
+			// Extract reward, observation and information (in that order)
+			auto&& reward = reward_function().extract(model(), done);
+			auto&& observation = [&]() -> OptionalObservation {
+				if (done) {  // Don't extract in final states
+					return OptionalObservation{};
+				} else {
+					return observation_function().extract(model(), done);
+				}
+			}();
+			auto&& information = information_function().extract(model(), done);
+
 			return {
-				std::move(observation),
+				observation,
 				std::move(action_set),
-				reward_function().extract(model(), done),
+				reward,
 				done,
-				information_function().extract(model(), done),
+				information,
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -170,19 +180,27 @@ public:
 			throw Exception("Environment need to be reset.");
 		}
 		try {
+			// Transition the environment to the next state
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
-			auto observation = OptionalObservation{};
-			if (!done) {
-				observation = observation_function().extract(model(), done);
-			}
+			// Extract reward, observation and information (in that order)
+			auto&& reward = reward_function().extract(model(), done);
+			auto&& observation = [&]() -> OptionalObservation {
+				if (done) {  // Don't extract in final states
+					return OptionalObservation{};
+				} else {
+					return observation_function().extract(model(), done);
+				}
+			}();
+			auto&& information = information_function().extract(model(), done);
+
 			return {
-				std::move(observation),
+				observation,
 				std::move(action_set),
-				reward_function().extract(model(), done),
+				reward,
 				done,
-				information_function().extract(model(), done),
+				information,
 			};
 		} catch (std::exception const&) {
 			can_transition = false;
@@ -201,8 +219,8 @@ public:
 private:
 	Dynamics the_dynamics;
 	scip::Model the_model;
-	ObservationFunction the_observation_function;
 	RewardFunction the_reward_function;
+	ObservationFunction the_observation_function;
 	InformationFunction the_information_function;
 	std::map<std::string, scip::Param> the_scip_params;
 	RandomEngine the_random_engine;
