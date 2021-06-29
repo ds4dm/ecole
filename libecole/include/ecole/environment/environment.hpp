@@ -119,7 +119,7 @@ public:
 			can_transition = !done;
 
 			OptionalObservation observation;
-			if (can_transition) {
+			if (!done) {
 				observation = observation_function().extract(model(), done);
 			} else if constexpr (is_optional_v<Observation>) {
 				observation = Observation{};
@@ -127,7 +127,7 @@ public:
 				observation = std::optional<Observation>{};
 			}
 			return {
-				observation,
+				std::move(observation),
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
@@ -178,7 +178,7 @@ public:
 			can_transition = !done;
 
 			OptionalObservation observation;
-			if (can_transition) {
+			if (!done) {
 				observation = observation_function().extract(model(), done);
 			} else if constexpr (is_optional_v<Observation>) {
 				observation = Observation{};
@@ -186,7 +186,7 @@ public:
 				observation = std::optional<Observation>{};
 			}
             return {
-				observation,
+				std::move(observation),
 				std::move(action_set),
 				reward_function().extract(model(), done),
 				done,
