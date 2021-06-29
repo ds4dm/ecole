@@ -121,10 +121,8 @@ public:
 			OptionalObservation observation;
 			if (!done) {
 				observation = observation_function().extract(model(), done);
-			} else if constexpr (is_optional_v<Observation>) {
-				observation = Observation{};
 			} else {
-				observation = std::optional<Observation>{};
+                observation = OptionalObservation{};
 			}
 			return {
 				std::move(observation),
@@ -180,10 +178,8 @@ public:
 			OptionalObservation observation;
 			if (!done) {
 				observation = observation_function().extract(model(), done);
-			} else if constexpr (is_optional_v<Observation>) {
-				observation = Observation{};
 			} else {
-				observation = std::optional<Observation>{};
+                observation = OptionalObservation{};
 			}
             return {
 				std::move(observation),
