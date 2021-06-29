@@ -122,7 +122,7 @@ public:
 			if (!done) {
 				observation = observation_function().extract(model(), done);
 			} else {
-                observation = OptionalObservation{};
+				observation = OptionalObservation{};
 			}
 			return {
 				std::move(observation),
@@ -179,9 +179,9 @@ public:
 			if (!done) {
 				observation = observation_function().extract(model(), done);
 			} else {
-                observation = OptionalObservation{};
+				observation = OptionalObservation{};
 			}
-            return {
+			return {
 				std::move(observation),
 				std::move(action_set),
 				reward_function().extract(model(), done),
