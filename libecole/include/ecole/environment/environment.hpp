@@ -173,11 +173,9 @@ public:
 			auto const [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
-			OptionalObservation observation;
+			auto observation =  OptionalObservation{};
 			if (!done) {
 				observation = observation_function().extract(model(), done);
-			} else {
-				observation = OptionalObservation{};
 			}
 			return {
 				std::move(observation),
