@@ -85,4 +85,4 @@ relaxation problem, from which this information can be extracted. For these reas
 
 In any case, one might note that in reinforcement learning, the observation of a terminal state is usually not very useful.
 It is not given to a policy to take the next action (because there are not any), and hence never
-used for learning either, so the difference has no impact in practice.
+used for learning either, so not returning a final observation has no impact in practice.
