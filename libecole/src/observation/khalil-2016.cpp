@@ -63,7 +63,7 @@ template <typename E> constexpr auto idx(E e) {
 /* Feature as defined and split in table 1 of the paper Khalil et al. "Learning to Branch in Mixed
  * Integer Programming" Thirtieth AAAI Conference on Artificial Intelligence. 2016.
  *
- * https://web.archive.org/web/20200812151256/https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf
+ * https://dl.acm.org/doi/10.5555/3015812.3015920
  */
 
 /**
@@ -173,7 +173,7 @@ auto extract_static_features(scip::Model& model) {
 /* Feature as defined and split in table 1 of the paper Khalil et al. "Learning to Branch in Mixed
  * Integer Programming" Thirtieth AAAI Conference on Artificial Intelligence. 2016.
  *
- * https://web.archive.org/web/20200812151256/https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf
+ * https://dl.acm.org/doi/10.5555/3015812.3015920
  */
 
 /**
