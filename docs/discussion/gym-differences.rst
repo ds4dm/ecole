@@ -83,6 +83,6 @@ When the problem is solved, for example on a terminal state of the
 relaxation problem, from which this information can be extracted. For these reasons, one would find a 
 ``None`` instead of an observation on terminal states.
 
-In any case, one might note that in reinforcement learning, the observation of a terminal state is actually never used.
+In any case, one might note that in reinforcement learning, the observation of a terminal state is usually not very useful.
 It is not given to a policy to take the next action (because there are not any), and hence never
 used for learning either, so the difference has no impact in practice.
