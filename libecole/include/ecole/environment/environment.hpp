@@ -118,23 +118,22 @@ public:
 			information_function().before_reset(model());
 
 			// Place the environment in its initial state
-			auto && [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
+			auto&& [done, action_set] = dynamics().reset_dynamics(model(), std::forward<Args>(args)...);
 			can_transition = !done;
 
 			// Extract reward, observation and information (in that order)
-			auto && reward = reward_function().extract(model(), done);
-			auto && observation = [&]() -> OptionalObservation {
+			auto&& reward = reward_function().extract(model(), done);
+			auto&& observation = [&, done = done]() -> OptionalObservation {
 				if (done) {  // Don't extract observations in final states
-					return OptionalObservation{};
-				} else {
-					return observation_function().extract(model(), done);
+					return {};
 				}
+				return observation_function().extract(model(), done);
 			}();
-			auto && information = information_function().extract(model(), done);
+			auto&& information = information_function().extract(model(), done);
 
 			return {
 				observation,
-				std::move(action_set),
+				action_set,
 				reward,
 				done,
 				information,
@@ -181,23 +180,22 @@ public:
 		}
 		try {
 			// Transition the environment to the next state
-			auto && [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
+			auto&& [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
 			// Extract reward, observation and information (in that order)
-			auto && reward = reward_function().extract(model(), done);
-			auto && observation = [&]() -> OptionalObservation {
+			auto&& reward = reward_function().extract(model(), done);
+			auto&& observation = [&, done = done]() -> OptionalObservation {
 				if (done) {  // Don't extract observations in final states
-					return OptionalObservation{};
-				} else {
-					return observation_function().extract(model(), done);
+					return {};
 				}
+				return observation_function().extract(model(), done);
 			}();
-			auto && information = information_function().extract(model(), done);
+			auto&& information = information_function().extract(model(), done);
 
 			return {
 				observation,
-				std::move(action_set),
+				action_set,
 				reward,
 				done,
 				information,
