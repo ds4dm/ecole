@@ -98,10 +98,9 @@ All operations that are valid between scalars are valid between reward functions
 
    - IsDone() ** abs(LpIterations() // 4)
 
-In addition, not all commonly used mathematical operations have a dedicated Python operator:
- to accomodate this, Ecole implements a number of other operations as methods of reward functions.
-For instance, to get the exponential of :py:class:`~ecole.reward.LpIterations`, one can
-use
+In addition, not all commonly used mathematical operations have a dedicated Python operator: to 
+accomodate this, Ecole implements a number of other operations as methods of reward functions.
+For instance, to get the exponential of :py:class:`~ecole.reward.LpIterations`, one can use
 
 .. testcode::
 

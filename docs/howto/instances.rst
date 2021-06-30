@@ -4,7 +4,7 @@ Generate Problem Instances
 ==========================
 
 Ecole contains a number of combinatorial optimization instance generators in the``ecole.instance`` module. The various 
-:py:class:`~ecole.typing.InstanceGenerator` classes generate instances as :py:class:`ecole.scip.Model`s.
+:py:class:`~ecole.typing.InstanceGenerator` classes generate instances as :py:class:`ecole.scip.Model` objects.
 
 To use those classes to generate instances, you first instantiate a generator object from the desired class. The various
 generator classes take problem-specific hyperparameters as constructor arguments, which can be used to control the type 

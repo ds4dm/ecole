@@ -108,7 +108,7 @@ Both these methods call the parent method to let it do its own initialization/re
 
 Writing a Function from Scratch
 -------------------------------
-The :py:class:`~ecole.typing.ObservationFunction`s and :py:class:`~ecole.typing.RewardFunction`s don't do
+The :py:class:`~ecole.typing.ObservationFunction` and :py:class:`~ecole.typing.RewardFunction` classes don't do
 anything more than what is explained in the previous section.
 This means that to create new function in Python, one can simply create a class with the previous
 methods.
