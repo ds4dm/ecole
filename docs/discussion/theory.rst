@@ -3,11 +3,11 @@
 Ecole Theoretical Model
 =======================
 
-The Ecole API directly relates to the different components of
+The Ecole elements directly correspond to the different elements of
 an episodic `partially-observable Markov decision process <https://en.wikipedia.org/wiki/Partially_observable_Markov_decision_process>`_
 (PO-MDP).
 
-Markov decision process
+Markov Decision Process
 -----------------------
 Consider a regular Markov decision process
 :math:`(\mathcal{S}, \mathcal{A}, p_\textit{init}, p_\textit{trans}, R)`,
@@ -23,7 +23,7 @@ whose components are
 .. note::
 
     Having deterministic rewards :math:`r_t = R(s_t)` is an arbitrary choice
-    here, in order to best fit the Ecole API. It is not restrictive though,
+    here, in order to best fit the Ecole library. It is not restrictive though,
     as any MDP with stochastic rewards
     :math:`r_t \sim p_\textit{reward}(r_t|s_{t-1},a_{t-1},s_{t})`
     can be converted into an equivalent MDP with deterministic ones,
@@ -51,8 +51,8 @@ that obey the following joint distribution
     \underbrace{p_\textit{trans}(s_{t+1} | a_t, s_t)}_{\text{next state}}
     \text{.}
 
-MDP control problem
-^^^^^^^^^^^^^^^^^^^
+The MDP Control Problem
+^^^^^^^^^^^^^^^^^^^^^^^
 We define the MDP control problem as that of finding a policy
 :math:`\pi^\star` which is optimal with respect to the expected total
 reward,
@@ -83,7 +83,7 @@ where :math:`r_t := R(s_t)`.
     As such, all actions and states encountered after a terminal state
     can be safely ignored in the MDP control problem.
 
-Partially-observable Markov decision process
+Partially-Observable Markov Decision Process
 --------------------------------------------
 In the PO-MDP setting, complete information about the current MDP state
 is not necessarily available to the decision-maker. Instead,
@@ -128,8 +128,8 @@ step :math:`t`. PO-MDP policies then take the form
 
 such that :math:`a_t \sim \pi(a_t|h_t)`.
 
-PO-MDP control problem
-^^^^^^^^^^^^^^^^^^^^^^
+The PO-MDP Control Problem
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 The PO-MDP control problem can then be written identically to the MDP one,
 
 .. math::
@@ -139,10 +139,10 @@ The PO-MDP control problem can then be written identically to the MDP one,
    \mathbb{E}_\tau\left[\sum_{t=0}^{T} r_t\right]
    \text{.}
 
-Ecole as PO-MDP components
---------------------------
+Ecole as PO-MDP Elements
+------------------------
 
-The following Ecole components directly translate into PO-MDP components from
+The following Ecole elements directly translate into PO-MDP elements from
 the aforementioned formulation:
 
 * :py:class:`~ecole.typing.RewardFunction` <=> :math:`R`
@@ -161,9 +161,9 @@ environment.
 
    In practice, both :py:class:`~ecole.typing.RewardFunction` and
    :py:class:`~ecole.typing.ObservationFunction` are implemented as stateful
-   classes, and therefore should be considered as part of the MDP state
+   classes, and therefore should be considered part of the MDP state
    :math:`s`. This *extended* state is not meant to take part in the MDP
-   dynamics per se, but nonetheless it has to be considered as the actual
+   dynamics per se, but nonetheless has to be considered as the actual
    PO-MDP state, in order to allow for a strict interpretation of Ecole
    environments as PO-MDPs.
 
@@ -200,7 +200,7 @@ user.
    :py:meth:`~ecole.environment.Environment.reset`
    does not affect the control problem. In Ecole we
    nevertheless chose to preserve this initial reward, in order to obtain
-   meaningfull cumulated episode rewards, such as the total running time
+   meaningful cumulated episode rewards, such as the total running time
    (which must include the time spend in
    :py:meth:`~ecole.environment.Environment.reset`), or the total
    number of branch-and-bound nodes in a
