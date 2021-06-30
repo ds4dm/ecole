@@ -1,7 +1,7 @@
 .. _generate-instances:
 
-Generating Problem Instances
-============================
+Generate Problem Instances
+==========================
 
 Ecole contains a number of combinatorial optimization instance generators in the``ecole.instance`` module. The various 
 :py:class:`~ecole.typing.InstanceGenerator` classes generate instances as :py:class:`ecole.scip.Model`s.
