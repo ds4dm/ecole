@@ -69,7 +69,7 @@ No observation on terminal states
 ---------------------------------
 On terminal states, in OpenAI Gym as in Ecole, no further action can be taken and the environment
 needs to be :py:meth:`~ecole.environment.Environment.reset`. In Ecole, when an episode is over (that is, when 
-the ``done`` flag is ``True``), environments return ``None`` as observation. This is in contrast with OpenAI Gym,
+the ``done`` flag is ``True``), environments always return ``None`` as the observation. This is in contrast with OpenAI Gym,
 where some environments do return observations on terminal states.
 
 
