@@ -92,4 +92,3 @@ Similarily with a tuple
 .. [#observation] We use the term *observation* rather than state since the state
   is really the whole state of the solver, which is unaccessible. Thus, mathematically,
   we really have a Partially Observable Markov Decision Process.
-  
