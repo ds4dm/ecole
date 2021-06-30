@@ -1,5 +1,5 @@
-Example Contribute Observation Function
-=======================================
+Example: How to Contribute an Observation Function
+==================================================
 
 To contribute an observation (or reward) function, there are a few files to modify.
 For the purpose of example, let us call our observation `Cookie`.

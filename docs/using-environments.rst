@@ -128,7 +128,8 @@ For problems instances that are generated programatically
 :ref:`instance generators<generate-instances>`) a :py:class:`ecole.scip.Model` is also accepted.
 
 * The ``observation`` consists of information about the state of the solver that should be used to select the next
-  action to perform (for example, using a machine learning algorithm.)
+  action to perform (for example, using a machine learning algorithm.) Note that this entry is always ``None`` when
+  the state is terminal (that is, when the ``done`` flag described below is ``True``.)
 * The ``action_set``, when not ``None``, describes the set of candidate actions which are valid for the next transition.
   This is necessary for environments where the action set varies from state to state.
   For instance, in the :py:class:`~ecole.environment.Branching` environment the set of candidate variables
