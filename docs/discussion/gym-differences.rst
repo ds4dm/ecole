@@ -33,7 +33,7 @@ Done on reset
 In Ecole, :py:meth:`~ecole.environment.Environment.reset` returns the same ``done`` flag as
 in :py:meth:`~ecole.environment.Environment.step`.
 This is because nothing prevents an initial state from also being a terminal one.
-It is not only a theoretical consideration: for instance, in :py:class:`~ecole.environment.Branching`, 
+It is not only a theoretical consideration: for instance, in :py:class:`~ecole.environment.Branching`,
 the initial state would typically be on the root node, prior to making the first branching decision.
 However, modern solvers have powerful presolvers, and it is not uncommon that the solution to the
 problem is found without needing to branch on any variable.
@@ -42,7 +42,7 @@ Action set
 ----------
 Ecole defines an action set at every transition of the environment, while OpenAI Gym defines an
 ``action_space`` as a static variable of the environment.
-Ecole environments are more complex: for instance in :py:class:`~ecole.environment.Branching` 
+Ecole environments are more complex: for instance in :py:class:`~ecole.environment.Branching`
 the set of valid actions changes, not only with every episode, but also with every transition!
 The ``action_set`` is required to make the next call to
 :py:meth:`~ecole.environment.Environment.step`.
@@ -56,7 +56,7 @@ This is not only a difference with OpenAI Gym, but also with the MDP formulation
 Its purpose is not to provide additional input to the learning algorithms, but rather to help
 researchers better benchmark the resulting performance.
 Indeed, :py:class:`~ecole.typing.RewardFunction` are often designed so that their cumulative sum match a
-metric on the terminal state, such as solving time or number of LP iterations: this is because final metrics 
+metric on the terminal state, such as solving time or number of LP iterations: this is because final metrics
 are often all that matter.
 However, for learning, a single reward on the terminal state is hard to learn from.
 It is then divided over all intermediate transitions in the episode.
@@ -68,7 +68,7 @@ match the metric.
 No observation on terminal states
 ---------------------------------
 On terminal states, in OpenAI Gym as in Ecole, no further action can be taken and the environment
-needs to be :py:meth:`~ecole.environment.Environment.reset`. In Ecole, when an episode is over (that is, when 
+needs to be :py:meth:`~ecole.environment.Environment.reset`. In Ecole, when an episode is over (that is, when
 the ``done`` flag is ``True``), environments always return ``None`` as the observation. This is in contrast with OpenAI Gym,
 where some environments do return observations on terminal states.
 
@@ -76,11 +76,11 @@ where some environments do return observations on terminal states.
 This can be explained as follows: most of the time, a terminal state in Ecole is a solved problem.
 This means that some complex observations cannot be extracted because they require information that
 simply does not exist.
-For instance, the :py:class:`~ecole.observation.NodeBipartite` observation function extracts some 
+For instance, the :py:class:`~ecole.observation.NodeBipartite` observation function extracts some
 information about the LP solution of the current branch-and-bound node.
 When the problem is solved, for example on a terminal state of the
-:py:class:`~ecole.environment.Branching` environment, there might not be a current node, or a linear 
-relaxation problem, from which this information can be extracted. For these reasons, one would find a 
+:py:class:`~ecole.environment.Branching` environment, there might not be a current node, or a linear
+relaxation problem, from which this information can be extracted. For these reasons, one would find a
 ``None`` instead of an observation on terminal states.
 
 In any case, one might note that in reinforcement learning, the observation of a terminal state is usually not very useful.

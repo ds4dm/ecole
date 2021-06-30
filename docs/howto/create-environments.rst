@@ -7,8 +7,8 @@ Environment Structure
 ---------------------
 In Ecole, it is possible to customize the :ref:`reward<use-reward-functions>` or
 :ref:`observation<use-reward-functions>` returned by the environment. These components are structured in
-:py:class:`~ecole.typing.RewardFunction` and :py:class:`~ecole.typing.ObservationFunction` classes that are 
-independent from the rest of the environment. We call what is left, that is, the environment without rewards 
+:py:class:`~ecole.typing.RewardFunction` and :py:class:`~ecole.typing.ObservationFunction` classes that are
+independent from the rest of the environment. We call what is left, that is, the environment without rewards
 or observations, the environment's :py:class:`~ecole.typing.Dynamics`.
 In other words, the dynamics define the bare bone transitions of the Markov Decision Process.
 
@@ -38,7 +38,7 @@ deactivate cutting planes and presolving in SCIP.
 
 .. note::
 
-   One can also more directly deactivate SCIP parameters through the 
+   One can also more directly deactivate SCIP parameters through the
    :ref:`environment constructor<environment-parameters>`.
 
 Given that there is a large number of parameters to change, we want to use one of SCIP default's modes
@@ -73,7 +73,7 @@ example, so we do not override it.
 
 
 With our ``SimpleBranchingDynamics`` class we have defined what we want the solver to do.
-Now, to use it as a full environment that can manage observations and rewards, we wrap it in an 
+Now, to use it as a full environment that can manage observations and rewards, we wrap it in an
 :py:class:`~ecole.environment.Environment`.
 
 

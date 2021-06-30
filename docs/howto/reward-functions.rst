@@ -11,9 +11,9 @@ functions: environments do not compute the reward directly but delegate that
 responsibility to a :py:class:`~ecole.typing.RewardFunction` object.
 The object has complete access to the solver and extracts the data it needs.
 
-Specifying a reward function is performed by passing the :py:class:`~ecole.typing.RewardFunction` object to 
+Specifying a reward function is performed by passing the :py:class:`~ecole.typing.RewardFunction` object to
 the ``reward_function`` environment parameter.
-For instance, specifying a reward function with the :py:class:`~ecole.environment.Configuring` environment 
+For instance, specifying a reward function with the :py:class:`~ecole.environment.Configuring` environment
 looks as follows:
 
 .. doctest::
@@ -47,7 +47,7 @@ there is at this point little consensus on reward functions to use. In recogniti
 reward functions have been explicitely designed in Ecole to be easily combined with Python arithmetic.
 
 For instance, one might want to minimize the number of LP iterations used throughout the solving process.
-To achieve this using a standard reinforcement learning algorithm, one would might use the negative 
+To achieve this using a standard reinforcement learning algorithm, one would might use the negative
 number of LP iterations between two steps as a reward: this can be achieved by negating the
 :py:class:`~ecole.reward.LpIterations` function.
 
@@ -98,7 +98,7 @@ All operations that are valid between scalars are valid between reward functions
 
    - IsDone() ** abs(LpIterations() // 4)
 
-In addition, not all commonly used mathematical operations have a dedicated Python operator: to 
+In addition, not all commonly used mathematical operations have a dedicated Python operator: to
 accomodate this, Ecole implements a number of other operations as methods of reward functions.
 For instance, to get the exponential of :py:class:`~ecole.reward.LpIterations`, one can use
 

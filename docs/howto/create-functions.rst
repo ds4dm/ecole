@@ -18,10 +18,10 @@ as it makes it easier to keep information between states.
 
 Extending a Function
 --------------------
-To reuse a function, Python inheritance can be used. For example, the method in an observation function called 
+To reuse a function, Python inheritance can be used. For example, the method in an observation function called
 to extract the features from the model is called :py:meth:`~ecole.typing.ObservationFunction.extract`.
 In the following example, we will extend the :py:class:`~ecole.observation.NodeBipartite` observation function by
-overloading its :py:meth:`~ecole.typing.ObservationFunction.extract` function to scale the features by their 
+overloading its :py:meth:`~ecole.typing.ObservationFunction.extract` function to scale the features by their
 maximum absolute value.
 
 .. testcode::
@@ -43,7 +43,7 @@ maximum absolute value.
            # Return the updated observation
            return obs
 
-By using inheritance, we used :py:class:`~ecole.observation.NodeBipartite`'s own :py:meth:`~ecole.typing.ObservationFunction.extract` 
+By using inheritance, we used :py:class:`~ecole.observation.NodeBipartite`'s own :py:meth:`~ecole.typing.ObservationFunction.extract`
 to do the heavy lifting, only appending the additional scaling code.
 The resulting ``ScaledNodeBipartite`` class is a perfectly valid observation function that can be given to an
 environment.
@@ -151,11 +151,11 @@ Using PySCIPOpt
 ---------------
 The extraction functions described on this page, by definition, aim to extract information from the solver about the state
 of the process. An excellent reason to create or extend a reward function is to access information not provided by the
-default functions in Ecole. To do so in Python, one might want to use `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_, 
+default functions in Ecole. To do so in Python, one might want to use `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_,
 the official Python interface to SCIP.
 
-In ``PySCIPOpt`, the state of the SCIP solver is stored in an ``pyscipopt.Model`` object. This is closely related to, 
-but not quite the same, as Ecole's :py:class:`~ecole.scip.Model` class. For a number of reasons (such as C++ compatibility), 
+In ``PySCIPOpt`, the state of the SCIP solver is stored in an ``pyscipopt.Model`` object. This is closely related to,
+but not quite the same, as Ecole's :py:class:`~ecole.scip.Model` class. For a number of reasons (such as C++ compatibility),
 the two classes don't coincide. However, for ease of use, it is possible to convert back and forth without any copy.
 
 Using :py:meth:`ecole.scip.Model.as_pyscipopt`, one can get a ``pyscipopt.Model`` that shares its
