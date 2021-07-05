@@ -1,9 +1,9 @@
-Example Contribute Observation Function
-=======================================
+Example: How to Contribute an Observation Function
+==================================================
 
 To contribute an observation (or reward) function, there are a few files to modify.
 For the purpose of example, let us call our observation `Cookie`.
-For all the instructions, look in the same folder for using the other observation functions as example.
+We recommend looking, at every step, to other observation functions as examples.
 
 .. note::
    Be sure to read the :ref:`contribution guidelines <contributing-reference>` to figure out how to get started and
@@ -11,7 +11,7 @@ For all the instructions, look in the same folder for using the other observatio
 
 Create the Observation
 ----------------------
-C++ code is typically separated into `headers <https://en.wikipedia.org/wiki/Include_directive>`_
+The C++ code is typically separated into `headers <https://en.wikipedia.org/wiki/Include_directive>`_
 and source files.
 
 Headers care not compiled and should only contains the public
@@ -30,7 +30,7 @@ Source files contain the definition of the functions, _i.e._ their implementatio
 
 Test Your Code
 --------------
-Tests are not part of a library so they only need a source file.
+Tests are not part of a library, so they only need a source file.
 
  - Create the test file ``libecole/tests/src/observation/test-cookie.cpp``,
  - Add unit tests to ensure the observation function abides to the required interface,
@@ -46,18 +46,18 @@ To expose the code in Python, we are using `PyBind <https://pybind11.readthedocs
  - Add the docstring.
 
 .. warning::
-   Due to some discrepencies between C++ and Python, not all bindings are straightforwards.
+   Due to some discrepencies between C++ and Python, not all bindings are straightforward.
    More complex types need to be handled on a case-by-case basis.
 
 Test the Bindings
 -----------------
-We need to make sure nothing is forgotten, or rasing runtime errors when used from Python.
+We need to make sure nothing is forgotten or raises runtime errors when used from Python.
 
  - Edit ``python/tests/test_observation.py``, test the interface, and the return types.
 
 Reference the Observation in the Documentation
 ----------------------------------------------
-Documentation from docstring is automatically read by Sphinx, we only need to tell it where to display it.
+Documentation from docstring is automatically read by Sphinx, so we only need to tell it where to display it.
 
  - Add the observation function in the list in ``docs/reference/observation.rst``.
 

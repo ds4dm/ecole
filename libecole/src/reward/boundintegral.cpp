@@ -1,5 +1,6 @@
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "scip/scip.h"
@@ -21,10 +22,11 @@ namespace {
 
 class IntegralEventHandler : public ::scip::ObjEventhdlr {
 public:
-	inline static auto constexpr name = "ecole::reward::IntegralEventHandler";
+	inline static auto constexpr base_name = "ecole::reward::IntegralEventHandler";
+	inline static auto integral_reward_function_counter = 0;
 
-	IntegralEventHandler(SCIP* scip, bool wall_, bool extract_primal_, bool extract_dual_) :
-		ObjEventhdlr(scip, name, "Event handler for primal and dual integrals"),
+	IntegralEventHandler(SCIP* scip, bool wall_, bool extract_primal_, bool extract_dual_, const char* name_) :
+		ObjEventhdlr(scip, name_, "Event handler for primal and dual integrals"),
 		wall{wall_},
 		extract_primal{extract_primal_},
 		extract_dual{extract_dual_} {}
@@ -44,6 +46,7 @@ public:
 
 	/** Get and adds primal/dual bounds and times to vectors. */
 	void extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type = 0);
+	void clear_bounds();
 
 private:
 	bool wall;
@@ -100,7 +103,7 @@ auto get_primal_bound(SCIP* scip) {
 	case SCIP_STAGE_SOLVED:
 		return SCIPgetPrimalbound(scip);
 	default:
-		return SCIPinfinity(scip);
+		return SCIPgetObjlimit(scip);
 	}
 }
 
@@ -117,7 +120,10 @@ auto get_dual_bound(SCIP* scip) {
 	case SCIP_STAGE_SOLVED:
 		return SCIPgetDualbound(scip);
 	default:
-		return -SCIPinfinity(scip);
+		if (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MINIMIZE) {
+			return -SCIPinfinity(scip);
+		}
+		return SCIPinfinity(scip);
 	}
 }
 
@@ -129,30 +135,45 @@ auto time_now(bool wall) -> std::chrono::nanoseconds {
 }
 
 auto is_lp_event(SCIP_EVENTTYPE event) {
-	return (
-		(event == SCIP_EVENTTYPE_LPEVENT) || (event == SCIP_EVENTTYPE_FIRSTLPSOLVED) || (event == SCIP_EVENTTYPE_LPSOLVED));
+	return event & SCIP_EVENTTYPE_LPEVENT;
 }
 
 auto is_bestsol_event(SCIP_EVENTTYPE event) {
-	return event == SCIP_EVENTTYPE_BESTSOLFOUND;
+	return event & SCIP_EVENTTYPE_BESTSOLFOUND;
 }
 
 void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type) {
 	if (extract_primal) {
-		if ((is_lp_event(event_type)) || (primal_bounds.empty())) {
+		if ((is_bestsol_event(event_type)) || (primal_bounds.empty())) {
 			primal_bounds.push_back(get_primal_bound(scip));
 		} else {
 			primal_bounds.push_back(primal_bounds.back());
 		}
 	}
 	if (extract_dual) {
-		if ((is_bestsol_event(event_type)) || (dual_bounds.empty())) {
+		if ((is_lp_event(event_type)) || (dual_bounds.empty())) {
 			dual_bounds.push_back(get_dual_bound(scip));
 		} else {
 			dual_bounds.push_back(dual_bounds.back());
 		}
 	}
 	times.push_back(time_now(wall));
+}
+
+void IntegralEventHandler::clear_bounds() {
+	if (extract_dual) {
+		auto last_dual = dual_bounds.back();
+		dual_bounds.clear();
+		dual_bounds.push_back(last_dual);
+	}
+	if (extract_primal) {
+		auto last_primal = primal_bounds.back();
+		primal_bounds.clear();
+		primal_bounds.push_back(last_primal);
+	}
+	auto last_time = times.back();
+	times.clear();
+	times.push_back(last_time);
 }
 
 /*************************************
@@ -162,32 +183,38 @@ void IntegralEventHandler::extract_metrics(SCIP* scip, SCIP_EVENTTYPE event_type
 auto compute_dual_integral(
 	std::vector<SCIP_Real> const& dual_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
-	SCIP_Real const initial_primal_bound,
-	SCIP_Real const initial_dual_bound) {
+	SCIP_Real const offset,
+	SCIP_Real const initial_dual_bound,
+	SCIP_Objsense obj_sense) {
 	SCIP_Real dual_integral = 0.0;
 	for (std::size_t i = 0; i < dual_bounds.size() - 1; ++i) {
-		auto const db = std::max(dual_bounds[i], initial_dual_bound);
-		auto const dual_bound_diff = initial_primal_bound - db;
 		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		dual_integral += dual_bound_diff * time_diff;
+		auto const dual_bound = dual_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			dual_integral += (offset - std::max(dual_bound, initial_dual_bound)) * time_diff;
+		} else {
+			dual_integral += -(offset - std::min(dual_bound, initial_dual_bound)) * time_diff;
+		}
 	}
-
 	return dual_integral;
 }
 
 auto compute_primal_integral(
 	std::vector<SCIP_Real> const& primal_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
+	SCIP_Real const offset,
 	SCIP_Real const initial_primal_bound,
-	SCIP_Real const initial_dual_bound) {
+	SCIP_Objsense obj_sense) {
 	SCIP_Real primal_integral = 0.0;
 	for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-		auto const pb = std::min(primal_bounds[i], initial_primal_bound);
-		auto const primal_bound_diff = pb - initial_dual_bound;
 		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		primal_integral += primal_bound_diff * time_diff;
+		auto const primal_bound = primal_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			primal_integral += -(offset - std::min(primal_bound, initial_primal_bound)) * time_diff;
+		} else {
+			primal_integral += (offset - std::max(primal_bound, initial_primal_bound)) * time_diff;
+		}
 	}
-
 	return primal_integral;
 }
 
@@ -196,22 +223,28 @@ auto compute_primal_dual_integral(
 	std::vector<SCIP_Real> const& dual_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
 	SCIP_Real const initial_primal_bound,
-	SCIP_Real const initial_dual_bound) {
+	SCIP_Real const initial_dual_bound,
+	SCIP_Objsense obj_sense) {
 	SCIP_Real primal_dual_integral = 0.0;
-	for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
-		auto const pb = std::min(primal_bounds[i], initial_primal_bound);
-		auto const db = std::max(dual_bounds[i], initial_dual_bound);
-		auto const primal_dual_bound_diff = pb - db;
-		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		primal_dual_integral += primal_dual_bound_diff * time_diff;
-	}
 
+	for (std::size_t i = 0; i < primal_bounds.size() - 1; ++i) {
+		auto const time_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
+		auto const dual_bound = dual_bounds[i];
+		auto const primal_bound = primal_bounds[i];
+		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
+			primal_dual_integral +=
+				-(std::max(dual_bound, initial_dual_bound) - std::min(primal_bound, initial_primal_bound)) * time_diff;
+		} else {
+			primal_dual_integral +=
+				(std::min(dual_bound, initial_dual_bound) - std::max(primal_bound, initial_primal_bound)) * time_diff;
+		}
+	}
 	return primal_dual_integral;
 }
 
 /** Return the integral event handler */
-auto get_eventhdlr(scip::Model& model) -> auto& {
-	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), IntegralEventHandler::name);
+auto get_eventhdlr(scip::Model& model, const char* name) -> auto& {
+	auto* const base_handler = SCIPfindObjEventhdlr(model.get_scip_ptr(), name);
 	assert(base_handler != nullptr);
 	auto* const handler = dynamic_cast<IntegralEventHandler*>(base_handler);
 	assert(handler != nullptr);
@@ -219,8 +252,8 @@ auto get_eventhdlr(scip::Model& model) -> auto& {
 }
 
 /** Add the integral event handler to the model. */
-void add_eventhdlr(scip::Model& model, bool wall, bool extract_primal, bool extract_dual) {
-	auto handler = std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, extract_primal, extract_dual);
+void add_eventhdlr(scip::Model& model, bool wall, bool extract_primal, bool extract_dual, const char* name) {
+	auto handler = std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, extract_primal, extract_dual, name);
 	scip::call(SCIPincludeObjEventhdlr, model.get_scip_ptr(), handler.get(), true);
 	// NOLINTNEXTLINE memory ownership is passed to SCIP
 	handler.release();
@@ -228,60 +261,88 @@ void add_eventhdlr(scip::Model& model, bool wall, bool extract_primal, bool extr
 }
 
 /** Default function for returning +/-infinity for the bounds in computing primal-dual integral. */
-auto default_bound_function(scip::Model& model) -> std::tuple<Reward, Reward> {
+auto default_dual_bound_function(scip::Model& model) -> std::tuple<Reward, Reward> {
+	if (SCIPgetObjsense(model.get_scip_ptr()) == SCIP_OBJSENSE_MINIMIZE) {
+		return {0.0, -SCIPinfinity(model.get_scip_ptr())};
+	}
+	return {0.0, SCIPinfinity(model.get_scip_ptr())};
+}
+
+/** Default function for returning +/-infinity for the bounds in computing primal-dual integral. */
+auto default_primal_bound_function(scip::Model& model) -> std::tuple<Reward, Reward> {
+	if (SCIPgetObjsense(model.get_scip_ptr()) == SCIP_OBJSENSE_MINIMIZE) {
+		return {0.0, SCIPinfinity(model.get_scip_ptr())};
+	}
+	return {0.0, -SCIPinfinity(model.get_scip_ptr())};
+}
+
+/** Default function for returning +/-infinity for the bounds in computing primal-dual integral. */
+auto default_primal_dual_bound_function(scip::Model& model) -> std::tuple<Reward, Reward> {
+	if (SCIPgetObjsense(model.get_scip_ptr()) == SCIP_OBJSENSE_MINIMIZE) {
+		return {SCIPinfinity(model.get_scip_ptr()), -SCIPinfinity(model.get_scip_ptr())};
+	}
 	return {-SCIPinfinity(model.get_scip_ptr()), SCIPinfinity(model.get_scip_ptr())};
 }
 
 }  // namespace
 
 template <Bound bound>
-ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFunction& bound_function_) :
-	bound_function{bound_function_ ? bound_function_ : default_bound_function}, wall{wall_} {}
+ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, const BoundFunction& bound_function_) : wall{wall_} {
+	if constexpr (bound == Bound::dual) {
+		bound_function = bound_function_ ? bound_function_ : default_dual_bound_function;
+	} else if constexpr (bound == Bound::primal) {
+		bound_function = bound_function_ ? bound_function_ : default_primal_bound_function;
+	} else if constexpr (bound == Bound::primal_dual) {
+		bound_function = bound_function_ ? bound_function_ : default_primal_dual_bound_function;
+	}
+
+	static auto m = std::mutex{};
+	auto g = std::lock_guard{m};
+	name = IntegralEventHandler::base_name + std::to_string(IntegralEventHandler::integral_reward_function_counter);
+	IntegralEventHandler::integral_reward_function_counter++;
+}
 
 template <Bound bound> void BoundIntegral<bound>::before_reset(scip::Model& model) {
-	last_integral = 0.0;
-
-	// Get bounds for computing primal-dual integral on instance
-	std::tie(initial_dual_bound, initial_primal_bound) = bound_function(model);
-
-	// Initalize and add event handler
+	// Initalize bounds and event handler
 	if constexpr (bound == Bound::dual) {
-		add_eventhdlr(model, wall, false, true);
+		std::tie(offset, initial_dual_bound) = bound_function(model);
+		add_eventhdlr(model, wall, false, true, name.c_str());
 	} else if constexpr (bound == Bound::primal) {
-		add_eventhdlr(model, wall, true, false);
+		std::tie(offset, initial_primal_bound) = bound_function(model);
+		add_eventhdlr(model, wall, true, false, name.c_str());
 	} else if constexpr (bound == Bound::primal_dual) {
-		add_eventhdlr(model, wall, true, true);
+		std::tie(initial_primal_bound, initial_dual_bound) = bound_function(model);
+		add_eventhdlr(model, wall, true, true, name.c_str());
 	}
 
 	// Extract metrics before resetting to get initial reference point
-	get_eventhdlr(model).extract_metrics(model.get_scip_ptr());
+	get_eventhdlr(model, name.c_str()).extract_metrics(model.get_scip_ptr());
 }
 
 template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, bool /*done*/) {
 	// Get info from event handler
-	auto& handler = get_eventhdlr(model);
+	auto& handler = get_eventhdlr(model, name.c_str());
 	handler.extract_metrics(model.get_scip_ptr());
 
 	auto const& dual_bounds = handler.get_dual_bounds();
 	auto const& primal_bounds = handler.get_primal_bounds();
 	auto const& times = handler.get_times();
+	auto const obj_sense = SCIPgetObjsense(model.get_scip_ptr());
 
 	// Compute primal integral and difference
 	SCIP_Real integral = 0.;
 	if constexpr (bound == Bound::dual) {
-		integral = compute_dual_integral(dual_bounds, times, initial_primal_bound, initial_dual_bound);
+		integral = compute_dual_integral(dual_bounds, times, offset, initial_dual_bound, obj_sense);
 	} else if constexpr (bound == Bound::primal) {
-		integral = compute_primal_integral(primal_bounds, times, initial_primal_bound, initial_dual_bound);
+		integral = compute_primal_integral(primal_bounds, times, offset, initial_primal_bound, obj_sense);
 	} else if constexpr (bound == Bound::primal_dual) {
-		integral =
-			compute_primal_dual_integral(primal_bounds, dual_bounds, times, initial_primal_bound, initial_dual_bound);
+		integral = compute_primal_dual_integral(
+			primal_bounds, dual_bounds, times, initial_primal_bound, initial_dual_bound, obj_sense);
 	}
 
-	/* Compute diff and update last_integral */
-	auto const integral_diff = integral - last_integral;
-	last_integral = integral;
-
-	return static_cast<Reward>(integral_diff);
+	// Reset arrays for storing bounds
+	handler.clear_bounds();
+	return static_cast<Reward>(integral);
 }
 
 template class BoundIntegral<Bound::primal>;

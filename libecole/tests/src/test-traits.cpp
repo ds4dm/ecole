@@ -65,7 +65,7 @@ TEST_CASE("Detect data type", "[trait]") {
 
 TEST_CASE("Detect observation type", "[trait]") {
 	STATIC_REQUIRE_SAME(trait::observation_of_t<observation::Nothing>, ecole::NoneType);
-	STATIC_REQUIRE_SAME(trait::observation_of_t<environment::Configuring<>>, ecole::NoneType);
+	STATIC_REQUIRE_SAME(trait::observation_of_t<environment::Configuring<>>, std::optional<ecole::NoneType>);
 }
 
 TEST_CASE("Detect information type", "[trait]") {

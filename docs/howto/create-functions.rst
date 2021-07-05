@@ -7,25 +7,22 @@ Create New Functions
 can be adapted and created from Python.
 
 At the core of the environment, a SCIP :py:class:`~ecole.scip.Model` (equivalent abstraction to a
-``pyscipopt.Model`` or a ``SCIP*`` in ``C``), describe the state of the environment.
-The idea of observation and reward functions is to have a function that takes as input that
-:py:class:`~ecole.scip.Model`, and return the desired value (an observation, or a reward).
-The environment itself does nothing more than calling the function and forward its output to the
+``pyscipopt.Model`` or a ``SCIP*`` in ``C``), describes the state of the environment.
+The idea of observation and reward functions is to have a function that takes as input a
+:py:class:`~ecole.scip.Model`, and returns the desired value (an observation, or a reward).
+The environment itself does nothing more than calling the functions and forward their output to the
 user.
 
-Pratically speaking, it is more convenient to implement such functions as a class that a function,
+Pratically speaking, it is more convenient to implement such functions as a class than a function,
 as it makes it easier to keep information between states.
 
-From an Exsiting One
+Extending a Function
 --------------------
-To reuse a function, Python inheritance can be use.
-In the following, we will adapt :py:class:`~ecole.observation.NodeBipartite` to apply some scaling
-to the observation features.
-
-The method that will be called to return an observation is called
-:py:meth:`~ecole.typing.ObservationFunction.extract`.
-Here is how we can create a new observation function that scale the features by their maximum
-absolute value.
+To reuse a function, Python inheritance can be used. For example, the method in an observation function called
+to extract the features from the model is called :py:meth:`~ecole.typing.ObservationFunction.extract`.
+In the following example, we will extend the :py:class:`~ecole.observation.NodeBipartite` observation function by
+overloading its :py:meth:`~ecole.typing.ObservationFunction.extract` function to scale the features by their
+maximum absolute value.
 
 .. testcode::
 
@@ -46,18 +43,14 @@ absolute value.
            # Return the updated observation
            return obs
 
-Here we use the :py:class:`~ecole.observation.NodeBipartite` function to do the heavy lifting by
-calling the method of the parent class.
-Then we scaled some features of that observation and returned the result.
-``ScaledNodeBipartite`` is a perfectly valid observation function that can be given to an
+By using inheritance, we used :py:class:`~ecole.observation.NodeBipartite`'s own :py:meth:`~ecole.typing.ObservationFunction.extract`
+to do the heavy lifting, only appending the additional scaling code.
+The resulting ``ScaledNodeBipartite`` class is a perfectly valid observation function that can be given to an
 environment.
 
-To make it smoother, we could apply an
-`exponential moving average <https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>`_
-with coefficient α to the scaling vector.
-We will apply the moving average on states from the same episode, and reset it at every new
-episode.
-This example shows how the scaling vector can be stored between states.
+As an additional example, instead of scaling by the maximum absolute value one might want to use a scaling factor smoothed by
+`exponential moving averaging <https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>`_, with some coefficient α.
+This will illustrate how the class paradigm is useful to saving information between states.
 
 .. testcode::
 
@@ -70,41 +63,40 @@ This example shows how the scaling vector can be stored between states.
 
        def before_reset(self, model):
            super().before_reset(model)
-           # Reset exponential moving average (ema) on new episode
+           # Reset the exponential moving average (ema) on new episodes
            self.column_ema = None
            self.row_ema = None
 
        def extract(self, model, done):
            obs = super().extract(model, done)
 
-           # Compute max absolute vector for current observation
+           # Compute the max absolute vector for the current observation
            column_max_abs = np.abs(obs.column_features).max(0)
            row_max_abs = np.abs(obs.row_features).max(0)
 
            if self.column_ema is None:
-               # New exponential moving average on new episode
+               # New exponential moving average on a new episode
                self.column_ema = column_max_abs
                self.row_ema = row_max_abs
            else:
-               # Update exponential moving average
+               # Update the exponential moving average
                self.column_ema = self.alpha * column_max_abs + (1 - alpha) * self.column_ema
                self.row_ema = self.alpha * row_max_abs + (1 - alpha) * self.row_ema
 
-           # Scale features and return new observation
+           # Scale features and return the new observation
            obs.column_features[:] /= self.column_ema
            obs.row_features[:] /= self.row_ema
            return obs
 
-Here, you can notice how we used the constructor to be able to customize the coefficient of the
+Here, you can notice how we used the constructor to customize the coefficient of the
 exponential moving average.
-We also inherited the :py:meth:`~ecole.typing.ObservationFunction.before_reset` method which does not
-return anything.
-This method is called at the begining of the episode by
+Note also that we inherited the :py:meth:`~ecole.typing.ObservationFunction.before_reset` method which does not
+return anything: this method is called at the begining of the episode by
 :py:meth:`~ecole.environment.Environment.reset` and is used to reintialize the class
 internal attribute on new episodes.
-The :py:meth:`~ecole.typing.ObservationFunction.extract` is also called during during
+Finally, the :py:meth:`~ecole.typing.ObservationFunction.extract` is also called during during
 :py:meth:`~ecole.environment.Environment.reset`, hence the ``if`` else ``else`` condition.
-Both these methods call the parent method to let it do its own initialization/reseting.
+Both these methods call the parent method to let it do its own initialization/resetting.
 
 .. warning::
 
@@ -114,15 +106,15 @@ Both these methods call the parent method to let it do its own initialization/re
    <https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing>`_
 
 
-From Scratch
-------------
-:py:class:`~ecole.typing.ObservationFunction` and :py:class:`~ecole.typing.RewardFunction` do not
+Writing a Function from Scratch
+-------------------------------
+The :py:class:`~ecole.typing.ObservationFunction` and :py:class:`~ecole.typing.RewardFunction` classes don't do
 anything more than what is explained in the previous section.
-This means that to create new function form Python, one can simply create a class with the previous
+This means that to create new function in Python, one can simply create a class with the previous
 methods.
 
 For instance, we can create a ``StochasticReward`` function that will wrap any given
-:py:class:`~ecole.typing.RewardFunction` and with some probability return either the given reward or
+:py:class:`~ecole.typing.RewardFunction`, and with some probability return either the given reward or
 0.
 
 .. testcode::
@@ -147,8 +139,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
            else:
                return reward
 
-It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations` in a
-:py:class:`~ecole.environment.Branching` environment.
+The resulting class is a perfectly valid reward function which can be used in any environment, for example as follows.
 
 .. doctest::
 
@@ -156,19 +147,17 @@ It can be used as such, for instance with :py:class:`~ecole.reward.LpIterations`
    >> env = ecole.environment.Branching(reward_function=stochastic_lpiterations)
 
 
-Using PyScipOpt
+Using PySCIPOpt
 ---------------
-When creating a new function, it is common to need to extract information from the solver.
-`PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_ is the official Python interface to
-SCIP.
-The ``pyscipopt.Model`` holds a stateful SCIP problem instance and solver.
-For a number of reasons (such as avaibility in C++) Ecole defines its own
-:py:class:`~ecole.scip.Model` class that represent a very similar concept.
-It does not aim to be a replacement to PyScipOpt, rather it is possible to convert back and forth
-without any copy.
+The extraction functions described on this page, by definition, aim to extract information from the solver about the state
+of the process. An excellent reason to create or extend a reward function is to access information not provided by the
+default functions in Ecole. To do so in Python, one might want to use `PyScipOpt <https://github.com/SCIP-Interfaces/PySCIPOpt>`_,
+the official Python interface to SCIP.
+
+In ``PySCIPOpt`, the state of the SCIP solver is stored in an ``pyscipopt.Model`` object. This is closely related to,
+but not quite the same, as Ecole's :py:class:`~ecole.scip.Model` class. For a number of reasons (such as C++ compatibility),
+the two classes don't coincide. However, for ease of use, it is possible to convert back and forth without any copy.
 
 Using :py:meth:`ecole.scip.Model.as_pyscipopt`, one can get a ``pyscipopt.Model`` that shares its
-internal data with :py:class:`ecole.scip.Model`.
-
-Conversely, given a ``pyscipopt.Model``, it is possible to to create a :py:class:`ecole.scip.Model`
+internal data with :py:class:`ecole.scip.Model`. Conversely, given a ``pyscipopt.Model``, it is possible to to create a :py:class:`ecole.scip.Model`
 using the static method :py:meth:`ecole.scip.Model.from_pyscipopt`.

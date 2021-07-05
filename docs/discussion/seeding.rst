@@ -31,7 +31,7 @@ By default this source is truly random, but it can be controlled with :py:func:`
 Similarily, an :py:class:`~ecole.typing.InstanceGenerator` default random engine derived from Ecole global source of
 randomness.
 
-In short we provide the following snippets.
+As examples, we provide the following snippets.
 
 Reproducible program
 --------------------

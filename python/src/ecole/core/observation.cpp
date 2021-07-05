@@ -273,7 +273,7 @@ void bind_submodule(py::module_ const& m) {
 		.. [Khalil2016]
 			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
 			"`Learning to branch in mixed integer programming.
-			<https://web.archive.org/web/20200812151256/https://www.cc.gatech.edu/~lsong/papers/KhaLebSonNemDil16.pdf>`_"
+			<https://dl.acm.org/doi/10.5555/3015812.3015920>`_"
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
 	)")
 			.def_auto_copy()
@@ -378,7 +378,7 @@ void bind_submodule(py::module_ const& m) {
 		.. [Hutter2011]
 			Hutter, Frank, Hoos, Holger H., and Leyton-Brown, Kevin.
 			"`Sequential model-based optimization for general algorithm configuration.
-			<https://www.cs.ubc.ca/~hutter/papers/10-TR-SMAC.pdf>`_"
+			<https://doi.org/10.1007/978-3-642-25566-3_40>`_"
 			*International Conference on Learning and Intelligent Optimization*. 2011.
 	)")
 											.def_auto_copy()
