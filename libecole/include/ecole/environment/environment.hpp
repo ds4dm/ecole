@@ -15,7 +15,6 @@
 #include "ecole/scip/type.hpp"
 #include "ecole/traits.hpp"
 
-#include <iostream>
 #include <optional>
 
 template <typename T> struct is_optional : std::false_type {};
