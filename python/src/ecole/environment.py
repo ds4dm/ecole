@@ -109,13 +109,17 @@ class Environment:
 
             self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
 
+            # Reset data extraction functions
             self.reward_function.before_reset(self.model)
             self.observation_function.before_reset(self.model)
             self.information_function.before_reset(self.model)
+
+            # Place the environment in its initial state
             done, action_set = self.dynamics.reset_dynamics(
                 self.model, *dynamics_args, **dynamics_kwargs
             )
 
+            # Extract additional information to be returned by reset
             reward_offset = self.reward_function.extract(self.model, done)
             if not done:
                 observation = self.observation_function.extract(self.model, done)
@@ -172,10 +176,12 @@ class Environment:
             raise ecole.core.environment.Exception("Environment need to be reset.")
 
         try:
+            # Transition the environment to the next state
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
 
+            # Extract additional information to be returned by step
             reward = self.reward_function.extract(self.model, done)
             if not done:
                 observation = self.observation_function.extract(self.model, done)
