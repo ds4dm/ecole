@@ -172,7 +172,7 @@ public:
 		}
 		try {
 			// Transition the environment to the next state
-			auto&& [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
+			auto [done, action_set] = dynamics().step_dynamics(model(), action, std::forward<Args>(args)...);
 			can_transition = !done;
 
 			// Extract additional information to be returned by step
