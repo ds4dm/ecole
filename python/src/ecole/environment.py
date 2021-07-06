@@ -116,6 +116,8 @@ class Environment:
                 self.model, *dynamics_args, **dynamics_kwargs
             )
 
+            limit_values = self.model.pause_limits()
+
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:
@@ -123,6 +125,8 @@ class Environment:
             reward_offset = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
+
+            self.model.set_params(limit_values)
 
             return observation, action_set, reward_offset, done, information
         except Exception as e:
@@ -176,6 +180,8 @@ class Environment:
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
 
+            limit_values = self.model.pause_limits()
+
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:
@@ -183,6 +189,8 @@ class Environment:
             reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
+
+            self.model.set_params(limit_values)
 
             return observation, action_set, reward, done, information
         except Exception as e:
