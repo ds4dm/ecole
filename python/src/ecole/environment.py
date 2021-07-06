@@ -118,6 +118,7 @@ class Environment:
             done, action_set = self.dynamics.reset_dynamics(
                 self.model, *dynamics_args, **dynamics_kwargs
             )
+            self.can_transition = not done
 
             # Extract additional information to be returned by reset
             reward_offset = self.reward_function.extract(self.model, done)
@@ -179,6 +180,7 @@ class Environment:
             done, action_set = self.dynamics.step_dynamics(
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
+            self.can_transition = not done
 
             # Extract additional information to be returned by step
             reward = self.reward_function.extract(self.model, done)
