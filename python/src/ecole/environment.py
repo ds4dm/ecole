@@ -125,7 +125,6 @@ class Environment:
                 observation = self.observation_function.extract(self.model, done)
             else:
                 observation = None
-            observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
 
             return observation, action_set, reward_offset, done, information
@@ -187,7 +186,6 @@ class Environment:
                 observation = self.observation_function.extract(self.model, done)
             else:
                 observation = None
-            observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
 
             return observation, action_set, reward, done, information
