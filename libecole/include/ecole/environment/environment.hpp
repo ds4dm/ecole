@@ -212,8 +212,8 @@ private:
 	// extract reward, observation and information (in that order)
 	auto extract_reward_observation_information(bool done) -> std::tuple<Reward, OptionalObservation, InformationMap> {
 		auto reward = reward_function().extract(model(), done);
-		auto observation = done ? OptionalObservation{} :  // Don't extract observations in final states
-												 OptionalObservation{observation_function().extract(model(), done)};
+		// Don't extract observations in final states
+		auto observation = done ? OptionalObservation{} : observation_function().extract(model(), done);
 		auto information = information_function().extract(model(), done);
 
 		return {std::move(reward), std::move(observation), std::move(information)};

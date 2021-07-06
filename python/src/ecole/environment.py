@@ -116,11 +116,11 @@ class Environment:
                 self.model, *dynamics_args, **dynamics_kwargs
             )
 
+            reward_offset = self.reward_function.extract(self.model, done)
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:
                 observation = None
-            reward_offset = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
 
@@ -176,11 +176,11 @@ class Environment:
                 self.model, action, *dynamics_args, **dynamics_kwargs
             )
 
+            reward = self.reward_function.extract(self.model, done)
             if not done:
                 observation = self.observation_function.extract(self.model, done)
             else:
                 observation = None
-            reward = self.reward_function.extract(self.model, done)
             observation = self.observation_function.extract(self.model, done)
             information = self.information_function.extract(self.model, done)
 
