@@ -125,6 +125,7 @@ find_or_download_package(
 		-D FMT_DOC=OFF
 		-D FMT_INSTALL=ON
 		-D CMAKE_BUILD_TYPE=Release
+		-D BUILD_SHARED_LIBS=OFF
 		-D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
 )
 find_or_download_package(
