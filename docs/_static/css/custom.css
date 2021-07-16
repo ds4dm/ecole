@@ -1,7 +1,7 @@
 @import url("theme.css");
 
-/* Style the top search bar and logo */
-.wy-side-nav-search {
+/* Style the top search bar and logo, or top bar on mobile */
+.wy-side-nav-search, .wy-nav-top {
 	background-color: #F58A1F;
 }
 
