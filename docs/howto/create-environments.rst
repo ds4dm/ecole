@@ -59,7 +59,6 @@ example, so we do not override it.
 
 
    class SimpleBranchingDynamics(ecole.dynamics.BranchingDynamics):
-
        def reset_dynamics(self, model):
            # Share memory with Ecole model
            pyscipopt_model = model.as_pyscipopt()
@@ -95,7 +94,6 @@ To do so, we will take parameters in the constructor.
    :skipif: pyscipopt is None
 
    class SimpleBranchingDynamics(ecole.dynamics.BranchingDynamics):
-
        def __init__(self, disable_presolve=True, disable_cuts=True, *args, **kwargs):
            super().__init__(*args, **kwargs)
            self.disable_presolve = disable_presolve

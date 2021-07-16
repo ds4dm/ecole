@@ -23,6 +23,12 @@ repos:
     rev: 19.10b0
     hooks:
       - id: black
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.10.0
+    hooks:
+    - id: blacken-docs
+      args: [ '--line-length', '100' ]
+      additional_dependencies: [black==21.7b0]
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.1.9
     hooks:

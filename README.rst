@@ -36,7 +36,7 @@ meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possi
    for _ in range(10):
        obs, action_set, reward_offset, done, info = env.reset(next(instances))
        while not done:
-          obs, action_set, reward, done, info = env.step(action_set[0])
+           obs, action_set, reward, done, info = env.step(action_set[0])
 
 
 Documentation

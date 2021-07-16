@@ -86,7 +86,7 @@ Arithmetic operations are even allowed between different reward functions,
 
    from ecole.reward import LpIterations, IsDone
 
-   4.0 * LpIterations()**2 - 3 * IsDone()
+   4.0 * LpIterations() ** 2 - 3 * IsDone()
 
 which is especially powerful because in this normally it would *not* be possible to pass both
 :py:class:`~ecole.reward.LpIterations` and :py:class:`~ecole.reward.IsDone` to the
@@ -96,7 +96,7 @@ All operations that are valid between scalars are valid between reward functions
 
 .. testcode::
 
-   - IsDone() ** abs(LpIterations() // 4)
+   -IsDone() ** abs(LpIterations() // 4)
 
 In addition, not all commonly used mathematical operations have a dedicated Python operator: to
 accomodate this, Ecole implements a number of other operations as methods of reward functions.
@@ -110,7 +110,7 @@ This also works with rewards functions created from arithmetic expressions.
 
 .. testcode::
 
-   (3 - 2*LpIterations()).exp()
+   (3 - 2 * LpIterations()).exp()
 
 Finally, reward functions have an ``apply`` method to compose rewards with any
 function.

@@ -31,7 +31,6 @@ maximum absolute value.
 
 
    class ScaledNodeBipartite(NodeBipartite):
-
        def extract(self, model, done):
            # Call parent method to get the original observation
            obs = super().extract(model, done)
@@ -55,7 +54,6 @@ This will illustrate how the class paradigm is useful to saving information betw
 .. testcode::
 
    class MovingScaledNodeBipartite(NodeBipartite):
-
        def __init__(self, alpha, *args, **kwargs):
            # Construct parent class with other parameters
            super().__init__(*args, **kwargs)
@@ -123,8 +121,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
 
 
    class StochasticReward:
-
-       def __init__(self, reward_function, probability = 0.05):
+       def __init__(self, reward_function, probability=0.05):
            self.reward_function = reward_function
            self.probability = probability
 
@@ -135,7 +132,7 @@ For instance, we can create a ``StochasticReward`` function that will wrap any g
            # Unconditionally getting reward as reward_funcition.extract may have side effects
            reward = self.reward_function.extract(model, done)
            if random.random() < probability:
-               return 0.
+               return 0.0
            else:
                return reward
 

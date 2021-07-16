@@ -51,7 +51,7 @@ you can explicitly pass ``None`` to the environment constructor.
    >>> env = ecole.environment.Branching(observation_function=None)
    >>> env.observation_function  # doctest: +SKIP
    ecole.observation.nothing()
-   >>> obs, _, _, _, _= env.reset("path/to/problem")
+   >>> obs, _, _, _, _ = env.reset("path/to/problem")
    >>> obs is None
    True
 
@@ -64,8 +64,8 @@ To use multiple observation functions, wrap them in a ``list`` or ``dict``.
 .. doctest::
 
    >>> obs_func = {
-   ...    "some_name": ecole.observation.NodeBipartite(),
-   ...    "other_name": ecole.observation.Nothing(),
+   ...     "some_name": ecole.observation.NodeBipartite(),
+   ...     "other_name": ecole.observation.Nothing(),
    ... }
    >>> env = ecole.environment.Branching(observation_function=obs_func)
    >>> obs, _, _, _, _ = env.reset("path/to/problem")
@@ -78,9 +78,7 @@ Similarily with a tuple
 
 .. doctest::
 
-   >>> obs_func = (
-   ...    ecole.observation.NodeBipartite(), ecole.observation.Nothing()
-   ... )
+   >>> obs_func = (ecole.observation.NodeBipartite(), ecole.observation.Nothing())
    >>> env = ecole.environment.Branching(observation_function=obs_func)
    >>> obs, _, _, _, _ = env.reset("path/to/problem")
    >>> obs  # doctest: +SKIP
