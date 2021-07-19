@@ -54,7 +54,8 @@ jobs:
         with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib with sanitizer."
         shell: bash -l {0}
-        run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- test-lib
+        # Using Ctest runner to avoid out of memory
+        run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- ctest-lib
 
   check-code:
     runs-on: ubuntu-20.04

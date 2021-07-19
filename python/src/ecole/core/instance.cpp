@@ -158,11 +158,10 @@ void bind_submodule(py::module const& m) {
 	def_generate_instance(independent_set_gen, independent_set_params, R"(
 		Generate an independent set MILP problem instance.
 
-		Given an undireted graph, the problem is to find a maximum subset of nodes such that no pair of nodes are connected.
-		There are one variable per node in the underlying graph.
-		Instead of adding one constraint per edge, a greedy algorithm is run to replace these inequalities when clique is
-		found.
-		The maximization problem is unwheighted, that is all objective coefficients are equal to one.
+		Given an undireted graph, the problem is to find a maximum subset of nodes such that no pair of nodes are
+		connected. There are one variable per node in the underlying graph. Instead of adding one constraint per edge, a
+		greedy algorithm is run to replace these inequalities when clique is found. The maximization problem is
+		unwheighted, that is all objective coefficients are equal to one.
 
 		The problem are generated using the procedure from [Bergman2016]_, and the graphs are sampled following
 		[Erdos1959]_ and [Barabasi1999]_.
@@ -173,15 +172,15 @@ void bind_submodule(py::module const& m) {
 			The number of nodes in the graph, and therefore of variable.
 		graph_type:
 			The method used in which to generate graphs.
-			One of "barabasi_albert" or "erdos_renyi"
+			One of ``"barabasi_albert"`` or ``"erdos_renyi"``.
 		edge_probability:
 			The probability of generating each edge.
 			This parameter must be in the range [0, 1].
-			This parameter will only be used if `graph_type == "erdos_renyi"`.
+			This parameter will only be used if ``graph_type == "erdos_renyi"``.
 		affinity:
 			The number of nodes each new node will be attached to, in the sampling scheme.
 			This parameter must be an integer >= 1.
-			This parameter will only be used if `graph_type == "barabasi_albert"`.
+			This parameter will only be used if ``graph_type == "barabasi_albert"``.
 		random_engine:
 			The random number generator used to peform all sampling.
 
