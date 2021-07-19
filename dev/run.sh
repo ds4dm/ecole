@@ -184,6 +184,22 @@ function test_lib {
 }
 
 
+# CTest runner runs test individually, reducing mem consumption
+function ctest_lib {
+	if files_have_changed 'CMakeLists.txt' 'libecole';  then
+		if_rebuild_then build_lib_test
+		local extra_args=("$@")
+		if [ "${fail_fast}" = "true" ]; then
+			extra_args+=("--stop-on-failure ")
+		fi
+		# Possible option --parallel
+		cmake_build test -- ARGS="${extra_args[@]}"
+	else
+		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
+	fi
+}
+
+
 function test_py {
 	local -r relevant_files=('CMakeLists.txt' 'libecole/CMakeLists.txt' 'libecole/src' 'libecole/include' 'python')
 	if files_have_changed "${relevant_files[@]}";  then
