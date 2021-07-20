@@ -231,12 +231,22 @@ function test_doc {
 
 
 function file_version {
-	local -r file_major="$(awk '/VERSION_MAJOR/{print $2}' "${source_dir}/VERSION")"
-	local -r file_minor="$(awk '/VERSION_MINOR/{print $2}' "${source_dir}/VERSION")"
-	local -r file_patch="$(awk '/VERSION_PATCH/{print $2}' "${source_dir}/VERSION")"
-	local -r file_pre="$(awk '/VERSION_PRE/{print $2}' "${source_dir}/VERSION")"
-	local -r file_post="$(awk '/VERSION_POST/{print $2}' "${source_dir}/VERSION")"
-	local -r file_dev="$(awk '/VERSION_DEV/{print $2}' "${source_dir}/VERSION")"
+	local -r version_text="$(cat "${source_dir}/VERSION")"
+
+	function find_version {
+		local -r version="${1}"
+		local -r regex="${version}[[:space:]]+(\.?[[:alnum:]]+)"
+		if [[ "${version_text}" =~ $regex ]]; then
+			echo "${BASH_REMATCH[1]}"
+		fi
+	}
+
+	local -r file_major="$(find_version 'VERSION_MAJOR')"
+	local -r file_minor="$(find_version 'VERSION_MINOR')"
+	local -r file_patch="$(find_version 'VERSION_PATCH')"
+	local -r file_pre="$(find_version 'VERSION_PRE')"
+	local -r file_post="$(find_version 'VERSION_POST')"
+	local -r file_dev="$(find_version 'VERSION_DEV')"
 	local version="${file_major:?}.${file_minor:?}.${file_patch:?}"
 	version+="${file_pre}${file_post}${file_dev}"
 	echo "${version}"

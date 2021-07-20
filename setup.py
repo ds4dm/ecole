@@ -20,16 +20,13 @@ def get_file(file: pathlib.Path) -> str:
 def get_version(version_file: pathlib.Path) -> str:
     """Extract version from the Ecole VERSION file according to PEP440."""
     lines = get_file(version_file)
-    version_dict = re.search(
-        r"VERSION_MAJOR\s+(?P<major>\d+)[\s\n]*"
-        r"VERSION_MINOR\s+(?P<minor>\d+)[\s\n]*"
-        r"VERSION_PATCH\s+(?P<patch>\d+)[\s\n]*"
-        r"VERSION_PRE\s+(?P<pre>.*)[\s\n]*"
-        r"VERSION_POST\s+(?P<post>.*)[\s\n]*"
-        r"VERSION_DEV\s+(?P<dev>.*)",
-        lines,
-    ).groupdict()
-    return "{major}.{minor}.{patch}{pre}{post}{dev}".format(**version_dict)
+    major = re.search(r"VERSION_MAJOR\s+(\d+)", lines).group(1)
+    minor = re.search(r"VERSION_MINOR\s+(\d+)", lines).group(1)
+    patch = re.search(r"VERSION_PATCH\s+(\d+)", lines).group(1)
+    pre = re.search(r"VERSION_PRE\s+([\.\w]*)", lines).group(1)
+    post = re.search(r"VERSION_POST\s+([\.\w]*)", lines).group(1)
+    dev = re.search(r"VERSION_DEV\s+([\.\w]*)", lines).group(1)
+    return f"{major}.{minor}.{patch}{pre}{post}{dev}"
 
 
 def get_cmake_args() -> List[str]:
