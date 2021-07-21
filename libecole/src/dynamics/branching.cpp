@@ -20,7 +20,7 @@ std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, 
 	}
 	auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
 	auto branch_cols = xt::xtensor<std::size_t, 1>::from_shape({branch_cands.size()});
-	auto const var_to_idx = [](auto const var) { return SCIPcolGetLPPos(SCIPvarGetCol(var)); };
+	auto const var_to_idx = [](auto const var) { return SCIPvarGetProbindex(var); };
 	std::transform(branch_cands.begin(), branch_cands.end(), branch_cols.begin(), var_to_idx);
 
 	assert(branch_cols.size() > 0);
@@ -38,13 +38,12 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 }
 
 auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& var_idx) -> std::tuple<bool, ActionSet> {
-	auto const lp_cols = model.lp_columns();
-	if (var_idx >= lp_cols.size()) {
+	auto const vars = model.variables();
+	if (var_idx >= vars.size()) {
 		throw std::invalid_argument{
-			fmt::format("Branching candidate index {} larger than the number of columns ({}).", var_idx, lp_cols.size())};
+			fmt::format("Branching candidate index {} larger than the number of variables ({}).", var_idx, vars.size())};
 	}
-	auto* const var = SCIPcolGetVar(lp_cols[var_idx]);
-	scip::call(SCIPbranchVar, model.get_scip_ptr(), var, nullptr, nullptr, nullptr);
+	scip::call(SCIPbranchVar, model.get_scip_ptr(), vars[var_idx], nullptr, nullptr, nullptr);
 	model.solve_iter_branch(SCIP_BRANCHED);
 
 	if (model.solve_iter_is_done()) {
