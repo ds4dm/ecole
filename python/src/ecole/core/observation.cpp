@@ -263,8 +263,10 @@ void bind_submodule(py::module_ const& m) {
 		auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
 		Branching candidates features from Khalil et al. (2016).
 
-		The observation is a matrix where rows represent pseudo branching candidates and columns
-		represent features related to these variables.
+		The observation is a matrix where rows represent all variables and columns represent features related
+		to these variables.
+		Only rows representing pseudo branching candidate contain meaningful observation, other rows are filled with
+		``NaN``.
 		See [Khalil2016]_ for a complete reference on this observation function.
 
 		The first :py:attr:`Khalil2016Obs.n_static_features` are static (they do not change through the solving

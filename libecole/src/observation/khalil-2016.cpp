@@ -551,15 +551,10 @@ void set_dynamic_features(
  * The static features have been computed for all LP columns and stored in the order of `LPcolumns`.
  * We need to find the one associated with the given variable.
  */
-template <typename Tensor>
-void set_precomputed_static_features(
-	Tensor&& out,
-	std::size_t var_idx,
-	xt::xtensor<value_type, 2> const& static_features) {
-
+template <typename TensorOut, typename TensorIn>
+void set_precomputed_static_features(TensorOut&& var_features, TensorIn const& var_static_features) {
 	using namespace xt::placeholders;
-	xt::view(out, xt::range(_, Khalil2016Obs::n_static_features)) =
-		xt::row(static_features, static_cast<std::ptrdiff_t>(var_idx));
+	xt::view(var_features, xt::range(_, Khalil2016Obs::n_static_features)) = var_static_features;
 }
 
 /******************************
@@ -568,18 +563,17 @@ void set_precomputed_static_features(
 
 auto extract_all_features(scip::Model& model, bool pseudo, xt::xtensor<value_type, 2> const& static_features) {
 	auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
-	auto const n_branch_cands = branch_cands.size();
-
-	auto observation = xt::xtensor<value_type, 2>{{n_branch_cands, Khalil2016Obs::n_features}, std::nan("")};
+	auto observation = xt::xtensor<value_type, 2>{{model.variables().size(), Khalil2016Obs::n_features}, std::nan("")};
 
 	auto* const scip = model.get_scip_ptr();
 	auto const active_rows_weights = stats_for_active_constraint_coefficients_weights(model);
 
-	for (std::size_t var_idx = 0; var_idx < n_branch_cands; ++var_idx) {
-		auto* const var = branch_cands[var_idx];
-		auto features = xt::row(observation, static_cast<std::ptrdiff_t>(var_idx));
-		set_precomputed_static_features(features, var_idx, static_features);
-		set_dynamic_features(features, scip, var, active_rows_weights);
+	for (auto* var : branch_cands) {
+		auto const var_idx = SCIPvarGetProbindex(var);
+		auto var_features = xt::row(observation, var_idx);
+		auto var_static_features = xt::row(static_features, var_idx);
+		set_precomputed_static_features(var_features, var_static_features);
+		set_dynamic_features(var_features, scip, var, active_rows_weights);
 	}
 
 	return observation;

@@ -1,11 +1,19 @@
 #include <catch2/catch.hpp>
+#include <range/v3/view/enumerate.hpp>
+#include <range/v3/view/transform.hpp>
+#include <scip/scip.h>
+#include <xtensor/xindex_view.hpp>
 #include <xtensor/xmath.hpp>
+#include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 #include "ecole/observation/khalil-2016.hpp"
+#include "ecole/tweak/range.hpp"
 
 #include "conftest.hpp"
 #include "observation/unit-tests.hpp"
+
+namespace views = ranges::views;
 
 using namespace ecole;
 
@@ -18,6 +26,16 @@ template <typename Tensor, typename T = typename Tensor::value_type>
 auto in_interval(Tensor const& tensor, T const& lower, T const& upper) {
 	// Must take bounds by reference because they are captured by reference in the xexpression
 	return (lower <= tensor) && (tensor <= upper);
+}
+
+/** Get the features of the pseudo candidate only. */
+template <typename Tensor, typename Range>
+auto obs_pseudo_cands(Tensor const& obs_features, Range const& pseudo_cands_idx) -> Tensor {
+	auto filtered_features = Tensor::from_shape({pseudo_cands_idx.size(), obs_features.shape()[1]});
+	for (auto const [idx, var_idx] : views::enumerate(pseudo_cands_idx)) {
+		xt::row(filtered_features, static_cast<std::ptrdiff_t>(idx)) = xt::row(obs_features, var_idx);
+	}
+	return filtered_features;
 }
 
 TEST_CASE("Khalil2016 return correct observation", "[obs]") {
@@ -34,20 +52,23 @@ TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 
 	SECTION("Observation features has correct shape") {
 		auto const& obs = optional_obs.value();
-		auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
-		REQUIRE(obs.features.shape(0) == branch_cands.size());
+		REQUIRE(obs.features.shape(0) == model.variables().size());
 		REQUIRE(obs.features.shape(1) == observation::Khalil2016Obs::n_features);
-	}
-
-	SECTION("No features are NaN or infinite") {
-		auto const& obs = optional_obs.value();
-		REQUIRE_FALSE(xt::any(xt::isnan(obs.features)));
-		REQUIRE_FALSE(xt::any(xt::isinf(obs.features)));
 	}
 
 	SECTION("Observation has correct values") {
 		auto const& obs = optional_obs.value();
-		auto col = [&obs](auto feat) { return xt::col(obs.features, static_cast<std::ptrdiff_t>(feat)); };
+		auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
+		auto obs_pseudo = obs_pseudo_cands(obs.features, views::transform(branch_cands, SCIPvarGetProbindex));
+		auto col = [&obs_pseudo](auto feat) { return xt::col(obs_pseudo, static_cast<std::ptrdiff_t>(feat)); };
+
+		SECTION("No pseudo_candidate features are NaN or infinite") {
+			for (auto* var : branch_cands) {
+				auto const var_idx = SCIPvarGetProbindex(var);
+				REQUIRE_FALSE(xt::any(xt::isnan(xt::row(obs.features, var_idx))));
+				REQUIRE_FALSE(xt::any(xt::isinf(xt::row(obs.features, var_idx))));
+			}
+		}
 
 		SECTION("Objective function coefficients") {
 			REQUIRE(xt::all(col(Features::obj_coef_pos_part) >= 0));
