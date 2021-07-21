@@ -91,13 +91,13 @@ def test_NodeBipartite_observation(model):
     """Observation of NodeBipartite is a type with array attributes."""
     obs = make_obs(ecole.observation.NodeBipartite(), model)
     assert isinstance(obs, ecole.observation.NodeBipartiteObs)
-    assert_array(obs.column_features, ndim=2)
+    assert_array(obs.variable_features, ndim=2)
     assert_array(obs.row_features, ndim=2)
     assert_array(obs.edge_features.values)
     assert_array(obs.edge_features.indices, ndim=2, dtype=np.uint64)
 
     # Check that there are enums describing feeatures
-    assert len(obs.ColumnFeatures.__members__) == obs.column_features.shape[1]
+    assert len(obs.VariableFeatures.__members__) == obs.variable_features.shape[1]
     assert len(obs.RowFeatures.__members__) == obs.row_features.shape[1]
 
 
