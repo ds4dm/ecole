@@ -30,7 +30,7 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 
 	SECTION("Observation features are not empty") {
 		auto const& obs = optional_obs.value();
-		REQUIRE(obs.column_features.size() > 0);
+		REQUIRE(obs.variable_features.size() > 0);
 		REQUIRE(obs.row_features.size() > 0);
 		REQUIRE(obs.edge_features.nnz() > 0);
 	}
@@ -38,22 +38,22 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 	SECTION("Observation features have matching shape") {
 		auto const& obs = optional_obs.value();
 		REQUIRE(obs.row_features.shape()[0] == obs.edge_features.shape[0]);
-		REQUIRE(obs.column_features.shape()[0] == obs.edge_features.shape[1]);
+		REQUIRE(obs.variable_features.shape()[0] == obs.edge_features.shape[1]);
 		REQUIRE(obs.edge_features.indices.shape()[0] == 2);
 		REQUIRE(obs.edge_features.indices.shape()[1] == obs.edge_features.nnz());
 	}
 
-	SECTION("Columns features are not all nan") {
-		auto const& col_feat = optional_obs.value().column_features;
-		for (std::size_t i = 0; i < col_feat.shape()[1]; ++i) {
-			REQUIRE_FALSE(xt::all(xt::isnan(xt::col(col_feat, static_cast<std::ptrdiff_t>(i)))));
+	SECTION("Variable features are not all nan") {
+		auto const& var_feat = optional_obs.value().variable_features;
+		for (std::size_t i = 0; i < var_feat.shape()[1]; ++i) {
+			REQUIRE_FALSE(xt::all(xt::isnan(xt::col(var_feat, static_cast<std::ptrdiff_t>(i)))));
 		}
 	}
 
 	SECTION("Row features are not all nan") {
 		auto const& row_feat = optional_obs.value().row_features;
 		for (std::size_t i = 0; i < row_feat.shape()[1]; ++i) {
-			REQUIRE_FALSE(xt::all(xt::isnan(xt::row(row_feat, static_cast<std::ptrdiff_t>(i)))));
+			REQUIRE_FALSE(xt::all(xt::isnan(xt::col(row_feat, static_cast<std::ptrdiff_t>(i)))));
 		}
 	}
 }

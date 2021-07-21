@@ -93,10 +93,10 @@ void bind_submodule(py::module_ const& m) {
 		Each edge is associated with the coefficient of the variable in the constraint.
 	)")
 			.def_auto_copy()
-			.def_auto_pickle(std::array{"column_features", "row_features", "edge_features"})
+			.def_auto_pickle(std::array{"variable_features", "row_features", "edge_features"})
 			.def_readwrite_xtensor(
-				"column_features",
-				&NodeBipartiteObs::column_features,
+				"variable_features",
+				&NodeBipartiteObs::variable_features,
 				"A matrix where each row is represents a variable, and each column a feature of the variables.")
 			.def_readwrite_xtensor(
 				"row_features",
@@ -108,26 +108,26 @@ void bind_submodule(py::module_ const& m) {
 				"The constraint matrix of the optimization problem, with rows for contraints and "
 				"columns for variables.");
 
-	py::enum_<NodeBipartiteObs::ColumnFeatures>(node_bipartite_obs, "ColumnFeatures")
-		.value("objective", NodeBipartiteObs::ColumnFeatures::objective)
-		.value("is_type_binary", NodeBipartiteObs::ColumnFeatures::is_type_binary)
-		.value("is_type_integer", NodeBipartiteObs::ColumnFeatures::is_type_integer)
-		.value("is_type_implicit_integer", NodeBipartiteObs::ColumnFeatures::is_type_implicit_integer)
-		.value("is_type_continuous", NodeBipartiteObs::ColumnFeatures::is_type_continuous)
-		.value("has_lower_bound", NodeBipartiteObs::ColumnFeatures::has_lower_bound)
-		.value("has_upper_bound", NodeBipartiteObs::ColumnFeatures::has_upper_bound)
-		.value("normed_reduced_cost", NodeBipartiteObs::ColumnFeatures::normed_reduced_cost)
-		.value("solution_value", NodeBipartiteObs::ColumnFeatures::solution_value)
-		.value("solution_frac", NodeBipartiteObs::ColumnFeatures::solution_frac)
-		.value("is_solution_at_lower_bound", NodeBipartiteObs::ColumnFeatures::is_solution_at_lower_bound)
-		.value("is_solution_at_upper_bound", NodeBipartiteObs::ColumnFeatures::is_solution_at_upper_bound)
-		.value("scaled_age", NodeBipartiteObs::ColumnFeatures::scaled_age)
-		.value("incumbent_value", NodeBipartiteObs::ColumnFeatures::incumbent_value)
-		.value("average_incumbent_value", NodeBipartiteObs::ColumnFeatures::average_incumbent_value)
-		.value("is_basis_lower", NodeBipartiteObs::ColumnFeatures::is_basis_lower)
-		.value("is_basis_basic", NodeBipartiteObs::ColumnFeatures::is_basis_basic)
-		.value("is_basis_upper", NodeBipartiteObs::ColumnFeatures::is_basis_upper)
-		.value("is_basis_zero", NodeBipartiteObs::ColumnFeatures ::is_basis_zero);
+	py::enum_<NodeBipartiteObs::VariableFeatures>(node_bipartite_obs, "VariableFeatures")
+		.value("objective", NodeBipartiteObs::VariableFeatures::objective)
+		.value("is_type_binary", NodeBipartiteObs::VariableFeatures::is_type_binary)
+		.value("is_type_integer", NodeBipartiteObs::VariableFeatures::is_type_integer)
+		.value("is_type_implicit_integer", NodeBipartiteObs::VariableFeatures::is_type_implicit_integer)
+		.value("is_type_continuous", NodeBipartiteObs::VariableFeatures::is_type_continuous)
+		.value("has_lower_bound", NodeBipartiteObs::VariableFeatures::has_lower_bound)
+		.value("has_upper_bound", NodeBipartiteObs::VariableFeatures::has_upper_bound)
+		.value("normed_reduced_cost", NodeBipartiteObs::VariableFeatures::normed_reduced_cost)
+		.value("solution_value", NodeBipartiteObs::VariableFeatures::solution_value)
+		.value("solution_frac", NodeBipartiteObs::VariableFeatures::solution_frac)
+		.value("is_solution_at_lower_bound", NodeBipartiteObs::VariableFeatures::is_solution_at_lower_bound)
+		.value("is_solution_at_upper_bound", NodeBipartiteObs::VariableFeatures::is_solution_at_upper_bound)
+		.value("scaled_age", NodeBipartiteObs::VariableFeatures::scaled_age)
+		.value("incumbent_value", NodeBipartiteObs::VariableFeatures::incumbent_value)
+		.value("average_incumbent_value", NodeBipartiteObs::VariableFeatures::average_incumbent_value)
+		.value("is_basis_lower", NodeBipartiteObs::VariableFeatures::is_basis_lower)
+		.value("is_basis_basic", NodeBipartiteObs::VariableFeatures::is_basis_basic)
+		.value("is_basis_upper", NodeBipartiteObs::VariableFeatures::is_basis_upper)
+		.value("is_basis_zero", NodeBipartiteObs::VariableFeatures ::is_basis_zero);
 
 	py::enum_<NodeBipartiteObs::RowFeatures>(node_bipartite_obs, "RowFeatures")
 		.value("bias", NodeBipartiteObs::RowFeatures::bias)

@@ -12,10 +12,10 @@ namespace ecole::observation {
 struct NodeBipartiteObs {
 	using value_type = double;
 
-	static inline std::size_t constexpr n_static_column_features = 5;
-	static inline std::size_t constexpr n_dynamic_column_features = 14;
-	static inline std::size_t constexpr n_column_features = n_static_column_features + n_dynamic_column_features;
-	enum struct ColumnFeatures : std::size_t {
+	static inline std::size_t constexpr n_static_variable_features = 5;
+	static inline std::size_t constexpr n_dynamic_variable_features = 14;
+	static inline std::size_t constexpr n_variable_features = n_static_variable_features + n_dynamic_variable_features;
+	enum struct VariableFeatures : std::size_t {
 		/** Static features */
 		objective = 0,
 		is_type_binary,            // One hot encoded
@@ -54,7 +54,7 @@ struct NodeBipartiteObs {
 		scaled_age,
 	};
 
-	xt::xtensor<value_type, 2> column_features;
+	xt::xtensor<value_type, 2> variable_features;
 	xt::xtensor<value_type, 2> row_features;
 	utility::coo_matrix<value_type> edge_features;
 };
