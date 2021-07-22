@@ -90,7 +90,7 @@ function configure {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		extra_args+=("-Werror=dev" "-D" "WARNINGS_AS_ERRORS=ON")
 	fi
-	execute cmake -S "${source_dir}" -B "${build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON "${extra_args[@]}"
+	execute cmake -S "${source_dir}" -B "${build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON ${extra_args[@]+"${extra_args[@]}"}
 	execute ln -nfs "${build_dir}/compile_commands.json"
 }
 
@@ -143,7 +143,7 @@ function build_doc {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		local sphinx_args+=("-W")
 	fi
-	execute_pythonpath python -m sphinx "${sphinx_args[@]}" -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
+	execute_pythonpath python -m sphinx ${sphinx_args[@]+"${sphinx_args[@]}"} -b html "${source_doc_dir}" "${build_doc_dir}" "$@"
 }
 
 
@@ -177,7 +177,7 @@ function test_lib {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--abort")
 		fi
-		execute "${build_dir}/libecole/tests/ecole-lib-test" "${extra_args[@]}"
+		execute "${build_dir}/libecole/tests/ecole-lib-test" ${extra_args[@]+"${extra_args[@]}"}
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -193,7 +193,7 @@ function ctest_lib {
 			extra_args+=("--stop-on-failure ")
 		fi
 		# Possible option --parallel
-		cmake_build test -- ARGS="${extra_args[@]}"
+		cmake_build test -- ARGS="${extra_args[@]+"${extra_args[@]}"}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -208,7 +208,7 @@ function test_py {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--exitfirst")
 		fi
-		execute_pythonpath python -m pytest "${extra_args[@]}"
+		execute_pythonpath python -m pytest ${extra_args[@]+"${extra_args[@]}"}
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -222,8 +222,8 @@ function test_doc {
 		if [ "${warnings_as_errors}" = "true" ]; then
 			extra_args+=("-W")
 		fi
-		execute python -m sphinx "${extra_args[@]}" -b linkcheck "${source_doc_dir}" "${build_doc_dir}"
-		execute_pythonpath python -m sphinx "${extra_args[@]}" -b doctest "${source_doc_dir}" "${build_doc_dir}"
+		execute python -m sphinx ${extra_args[@]+"${extra_args[@]}"} -b linkcheck "${source_doc_dir}" "${build_doc_dir}"
+		execute_pythonpath python -m sphinx ${extra_args[@]+"${extra_args[@]}"} -b doctest "${source_doc_dir}" "${build_doc_dir}"
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
