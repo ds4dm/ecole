@@ -165,7 +165,7 @@ function test_all {
 # Return false (1) when `diff` is set and given files pattern have modifications since `rev`.
 function files_have_changed {
 	if [ "${diff}" = "true" ]; then
-		git -C "${__ECOLE_DIR__}" diff --name-only --exit-code "${rev}" -- "${@}" > /dev/null && return 1 || return 0
+		cd "${__ECOLE_DIR__}" && git diff --name-only --exit-code "${rev}" -- "${@}" > /dev/null && return 1 || return 0
 	fi
 }
 
@@ -314,8 +314,8 @@ function check_code {
 # FIXME this is not used in Github Action for now
 function deploy_doc_locally {
 	# Try getting from exact tag.
-	local -r tag=$(git -C ${source_dir} describe --tags --exact-match HEAD 2> /dev/null)
-	local -r branch="$(git rev-parse --abbrev-ref HEAD)"
+	local -r tag=$(cd "${source_dir}" && git describe --tags --exact-match HEAD 2> /dev/null)
+	local -r branch="$(cd "${source_dir}" && git rev-parse --abbrev-ref HEAD)"
 
 	local -r install_dir="${1}"
 	if_rebuild_then build_doc
