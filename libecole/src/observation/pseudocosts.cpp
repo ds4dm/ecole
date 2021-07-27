@@ -39,13 +39,13 @@ std::optional<xt::xtensor<double, 1>> Pseudocosts::extract(scip::Model& model, b
 	auto const [cands, lp_values] = scip_get_lp_branch_cands(scip);
 
 	/* Store pseudocosts in tensor */
-	auto const nb_lp_columns = static_cast<std::size_t>(SCIPgetNLPCols(scip));
-	xt::xtensor<double, 1> pseudocosts({nb_lp_columns}, std::nan(""));
+	auto const nb_vars = static_cast<std::size_t>(SCIPgetNVars(scip));
+	xt::xtensor<double, 1> pseudocosts({nb_vars}, std::nan(""));
 
 	for (auto const [var, lp_val] : views::zip(cands, lp_values)) {
-		auto const lp_index = static_cast<std::size_t>(SCIPcolGetLPPos(SCIPvarGetCol(var)));
+		auto const var_index = static_cast<std::size_t>(SCIPvarGetProbindex(var));
 		auto const score = SCIPgetVarPseudocostScore(scip, var, lp_val);
-		pseudocosts[lp_index] = static_cast<double>(score);
+		pseudocosts[var_index] = static_cast<double>(score);
 	}
 
 	return pseudocosts;
