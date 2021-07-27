@@ -87,6 +87,8 @@ def test_Nothing_observation(model):
     assert make_obs(ecole.observation.Nothing(), model) is None
 
 
+# FIXME remove in Ecole >0.8
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_NodeBipartite_observation(model):
     """Observation of NodeBipartite is a type with array attributes."""
     obs = make_obs(ecole.observation.NodeBipartite(), model)
@@ -99,6 +101,10 @@ def test_NodeBipartite_observation(model):
     # Check that there are enums describing feeatures
     assert len(obs.VariableFeatures.__members__) == obs.variable_features.shape[1]
     assert len(obs.RowFeatures.__members__) == obs.row_features.shape[1]
+
+    # FIXME remove in Ecole >0.8
+    assert_array(obs.column_features, ndim=2)
+    assert len(obs.ColumnFeatures.__members__) == obs.variable_features.shape[1]
 
 
 def test_MilpBipartite_observation(model):

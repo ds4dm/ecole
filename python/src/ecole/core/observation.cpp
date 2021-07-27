@@ -102,6 +102,18 @@ void bind_submodule(py::module_ const& m) {
 				"row_features",
 				&NodeBipartiteObs::row_features,
 				"A matrix where each row is represents a constraint, and each column a feature of the constraints.")
+			// FIXME remove in version >0.8
+			.def_property(
+				"column_features",
+				[](py::handle self) {
+					PyErr_WarnEx(PyExc_DeprecationWarning, "column_features is deprecated, use variable_features.", 1);
+					return self.attr("variable_features");
+				},
+				[](py::handle self, py::handle const val) {
+					PyErr_WarnEx(PyExc_DeprecationWarning, "column_features is deprecated, use variable_features.", 1);
+					self.attr("variable_features") = val;
+				},
+				"A matrix where each row is represents a variable, and each column a feature of the variables.")
 			.def_readwrite(
 				"edge_features",
 				&NodeBipartiteObs::edge_features,
@@ -128,6 +140,12 @@ void bind_submodule(py::module_ const& m) {
 		.value("is_basis_basic", NodeBipartiteObs::VariableFeatures::is_basis_basic)
 		.value("is_basis_upper", NodeBipartiteObs::VariableFeatures::is_basis_upper)
 		.value("is_basis_zero", NodeBipartiteObs::VariableFeatures ::is_basis_zero);
+
+	// FIXME remove in Ecole >0.8
+	node_bipartite_obs.def_property_readonly_static("ColumnFeatures", [](py::handle self) {
+		PyErr_WarnEx(PyExc_DeprecationWarning, "ColumnFeatures is deprecated, use VariableFeatures.", 1);
+		return self.attr("VariableFeatures");
+	});
 
 	py::enum_<NodeBipartiteObs::RowFeatures>(node_bipartite_obs, "RowFeatures")
 		.value("bias", NodeBipartiteObs::RowFeatures::bias)
