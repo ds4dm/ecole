@@ -44,16 +44,12 @@ TEST_CASE("NodeBipartite return correct observation", "[obs]") {
 	}
 
 	SECTION("Variable features are not all nan") {
-		auto const& var_feat = optional_obs.value().variable_features;
-		for (std::size_t i = 0; i < var_feat.shape()[1]; ++i) {
-			REQUIRE_FALSE(xt::all(xt::isnan(xt::col(var_feat, static_cast<std::ptrdiff_t>(i)))));
-		}
+		auto const& obs = optional_obs.value();
+		REQUIRE_FALSE(xt::all(xt::isnan(obs.variable_features)));
 	}
 
 	SECTION("Row features are not all nan") {
-		auto const& row_feat = optional_obs.value().row_features;
-		for (std::size_t i = 0; i < row_feat.shape()[1]; ++i) {
-			REQUIRE_FALSE(xt::all(xt::isnan(xt::col(row_feat, static_cast<std::ptrdiff_t>(i)))));
-		}
+		auto const& obs = optional_obs.value();
+		REQUIRE_FALSE(xt::all(xt::isnan(obs.row_features)));
 	}
 }

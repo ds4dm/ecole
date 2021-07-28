@@ -61,11 +61,8 @@ TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 		auto col = [&obs_pseudo](auto feat) { return xt::col(obs_pseudo, static_cast<std::ptrdiff_t>(feat)); };
 
 		SECTION("No pseudo_candidate features are NaN or infinite") {
-			for (auto* var : model.pseudo_branch_cands()) {
-				auto const var_idx = SCIPvarGetProbindex(var);
-				REQUIRE_FALSE(xt::any(xt::isnan(xt::row(obs.features, var_idx))));
-				REQUIRE_FALSE(xt::any(xt::isinf(xt::row(obs.features, var_idx))));
-			}
+			REQUIRE_FALSE(xt::any(xt::isnan(obs_pseudo)));
+			REQUIRE_FALSE(xt::any(xt::isinf(obs_pseudo)));
 		}
 
 		SECTION("Objective function coefficients") {
