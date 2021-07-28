@@ -37,10 +37,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: "Add python version to requirements."
-        run: echo '  - python=${{ matrix.python }}' >> dev/conda.yaml
-      - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+      - if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: "dev/conda_linux-64_py${{ matrix.python }}_lock.yaml" }
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: "dev/conda.yaml" }
       - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
@@ -51,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Configure, build, and test ecole-lib with sanitizer."
         shell: bash -l {0}
         # Using Ctest runner to avoid out of memory
@@ -62,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Run pre-commit."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- check-code
@@ -72,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Configure and build ecole-py-ext. Build and test documentation."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath configure -- test-doc
@@ -100,7 +102,7 @@ jobs:
       - uses: actions/checkout@v2
         with: {fetch-depth: 0}
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
         run: bash dev/run.sh --fix-pythonpath --build-doc-dir=local/docs/latest configure -- build-doc
@@ -138,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
         run: |
@@ -160,7 +162,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+        with: { environment-file: dev/conda_linux-64_py3.9_lock.yaml }
       - name: "Build, test, and deploy sdist"
         shell: bash -l {0}
         env:
