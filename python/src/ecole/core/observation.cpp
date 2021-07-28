@@ -85,7 +85,7 @@ void bind_submodule(py::module_ const& m) {
 
 		The optimization problem is represented as an heterogenous bipartite graph.
 		On one side, a node is associated with one variable, on the other side a node is
-		associated with one constraint.
+		associated with one LP row.
 		There exist an edge between a variable and a constraint if the variable exists in the
 		constraint with a non-zero coefficient.
 
@@ -236,13 +236,13 @@ void bind_submodule(py::module_ const& m) {
 		Strong branching score observation function on branch-and bound node.
 
 		This observation obtains scores for all LP or pseudo candidate variables at a
-		branch-and-bound node.  The strong branching score measures the quality of branching
-		for each variable.  This observation can be used as an expert for imitation
-		learning algorithms.
+		branch-and-bound node.
+		The strong branching score measures the quality of branching for each variable.
+		This observation can be used as an expert for imitation learning algorithms.
 
 		This observation function extracts an array containing the strong branching score for
-		each variable in the problem which can be indexed by the action set.  Variables for which
-		a strong branching score is not applicable are filled with NaN.
+		each variable in the problem which can be indexed by the action set.
+		Variables for which a strong branching score is not applicable are filled with ``NaN``.
 	)");
 	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true, R"(
 		Constructor for StrongBranchingScores.
@@ -269,8 +269,8 @@ void bind_submodule(py::module_ const& m) {
 		pseudocost branching (also known as hybrid branching).
 
 		This observation function extracts an array containing the pseudocost for
-		each variable in the problem which can be indexed by the action set.  Variables for which
-		a pseudocost is not applicable are filled with NaN.
+		each variable in the problem which can be indexed by the action set.
+		Variables for which a pseudocost is not applicable are filled with ``NaN``.
 	)");
 	pseudocosts.def(py::init<>());
 	def_before_reset(pseudocosts, R"(Do nothing.)");
@@ -283,8 +283,8 @@ void bind_submodule(py::module_ const& m) {
 
 		The observation is a matrix where rows represent all variables and columns represent features related
 		to these variables.
-		Only rows representing pseudo branching candidate contain meaningful observation, other rows are filled with
-		``NaN``.
+		Only rows representing pseudo branching candidate contain meaningful observation, other rows are filled
+		with ``NaN``.
 		See [Khalil2016]_ for a complete reference on this observation function.
 
 		The first :py:attr:`Khalil2016Obs.n_static_features` are static (they do not change through the solving
