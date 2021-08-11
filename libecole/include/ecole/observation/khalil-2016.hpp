@@ -108,11 +108,14 @@ struct Khalil2016Obs {
 
 class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
 public:
+	Khalil2016(bool pseudo_candidates = false) noexcept;
+
 	void before_reset(scip::Model& model) override;
 
 	std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
 
 private:
+	bool pseudo_candidates;
 	xt::xtensor<double, 2> static_features;
 };
 
