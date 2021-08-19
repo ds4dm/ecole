@@ -364,7 +364,15 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation function extract structured :py:class:`Khalil2016Obs`.
 	)");
-	khalil2016.def(py::init<>());
+	khalil2016.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
+		Create new observation.
+
+		Parameters
+		----------
+		pseudo_candidates:
+				Whether the pseudo branching variable candidates (``SCIPgetPseudoBranchCands``)
+				or LP branching variable candidates (``SCIPgetPseudoBranchCands``) are observed.
+	)");
 	def_before_reset(khalil2016, R"(Reset static features cache.)");
 	def_extract(khalil2016, "Extract the observation matrix.");
 

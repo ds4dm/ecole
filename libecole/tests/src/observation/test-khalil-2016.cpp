@@ -10,7 +10,8 @@
 using namespace ecole;
 
 TEST_CASE("Khalil2016 unit tests", "[unit][obs]") {
-	observation::unit_tests(observation::Khalil2016{});
+	auto const pseudo = GENERATE(true, false);
+	observation::unit_tests(observation::Khalil2016{pseudo});
 }
 
 template <typename Tensor, typename T = typename Tensor::value_type>
@@ -22,7 +23,8 @@ auto in_interval(Tensor const& tensor, T const& lower, T const& upper) {
 TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 	using Features = observation::Khalil2016Obs::Features;
 
-	auto obs_func = observation::Khalil2016{};
+	auto const pseudo = GENERATE(true, false);
+	auto obs_func = observation::Khalil2016{pseudo};
 	auto model = get_model();
 	obs_func.before_reset(model);
 	advance_to_stage(model, SCIP_STAGE_SOLVING);
@@ -32,7 +34,8 @@ TEST_CASE("Khalil2016 return correct observation", "[obs]") {
 
 	SECTION("Observation features has correct shape") {
 		auto const& obs = optional_obs.value();
-		REQUIRE(obs.features.shape(0) == model.pseudo_branch_cands().size());
+		auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
+		REQUIRE(obs.features.shape(0) == branch_cands.size());
 		REQUIRE(obs.features.shape(1) == observation::Khalil2016Obs::n_features);
 	}
 

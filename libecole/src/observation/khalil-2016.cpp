@@ -554,33 +554,31 @@ void set_dynamic_features(
 template <typename Tensor>
 void set_precomputed_static_features(
 	Tensor&& out,
-	SCIP_VAR* const var,
+	std::size_t var_idx,
 	xt::xtensor<value_type, 2> const& static_features) {
 
-	auto const col_idx = static_cast<std::ptrdiff_t>(SCIPcolGetIndex(SCIPvarGetCol(var)));
 	using namespace xt::placeholders;
-	xt::view(out, xt::range(_, Khalil2016Obs::n_static_features)) = xt::row(static_features, col_idx);
+	xt::view(out, xt::range(_, Khalil2016Obs::n_static_features)) =
+		xt::row(static_features, static_cast<std::ptrdiff_t>(var_idx));
 }
 
 /******************************
  *  Main extraction function  *
  ******************************/
 
-auto extract_all_features(scip::Model& model, xt::xtensor<value_type, 2> const& static_features) {
-	xt::xtensor<value_type, 2> observation{
-		{model.pseudo_branch_cands().size(), Khalil2016Obs::n_features},
-		std::nan(""),
-	};
+auto extract_all_features(scip::Model& model, bool pseudo, xt::xtensor<value_type, 2> const& static_features) {
+	auto const branch_cands = pseudo ? model.pseudo_branch_cands() : model.lp_branch_cands();
+	auto const n_branch_cands = branch_cands.size();
+
+	auto observation = xt::xtensor<value_type, 2>{{n_branch_cands, Khalil2016Obs::n_features}, std::nan("")};
 
 	auto* const scip = model.get_scip_ptr();
 	auto const active_rows_weights = stats_for_active_constraint_coefficients_weights(model);
 
-	auto const pseudo_branch_cands = model.pseudo_branch_cands();
-	auto const n_pseudo_branch_cands = pseudo_branch_cands.size();
-	for (std::size_t var_idx = 0; var_idx < n_pseudo_branch_cands; ++var_idx) {
-		auto* const var = pseudo_branch_cands[var_idx];
+	for (std::size_t var_idx = 0; var_idx < n_branch_cands; ++var_idx) {
+		auto* const var = branch_cands[var_idx];
 		auto features = xt::row(observation, static_cast<std::ptrdiff_t>(var_idx));
-		set_precomputed_static_features(features, var, static_features);
+		set_precomputed_static_features(features, var_idx, static_features);
 		set_dynamic_features(features, scip, var, active_rows_weights);
 	}
 
@@ -598,6 +596,8 @@ auto is_on_root_node(scip::Model& model) -> bool {
  *  Observation extracting function  *
  *************************************/
 
+Khalil2016::Khalil2016(bool pseudo_candidates_) noexcept : pseudo_candidates(pseudo_candidates_) {}
+
 void Khalil2016::before_reset(scip::Model& /* model */) {
 	static_features = decltype(static_features){};
 }
@@ -607,7 +607,7 @@ auto Khalil2016::extract(scip::Model& model, bool /* done */) -> std::optional<K
 		if (is_on_root_node(model)) {
 			static_features = extract_static_features(model);
 		}
-		return {{extract_all_features(model, static_features)}};
+		return {{extract_all_features(model, pseudo_candidates, static_features)}};
 	}
 	return {};
 }
