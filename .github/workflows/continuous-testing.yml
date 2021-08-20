@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Configure, build, and test ecole-lib and ecole-py-ext."
-        run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
+        run: ./dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
 
   test-with-conda:
     strategy:
@@ -45,7 +45,7 @@ jobs:
         with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         shell: bash -l {0}
-        run: bash dev/run.sh --fix-pythonpath configure -- test-lib -- test-py
+        run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- test-lib -- test-py
 
   # Currenlty only sanitize address without Python
   test-with-sanitizer:
@@ -57,7 +57,7 @@ jobs:
       - name: "Configure, build, and test ecole-lib with sanitizer."
         shell: bash -l {0}
         # Using Ctest runner to avoid out of memory
-        run: bash dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -- ctest-lib
+        run: ./dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -D CMAKE_BUILD_TYPE=CondaRelease -- ctest-lib
 
   check-code:
     runs-on: ubuntu-20.04
@@ -67,7 +67,7 @@ jobs:
         with: { environment-file: dev/conda.yaml }
       - name: "Run pre-commit."
         shell: bash -l {0}
-        run: bash dev/run.sh --fix-pythonpath configure -- check-code
+        run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- check-code
 
   test-doc:
     runs-on: ubuntu-20.04
@@ -77,7 +77,7 @@ jobs:
         with: { environment-file: dev/conda.yaml }
       - name: "Configure and build ecole-py-ext. Build and test documentation."
         shell: bash -l {0}
-        run: bash dev/run.sh --fix-pythonpath configure -- test-doc
+        run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- test-doc
 
 
 #  Deploy checkpoint
@@ -106,10 +106,12 @@ jobs:
         with: { environment-file: dev/conda.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
-        run: bash dev/run.sh --fix-pythonpath --build-doc-dir=local/docs/latest configure -- build-doc
+        run: |
+          ./dev/run.sh --fix-pythonpath --build-doc-dir=local/docs/latest \
+            configure -D CMAKE_BUILD_TYPE=CondaRelease -- build-doc
       - name: "Symlink stable documentation."
         run: |
-          version="$(bash dev/run.sh git-version origin/master | grep -E -o '[0-9]+\.[0-9]+')" &&
+          version="$(./dev/run.sh git-version origin/master | grep -E -o '[0-9]+\.[0-9]+')" &&
           cd local/docs/ &&
           ln -sf "${version:?}" "stable"
       - uses: ./.github/actions/push-to-repo
@@ -134,7 +136,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Check version file matches the version."
-        run: bash dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
+        run: ./dev/run.sh test-version "${GITHUB_REF#refs/tags/}"
 
   deploy-version-doc:
     needs: test-version
@@ -147,7 +149,8 @@ jobs:
         shell: bash -l {0}
         run: |
           version="$(echo "${GITHUB_REF#refs/tags/v}" | grep -E -o '[0-9]+\.[0-9]+')" &&
-          bash dev/run.sh --fix-pythonpath --build-doc-dir="local/docs/${version}" configure -- build-doc
+          ./dev/run.sh --fix-pythonpath --build-doc-dir="local/docs/${version}" \
+            configure -D CMAKE_BUILD_TYPE=CondaRelease -- build-doc
       - uses: ./.github/actions/push-to-repo
         with:
           git_email: "BotEcole@users.noreply.github.com"
@@ -170,4 +173,4 @@ jobs:
         env:
           TWINE_USERNAME: "${{ secrets.PYPI_USERNAME }}"
           TWINE_PASSWORD: "${{ secrets.PYPI_PASSWORD }}"
-        run: bash dev/run.sh test-sdist -- deploy-sdist
+        run: ./dev/run.sh test-sdist -- deploy-sdist
