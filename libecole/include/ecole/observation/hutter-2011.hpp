@@ -4,14 +4,15 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include "ecole/export.hpp"
 #include "ecole/observation/abstract.hpp"
 
 namespace ecole::observation {
 
-struct Hutter2011Obs {
+struct ECOLE_EXPORT Hutter2011Obs {
 	static inline std::size_t constexpr n_features = 33;
 
-	enum struct Features : std::size_t {
+	enum struct ECOLE_EXPORT Features : std::size_t {
 		/* Problem size features */
 		nb_variables = 0,
 		nb_constraints,
@@ -66,9 +67,9 @@ struct Hutter2011Obs {
 	xt::xtensor<double, 1> features;
 };
 
-class Hutter2011 : public ObservationFunction<std::optional<Hutter2011Obs>> {
+class ECOLE_EXPORT Hutter2011 : public ObservationFunction<std::optional<Hutter2011Obs>> {
 public:
-	std::optional<Hutter2011Obs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT std::optional<Hutter2011Obs> extract(scip::Model& model, bool done) override;
 };
 
 }  // namespace ecole::observation

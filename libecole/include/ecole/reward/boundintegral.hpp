@@ -3,20 +3,21 @@
 #include <functional>
 #include <string>
 
+#include "ecole/export.hpp"
 #include "ecole/reward/abstract.hpp"
 
 namespace ecole::reward {
 
-enum struct Bound { primal, dual, primal_dual };
+enum struct ECOLE_EXPORT Bound { primal, dual, primal_dual };
 
-template <Bound bound> class BoundIntegral : public RewardFunction {
+template <Bound bound> class ECOLE_EXPORT BoundIntegral : public RewardFunction {
 public:
 	using BoundFunction = std::function<std::tuple<Reward, Reward>(scip::Model& model)>;
 
-	BoundIntegral(bool wall_ = false, const BoundFunction& bound_function_ = {});
+	ECOLE_EXPORT BoundIntegral(bool wall_ = false, const BoundFunction& bound_function_ = {});
 
-	void before_reset(scip::Model& model) override;
-	Reward extract(scip::Model& model, bool done = false) override;
+	ECOLE_EXPORT void before_reset(scip::Model& model) override;
+	ECOLE_EXPORT Reward extract(scip::Model& model, bool done = false) override;
 
 private:
 	BoundFunction bound_function;

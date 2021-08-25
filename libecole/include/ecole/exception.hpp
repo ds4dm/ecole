@@ -3,23 +3,25 @@
 #include <exception>
 #include <string>
 
+#include "ecole/export.hpp"
+
 namespace ecole {
 
-class Exception : public std::exception {
+class ECOLE_EXPORT Exception : public std::exception {
 public:
-	Exception(std::string message) noexcept;
+	ECOLE_EXPORT Exception(std::string message) noexcept;
 
-	[[nodiscard]] char const* what() const noexcept override;
+	[[nodiscard]] ECOLE_EXPORT char const* what() const noexcept override;
 
 private:
 	std::string message;
 };
 
-class IteratorExhausted : public Exception {
+class ECOLE_EXPORT IteratorExhausted : public Exception {
 public:
 	using Exception::Exception;
 
-	IteratorExhausted() : Exception{"No item to iterate over."} {}
+	ECOLE_EXPORT IteratorExhausted();
 };
 
 }  // namespace ecole

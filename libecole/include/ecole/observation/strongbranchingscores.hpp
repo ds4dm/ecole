@@ -6,17 +6,19 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
+#include "ecole/export.hpp"
 #include "ecole/observation/abstract.hpp"
 
 namespace ecole::observation {
 
-class StrongBranchingScores : public ObservationFunction<std::optional<xt::xtensor<double, 1>>> {
+class ECOLE_EXPORT StrongBranchingScores : public ObservationFunction<std::optional<xt::xtensor<double, 1>>> {
 public:
+	ECOLE_EXPORT StrongBranchingScores(bool pseudo_candidates = true);
+
+	ECOLE_EXPORT std::optional<xt::xtensor<double, 1>> extract(scip::Model& model, bool done) override;
+
+private:
 	bool pseudo_candidates;
-
-	StrongBranchingScores(bool pseudo_candidates = true);
-
-	std::optional<xt::xtensor<double, 1>> extract(scip::Model& model, bool done) override;
 };
 
 }  // namespace ecole::observation

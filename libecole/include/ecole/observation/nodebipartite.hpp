@@ -4,18 +4,19 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include "ecole/export.hpp"
 #include "ecole/observation/abstract.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
 namespace ecole::observation {
 
-struct NodeBipartiteObs {
+struct ECOLE_EXPORT NodeBipartiteObs {
 	using value_type = double;
 
 	static inline std::size_t constexpr n_static_variable_features = 5;
 	static inline std::size_t constexpr n_dynamic_variable_features = 14;
 	static inline std::size_t constexpr n_variable_features = n_static_variable_features + n_dynamic_variable_features;
-	enum struct VariableFeatures : std::size_t {
+	enum struct ECOLE_EXPORT VariableFeatures : std::size_t {
 		/** Static features */
 		objective = 0,
 		is_type_binary,            // One hot encoded
@@ -43,7 +44,7 @@ struct NodeBipartiteObs {
 	static inline std::size_t constexpr n_static_row_features = 2;
 	static inline std::size_t constexpr n_dynamic_row_features = 3;
 	static inline std::size_t constexpr n_row_features = n_static_row_features + n_dynamic_row_features;
-	enum struct RowFeatures : std::size_t {
+	enum struct ECOLE_EXPORT RowFeatures : std::size_t {
 		/** Static features */
 		bias = 0,
 		objective_cosine_similarity,
@@ -59,13 +60,13 @@ struct NodeBipartiteObs {
 	utility::coo_matrix<value_type> edge_features;
 };
 
-class NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
+class ECOLE_EXPORT NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
 public:
 	NodeBipartite(bool cache = false) : use_cache{cache} {}
 
-	void before_reset(scip::Model& model) override;
+	ECOLE_EXPORT void before_reset(scip::Model& model) override;
 
-	std::optional<NodeBipartiteObs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT std::optional<NodeBipartiteObs> extract(scip::Model& model, bool done) override;
 
 private:
 	NodeBipartiteObs the_cache;

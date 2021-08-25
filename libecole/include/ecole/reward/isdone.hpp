@@ -1,12 +1,13 @@
 #pragma once
 
+#include "ecole/export.hpp"
 #include "ecole/reward/abstract.hpp"
 
 namespace ecole::reward {
 
-class IsDone : public RewardFunction {
+class ECOLE_EXPORT IsDone : public RewardFunction {
 public:
-	Reward extract(scip::Model& model, bool done = false) override;
+	ECOLE_EXPORT Reward extract(scip::Model& model, bool done = false) override;
 };
 
 }  // namespace ecole::reward

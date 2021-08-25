@@ -64,6 +64,14 @@ add_custom_target(
 )
 add_dependencies(ecole-lib ecole-lib-version)
 
+# Control symbol visibility
+include(GenerateExportHeader)
+generate_export_header(
+	ecole-lib
+	BASE_NAME Ecole
+	EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/include/ecole/export.hpp"
+)
+
 
 target_include_directories(
 	ecole-lib

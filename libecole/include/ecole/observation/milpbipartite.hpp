@@ -4,17 +4,18 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include "ecole/export.hpp"
 #include "ecole/observation/abstract.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
 namespace ecole::observation {
 
-class MilpBipartiteObs {
+class ECOLE_EXPORT MilpBipartiteObs {
 public:
 	using value_type = double;
 
 	static inline std::size_t constexpr n_variable_features = 9;
-	enum struct VariableFeatures : std::size_t {
+	enum struct ECOLE_EXPORT VariableFeatures : std::size_t {
 		objective = 0,
 		is_type_binary,            // One hot encoded
 		is_type_integer,           // One hot encoded
@@ -26,7 +27,7 @@ public:
 		upper_bound,
 	};
 	static inline std::size_t constexpr n_constraint_features = 1;
-	enum struct ConstraintFeatures : std::size_t {
+	enum struct ECOLE_EXPORT ConstraintFeatures : std::size_t {
 		bias = 0,
 	};
 
@@ -35,11 +36,11 @@ public:
 	utility::coo_matrix<value_type> edge_features;
 };
 
-class MilpBipartite : public ObservationFunction<std::optional<MilpBipartiteObs>> {
+class ECOLE_EXPORT MilpBipartite : public ObservationFunction<std::optional<MilpBipartiteObs>> {
 public:
 	MilpBipartite(bool normalize_ = false) : normalize{normalize_} {}
 
-	std::optional<MilpBipartiteObs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT std::optional<MilpBipartiteObs> extract(scip::Model& model, bool done) override;
 
 private:
 	bool normalize = false;

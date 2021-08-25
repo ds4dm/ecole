@@ -4,9 +4,11 @@
 
 #include <scip/config.h>
 
+#include "ecole/export.hpp"
+
 namespace ecole {
 
-struct VersionInfo {
+struct ECOLE_EXPORT VersionInfo {
 	unsigned int major;
 	unsigned int minor;
 	unsigned int patch;
@@ -39,7 +41,7 @@ inline constexpr VersionInfo get_version() noexcept {
  * This is the version of Ecole when compiling it as a library.
  * This is useful for detecting incompatibilities when loading as a dynamic library.
  */
-VersionInfo get_build_version() noexcept;
+ECOLE_EXPORT VersionInfo get_build_version() noexcept;
 
 /**
  * SCIP version, as per heder files.
@@ -51,6 +53,6 @@ inline constexpr VersionInfo get_scip_version() noexcept {
 /**
  * SCIP version used to compile Ecole library.
  */
-VersionInfo get_build_scip_version() noexcept;
+ECOLE_EXPORT VersionInfo get_build_scip_version() noexcept;
 
 }  // namespace ecole

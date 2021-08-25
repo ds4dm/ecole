@@ -2,14 +2,15 @@
 
 #include <cstddef>
 
+#include "ecole/export.hpp"
 #include "ecole/instance/abstract.hpp"
 #include "ecole/random.hpp"
 
 namespace ecole::instance {
 
-class IndependentSetGenerator : public InstanceGenerator {
+class ECOLE_EXPORT IndependentSetGenerator : public InstanceGenerator {
 public:
-	struct Parameters {
+	struct ECOLE_EXPORT Parameters {
 		enum struct GraphType { barabasi_albert, erdos_renyi };
 
 		std::size_t n_nodes = 500;  // NOLINT(readability-magic-numbers)
@@ -18,17 +19,17 @@ public:
 		std::size_t affinity = 4;        // NOLINT(readability-magic-numbers)
 	};
 
-	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
 
-	IndependentSetGenerator(Parameters parameters, RandomEngine random_engine);
-	IndependentSetGenerator(Parameters parameters);
-	IndependentSetGenerator();
+	ECOLE_EXPORT IndependentSetGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT IndependentSetGenerator(Parameters parameters);
+	ECOLE_EXPORT IndependentSetGenerator();
 
-	scip::Model next() override;
-	void seed(Seed seed) override;
-	[[nodiscard]] bool done() const override { return false; }
+	ECOLE_EXPORT scip::Model next() override;
+	ECOLE_EXPORT void seed(Seed seed) override;
+	[[nodiscard]] ECOLE_EXPORT bool done() const override { return false; }
 
-	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
+	[[nodiscard]] ECOLE_EXPORT Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
 	RandomEngine random_engine;

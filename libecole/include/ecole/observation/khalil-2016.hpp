@@ -5,16 +5,17 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include "ecole/export.hpp"
 #include "ecole/observation/abstract.hpp"
 
 namespace ecole::observation {
 
-struct Khalil2016Obs {
+struct ECOLE_EXPORT Khalil2016Obs {
 	static inline std::size_t constexpr n_static_features = 18;
 	static inline std::size_t constexpr n_dynamic_features = 54;
 	static inline std::size_t constexpr n_features = n_static_features + n_dynamic_features;
 
-	enum struct Features : std::size_t {
+	enum struct ECOLE_EXPORT Features : std::size_t {
 		/** Static features */
 		/** Objective function coeffs. (3) */
 		obj_coef = 0,
@@ -106,13 +107,13 @@ struct Khalil2016Obs {
 	xt::xtensor<double, 2> features;
 };
 
-class Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
+class ECOLE_EXPORT Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
 public:
-	Khalil2016(bool pseudo_candidates = false) noexcept;
+	ECOLE_EXPORT Khalil2016(bool pseudo_candidates = false) noexcept;
 
-	void before_reset(scip::Model& model) override;
+	ECOLE_EXPORT void before_reset(scip::Model& model) override;
 
-	std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
 
 private:
 	bool pseudo_candidates;

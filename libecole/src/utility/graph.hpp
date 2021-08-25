@@ -6,22 +6,23 @@
 
 #include <robin_hood.h>
 
+#include "ecole/export.hpp"
 #include "ecole/random.hpp"
 
 namespace ecole::utility {
 
 /** A simple symetric graph based on adjacency lists.  */
-class Graph {
+class ECOLE_EXPORT Graph {
 public:
 	using Node = std::size_t;
 
-	struct Edge : std::pair<Node, Node> {
+	struct ECOLE_EXPORT Edge : std::pair<Node, Node> {
 		/** All constructors from pair. */
 		using std::pair<Node, Node>::pair;
 
 		/** Undirected comparison. */
-		auto operator==(Edge const& other) const noexcept -> bool;
-		auto operator!=(Edge const& other) const noexcept -> bool { return !(*this == other); }
+		ECOLE_EXPORT auto operator==(Edge const& other) const noexcept -> bool;
+		ECOLE_EXPORT auto operator!=(Edge const& other) const noexcept -> bool;
 	};
 
 	/** Sample a new graph using Erdos Renyi algorithm.
@@ -30,7 +31,8 @@ public:
 	 * @param edge_probability The probability that a given edge is added to the graph.
 	 * @param random_engine The random number generator used to sample edges.
 	 */
-	static auto erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngine& random_engine) -> Graph;
+	ECOLE_EXPORT static auto erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngine& random_engine)
+		-> Graph;
 
 	/** Sample a new graph using Barabasi Albert algorithm.
 	 *
@@ -38,21 +40,20 @@ public:
 	 * @param affinity The number of nodes that each node is connected to.
 	 * @param random_engine The random number generator used to sample edges.
 	 */
-	static auto barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEngine& random_engine) -> Graph;
+	ECOLE_EXPORT static auto barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEngine& random_engine)
+		-> Graph;
 
 	/** Empty graph with only nodes */
 	Graph(std::size_t n_nodes) : edges{n_nodes} {}
 
 	/** Reserve size for each adjacency list. */
-	void reserve(std::size_t degree);
+	ECOLE_EXPORT void reserve(std::size_t degree);
 
-	[[nodiscard]] auto n_nodes() const noexcept -> std::size_t { return edges.size(); }
-	[[nodiscard]] auto degree(Node n) const noexcept -> std::size_t { return edges[n].size(); }
-	[[nodiscard]] auto neighbors(Node n) const noexcept -> robin_hood::unordered_flat_set<Node> const& {
-		return edges[n];
-	}
-	[[nodiscard]] auto are_connected(Node popular, Node unpopular) const -> bool;
-	[[nodiscard]] auto n_edges() const noexcept -> std::size_t;
+	[[nodiscard]] ECOLE_EXPORT auto n_nodes() const noexcept -> std::size_t;
+	[[nodiscard]] ECOLE_EXPORT auto degree(Node n) const noexcept -> std::size_t;
+	[[nodiscard]] ECOLE_EXPORT auto neighbors(Node n) const noexcept -> robin_hood::unordered_flat_set<Node> const&;
+	[[nodiscard]] ECOLE_EXPORT auto are_connected(Node popular, Node unpopular) const -> bool;
+	[[nodiscard]] ECOLE_EXPORT auto n_edges() const noexcept -> std::size_t;
 
 	/** Apply a function on all edges in the graph.
 	 *
@@ -60,13 +61,13 @@ public:
 	 */
 	template <typename Func> void edges_visit(Func&& func) const;
 
-	void add_edge(Edge edge);
+	ECOLE_EXPORT void add_edge(Edge edge);
 
 	/** Partition the nodes in clique using greedy algorithm.
 	 *
 	 * @return Vector of cliques, each being a vector of nodes.
 	 */
-	[[nodiscard]] auto greedy_clique_partition() const -> std::vector<std::vector<Node>>;
+	[[nodiscard]] ECOLE_EXPORT auto greedy_clique_partition() const -> std::vector<std::vector<Node>>;
 
 private:
 	// Vector likely more performant than list on small-sized small-count data due to more predictable cache usage
