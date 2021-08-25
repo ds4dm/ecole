@@ -127,6 +127,6 @@ endfunction()
 
 
 # Define a target with all compiler warnings
-add_library(ecole_warnings INTERFACE)
-set_project_warnings(ecole_warnings)
-add_library(Ecole::warnings ALIAS ecole_warnings)
+add_library(ecole-warnings INTERFACE)
+set_project_warnings(ecole-warnings)
+add_library(Ecole::warnings ALIAS ecole-warnings)

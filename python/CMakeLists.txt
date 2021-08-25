@@ -41,7 +41,7 @@ target_include_directories(ecole-py-ext SYSTEM PRIVATE "${Python_NumPy_INCLUDE_D
 target_link_libraries(
 	ecole-py-ext
 	PRIVATE
-		Ecole::lib
+		Ecole::ecole-lib
 		Ecole::warnings
 		xtensor-python
 )

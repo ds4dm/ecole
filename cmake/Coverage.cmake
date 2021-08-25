@@ -16,6 +16,6 @@ endfunction()
 
 
 # Define a target with enabled coverage
-add_library(ecole_coverage INTERFACE)
-enable_coverage(ecole_coverage)
-add_library(Ecole::coverage ALIAS ecole_coverage)
+add_library(ecole-coverage INTERFACE)
+enable_coverage(ecole-coverage)
+add_library(Ecole::coverage ALIAS ecole-coverage)

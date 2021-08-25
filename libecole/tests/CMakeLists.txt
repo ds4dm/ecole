@@ -77,7 +77,7 @@ find_or_download_package(
 target_link_libraries(
 	ecole-lib-test
 	PRIVATE
-		Ecole::lib
+		Ecole::ecole-lib
 		Ecole::warnings
 		Ecole::sanitizers
 		range-v3::range-v3

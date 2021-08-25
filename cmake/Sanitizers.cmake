@@ -45,6 +45,6 @@ endfunction()
 
 
 # Define a target with enabled sanitizers
-add_library(ecole_sanitizers INTERFACE)
-enable_sanitizers(ecole_sanitizers)
-add_library(Ecole::sanitizers ALIAS ecole_sanitizers)
+add_library(ecole-sanitizers INTERFACE)
+enable_sanitizers(ecole-sanitizers)
+add_library(Ecole::sanitizers ALIAS ecole-sanitizers)

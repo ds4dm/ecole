@@ -43,7 +43,7 @@ add_library(
 )
 set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)
 
-add_library(Ecole::lib ALIAS ecole-lib)
+add_library(Ecole::ecole-lib ALIAS ecole-lib)
 
 # Unconditionally generate version file at build time
 string(TIMESTAMP Ecole_BUILD_TIME)
