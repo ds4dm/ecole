@@ -41,7 +41,6 @@ add_library(
 	src/dynamics/configuring.cpp
 	src/dynamics/primalsearch.cpp
 )
-set_target_properties(ecole-lib PROPERTIES OUTPUT_NAME ecole)
 
 add_library(Ecole::ecole-lib ALIAS ecole-lib)
 
@@ -72,6 +71,15 @@ generate_export_header(
 	EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/include/ecole/export.hpp"
 )
 
+# Set library file name and soname.
+# ABI compatibility (SOVERSION) is kept only at the minor level.
+set_target_properties(
+	ecole-lib
+	PROPERTIES
+		OUTPUT_NAME ecole
+		VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}"
+		SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}"
+)
 
 target_include_directories(
 	ecole-lib
@@ -166,6 +174,58 @@ if(LIBRT)
 endif()
 
 target_compile_features(ecole-lib PUBLIC cxx_std_17)
+
+# Installation library and symlink
+include(GNUInstallDirs)
+install(
+	TARGETS ecole-lib
+	EXPORT "${PROJECT_NAME}Targets"
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+		COMPONENT Ecole_Runtime
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		COMPONENT Ecole_Runtime
+		NAMELINK_COMPONENT Ecole_Development
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		COMPONENT Ecole_Development
+)
+
+# Install CMake targets
+install(
+	EXPORT "${PROJECT_NAME}Targets"
+	FILE "${PROJECT_NAME}Targets.cmake"
+	NAMESPACE Ecole::
+	COMPONENT Ecole_Development
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
+
+# Install header and generated headers
+install(
+	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/ecole" "${CMAKE_CURRENT_BINARY_DIR}/include/ecole"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	COMPONENT Ecole_Development
+	FILES_MATCHING PATTERN "*.hpp"
+)
+
+# Generate config and version files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+	"${PROJECT_NAME}Config.cmake.in"
+	"${PROJECT_NAME}Config.cmake"
+	INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
+write_basic_package_version_file(
+	"${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION "${${PROJECT_NAME}_VERSION}"
+	COMPATIBILITY SameMinorVersion
+)
+
+install(
+	FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+	COMPONENT Ecole_Development
+)
 
 # Add test if this is the main project and testing is enabled
 if(ECOLE_BUILD_TESTS)

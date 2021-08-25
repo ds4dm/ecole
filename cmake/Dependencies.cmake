@@ -51,7 +51,8 @@ endfunction()
 # Try to find a package or downloads it at configure time.
 #
 # Use FetchContent to download a package if it was not found and build it inside the build tree.
-function(find_or_download_package)
+# This is a macro so that find_package can export variables in the parent scope.
+macro(find_or_download_package)
 	set(options)
 	set(oneValueArgs NAME URL URL_HASH)
 	set(multiValueArgs CONFIGURE_ARGS)
@@ -89,4 +90,4 @@ function(find_or_download_package)
 			find_package(${ARG_NAME} PATHS "${FETCHCONTENT_INSTALL_DIR}" NO_DEFAULT_PATH QUIET)
 		endif()
 	endif()
-endfunction()
+endmacro()
