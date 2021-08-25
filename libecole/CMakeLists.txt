@@ -141,11 +141,11 @@ target_link_libraries(
 		libscip
 		xtensor
 		nonstd::span-lite
+		Threads::Threads
 	PRIVATE
 		Ecole::warnings
 		Ecole::sanitizers
 		Ecole::coverage
-		Threads::Threads
 		fmt::fmt
 		range-v3::range-v3
 		robin_hood::robin_hood
