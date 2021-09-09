@@ -244,7 +244,7 @@ void bind_submodule(py::module_ const& m) {
 		each variable in the problem which can be indexed by the action set.
 		Variables for which a strong branching score is not applicable are filled with ``NaN``.
 	)");
-	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = true, R"(
+	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
 		Constructor for StrongBranchingScores.
 
 		Parameters
