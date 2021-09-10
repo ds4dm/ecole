@@ -1,50 +1,42 @@
 # Module to enable compiler runtime checks.
 #
-# File taken from Jason Turner's cpp_starter_project
+# File adapted from Jason Turner's cpp_starter_project
 # https://github.com/lefticus/cpp_starter_project/blob/master/cmake/Sanitizers.cmake
+# Using INTERFACE targets is not so desirable as they need to be installed when building
+# static libraries.
 
+function(ecole_target_add_sanitizers target)
 
-function(enable_sanitizers project_name)
-
-	set(SUPPORTED_COMPILERS "GNU" "Clang" "AppleClang")
-	if(CMAKE_CXX_COMPILER_ID IN_LIST SUPPORTED_COMPILERS)
-		set(SANITIZERS "")
+	set(supported_compilers "GNU" "Clang" "AppleClang")
+	if(CMAKE_CXX_COMPILER_ID IN_LIST supported_compilers)
+		set(sanitizers "")
 
 		option(SANITIZE_ADDRESS "Enable address sanitizer" FALSE)
 		if(SANITIZE_ADDRESS)
-			list(APPEND SANITIZERS "address")
+			list(APPEND sanitizers "address")
 		endif()
 
 		option(SANITIZE_MEMORY "Enable memory sanitizer" FALSE)
 		if(SANITIZE_MEMORY)
-			list(APPEND SANITIZERS "memory")
+			list(APPEND sanitizers "memory")
 		endif()
 
 		option(SANITIZE_UNDEFINED_BEHAVIOR "Enable undefined behavior sanitizer" FALSE)
 		if(SANITIZE_UNDEFINED_BEHAVIOR)
-			list(APPEND SANITIZERS "undefined")
+			list(APPEND sanitizers "undefined")
 		endif()
 
 		option(SANITIZE_THREAD "Enable thread sanitizer" FALSE)
 		if(SANITIZE_THREAD)
-			list(APPEND SANITIZERS "thread")
+			list(APPEND sanitizers "thread")
 		endif()
 
-		list(JOIN SANITIZERS "," LIST_OF_SANITIZERS)
-
-	endif()
-
-	if(LIST_OF_SANITIZERS)
-		if(NOT "${LIST_OF_SANITIZERS}" STREQUAL "")
-			target_compile_options(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
-			target_link_libraries(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
+		list(JOIN sanitizers "," list_of_sanitizers)
+		if(NOT "${list_of_sanitizers}" STREQUAL "")
+			target_compile_options("${target}" PRIVATE -fsanitize=${list_of_sanitizers})
+			target_link_libraries("${target}" PRIVATE -fsanitize=${list_of_sanitizers})
 		endif()
+
 	endif()
 
 endfunction()
-
-
-# Define a target with enabled sanitizers
-add_library(ecole-sanitizers INTERFACE)
-enable_sanitizers(ecole-sanitizers)
-add_library(Ecole::sanitizers ALIAS ecole-sanitizers)

@@ -1,12 +1,14 @@
 # Module to set default compiler warnings.
 #
-# File taken from Jason Turner's cpp_starter_project
+# File adapted from Jason Turner's cpp_starter_project
 # https://github.com/lefticus/cpp_starter_project/blob/master/cmake/CompilerWarnings.cmake
+# Using INTERFACE targets is not so desirable as they need to be installed when building
+# static libraries.
 
-function(set_project_warnings project_name)
+function(ecole_target_add_compile_warnings target)
 	option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
-	set(MSVC_WARNINGS
+	set(msvc_warnings
 		# Baseline reasonable warnings
 		/W4
 		# "identfier": conversion from "type1" to "type1", possible loss of data
@@ -55,7 +57,7 @@ function(set_project_warnings project_name)
 		/w14928
 	)
 
-	set(CLANG_WARNINGS
+	set(clang_warnings
 		# Some default set of warnings
 		-Wall
 		# Reasonable and standard
@@ -92,12 +94,12 @@ function(set_project_warnings project_name)
 	)
 
 	if (WARNINGS_AS_ERRORS)
-		set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
-		set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
+		set(clang_warnings ${clang_warnings} -Werror)
+		set(msvc_warnings ${msvc_warnings} /WX)
 	endif()
 
-	set(GCC_WARNINGS
-		${CLANG_WARNINGS}
+	set(gcc_warnings
+		${clang_warnings}
 		# FIXME currently not adding more warning for GCC because they fail on clang-tidy
 		# warn if identation implies blocks where blocks do not exist
 		# -Wmisleading-indentation
@@ -112,21 +114,15 @@ function(set_project_warnings project_name)
 	)
 
 	if(MSVC)
-		set(PROJECT_WARNINGS ${MSVC_WARNINGS})
+		set(warnings ${msvc_warnings})
 	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-		set(PROJECT_WARNINGS ${CLANG_WARNINGS})
+		set(warnings ${clang_warnings})
 	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		set(PROJECT_WARNINGS ${CLANG_WARNINGS})
+		set(warnings ${clang_warnings})
 	else()
-		set(PROJECT_WARNINGS ${GCC_WARNINGS})
+		set(warnings ${gcc_warnings})
 	endif()
 
-	target_compile_options(${project_name} INTERFACE ${PROJECT_WARNINGS})
+	target_compile_options("${target}" PRIVATE ${warnings})
 
 endfunction()
-
-
-# Define a target with all compiler warnings
-add_library(ecole-warnings INTERFACE)
-set_project_warnings(ecole-warnings)
-add_library(Ecole::warnings ALIAS ecole-warnings)

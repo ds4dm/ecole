@@ -78,12 +78,13 @@ target_link_libraries(
 	ecole-lib-test
 	PRIVATE
 		Ecole::ecole-lib
-		Ecole::warnings
-		Ecole::sanitizers
 		range-v3::range-v3
 		Catch2::Catch2
 		libscip
 )
+
+ecole_target_add_compile_warnings(ecole-lib)
+ecole_target_add_sanitizers(ecole-lib)
 
 include("${Catch2_DIR}/Catch.cmake")
 enable_testing()

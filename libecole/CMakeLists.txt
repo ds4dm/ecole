@@ -159,13 +159,14 @@ target_link_libraries(
 		nonstd::span-lite
 		Threads::Threads
 	PRIVATE
-		Ecole::warnings
-		Ecole::sanitizers
-		Ecole::coverage
 		fmt::fmt
 		range-v3::range-v3
 		robin_hood::robin_hood
 )
+
+ecole_target_add_compile_warnings(ecole-lib)
+ecole_target_add_sanitizers(ecole-lib)
+ecole_target_add_coverage(ecole-lib)
 
 # System CPU time, silently ignored if LibRT is not present
 find_library(LIBRT rt)

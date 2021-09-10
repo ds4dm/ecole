@@ -42,9 +42,10 @@ target_link_libraries(
 	ecole-py-ext
 	PRIVATE
 		Ecole::ecole-lib
-		Ecole::warnings
 		xtensor-python
 )
+
+ecole_target_add_compile_warnings(ecole-lib)
 
 set_target_properties(
 	ecole-py-ext PROPERTIES
@@ -65,7 +66,7 @@ endif()
 
 
 set(
-	PYTHON_FILES
+	python_files
 	__init__.py
 	py.typed
 	typing.py
@@ -79,7 +80,7 @@ set(
 	dynamics.py
 	environment.py
 )
-set(PYTHON_SOURCE_FILES ${PYTHON_FILES})
+set(PYTHON_SOURCE_FILES ${python_files})
 list(TRANSFORM PYTHON_SOURCE_FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/")
 
 add_custom_target(

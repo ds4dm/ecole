@@ -20,11 +20,12 @@ target_link_libraries(
 	ecole-lib-benchmark
 	PRIVATE
 		Ecole::ecole-lib
-		Ecole::warnings
-		Ecole::sanitizers
 		CLI11::CLI11
 		fmt::fmt
 )
+
+ecole_target_add_compile_warnings(ecole-lib)
+ecole_target_add_sanitizers(ecole-lib)
 
 set_target_properties(
 	ecole-lib-benchmark
