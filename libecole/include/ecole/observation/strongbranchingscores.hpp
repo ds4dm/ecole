@@ -14,7 +14,7 @@ class StrongBranchingScores : public ObservationFunction<std::optional<xt::xtens
 public:
 	bool pseudo_candidates;
 
-	StrongBranchingScores(bool pseudo_candidates = true);
+	StrongBranchingScores(bool pseudo_candidates = false);
 
 	std::optional<xt::xtensor<double, 1>> extract(scip::Model& model, bool done) override;
 };
