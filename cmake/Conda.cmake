@@ -6,6 +6,10 @@
 # This file adds to build type:
 #  - CondaDebug for the the DEBUG_XXXFLAGS set by Conda,
 #  - CondaRelease for the XXXFLAGS set by Conda.
+#
+# Note: the `LDFLAGS` environment variable is not processed into CMAKE_EXE_LINKER_FLAGS_<build>,
+# CMAKE_SHARED_LINKER_FLAGS_<build> and CMAKE_MODULE_LINKER_FLAGS_<build> as they contain
+# information to find the library dependencies.
 
 # If we are building a recipe or not using the compiler packages then do nothing.
 if(DEFINED ENV{CONDA_BUILD} OR NOT DEFINED ENV{CONDA_BUILD_SYSROOT})
@@ -35,11 +39,7 @@ set(ENV{DEBUG_CXXFLAGS} "")
 set_flags(Fortran "$ENV{FFLAGS}" CONDARELEASE)
 set_flags(C "$ENV{CFLAGS} $ENV{CPPFLAGS}" CONDARELEASE)
 set_flags(CXX "$ENV{CXXFLAGS} $ENV{CPPFLAGS}" CONDARELEASE)
-set_flags(EXE_LINKER "$ENV{LDFLAGS}" CONDARELEASE)
-set_flags(SHARED_LINKER "$ENV{LDFLAGS}" CONDARELEASE)
-set_flags(MODULE_LINKER "$ENV{LDFLAGS}" CONDARELEASE)
 # Unset the environment flags in order to prevent CMake from reading them
 set(ENV{FFLAGS} "")
 set(ENV{CFLAGS} "")
 set(ENV{CXXFLAGS} "")
-set(ENV{LDFLAGS} "")
