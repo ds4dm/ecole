@@ -10,11 +10,11 @@
 
 #include "ecole/observation/hutter-2011.hpp"
 #include "ecole/observation/khalil-2016.hpp"
-#include "ecole/observation/milpbipartite.hpp"
-#include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/milp-bipartite.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
-#include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/observation/strong-branching-scores.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 

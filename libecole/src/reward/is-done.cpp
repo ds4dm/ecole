@@ -1,4 +1,4 @@
-#include "ecole/reward/isdone.hpp"
+#include "ecole/reward/is-done.hpp"
 
 namespace ecole::reward {
 

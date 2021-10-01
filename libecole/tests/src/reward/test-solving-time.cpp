@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "ecole/reward/solvingtime.hpp"
+#include "ecole/reward/solving-time.hpp"
 
 #include "conftest.hpp"
 #include "reward/unit-tests.hpp"

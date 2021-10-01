@@ -4,7 +4,7 @@
 #include "ecole/environment/environment.hpp"
 #include "ecole/information/nothing.hpp"
 #include "ecole/observation/nothing.hpp"
-#include "ecole/reward/isdone.hpp"
+#include "ecole/reward/is-done.hpp"
 
 namespace ecole::environment {
 

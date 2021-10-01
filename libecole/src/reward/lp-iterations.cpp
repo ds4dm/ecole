@@ -1,4 +1,4 @@
-#include "ecole/reward/lpiterations.hpp"
+#include "ecole/reward/lp-iterations.hpp"
 #include "ecole/scip/model.hpp"
 
 namespace ecole::reward {

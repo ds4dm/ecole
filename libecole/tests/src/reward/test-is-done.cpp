@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "ecole/reward/isdone.hpp"
+#include "ecole/reward/is-done.hpp"
 
 #include "conftest.hpp"
 #include "reward/unit-tests.hpp"

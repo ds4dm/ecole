@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/reward/nnodes.hpp"
+#include "ecole/reward/n-nodes.hpp"
 
 #include "conftest.hpp"
 #include "reward/unit-tests.hpp"

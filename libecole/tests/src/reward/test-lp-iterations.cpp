@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "ecole/reward/lpiterations.hpp"
+#include "ecole/reward/lp-iterations.hpp"
 
 #include "conftest.hpp"
 #include "reward/unit-tests.hpp"

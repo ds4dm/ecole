@@ -3,8 +3,8 @@
 #include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/environment/environment.hpp"
 #include "ecole/information/nothing.hpp"
-#include "ecole/observation/nodebipartite.hpp"
-#include "ecole/reward/isdone.hpp"
+#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/reward/is-done.hpp"
 
 namespace ecole::environment {
 

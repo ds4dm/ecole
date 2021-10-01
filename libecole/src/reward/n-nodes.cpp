@@ -1,4 +1,4 @@
-#include "ecole/reward/nnodes.hpp"
+#include "ecole/reward/n-nodes.hpp"
 
 #include "ecole/scip/model.hpp"
 

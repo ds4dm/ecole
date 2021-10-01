@@ -1,7 +1,7 @@
 #include <fmt/format.h>
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/dynamics/primalsearch.hpp"
+#include "ecole/dynamics/primal-search.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"

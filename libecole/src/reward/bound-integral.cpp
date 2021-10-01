@@ -7,7 +7,7 @@
 #include "scip/type_event.h"
 #include <objscip/objeventhdlr.h>
 
-#include "ecole/reward/boundintegral.hpp"
+#include "ecole/reward/bound-integral.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/chrono.hpp"

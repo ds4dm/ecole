@@ -33,15 +33,15 @@ add_executable(
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
 
-	src/reward/test-lpiterations.cpp
-	src/reward/test-isdone.cpp
-	src/reward/test-nnodes.cpp
-	src/reward/test-solvingtime.cpp
-	src/reward/test-boundintegral.cpp
+	src/reward/test-lp-iterations.cpp
+	src/reward/test-is-done.cpp
+	src/reward/test-n-nodes.cpp
+	src/reward/test-solving-time.cpp
+	src/reward/test-bound-integral.cpp
 
-	src/observation/test-nodebipartite.cpp
-	src/observation/test-milpbipartite.cpp
-	src/observation/test-strongbranchingscores.cpp
+	src/observation/test-node-bipartite.cpp
+	src/observation/test-milp-bipartite.cpp
+	src/observation/test-strong-branching-scores.cpp
 	src/observation/test-pseudocosts.cpp
 	src/observation/test-khalil-2016.cpp
 	src/observation/test-hutter-2011.cpp
@@ -49,7 +49,7 @@ add_executable(
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-branching-sum.cpp
 	src/dynamics/test-configuring.cpp
-	src/dynamics/test-primalsearch.cpp
+	src/dynamics/test-primal-search.cpp
 
 	src/environment/test-environment.cpp
 

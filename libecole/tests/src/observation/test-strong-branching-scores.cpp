@@ -2,7 +2,7 @@
 #include <xtensor/xindex_view.hpp>
 #include <xtensor/xmath.hpp>
 
-#include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/observation/strong-branching-scores.hpp"
 
 #include "conftest.hpp"
 #include "observation/unit-tests.hpp"

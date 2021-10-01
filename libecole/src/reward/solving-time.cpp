@@ -1,6 +1,6 @@
 #include <chrono>
 
-#include "ecole/reward/solvingtime.hpp"
+#include "ecole/reward/solving-time.hpp"
 #include "ecole/utility/chrono.hpp"
 
 namespace ecole::reward {

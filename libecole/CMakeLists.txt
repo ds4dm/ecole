@@ -23,23 +23,23 @@ add_library(
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
 
-	src/reward/isdone.cpp
-	src/reward/lpiterations.cpp
-	src/reward/solvingtime.cpp
-	src/reward/nnodes.cpp
-	src/reward/boundintegral.cpp
+	src/reward/is-done.cpp
+	src/reward/lp-iterations.cpp
+	src/reward/solving-time.cpp
+	src/reward/n-nodes.cpp
+	src/reward/bound-integral.cpp
 
-	src/observation/nodebipartite.cpp
-	src/observation/milpbipartite.cpp
+	src/observation/node-bipartite.cpp
+	src/observation/milp-bipartite.cpp
 	src/observation/khalil-2016.cpp
 	src/observation/hutter-2011.cpp
-	src/observation/strongbranchingscores.cpp
+	src/observation/strong-branching-scores.cpp
 	src/observation/pseudocosts.cpp
 
 	src/dynamics/branching.cpp
 	src/dynamics/branching-sum.cpp
 	src/dynamics/configuring.cpp
-	src/dynamics/primalsearch.cpp
+	src/dynamics/primal-search.cpp
 )
 
 add_library(Ecole::ecole-lib ALIAS ecole-lib)

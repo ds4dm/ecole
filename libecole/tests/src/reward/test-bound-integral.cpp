@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "ecole/reward/boundintegral.hpp"
+#include "ecole/reward/bound-integral.hpp"
 
 #include "conftest.hpp"
 #include "reward/unit-tests.hpp"

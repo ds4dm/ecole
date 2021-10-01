@@ -9,7 +9,7 @@
 #include <xtensor/xview.hpp>
 
 #include "ecole/exception.hpp"
-#include "ecole/observation/milpbipartite.hpp"
+#include "ecole/observation/milp-bipartite.hpp"
 #include "ecole/scip/cons.hpp"
 #include "ecole/scip/model.hpp"
 

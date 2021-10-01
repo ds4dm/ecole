@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ecole/dynamics/primalsearch.hpp"
+#include "ecole/dynamics/primal-search.hpp"
 #include "ecole/environment/environment.hpp"
 #include "ecole/information/nothing.hpp"
-#include "ecole/observation/nodebipartite.hpp"
-#include "ecole/reward/isdone.hpp"
+#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/reward/is-done.hpp"
 
 namespace ecole::environment {
 

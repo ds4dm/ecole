@@ -5,12 +5,12 @@
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 
-#include "ecole/reward/boundintegral.hpp"
+#include "ecole/reward/bound-integral.hpp"
 #include "ecole/reward/constant.hpp"
-#include "ecole/reward/isdone.hpp"
-#include "ecole/reward/lpiterations.hpp"
-#include "ecole/reward/nnodes.hpp"
-#include "ecole/reward/solvingtime.hpp"
+#include "ecole/reward/is-done.hpp"
+#include "ecole/reward/lp-iterations.hpp"
+#include "ecole/reward/n-nodes.hpp"
+#include "ecole/reward/solving-time.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"

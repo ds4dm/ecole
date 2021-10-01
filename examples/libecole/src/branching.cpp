@@ -6,8 +6,8 @@
 #include "ecole/environment/branching.hpp"
 #include "ecole/information/nothing.hpp"
 #include "ecole/instance/set-cover.hpp"
-#include "ecole/observation/nodebipartite.hpp"
-#include "ecole/reward/nnodes.hpp"
+#include "ecole/observation/node-bipartite.hpp"
+#include "ecole/reward/n-nodes.hpp"
 
 int main() {
 	try {

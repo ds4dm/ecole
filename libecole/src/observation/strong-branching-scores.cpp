@@ -6,7 +6,7 @@
 #include <scip/scipdefplugins.h>
 #include <scip/struct_branch.h>
 
-#include "ecole/observation/strongbranchingscores.hpp"
+#include "ecole/observation/strong-branching-scores.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 

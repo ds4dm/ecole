@@ -4,7 +4,7 @@
 #include <xtensor/xmath.hpp>
 #include <xtensor/xview.hpp>
 
-#include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 
 #include "conftest.hpp"
 #include "observation/unit-tests.hpp"

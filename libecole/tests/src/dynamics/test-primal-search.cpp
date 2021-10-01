@@ -7,7 +7,7 @@
 
 #include <scip/scip.h>
 
-#include "ecole/dynamics/primalsearch.hpp"
+#include "ecole/dynamics/primal-search.hpp"
 #include "ecole/exception.hpp"
 
 #include "conftest.hpp"

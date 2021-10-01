@@ -8,7 +8,7 @@
 #include <scip/struct_lp.h>
 #include <xtensor/xview.hpp>
 
-#include "ecole/observation/nodebipartite.hpp"
+#include "ecole/observation/node-bipartite.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/row.hpp"
 
