@@ -90,8 +90,23 @@ add_custom_target(
 )
 add_dependencies(ecole-py-ext ecole-py-files)
 
-# Scikit build relies on an install to find the library
+# Scikit build relies on an installation of the Python module to find the library.
+# Set through the setup.py script.
 if(SKBUILD)
+	# Rpath for the Ecole Python extension module
+	if(NOT ECOLE_PY_EXT_INSTALL_RPATH)
+		set(ECOLE_PY_EXT_INSTALL_LIBDIR "\\\${ORIGIN}/../${CMAKE_INSTALL_LIBDIR}")
+	endif()
+	set_target_properties(
+		ecole-py-ext
+		PROPERTIES
+			INSTALL_RPATH "${ECOLE_PY_EXT_INSTALL_RPATH}"
+	)
+
+	# Relative (to install prefix) path where to install the Python extension module
+	if(NOT ECOLE_PY_EXT_INSTALL_LIBDIR)
+		set(ECOLE_PY_EXT_INSTALL_LIBDIR "ecole")
+	endif()
 	install(
 		TARGETS ecole-py-ext
 		DESTINATION ecole

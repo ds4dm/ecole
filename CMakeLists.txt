@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
+cmake_policy(SET CMP0095 OLD)  # RPATH escaping
 
 # Adapt compiler flags if using Conda compiler packages. Before project so they are not modified.
 include(cmake/Conda.cmake)
