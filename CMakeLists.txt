@@ -31,7 +31,7 @@ include(cmake/Sanitizers.cmake)
 include(cmake/Coverage.cmake)
 
 # Utilities to automatically download missing dependencies
-include(cmake/Dependencies.cmake)
+include(cmake/DependenciesResolver.cmake)
 
 # Adapt which Python is found
 include(cmake/Python.cmake)

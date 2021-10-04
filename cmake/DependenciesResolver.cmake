@@ -1,4 +1,4 @@
-# Find or doawnload dependencies.
+# Find or download dependencies.
 #
 # Utility to try to find a package, or downloaad it, configure it, and install it inside
 # the build tree.
