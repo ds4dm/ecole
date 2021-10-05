@@ -166,7 +166,7 @@ install(
 	FILES_MATCHING PATTERN "*.hpp"
 )
 
-# Generate config and version files
+# Generate and install config and version files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
 	"${PROJECT_NAME}Config.cmake.in"
@@ -178,11 +178,19 @@ write_basic_package_version_file(
 	VERSION "${${PROJECT_NAME}_VERSION}"
 	COMPATIBILITY SameMinorVersion
 )
-
 install(
 	FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
 		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+	COMPONENT Ecole_Development
+)
+
+# Install the files to download dependencies (not mandatory but useful for users)
+install(
+	FILES
+		"${${PROJECT_NAME}_SOURCE_DIR}/cmake/DependenciesResolver.cmake"
+		"${CMAKE_CURRENT_SOURCE_DIR}/dependencies/public.cmake"
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 	COMPONENT Ecole_Development
 )
