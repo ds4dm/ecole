@@ -63,8 +63,8 @@ target_compile_definitions(
 target_include_directories(
 	ecole-lib-test
 	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/src
-		${CMAKE_SOURCE_DIR}/libecole/src  # Add libecole private include
+		"${CMAKE_CURRENT_SOURCE_DIR}/src"
+		"${${PROJECT_NAME}_SOURCE_DIR}/libecole/src"  # Add libecole private include
 )
 
 # File that download the dependencies of libecole

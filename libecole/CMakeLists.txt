@@ -59,7 +59,7 @@ add_custom_target(
 		-D Ecole_BUILD_OS="${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}"
 		-D Ecole_BUILD_TIME="${Ecole_BUILD_TIME}"
 		-D Ecole_BUILD_COMPILER="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
-		-P "${CMAKE_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
+		-P "${${PROJECT_NAME}_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
 )
 add_dependencies(ecole-lib ecole-lib-version)
 

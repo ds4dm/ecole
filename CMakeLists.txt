@@ -6,7 +6,7 @@ include(cmake/Conda.cmake)
 
 # Read the version from file
 include(cmake/Version.cmake)
-read_version("${CMAKE_SOURCE_DIR}/VERSION" Ecole_VERSION)
+read_version("VERSION" Ecole_VERSION)
 
 # Set default parameters. Assumes Ecole user,
 include(cmake/DefaultSettings.cmake)
