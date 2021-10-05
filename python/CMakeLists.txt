@@ -31,7 +31,7 @@ target_link_libraries(
 		xtensor-python
 )
 
-ecole_target_add_compile_warnings(ecole-lib)
+ecole_target_add_compile_warnings(ecole-py-ext)
 
 set_target_properties(
 	ecole-py-ext PROPERTIES
