@@ -23,6 +23,8 @@ macro(set_common_defaults)
 	option(CMAKE_POSITION_INDEPENDENT_CODE "Position Independent Code for building shared libraries." ON)
 	option(CMAKE_VISIBILITY_INLINES_HIDDEN "Hidden symbol visibility for inline functions in shared libraries" ON)
 	set(CMAKE_CXX_VISIBILITY_PRESET hidden CACHE STRING "Hidden visibility of symbols in shared libraries.")
+	option(ECOLE_BUILD_LIB "Build Ecole library, find already installed otherwise" ON)
+	option(ECOLE_BUILD_PY_EXT "Build Ecole Python Extension" ON)
 endmacro()
 
 

@@ -39,6 +39,17 @@ include(cmake/Python.cmake)
 # Enable CTest for registering tests
 include(CTest)
 
-# Ecole libraries
-add_subdirectory(libecole)
-add_subdirectory(python)
+# Ecole library
+if(ECOLE_BUILD_LIB)
+	# Build the Ecole library
+	add_subdirectory(libecole)
+else()
+	# Find the Ecole library of same version already installed
+	option(ECOLE_DOWNLOAD_DEPENDENCIES "Download the static and header libraries used in Ecole public interface" ON)
+	find_package(Ecole ${Ecole_VERSION} EXACT REQUIRED)
+endif()
+
+# Ecole Python extension
+if(ECOLE_BUILD_PY_EXT)
+	add_subdirectory(python)
+endif()
