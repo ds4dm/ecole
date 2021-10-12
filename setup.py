@@ -45,21 +45,34 @@ def get_env_cmake_args() -> List[str]:
 
 def get_cmake_install_args() -> List[str]:
     """Return default installation settings."""
-    args = [
+    if "CONDA_BUILD" in os.environ:
+        return get_cmake_out_package_install_args()
+    else:
+        return get_cmake_in_package_install_args()
+
+
+def get_cmake_in_package_install_args() -> List[str]:
+    """Return default installation settings for installing libecole in the package."""
+    system = platform.system()
+    if system == "Linux":
+        origin = r"\${ORIGIN}"
+    elif system == "Darwin":
+        origin = "@loader_path"
+    else:
+        raise NotImplementedError(f"OS {system} is not supported")
+    return [
         "-DBUILD_SHARED_LIBS=ON",
         "-DCMAKE_INSTALL_LIBDIR=ecole/lib",
         "-DCMAKE_INSTALL_BINDIR=ecole/bin",
         "-DCMAKE_INSTALL_INCLUDEDIR=ecole/include",
         "-DECOLE_PY_EXT_INSTALL_LIBDIR=ecole",
+        "-DECOLE_PY_EXT_INSTALL_RPATH={origin}/lib".format(origin=origin),
     ]
-    system = platform.system()
-    if system == "Linux":
-        args.append(r"-DECOLE_PY_EXT_INSTALL_RPATH=\${ORIGIN}/lib")
-    elif system == "Darwin":
-        args.append("-DECOLE_PY_EXT_INSTALL_RPATH=@loader_path/lib")
-    else:
-        raise NotImplementedError(f"OS {system} is not supported")
-    return args
+
+
+def get_cmake_out_package_install_args() -> List[str]:
+    """Return default installation settings for an extrenal libecole installation."""
+    return ["-DECOLE_BUILD_LIB=OFF", "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"]
 
 
 install_requires = ["numpy>=1.4"]
