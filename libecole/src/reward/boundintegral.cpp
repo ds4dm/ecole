@@ -203,7 +203,7 @@ void IntegralEventHandler::clear_bounds() {
 auto compute_dual_integral(
 	std::vector<SCIP_Real> const& dual_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
-	std::vector<SCIP_Longint> const& nodes, 
+	std::vector<SCIP_Longint> const& nodes,
 	bool use_nnodes,
 	SCIP_Real const offset,
 	SCIP_Real const initial_dual_bound,
@@ -215,7 +215,8 @@ auto compute_dual_integral(
 			metric_diff = static_cast<double>(nodes[i + 1] - nodes[i]);
 		} else {
 			metric_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		} auto const dual_bound = dual_bounds[i];
+		}
+		auto const dual_bound = dual_bounds[i];
 		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
 			dual_integral += (offset - std::max(dual_bound, initial_dual_bound)) * metric_diff;
 		} else {
@@ -228,7 +229,7 @@ auto compute_dual_integral(
 auto compute_primal_integral(
 	std::vector<SCIP_Real> const& primal_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
-	std::vector<SCIP_Longint> const& nodes, 
+	std::vector<SCIP_Longint> const& nodes,
 	bool use_nnodes,
 	SCIP_Real const offset,
 	SCIP_Real const initial_primal_bound,
@@ -240,7 +241,8 @@ auto compute_primal_integral(
 			metric_diff = static_cast<double>(nodes[i + 1] - nodes[i]);
 		} else {
 			metric_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		} auto const primal_bound = primal_bounds[i];
+		}
+		auto const primal_bound = primal_bounds[i];
 		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
 			primal_integral += -(offset - std::min(primal_bound, initial_primal_bound)) * metric_diff;
 		} else {
@@ -254,7 +256,7 @@ auto compute_primal_dual_integral(
 	std::vector<SCIP_Real> const& primal_bounds,
 	std::vector<SCIP_Real> const& dual_bounds,
 	std::vector<std::chrono::nanoseconds> const& times,
-	std::vector<SCIP_Longint> const& nodes, 
+	std::vector<SCIP_Longint> const& nodes,
 	bool use_nnodes,
 	SCIP_Real const initial_primal_bound,
 	SCIP_Real const initial_dual_bound,
@@ -267,7 +269,8 @@ auto compute_primal_dual_integral(
 			metric_diff = static_cast<double>(nodes[i + 1] - nodes[i]);
 		} else {
 			metric_diff = std::chrono::duration<double>(times[i + 1] - times[i]).count();
-		} auto const dual_bound = dual_bounds[i];
+		}
+		auto const dual_bound = dual_bounds[i];
 		auto const primal_bound = primal_bounds[i];
 		if (obj_sense == SCIP_OBJSENSE_MINIMIZE) {
 			primal_dual_integral +=
@@ -325,7 +328,8 @@ auto default_primal_dual_bound_function(scip::Model& model) -> std::tuple<Reward
 }  // namespace
 
 template <Bound bound>
-ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, bool use_nnodes_, const BoundFunction& bound_function_) : wall{wall_}, use_nnodes{use_nnodes_} {
+ecole::reward::BoundIntegral<bound>::BoundIntegral(bool wall_, bool use_nnodes_, const BoundFunction& bound_function_) :
+	wall{wall_}, use_nnodes{use_nnodes_} {
 	if constexpr (bound == Bound::dual) {
 		bound_function = bound_function_ ? bound_function_ : default_dual_bound_function;
 	} else if constexpr (bound == Bound::primal) {
@@ -373,7 +377,8 @@ template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, 
 	if constexpr (bound == Bound::dual) {
 		integral = compute_dual_integral(dual_bounds, times, nodes, use_nnodes, offset, initial_dual_bound, obj_sense);
 	} else if constexpr (bound == Bound::primal) {
-		integral = compute_primal_integral(primal_bounds, times, nodes, use_nnodes, offset, initial_primal_bound, obj_sense);
+		integral =
+			compute_primal_integral(primal_bounds, times, nodes, use_nnodes, offset, initial_primal_bound, obj_sense);
 	} else if constexpr (bound == Bound::primal_dual) {
 		integral = compute_primal_dual_integral(
 			primal_bounds, dual_bounds, times, nodes, use_nnodes, initial_primal_bound, initial_dual_bound, obj_sense);
