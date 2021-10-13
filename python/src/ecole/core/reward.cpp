@@ -179,8 +179,9 @@ void bind_submodule(py::module_ const& m) {
 		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	dualintegral.def(
-		py::init<bool, DualIntegral::BoundFunction>(),
+		py::init<bool, bool, DualIntegral::BoundFunction>(),
 		py::arg("wall") = false,
+		py::arg("use_nnodes") = false,
 		py::arg("bound_function") = DualIntegral::BoundFunction{},
 
 		R"(
@@ -190,6 +191,9 @@ void bind_submodule(py::module_ const& m) {
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+		use_nnodes :
+			If true, the integral will be computed with respect to the number of nodes.  Otherwise
+			the integral is computed with respect to time.
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial dual bound and the offset
 			to compute the dual bound with respect to.  Values should be ordered as (offset, initial_dual_bound).
@@ -212,8 +216,9 @@ void bind_submodule(py::module_ const& m) {
 		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primalintegral.def(
-		py::init<bool, PrimalIntegral::BoundFunction>(),
+		py::init<bool, bool, PrimalIntegral::BoundFunction>(),
 		py::arg("wall") = false,
+		py::arg("use_nnodes") = false,
 		py::arg("bound_function") = PrimalIntegral::BoundFunction{},
 		R"(
 		Create a PrimalIntegral reward function.
@@ -222,6 +227,9 @@ void bind_submodule(py::module_ const& m) {
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+		use_nnodes :
+			If true, the integral will be computed with respect to the number of nodes.  Otherwise
+			the integral is computed with respect to time.
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial primal bound and the offset
 			to compute the primal bound with respect to. Values should be ordered as (offset, initial_primal_bound).
@@ -243,8 +251,9 @@ void bind_submodule(py::module_ const& m) {
 		it includes time spent in :py:meth:`~ecole.environment.Environment.reset` and time spent waiting on the agent.
 	)");
 	primaldualintegral.def(
-		py::init<bool, PrimalDualIntegral::BoundFunction>(),
+		py::init<bool, bool, PrimalDualIntegral::BoundFunction>(),
 		py::arg("wall") = false,
+		py::arg("use_nnodes") = false,
 		py::arg("bound_function") = PrimalDualIntegral::BoundFunction{},
 		R"(
 		Create a PrimalDualIntegral reward function.
@@ -253,6 +262,9 @@ void bind_submodule(py::module_ const& m) {
 		----------
 		wall :
 			If true, the wall time will be used. If False (default), the process time will be used.
+		use_nnodes :
+			If true, the integral will be computed with respect to the number of nodes.  Otherwise
+			the integral is computed with respect to time.
 		bound_function :
 			A function which takes an ecole model and returns a tuple of an initial primal bound and dual bound.
 			Values should be ordered as (initial_primal_bound, initial_dual_bound). The default function returns
