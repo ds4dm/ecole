@@ -22,7 +22,7 @@ struct ECOLE_EXPORT VersionInfo {
 /**
  * Ecole version, as per header files.
  */
-inline constexpr VersionInfo get_version() noexcept {
+inline constexpr VersionInfo get_ecole_header_version() noexcept {
 	return {
 		@Ecole_VERSION_MAJOR@,  // NOLINT(readability-magic-numbers)
 		@Ecole_VERSION_MINOR@,  // NOLINT(readability-magic-numbers)
@@ -41,18 +41,23 @@ inline constexpr VersionInfo get_version() noexcept {
  * This is the version of Ecole when compiling it as a library.
  * This is useful for detecting incompatibilities when loading as a dynamic library.
  */
-ECOLE_EXPORT VersionInfo get_build_version() noexcept;
+ECOLE_EXPORT VersionInfo get_ecole_lib_version() noexcept;
 
 /**
- * SCIP version, as per heder files.
+ * SCIP version, as per current header files.
  */
-inline constexpr VersionInfo get_scip_version() noexcept {
+inline constexpr VersionInfo get_scip_header_version() noexcept {
 	return {SCIP_VERSION_MAJOR, SCIP_VERSION_MINOR, SCIP_VERSION_PATCH};
 }
 
 /**
+ * SCIP version, as per the (dynamically) loaded library.
+ */
+ECOLE_EXPORT VersionInfo get_scip_lib_version() noexcept;
+
+/**
  * SCIP version used to compile Ecole library.
  */
-ECOLE_EXPORT VersionInfo get_build_scip_version() noexcept;
+ECOLE_EXPORT VersionInfo get_scip_buildtime_version() noexcept;
 
 }  // namespace ecole

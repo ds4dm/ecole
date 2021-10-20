@@ -12,4 +12,4 @@ import ecole.instance
 import ecole.dynamics
 import ecole.environment
 
-__version__ = ecole.version.__version__
+__version__ = "{v.major}.{v.minor}.{v.patch}".format(v=ecole.version.ecole_lib_version_info)

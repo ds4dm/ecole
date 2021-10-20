@@ -36,8 +36,9 @@ PYBIND11_MODULE(core, m) {
 		.def_readwrite("build_time", &VersionInfo::build_time)
 		.def_readwrite("build_compiler", &VersionInfo::build_compiler);
 
-	m.def("get_build_version", &get_build_version);
-	m.def("get_build_scip_version", &get_build_scip_version);
+	m.def("get_ecole_lib_version", &get_ecole_lib_version);
+	m.def("get_scip_buildtime_version", &get_scip_buildtime_version);
+	m.def("get_scip_lib_version", &get_scip_lib_version);
 
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(

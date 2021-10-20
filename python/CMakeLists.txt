@@ -57,6 +57,7 @@ set(
 	py.typed
 	typing.py
 	version.py
+	doctor.py
 	scip.py
 	instance.py
 	data.py
