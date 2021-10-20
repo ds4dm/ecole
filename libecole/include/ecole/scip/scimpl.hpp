@@ -6,34 +6,44 @@
 #include <nonstd/span.hpp>
 #include <scip/scip.h>
 
-#include "ecole/utility/reverse-control.hpp"
+#include "ecole/export.hpp"
 
-namespace ecole::scip {
+namespace ecole {
 
-struct ScipDeleter {
-	void operator()(SCIP* ptr);
+namespace utility {
+class Controller;
+}
+
+namespace scip {
+
+struct ECOLE_EXPORT ScipDeleter {
+	ECOLE_EXPORT void operator()(SCIP* ptr);
 };
 
-class Scimpl {
+class ECOLE_EXPORT Scimpl {
 public:
-	Scimpl();
-	Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& /*scip_ptr*/) noexcept;
+	ECOLE_EXPORT Scimpl();
+	ECOLE_EXPORT Scimpl(Scimpl&& /*other*/) noexcept;
+	ECOLE_EXPORT Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& /*scip_ptr*/) noexcept;
+	ECOLE_EXPORT ~Scimpl();
 
-	SCIP* get_scip_ptr() noexcept;
+	ECOLE_EXPORT SCIP* get_scip_ptr() noexcept;
 
-	[[nodiscard]] Scimpl copy() const;
-	[[nodiscard]] Scimpl copy_orig() const;
+	[[nodiscard]] ECOLE_EXPORT Scimpl copy() const;
+	[[nodiscard]] ECOLE_EXPORT Scimpl copy_orig() const;
 
-	void solve_iter_start_branch();
-	void solve_iter_branch(SCIP_RESULT result);
-	SCIP_HEUR* solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
-	void solve_iter_primalsearch(SCIP_RESULT result);
-	void solve_iter_stop();
-	bool solve_iter_is_done();
+	ECOLE_EXPORT void solve_iter_start_branch();
+	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
+	ECOLE_EXPORT SCIP_HEUR*
+	solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
+	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);
+	ECOLE_EXPORT void solve_iter_stop();
+	ECOLE_EXPORT bool solve_iter_is_done();
 
 private:
-	std::unique_ptr<SCIP, ScipDeleter> m_scip = nullptr;
-	std::unique_ptr<utility::Controller> m_controller = nullptr;
+	std::unique_ptr<SCIP, ScipDeleter> m_scip;
+	std::unique_ptr<utility::Controller> m_controller;
 };
 
-}  // namespace ecole::scip
+}  // namespace scip
+}  // namespace ecole

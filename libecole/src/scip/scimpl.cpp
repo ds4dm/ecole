@@ -11,6 +11,8 @@
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
 
+#include "utility/reverse-control.hpp"
+
 namespace ecole::scip {
 
 /******************************************
@@ -92,7 +94,11 @@ scip::Scimpl::Scimpl() : m_scip(create_scip()) {
 	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
 }
 
+Scimpl::Scimpl(Scimpl&&) noexcept = default;
+
 Scimpl::Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept : m_scip(std::move(scip_ptr)) {}
+
+Scimpl::~Scimpl() = default;
 
 SCIP* scip::Scimpl::get_scip_ptr() noexcept {
 	return m_scip.get();

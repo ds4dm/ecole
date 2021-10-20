@@ -5,18 +5,19 @@
 #include <scip/scip.h>
 #include <scip/scip_var.h>
 
+#include "ecole/export.hpp"
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
 
 /** Scip deleter for Var pointers. */
-class VarReleaser {
+class ECOLE_EXPORT VarReleaser {
 public:
 	/** Capture the SCIP pointer but does not extend its lifetime. */
 	VarReleaser(SCIP* scip_) noexcept : scip(scip_){};
 
 	/** Call SCIPvarRelease */
-	void operator()(SCIP_VAR* ptr);
+	ECOLE_EXPORT void operator()(SCIP_VAR* ptr);
 
 private:
 	SCIP* scip = nullptr;
@@ -31,7 +32,8 @@ private:
  *
  * The arguments are forwarded to SCIPcreateVarBasic.
  */
-auto create_var_basic(SCIP* scip, char const* name, SCIP_Real lb, SCIP_Real ub, SCIP_Real obj, SCIP_VARTYPE vartype)
+ECOLE_EXPORT auto
+create_var_basic(SCIP* scip, char const* name, SCIP_Real lb, SCIP_Real ub, SCIP_Real obj, SCIP_VARTYPE vartype)
 	-> std::unique_ptr<SCIP_VAR, VarReleaser>;
 
 }  // namespace ecole::scip

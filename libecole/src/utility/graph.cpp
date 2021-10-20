@@ -22,6 +22,22 @@ auto Graph::Edge::operator==(Edge const& other) const noexcept -> bool {
 	return ((first == other.first) && (second == other.second)) || ((first == other.second) && (second == other.first));
 }
 
+auto Graph::Edge::operator!=(Edge const& other) const noexcept -> bool {
+	return !(*this == other);
+}
+
+auto Graph::n_nodes() const noexcept -> std::size_t {
+	return edges.size();
+}
+
+auto Graph::degree(Node n) const noexcept -> std::size_t {
+	return edges[n].size();
+}
+
+auto Graph::neighbors(Node n) const noexcept -> robin_hood::unordered_flat_set<Node> const& {
+	return edges[n];
+}
+
 auto Graph::are_connected(Node popular, Node unpopular) const -> bool {
 	return neighbors(unpopular).contains(popular);
 }

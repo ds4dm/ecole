@@ -1,6 +1,6 @@
 #include <utility>
 
-#include "ecole/utility/reverse-control.hpp"
+#include "utility/reverse-control.hpp"
 
 namespace ecole::utility {
 

@@ -2,14 +2,15 @@
 
 #include <cstddef>
 
+#include "ecole/export.hpp"
 #include "ecole/instance/abstract.hpp"
 #include "ecole/random.hpp"
 
 namespace ecole::instance {
 
-class CombinatorialAuctionGenerator : public InstanceGenerator {
+class ECOLE_EXPORT CombinatorialAuctionGenerator : public InstanceGenerator {
 public:
-	struct Parameters {
+	struct ECOLE_EXPORT Parameters {
 		std::size_t n_items = 100;       // NOLINT(readability-magic-numbers)
 		std::size_t n_bids = 500;        // NOLINT(readability-magic-numbers)
 		unsigned int min_value = 1;      // NOLINT(readability-magic-numbers)
@@ -24,17 +25,17 @@ public:
 		bool warnings = false;
 	};
 
-	static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
 
-	CombinatorialAuctionGenerator(Parameters parameters, RandomEngine random_engine);
-	CombinatorialAuctionGenerator(Parameters parameters);
-	CombinatorialAuctionGenerator();
+	ECOLE_EXPORT CombinatorialAuctionGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT CombinatorialAuctionGenerator(Parameters parameters);
+	ECOLE_EXPORT CombinatorialAuctionGenerator();
 
-	scip::Model next() override;
-	void seed(Seed seed) override;
-	[[nodiscard]] bool done() const override { return false; }
+	ECOLE_EXPORT scip::Model next() override;
+	ECOLE_EXPORT void seed(Seed seed) override;
+	[[nodiscard]] ECOLE_EXPORT bool done() const override { return false; }
 
-	[[nodiscard]] Parameters const& get_parameters() const noexcept { return parameters; }
+	[[nodiscard]] ECOLE_EXPORT Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
 	RandomEngine random_engine;

@@ -5,16 +5,18 @@
 
 #include <scip/scip.h>
 
+#include "ecole/export.hpp"
+
 namespace ecole::scip {
 
-class Exception : public std::exception {
+class ECOLE_EXPORT Exception : public std::exception {
 public:
-	static Exception from_retcode(SCIP_RETCODE retcode);
-	static void reset_message_capture();
+	ECOLE_EXPORT static Exception from_retcode(SCIP_RETCODE retcode);
+	ECOLE_EXPORT static void reset_message_capture();
 
-	Exception(std::string message);
+	ECOLE_EXPORT Exception(std::string message);
 
-	[[nodiscard]] char const* what() const noexcept override;
+	[[nodiscard]] ECOLE_EXPORT char const* what() const noexcept override;
 
 private:
 	std::string message;

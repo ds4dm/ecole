@@ -7,7 +7,7 @@
 #include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/dynamics/configuring.hpp"
-#include "ecole/dynamics/primalsearch.hpp"
+#include "ecole/dynamics/primal-search.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"

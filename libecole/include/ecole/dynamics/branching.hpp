@@ -6,20 +6,24 @@
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/dynamics.hpp"
+#include "ecole/export.hpp"
 
 namespace ecole::dynamics {
 
-class BranchingDynamics : public EnvironmentDynamics<std::size_t, std::optional<xt::xtensor<std::size_t, 1>>> {
+class ECOLE_EXPORT BranchingDynamics :
+	public EnvironmentDynamics<std::size_t, std::optional<xt::xtensor<std::size_t, 1>>> {
 public:
 	using ActionSet = std::optional<xt::xtensor<std::size_t, 1>>;
 
+	ECOLE_EXPORT BranchingDynamics(bool pseudo_candidates = false) noexcept;
+
+	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> override;
+
+	ECOLE_EXPORT auto step_dynamics(scip::Model& model, std::size_t const& var_idx)
+		-> std::tuple<bool, ActionSet> override;
+
+private:
 	bool pseudo_candidates;
-
-	BranchingDynamics(bool pseudo_candidates = false) noexcept;
-
-	std::tuple<bool, ActionSet> reset_dynamics(scip::Model& model) override;
-
-	std::tuple<bool, ActionSet> step_dynamics(scip::Model& model, std::size_t const& var_idx) override;
 };
 
 }  // namespace ecole::dynamics

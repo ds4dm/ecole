@@ -4,6 +4,7 @@
 #include <string>
 
 #include "ecole/dynamics/dynamics.hpp"
+#include "ecole/export.hpp"
 #include "ecole/none.hpp"
 #include "ecole/scip/type.hpp"
 
@@ -14,10 +15,11 @@ namespace ecole::dynamics {
  */
 using ParamDict = std::map<std::string, scip::Param>;
 
-class ConfiguringDynamics : public EnvironmentDynamics<ParamDict, NoneType> {
+class ECOLE_EXPORT ConfiguringDynamics : public EnvironmentDynamics<ParamDict, NoneType> {
 public:
-	std::tuple<bool, NoneType> reset_dynamics(scip::Model& model) override;
-	std::tuple<bool, NoneType> step_dynamics(scip::Model& model, ParamDict const& param_dict) override;
+	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, NoneType> override;
+	ECOLE_EXPORT auto step_dynamics(scip::Model& model, ParamDict const& param_dict)
+		-> std::tuple<bool, NoneType> override;
 };
 
 }  // namespace ecole::dynamics
