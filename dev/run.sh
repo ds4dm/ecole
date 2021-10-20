@@ -293,6 +293,7 @@ function git_version {
 }
 
 
+# Test that the git version matches the version in the source code.
 function test_version {
 	# Without args, use the version from git
 	if [ -z "${1+x}" ]; then
@@ -316,6 +317,25 @@ function check_code {
 		extra_args+=("--all-files")
 	fi
 	execute pre-commit run "${extra_args[@]}"
+}
+
+
+# Install libecole in the given folder.
+function install_lib {
+	if_rebuild_then cmake_build ecole-lib
+	execute cmake --install "${cmake_build_dir}" --prefix "${1-${build_dir}/local}" "${@:2}"
+}
+
+
+# Test the intallation of libecole withe the cmake example.
+function test_example_cmake {
+	local -r install_dir="${1-${build_dir}/local}"
+	if_rebuild_then install_lib "${install_dir}"
+	local -r ecole_dir="$(find "${install_dir}" -name "EcoleConfig.cmake" | head -1 | xargs dirname | xargs realpath)"
+	local -r example_build_dir="${build_dir}/examples"
+	execute cmake -B "${example_build_dir}" -S "${source_dir}/examples/libecole" -D Ecole_DIR="${ecole_dir}"
+	execute cmake --build "${example_build_dir}"
+	execute "${example_build_dir}/branching"
 }
 
 
