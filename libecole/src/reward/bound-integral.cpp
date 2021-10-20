@@ -12,8 +12,6 @@
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/chrono.hpp"
 
-#include <iostream>
-
 namespace ecole::reward {
 
 namespace {
@@ -27,7 +25,13 @@ public:
 	inline static auto constexpr base_name = "ecole::reward::IntegralEventHandler";
 	inline static auto integral_reward_function_counter = 0;
 
-	IntegralEventHandler(SCIP* scip, bool wall_, bool use_nnodes_, bool extract_primal_, bool extract_dual_, const char* name_) :
+	IntegralEventHandler(
+		SCIP* scip,
+		bool wall_,
+		bool use_nnodes_,
+		bool extract_primal_,
+		bool extract_dual_,
+		const char* name_) :
 		ObjEventhdlr(scip, name_, "Event handler for primal and dual integrals"),
 		wall{wall_},
 		use_nnodes{use_nnodes_},
@@ -307,8 +311,15 @@ auto get_eventhdlr(scip::Model& model, const char* name) -> auto& {
 }
 
 /** Add the integral event handler to the model. */
-void add_eventhdlr(scip::Model& model, bool wall, bool use_nnodes, bool extract_primal, bool extract_dual, const char* name) {
-	auto handler = std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, use_nnodes, extract_primal, extract_dual, name);
+void add_eventhdlr(
+	scip::Model& model,
+	bool wall,
+	bool use_nnodes,
+	bool extract_primal,
+	bool extract_dual,
+	const char* name) {
+	auto handler =
+		std::make_unique<IntegralEventHandler>(model.get_scip_ptr(), wall, use_nnodes, extract_primal, extract_dual, name);
 	scip::call(SCIPincludeObjEventhdlr, model.get_scip_ptr(), handler.get(), true);
 	// NOLINTNEXTLINE memory ownership is passed to SCIP
 	handler.release();
@@ -385,10 +396,6 @@ template <Bound bound> Reward BoundIntegral<bound>::extract(scip::Model& model, 
 	auto const& times = handler.get_times();
 	auto const& nodes = handler.get_nodes();
 	auto const obj_sense = SCIPgetObjsense(model.get_scip_ptr());
-
-	std::cout << "use_nnodes:   " << use_nnodes << std::endl; 
-	std::cout << "times.size(): " << times.size() << std::endl; 
-	std::cout << "nodes.size(): " << nodes.size() << std::endl; 
 
 	// Compute primal integral and difference
 	SCIP_Real integral = 0.;
