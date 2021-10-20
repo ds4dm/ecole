@@ -73,7 +73,7 @@ function execute {
 # Wrap call and set PYTHONPATH
 function execute_pythonpath {
 	if [ "${fix_pythonpath}" = "true" ]; then
-		execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+		execute export PYTHONPATH="${cmake_build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
 		execute "$@"
 		execute unset PYTHONPATH
 	else
@@ -90,8 +90,8 @@ function configure {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		extra_args+=("-Werror=dev" "-D" "WARNINGS_AS_ERRORS=ON")
 	fi
-	execute cmake -S "${source_dir}" -B "${build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON ${extra_args[@]+"${extra_args[@]}"}
-	execute ln -nfs "${build_dir}/compile_commands.json"
+	execute cmake -S "${source_dir}" -B "${cmake_build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON ${extra_args[@]+"${extra_args[@]}"}
+	execute ln -nfs "${cmake_build_dir}/compile_commands.json"
 }
 
 
@@ -111,7 +111,7 @@ function build_all {
 
 
 function cmake_build {
-	execute cmake --build "${build_dir}" --parallel --target "${1-all}" "${@:2}"
+	execute cmake --build "${cmake_build_dir}" --parallel --target "${1-all}" "${@:2}"
 }
 
 
@@ -177,7 +177,7 @@ function test_lib {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--abort")
 		fi
-		execute "${build_dir}/libecole/tests/ecole-lib-test" ${extra_args[@]+"${extra_args[@]}"}
+		execute "${cmake_build_dir}/libecole/tests/ecole-lib-test" ${extra_args[@]+"${extra_args[@]}"}
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -398,6 +398,7 @@ function help {
 	echo "  --dry-run|--no-dry-run (${dry_run})"
 	echo "  --source-dir=<dir> (${source_dir})"
 	echo "  --build-dir=<dir> (${build_dir})"
+	echo "  --cmake-build-dir=<dir> (${cmake_build_dir})"
 	echo "  --source-doc-dir=<dir> (${source_doc_dir})"
 	echo "  --build-doc-dir=<dir> (${build_doc_dir})"
 	echo "  --warnings-as-errors|--no-warnings-as-errors (${warnings_as_errors})"
@@ -510,8 +511,10 @@ function run_main {
 	local dry_run="false"
 	# Where the top-level CMakeLists.txt is.
 	local source_dir="${__ECOLE_DIR__:?}"
-	# Where is the CMake build folder with the test.
+	# A top level folder for all build artifacts
 	local build_dir="build"
+	# Where is the CMake build folder with the test.
+	local cmake_build_dir="${build_dir}/cmake"
 	# Where to find sphinx conf.py.
 	local source_doc_dir="${__ECOLE_DIR__}/docs"
 	# Where to output the doc.
