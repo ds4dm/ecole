@@ -107,6 +107,16 @@ jobs:
         shell: bash -l {0}
         run: ./dev/run.sh test-sdist
 
+  test-example-libecole:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v10
+        with: { environment-file: dev/conda.yaml }
+      - name: "Build and install libecole, test using the library through CMake"
+        shell: bash -l {0}
+        run: ./dev/run.sh configure -D ECOLE_BUILD_PY_EXT=OFF -D BUILD_SHARED_LIBS=ON -- test-example-libecole
+
 
 #  Deploy checkpoint
 #  -----------------
@@ -119,6 +129,7 @@ jobs:
       - test-with-sanitizer
       - test-doc
       - test-sdist
+      - test-example-libecole
       - check-code
     runs-on: ubuntu-20.04
     steps:

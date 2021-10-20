@@ -328,7 +328,7 @@ function install_lib {
 
 
 # Test the intallation of libecole withe the cmake example.
-function test_example_cmake {
+function test_example_libecole {
 	local -r install_dir="${1-${build_dir}/local}"
 	if_rebuild_then install_lib "${install_dir}"
 	local -r ecole_dir="$(find "${install_dir}" -name "EcoleConfig.cmake" | head -1 | xargs dirname | xargs realpath)"
@@ -432,7 +432,7 @@ function help {
 	echo "Commands:"
 	echo "  help, configure,"
 	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
-	echo "  test-lib, test-py, test-doc, test-version, test-all"
+	echo "  test-lib, test-py, test-doc, test-version, test-example-libecole test-all"
 	echo "  check-code"
 	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
