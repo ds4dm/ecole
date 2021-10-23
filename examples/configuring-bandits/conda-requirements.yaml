@@ -1,0 +1,12 @@
+channels:
+  - conda-forge
+
+dependencies:
+  - python
+  - jupyter
+  - ecole
+  - numpy
+  - scikit-optimize=0.8.1
+  # Pin scikit-learn for scikit-optimize https://github.com/scikit-optimize/scikit-optimize/issues/569
+  - scikit-learn<1.0
+  - matplotlib
