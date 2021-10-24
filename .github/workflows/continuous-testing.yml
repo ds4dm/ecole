@@ -39,10 +39,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: "Add python version to requirements."
-        run: echo '  - python=${{ matrix.python }}' >> dev/conda.yaml
-      - uses: mamba-org/provision-with-micromamba@v10
-        with: { environment-file: dev/conda.yaml }
+      - uses: mamba-org/provision-with-micromamba@v11
+        with:
+          environment-file: dev/conda.yaml
+          extra-specs: python=${{ matrix.python }}
       - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         shell: bash -l {0}
         run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- test-lib -- test-py
@@ -57,7 +57,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib and ecole-py-ext."
         shell: bash -l {0}
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Configure, build, and test ecole-lib with sanitizer."
         shell: bash -l {0}
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Run pre-commit."
         shell: bash -l {0}
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Configure and build ecole-py-ext. Build and test documentation."
         shell: bash -l {0}
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Build and test sdist"
         shell: bash -l {0}
@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Build and install libecole, test using the library through CMake"
         shell: bash -l {0}
@@ -148,7 +148,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with: {fetch-depth: 0}
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Build documentation."
         shell: bash -l {0}
@@ -212,7 +212,7 @@ jobs:
     needs: test-version
     steps:
       - uses: actions/checkout@v2
-      - uses: mamba-org/provision-with-micromamba@v10
+      - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
       - name: "Build, test, and deploy sdist"
         shell: bash -l {0}
