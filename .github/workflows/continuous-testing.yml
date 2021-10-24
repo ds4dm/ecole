@@ -117,6 +117,22 @@ jobs:
         shell: bash -l {0}
         run: ./dev/run.sh configure -D ECOLE_BUILD_PY_EXT=OFF -D BUILD_SHARED_LIBS=ON -- test-example-libecole
 
+  test-example-configuring:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mamba-org/provision-with-micromamba@v11
+        with: { environment-file: dev/conda.yaml }
+      - name: "Add external example dependencies (except ecole)"
+        shell: bash -l {0}
+        run: |
+          sed -E '/[[:blank:]]ecole(^([[:alnum:]]|-)|$)/d' examples/configuring-bandits/conda-requirements.yaml > env.yaml
+          cat env.yaml
+          micromamba install --file env.yaml
+      - name: "Build Ecole and test notebook"
+        shell: bash -l {0}
+        run: ./dev/run.sh --fix-pythonpath configure -- test-example-configuring
+
 
 #  Deploy checkpoint
 #  -----------------

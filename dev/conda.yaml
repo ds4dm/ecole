@@ -40,3 +40,4 @@ dependencies:
   - ipython
   - pyscipopt >= 3.0.1  # optional
   - twine
+  - papermill

@@ -343,11 +343,13 @@ function test_example_libecole {
 function test_example_configuring {
 	if_rebuild_then build_py
 	local -r in_nb="${source_dir}/examples/configuring-bandits/example.ipynb"
-	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" - \
+	local -r out_nb="${build_dir}/examples/configuring-bandits/example.ipynb"
+	execute mkdir -p "$(dirname "${out_nb}")"
+	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" "${out_nb}" \
 		-p train_n_items 100 -p train_n_bids 100 \
 		-p optim_n_iters 2 -p optim_n_burnins 1 \
 		-p test_n_evals 2 -p test_n_items 100 -p test_n_bids 100 \
-		"$@" > /dev/null
+		"$@"
 }
 
 

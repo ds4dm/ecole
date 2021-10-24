@@ -3,6 +3,7 @@ channels:
 
 dependencies:
   - python
+  - ipykernel
   - jupyter
   - ecole
   - numpy
