@@ -339,6 +339,18 @@ function test_example_libecole {
 }
 
 
+# Test the configuring example with easy parameters
+function test_example_configuring {
+	if_rebuild_then build_py
+	local -r in_nb="${source_dir}/examples/configuring-bandits/example.ipynb"
+	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" - \
+		-p train_n_items 100 -p train_n_bids 100 \
+		-p optim_n_iters 2 -p optim_n_burnins 1 \
+		-p test_n_evals 2 -p test_n_items 100 -p test_n_bids 100 \
+		"$@" > /dev/null
+}
+
+
 # Install documentation to a local folder depending on the branch/tag
 # FIXME the Github Action could be moved here to a deploy_doc function
 # FIXME this is not used in Github Action for now
@@ -432,7 +444,8 @@ function help {
 	echo "Commands:"
 	echo "  help, configure,"
 	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
-	echo "  test-lib, test-py, test-doc, test-version, test-example-libecole test-all"
+	echo "  test-lib, test-py, test-doc, test-version,"
+	echo "  test-example-libecole, test-example-configuring, test-all"
 	echo "  check-code"
 	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
