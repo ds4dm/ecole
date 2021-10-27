@@ -352,6 +352,16 @@ function test_example_configuring {
 		"$@"
 }
 
+# Test the branching example with easy parameters
+function test_example_branching {
+	if_rebuild_then build_py
+	local -r in_nb="${source_dir}/examples/branching-imitation/example.ipynb"
+	local -r out_nb="${build_dir}/examples/branching-imitation/example.ipynb"
+	execute mkdir -p "$(dirname "${out_nb}")"
+	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" "${out_nb}" \
+		-p DATA_MAX_SAMPLES 3 -p OPTIM_NB_EPOCHS 2 "$@"
+}
+
 
 # Install documentation to a local folder depending on the branch/tag
 # FIXME the Github Action could be moved here to a deploy_doc function
