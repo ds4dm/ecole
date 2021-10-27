@@ -320,6 +320,7 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 	std::size_t i = 0;
 	std::size_t j = 0;
 	for (auto* const row : model.lp_rows()) {
+		auto const row_norm = static_cast<value_type>(row_l2_norm(row));
 		auto* const row_cols = SCIProwGetCols(row);
 		auto const* const row_vals = SCIProwGetVals(row);
 		auto const row_nnz = static_cast<std::size_t>(SCIProwGetNLPNonz(row));
@@ -327,7 +328,7 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 			for (std::size_t k = 0; k < row_nnz; ++k) {
 				indices(0, j + k) = i;
 				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetVarProbindex(row_cols[k]));
-				values[j + k] = -row_vals[k];
+				values[j + k] = -row_vals[k] / row_norm;
 			}
 			j += row_nnz;
 			i++;
@@ -336,7 +337,7 @@ utility::coo_matrix<value_type> extract_edge_features(scip::Model& model) {
 			for (std::size_t k = 0; k < row_nnz; ++k) {
 				indices(0, j + k) = i;
 				indices(1, j + k) = static_cast<std::size_t>(SCIPcolGetVarProbindex(row_cols[k]));
-				values[j + k] = row_vals[k];
+				values[j + k] = row_vals[k] / row_norm;
 			}
 			j += row_nnz;
 			i++;
