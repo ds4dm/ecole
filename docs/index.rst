@@ -76,7 +76,7 @@ candidate to use for combinatorial optimization, as well as the methodology to d
    :hidden:
 
    Configuring the Solver with Bandits <https://github.com/ds4dm/ecole/tree/master/examples/configuring-bandits/example.ipynb>
-   Branching with Imitation Learning <https://github.com/ds4dm/ecole/tree/master/examples/branching-imitation.ipynb>
+   Branching with Imitation Learning <https://github.com/ds4dm/ecole/tree/master/examples/branching-imitation/example.ipynb>
 
 .. toctree::
    :caption: Reference
