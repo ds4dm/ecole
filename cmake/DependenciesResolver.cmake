@@ -58,36 +58,34 @@ macro(find_or_download_package)
 	set(multiValueArgs CONFIGURE_ARGS)
 	cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-	if(${ARG_NAME}_FOUND)
-		return()
-	endif()
+	if(NOT ${ARG_NAME}_FOUND)
+		if(NOT ECOLE_FORCE_DOWNLOAD)
+			find_package(${ARG_NAME} QUIET)
+		endif()
 
-	if(NOT ECOLE_FORCE_DOWNLOAD)
-		find_package(${ARG_NAME} QUIET)
-	endif()
-
-	if(${ARG_NAME}_FOUND)
-		message(STATUS "Found ${ARG_NAME}")
-	else()
-		FetchContent_Declare(
-			${ARG_NAME}
-			URL ${ARG_URL}
-			URL_HASH ${ARG_URL_HASH}
-		)
-		FetchContent_GetProperties(${ARG_NAME})
-		if(NOT ${ARG_NAME}_POPULATED)
-			message(STATUS "Downloading ${ARG_NAME}")
-			FetchContent_Populate(${ARG_NAME})
-			message(STATUS "Building ${ARG_NAME}")
-			# FetchContent_Populate uses lower case name of FetchContent_Declare for directories
-			string(TOLOWER "${ARG_NAME}" ARG_NAME_LOWER)
-			build_package(
-				CONFIGURE_ARGS ${ARG_CONFIGURE_ARGS} -D "CMAKE_PREFIX_PATH=${FETCHCONTENT_INSTALL_DIR}"
-				SOURCE_DIR "${${ARG_NAME_LOWER}_SOURCE_DIR}"
-				BUILD_DIR "${${ARG_NAME_LOWER}_BINARY_DIR}"
-				INSTALL_DIR "${FETCHCONTENT_INSTALL_DIR}"
+		if(${ARG_NAME}_FOUND)
+			message(STATUS "Found ${ARG_NAME}")
+		else()
+			FetchContent_Declare(
+				${ARG_NAME}
+				URL ${ARG_URL}
+				URL_HASH ${ARG_URL_HASH}
 			)
-			find_package(${ARG_NAME} PATHS "${FETCHCONTENT_INSTALL_DIR}" NO_DEFAULT_PATH QUIET)
+			FetchContent_GetProperties(${ARG_NAME})
+			if(NOT ${ARG_NAME}_POPULATED)
+				message(STATUS "Downloading ${ARG_NAME}")
+				FetchContent_Populate(${ARG_NAME})
+				message(STATUS "Building ${ARG_NAME}")
+				# FetchContent_Populate uses lower case name of FetchContent_Declare for directories
+				string(TOLOWER "${ARG_NAME}" ARG_NAME_LOWER)
+				build_package(
+					CONFIGURE_ARGS ${ARG_CONFIGURE_ARGS} -D "CMAKE_PREFIX_PATH=${FETCHCONTENT_INSTALL_DIR}"
+					SOURCE_DIR "${${ARG_NAME_LOWER}_SOURCE_DIR}"
+					BUILD_DIR "${${ARG_NAME_LOWER}_BINARY_DIR}"
+					INSTALL_DIR "${FETCHCONTENT_INSTALL_DIR}"
+				)
+				find_package(${ARG_NAME} PATHS "${FETCHCONTENT_INSTALL_DIR}" NO_DEFAULT_PATH QUIET)
+			endif()
 		endif()
 	endif()
 endmacro()
