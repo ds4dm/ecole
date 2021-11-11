@@ -73,7 +73,7 @@ function execute {
 # Wrap call and set PYTHONPATH
 function execute_pythonpath {
 	if [ "${fix_pythonpath}" = "true" ]; then
-		execute export PYTHONPATH="${cmake_build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+		execute export PYTHONPATH="${cmake_build_dir}/python/ecole${PYTHONPATH+:}${PYTHONPATH:-}"
 		execute "$@"
 		execute unset PYTHONPATH
 	else
@@ -216,7 +216,7 @@ function test_py {
 
 
 function test_doc {
-	if files_have_changed 'doc' 'python/src'; then
+	if files_have_changed 'doc' 'python'; then
 		if_rebuild_then build_doc
 		local extra_args=("$@")
 		if [ "${warnings_as_errors}" = "true" ]; then
@@ -419,7 +419,7 @@ function test_sdist {
 	if [ "${fail_fast}" = "true" ]; then
 		extra_args+=("--exitfirst")
 	fi
-	execute "${venv}/bin/python" -m pytest "${source_dir}/python/tests" "${extra_args[@]}"
+	execute "${venv}/bin/python" -m pytest "${source_dir}/python/ecole/tests" "${extra_args[@]}"
 }
 
 
