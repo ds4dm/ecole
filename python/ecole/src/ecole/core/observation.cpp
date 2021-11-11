@@ -15,10 +15,10 @@
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strong-branching-scores.hpp"
+#include "ecole/python/auto-class.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
-#include "auto-class.hpp"
 #include "core.hpp"
 
 namespace ecole::observation {

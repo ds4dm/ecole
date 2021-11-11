@@ -51,5 +51,6 @@ endif()
 
 # Ecole Python extension
 if(ECOLE_BUILD_PY_EXT)
-	add_subdirectory(python)
+	add_subdirectory(python/extension-helper)
+	add_subdirectory(python/ecole)
 endif()

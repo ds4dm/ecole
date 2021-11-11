@@ -8,7 +8,7 @@ import ecole
 
 
 TEST_SOURCE_DIR = pathlib.Path(__file__).parent.resolve()
-DATA_DIR = TEST_SOURCE_DIR / "../../libecole/tests/data"
+DATA_DIR = TEST_SOURCE_DIR / "../../../libecole/tests/data"
 
 
 def pytest_addoption(parser):
