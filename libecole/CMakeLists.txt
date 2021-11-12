@@ -158,7 +158,7 @@ install(
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Ecole"
 )
 
-# Install header and generated headers
+# Install headers and generated headers
 install(
 	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/ecole" "${CMAKE_CURRENT_BINARY_DIR}/include/ecole"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
