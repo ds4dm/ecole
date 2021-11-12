@@ -9,7 +9,7 @@
 
 #include <pybind11/pybind11.h>
 
-namespace ecole {
+namespace ecole::python {
 
 template <typename Class, typename... ClassArgs> struct auto_class : public pybind11::class_<Class, ClassArgs...> {
 	using pybind11::class_<Class, ClassArgs...>::class_;
@@ -65,4 +65,4 @@ template <typename Class, typename... ClassArgs> struct auto_class : public pybi
 	}
 };
 
-}  // namespace ecole
+}  // namespace ecole::python
