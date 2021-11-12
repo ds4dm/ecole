@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+option(ECOLE_DOWNLOAD_DEPENDENCIES "Download the static and header libraries used in Ecole public interface" ON)
+if(ECOLE_DOWNLOAD_DEPENDENCIES)
+	include("${CMAKE_CURRENT_LIST_DIR}/../Ecole/DependenciesResolver.cmake")
+	include("${CMAKE_CURRENT_LIST_DIR}/public.cmake")
+endif()
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(pybind11 @pybind11_VERSION@ REQUIRED)
+find_dependency(xtensor @xtensor_VERSION@ REQUIRED)
+find_dependency(xtensor-python @xtensor-python_VERSION@ REQUIRED)
+
+if(NOT TARGET Ecole::ecole-py-ext-helper)
+	include("${CMAKE_CURRENT_LIST_DIR}/EcoleExtensionHelperTargets.cmake")
+endif()
