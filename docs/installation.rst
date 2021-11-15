@@ -43,16 +43,29 @@ For the stable `PyPI version <https://pypi.org/project/ecole/>`_:
 
 .. code-block:: bash
 
-   pip install ecole
+   python -m pip install ecole
 
 To specify the where to find SCIP (or any CMake parameters):
 
 .. code-block:: bash
 
-   CMAKE_ARGS="-DSCIP_DIR=path/to/lib/cmake/scip -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON" pip install ecole
+   CMAKE_ARGS="-DSCIP_DIR=path/to/lib/cmake/scip -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON" python -m pip install ecole
 
 For the latest Github version:
 
 .. code-block:: bash
 
-   pip install git+https://github.com/ds4dm/ecole
+   python -m pip install git+https://github.com/ds4dm/ecole
+
+Or if the latest version is already available locally:
+
+.. code-block:: bash
+
+   python -m pip install .
+
+If all dependencies (build time such as CMake and compiler, and run time such as NumPy) are already installed,
+as is the case when developping Ecole, one can install Ecole with:
+
+.. code-block:: bash
+
+   python -m pip install --no-deps --no-build-isolation [ecole | git+https://github.com/ds4dm/ecole | .]
