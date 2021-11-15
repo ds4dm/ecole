@@ -90,10 +90,10 @@ skbuild.setup(
     long_description_content_type="text/x-rst",
     license="BSD-3-Clause",
     packages=["ecole"],
-    package_dir={"": "python/src"},
+    package_dir={"": "python/ecole/src"},
     package_data={"ecole": ["py.typed"]},
     cmake_languages=["CXX"],
-    cmake_install_dir="python/src",  # Must match pacakge_dir layout
+    cmake_install_dir="python/ecole/src",  # Must match pacakge_dir layout
     # FIXME No way to pass cmake argument to scikit-build through pip (for now)
     # https://github.com/scikit-build/scikit-build/issues/479
     # So we read them from an environment variable
