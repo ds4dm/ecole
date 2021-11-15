@@ -5,6 +5,7 @@
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl/filesystem.h>
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/exception.hpp"
@@ -37,6 +38,7 @@ PYBIND11_MODULE(core, m) {
 		.def_readwrite("build_compiler", &VersionInfo::build_compiler);
 
 	m.def("get_ecole_lib_version", &get_ecole_lib_version);
+	m.def("get_ecole_lib_path", &get_ecole_lib_path);
 	m.def("get_scip_buildtime_version", &get_scip_buildtime_version);
 	m.def("get_scip_lib_version", &get_scip_lib_version);
 
