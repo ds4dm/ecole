@@ -16,10 +16,10 @@ import ecole
 @pytest.fixture(scope="module")
 def tmp_dataset(tmp_path_factory, problem_file):
     """Create a local dataset of problem files."""
-    model = ecole.scip.Model.from_file(str(problem_file))
+    model = ecole.scip.Model.from_file(problem_file)
     path = tmp_path_factory.mktemp("instances")
     for name in "abc":
-        model.write_problem(str(path / f"model-{name}.lp"))
+        model.write_problem(path / f"model-{name}.lp")
     return path
 
 
