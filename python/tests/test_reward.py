@@ -29,6 +29,9 @@ def pytest_generate_tests(metafunc):
             ecole.reward.PrimalIntegral(bound_function=lambda x: (0.0, 0.0)),
             ecole.reward.DualIntegral(bound_function=lambda x: (0.0, 0.0)),
             ecole.reward.PrimalDualIntegral(bound_function=lambda x: (0.0, 0.0)),
+            ecole.reward.PrimalIntegral(use_nnodes=True, bound_function=lambda x: (0.0, 0.0)),
+            ecole.reward.DualIntegral(use_nnodes=True, bound_function=lambda x: (0.0, 0.0)),
+            ecole.reward.PrimalDualIntegral(use_nnodes=True, bound_function=lambda x: (0.0, 0.0)),
         )
         metafunc.parametrize("reward_function", all_reward_functions)
 
