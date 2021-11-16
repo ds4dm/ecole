@@ -22,6 +22,7 @@ if __name__ == "__main__":
             "Built against SCIP:\n"
             "    Version       : {v.major}.{v.minor}.{v.patch}\n"
             "Running SCIP:\n"
-            "    Version       : {v.major}.{v.minor}.{v.patch}"
-        ).format(v=scip_lib_version_info)
+            "    Version       : {v.major}.{v.minor}.{v.patch}\n"
+            "    Path:         : {path}"
+        ).format(v=scip_lib_version_info, path=ecole.version.get_scip_lib_path())
     )

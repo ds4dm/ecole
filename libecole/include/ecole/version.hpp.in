@@ -64,6 +64,13 @@ inline constexpr auto get_scip_header_version() noexcept -> VersionInfo {
 ECOLE_EXPORT auto get_scip_lib_version() noexcept -> VersionInfo;
 
 /**
+ * Path of the libscip shared library when it exists.
+ *
+ * This is used for Ecole extensions to locate the library.
+ */
+ECOLE_EXPORT auto get_scip_lib_path() -> std::filesystem::path;
+
+/**
  * SCIP version used to compile Ecole library.
  */
 ECOLE_EXPORT auto get_scip_buildtime_version() noexcept -> VersionInfo;

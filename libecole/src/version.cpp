@@ -35,6 +35,19 @@ auto get_scip_lib_version() noexcept -> VersionInfo {
 	};
 }
 
+/**
+ * Non-standard way to extract the path of the SCIP library.
+ *
+ * @see get_ecole_lib_path
+ */
+auto get_scip_lib_path() -> std::filesystem::path {
+	// Use any function name
+	if (Dl_info info; dladdr(reinterpret_cast<void const*>(SCIPversion), &info)) {
+		return info.dli_fname;
+	}
+	throw std::runtime_error{"Cannot find path of SCIP library"};
+}
+
 auto get_scip_buildtime_version() noexcept -> VersionInfo {
 	return get_scip_lib_version();
 }
