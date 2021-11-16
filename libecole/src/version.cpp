@@ -5,7 +5,7 @@
 
 #include "ecole/version.hpp"
 
-namespace ecole {
+namespace ecole::version {
 
 auto get_ecole_lib_version() noexcept -> VersionInfo {
 	return get_ecole_header_version();
@@ -39,4 +39,4 @@ auto get_scip_buildtime_version() noexcept -> VersionInfo {
 	return get_scip_lib_version();
 }
 
-}  // namespace ecole
+}  // namespace ecole::version

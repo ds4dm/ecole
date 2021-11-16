@@ -6,6 +6,7 @@ find_package(xtensor-python REQUIRED)
 pybind11_add_module(
 	ecole-py-ext
 	src/ecole/core/core.cpp
+	src/ecole/core/version.cpp
 	src/ecole/core/scip.cpp
 	src/ecole/core/instance.cpp
 	src/ecole/core/data.cpp

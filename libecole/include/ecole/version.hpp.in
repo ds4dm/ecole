@@ -7,7 +7,7 @@
 
 #include "ecole/export.hpp"
 
-namespace ecole {
+namespace ecole::version {
 
 struct ECOLE_EXPORT VersionInfo {
 	unsigned int major;
