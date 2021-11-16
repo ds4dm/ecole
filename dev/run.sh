@@ -73,7 +73,7 @@ function execute {
 # Wrap call and set PYTHONPATH
 function execute_pythonpath {
 	if [ "${fix_pythonpath}" = "true" ]; then
-		execute export PYTHONPATH="${build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
+		execute export PYTHONPATH="${cmake_build_dir}/python${PYTHONPATH+:}${PYTHONPATH:-}"
 		execute "$@"
 		execute unset PYTHONPATH
 	else
@@ -90,8 +90,8 @@ function configure {
 	if [ "${warnings_as_errors}" = "true" ]; then
 		extra_args+=("-Werror=dev" "-D" "WARNINGS_AS_ERRORS=ON")
 	fi
-	execute cmake -S "${source_dir}" -B "${build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON ${extra_args[@]+"${extra_args[@]}"}
-	execute ln -nfs "${build_dir}/compile_commands.json"
+	execute cmake -S "${source_dir}" -B "${cmake_build_dir}" -D ECOLE_BUILD_TESTS=ON -D ECOLE_BUILD_BENCHMARKS=ON ${extra_args[@]+"${extra_args[@]}"}
+	execute ln -nfs "${cmake_build_dir}/compile_commands.json"
 }
 
 
@@ -111,7 +111,7 @@ function build_all {
 
 
 function cmake_build {
-	execute cmake --build "${build_dir}" --parallel --target "${1-all}" "${@:2}"
+	execute cmake --build "${cmake_build_dir}" --parallel --target "${1-all}" "${@:2}"
 }
 
 
@@ -177,7 +177,7 @@ function test_lib {
 		if [ "${fail_fast}" = "true" ]; then
 			extra_args+=("--abort")
 		fi
-		execute "${build_dir}/libecole/tests/ecole-lib-test" ${extra_args[@]+"${extra_args[@]}"}
+		execute "${cmake_build_dir}/libecole/tests/ecole-lib-test" ${extra_args[@]+"${extra_args[@]}"}
 	else
 		log "Skipping ${FUNCNAME[0]} as unchanged since ${rev}."
 	fi
@@ -293,6 +293,7 @@ function git_version {
 }
 
 
+# Test that the git version matches the version in the source code.
 function test_version {
 	# Without args, use the version from git
 	if [ -z "${1+x}" ]; then
@@ -316,6 +317,49 @@ function check_code {
 		extra_args+=("--all-files")
 	fi
 	execute pre-commit run "${extra_args[@]}"
+}
+
+
+# Install libecole in the given folder.
+function install_lib {
+	if_rebuild_then cmake_build ecole-lib
+	execute cmake --install "${cmake_build_dir}" --prefix "${1-${build_dir}/local}" "${@:2}"
+}
+
+
+# Test the intallation of libecole withe the cmake example.
+function test_example_libecole {
+	local -r install_dir="${1-${build_dir}/local}"
+	if_rebuild_then install_lib "${install_dir}"
+	local -r ecole_dir="$(find "${install_dir}" -name "EcoleConfig.cmake" | head -1 | xargs dirname | xargs realpath)"
+	local -r example_build_dir="${build_dir}/examples"
+	execute cmake -B "${example_build_dir}" -S "${source_dir}/examples/libecole" -D Ecole_DIR="${ecole_dir}"
+	execute cmake --build "${example_build_dir}"
+	execute "${example_build_dir}/branching"
+}
+
+
+# Test the configuring example with easy parameters
+function test_example_configuring {
+	if_rebuild_then build_py
+	local -r in_nb="${source_dir}/examples/configuring-bandits/example.ipynb"
+	local -r out_nb="${build_dir}/examples/configuring-bandits/example.ipynb"
+	execute mkdir -p "$(dirname "${out_nb}")"
+	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" "${out_nb}" \
+		-p train_n_items 100 -p train_n_bids 100 \
+		-p optim_n_iters 2 -p optim_n_burnins 1 \
+		-p test_n_evals 2 -p test_n_items 100 -p test_n_bids 100 \
+		"$@"
+}
+
+# Test the branching example with easy parameters
+function test_example_branching {
+	if_rebuild_then build_py
+	local -r in_nb="${source_dir}/examples/branching-imitation/example.ipynb"
+	local -r out_nb="${build_dir}/examples/branching-imitation/example.ipynb"
+	execute mkdir -p "$(dirname "${out_nb}")"
+	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" "${out_nb}" \
+		-p DATA_MAX_SAMPLES 3 -p OPTIM_NB_EPOCHS 2 "$@"
 }
 
 
@@ -398,6 +442,7 @@ function help {
 	echo "  --dry-run|--no-dry-run (${dry_run})"
 	echo "  --source-dir=<dir> (${source_dir})"
 	echo "  --build-dir=<dir> (${build_dir})"
+	echo "  --cmake-build-dir=<dir> (${cmake_build_dir})"
 	echo "  --source-doc-dir=<dir> (${source_doc_dir})"
 	echo "  --build-doc-dir=<dir> (${build_doc_dir})"
 	echo "  --warnings-as-errors|--no-warnings-as-errors (${warnings_as_errors})"
@@ -411,7 +456,8 @@ function help {
 	echo "Commands:"
 	echo "  help, configure,"
 	echo "  build-lib, build-lib-test, build-py, build-doc, build-all"
-	echo "  test-lib, test-py, test-doc, test-version, test-all"
+	echo "  test-lib, test-py, test-doc, test-version,"
+	echo "  test-example-libecole, test-example-configuring, test-all"
 	echo "  check-code"
 	echo "  build-sdist, test-sdist, deploy-sdist"
 	echo ""
@@ -510,8 +556,10 @@ function run_main {
 	local dry_run="false"
 	# Where the top-level CMakeLists.txt is.
 	local source_dir="${__ECOLE_DIR__:?}"
-	# Where is the CMake build folder with the test.
+	# A top level folder for all build artifacts
 	local build_dir="build"
+	# Where is the CMake build folder with the test.
+	local cmake_build_dir="${build_dir}/cmake"
 	# Where to find sphinx conf.py.
 	local source_doc_dir="${__ECOLE_DIR__}/docs"
 	# Where to output the doc.

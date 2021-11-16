@@ -1,0 +1,13 @@
+channels:
+  - pyg
+  - pytorch
+  - conda-forge
+
+dependencies:
+  - python
+  - jupyter
+  - ipykernel
+  - ecole
+  - numpy
+  - pytorch
+  - pyg

@@ -13,9 +13,11 @@ int main() {
 	try {
 		auto env = ecole::environment::
 			Branching<ecole::observation::NodeBipartite, ecole::reward::NNodes, ecole::information::Nothing>{};
-		auto gen = ecole::instance::SetCoverGenerator{};
+		std::size_t constexpr n_rows = 100;
+		std::size_t constexpr n_cols = 200;
+		auto gen = ecole::instance::SetCoverGenerator{{n_rows, n_cols}};
 
-		static constexpr auto n_episodes = 10;
+		static constexpr auto n_episodes = 2;
 		for (std::size_t i = 0; i < n_episodes; ++i) {
 			auto [obs, action_set, reward, done, info] = env.reset(gen.next());
 			while (!done && action_set.has_value()) {
