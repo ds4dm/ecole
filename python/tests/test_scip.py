@@ -154,3 +154,23 @@ def test_is_solved(model):
 
 def test_bounds(model):
     assert model.dual_bound < model.primal_bound
+
+
+@requires_pyscipopt
+def test_pyscipopt_callback(model):
+    """GIL is properly reaquired in PySCIPOpt and PySCIPOpt model liftime is managed."""
+    import pyscipopt.scip
+
+    class EventHandler(pyscipopt.scip.Eventhdlr):
+        def eventinit(self):
+            self.model.catchEvent(scip.SCIP_EVENTTYPE.LPEVENT, self)
+
+        def eventexit(self):
+            self.model.dropEvent(scip.SCIP_EVENTTYPE.LPEVENT, self)
+
+        def eventexec(self, event):
+            # Use the pyscipopt object to verify its lifetime
+            self.model.getNTotalNodes()
+
+    model.as_pyscipopt().includeEventhdlr(EventHandler(), "Name", "Description")
+    model.solve()
