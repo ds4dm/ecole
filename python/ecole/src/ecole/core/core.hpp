@@ -6,6 +6,10 @@
 
 namespace ecole {
 
+namespace version {
+void bind_submodule(pybind11::module_ m);
+}
+
 namespace scip {
 void bind_submodule(pybind11::module_ const& m);
 }

@@ -5,12 +5,10 @@
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
-#include <pybind11/stl/filesystem.h>
 #include <xtensor-python/pytensor.hpp>
 
 #include "ecole/exception.hpp"
 #include "ecole/random.hpp"
-#include "ecole/version.hpp"
 
 #include "core.hpp"
 
@@ -26,21 +24,6 @@ PYBIND11_MODULE(core, m) {
 	)str";
 
 	xt::import_numpy();
-
-	py::class_<VersionInfo>(m, "VersionInfo")  //
-		.def_readwrite("major", &VersionInfo::major)
-		.def_readwrite("minor", &VersionInfo::minor)
-		.def_readwrite("patch", &VersionInfo::patch)
-		.def_readwrite("revision", &VersionInfo::revision)
-		.def_readwrite("build_type", &VersionInfo::build_type)
-		.def_readwrite("build_os", &VersionInfo::build_os)
-		.def_readwrite("build_time", &VersionInfo::build_time)
-		.def_readwrite("build_compiler", &VersionInfo::build_compiler);
-
-	m.def("get_ecole_lib_version", &get_ecole_lib_version);
-	m.def("get_ecole_lib_path", &get_ecole_lib_path);
-	m.def("get_scip_buildtime_version", &get_scip_buildtime_version);
-	m.def("get_scip_lib_version", &get_scip_lib_version);
 
 	py::class_<RandomEngine>(m, "RandomEngine")  //
 		.def_property_readonly_static(
@@ -88,6 +71,7 @@ PYBIND11_MODULE(core, m) {
 	py::register_exception<ecole::Exception>(m, "Exception");
 	py::register_exception<ecole::IteratorExhausted>(m, "IteratorExhausted", PyExc_StopIteration);
 
+	version::bind_submodule(m.def_submodule("version"));
 	scip::bind_submodule(m.def_submodule("scip"));
 	instance::bind_submodule(m.def_submodule("instance"));
 	data::bind_submodule(m.def_submodule("data"));
