@@ -5,7 +5,7 @@ import ecole.core
 
 def test_version():
     """Extract version of library and git revision."""
-    version = ecole.version.ecole_lib_version_info
+    version = ecole.version.get_ecole_lib_version()
     assert isinstance(version.major, int)
     assert isinstance(version.minor, int)
     assert isinstance(version.patch, int)
@@ -18,7 +18,7 @@ def test_version():
 
 def test_scip_version():
     """Extract version of SCIP library used to compile Ecole."""
-    version = ecole.version.scip_buildtime_version_info
+    version = ecole.version.get_scip_buildtime_version()
     assert isinstance(version.major, int)
     assert isinstance(version.minor, int)
     assert isinstance(version.patch, int)

@@ -15,10 +15,10 @@
 #include "ecole/observation/nothing.hpp"
 #include "ecole/observation/pseudocosts.hpp"
 #include "ecole/observation/strong-branching-scores.hpp"
+#include "ecole/python/auto-class.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/utility/sparse-matrix.hpp"
 
-#include "auto-class.hpp"
 #include "core.hpp"
 
 namespace ecole::observation {
@@ -61,7 +61,7 @@ void bind_submodule(py::module_ const& m) {
 	m.attr("Nothing") = py::type::of<Nothing>();
 
 	using coo_matrix = decltype(NodeBipartiteObs::edge_features);
-	auto_class<coo_matrix>(m, "coo_matrix", R"(
+	ecole::python::auto_class<coo_matrix>(m, "coo_matrix", R"(
 		Sparse matrix in the coordinate format.
 
 		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
@@ -80,7 +80,7 @@ void bind_submodule(py::module_ const& m) {
 
 	// Node bipartite observation
 	auto node_bipartite_obs =
-		auto_class<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
+		ecole::python::auto_class<NodeBipartiteObs>(m, "NodeBipartiteObs", R"(
 		Bipartite graph observation for branch-and-bound nodes.
 
 		The optimization problem is represented as an heterogenous bipartite graph.
@@ -173,7 +173,7 @@ void bind_submodule(py::module_ const& m) {
 
 	// MILP bipartite observation
 	auto milp_bipartite_obs =
-		auto_class<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
+		ecole::python::auto_class<MilpBipartiteObs>(m, "MilpBipartiteObs", R"(
 		Bipartite graph observation that represents the most recent MILP during presolving.
 
 		The optimization problem is represented as an heterogenous bipartite graph.
@@ -278,7 +278,7 @@ void bind_submodule(py::module_ const& m) {
 
 	// Khalil observation
 	auto khalil2016_obs =
-		auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
+		ecole::python::auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
 		Branching candidates features from Khalil et al. (2016).
 
 		The observation is a matrix where rows represent all variables and columns represent features related
@@ -397,7 +397,7 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(khalil2016, "Extract the observation matrix.");
 
 	// Hutter2011 observation
-	auto hutter_obs = auto_class<Hutter2011Obs>(m, "Hutter2011Obs", R"(
+	auto hutter_obs = ecole::python::auto_class<Hutter2011Obs>(m, "Hutter2011Obs", R"(
 		Instance features from Hutter et al. (2011).
 
 		The observation is a vector of features that globally characterize the instance.

@@ -8,7 +8,7 @@ import ecole
 
 
 TEST_SOURCE_DIR = pathlib.Path(__file__).parent.resolve()
-DATA_DIR = TEST_SOURCE_DIR / "../../libecole/tests/data"
+DATA_DIR = TEST_SOURCE_DIR / "../../../libecole/tests/data"
 
 
 def pytest_addoption(parser):
@@ -39,7 +39,7 @@ def problem_file():
 @pytest.fixture
 def model(problem_file):
     """Return a Model object with a valid problem."""
-    model_obj = ecole.scip.Model.from_file(str(problem_file))
+    model_obj = ecole.scip.Model.from_file(problem_file)
     model_obj.disable_cuts()
     model_obj.disable_presolve()
     return model_obj

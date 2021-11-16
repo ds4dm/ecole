@@ -59,7 +59,7 @@ add_custom_target(
 		-D Ecole_BUILD_OS="${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}"
 		-D Ecole_BUILD_TIME="${Ecole_BUILD_TIME}"
 		-D Ecole_BUILD_COMPILER="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
-		-P "${${PROJECT_NAME}_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
+		-P "${Ecole_SOURCE_DIR}/cmake/CreateVersionFile.cmake" > /dev/null
 )
 add_dependencies(ecole-lib ecole-lib-version)
 
@@ -77,8 +77,8 @@ set_target_properties(
 	ecole-lib
 	PROPERTIES
 		OUTPUT_NAME ecole
-		VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}"
-		SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}"
+		VERSION "${Ecole_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}"
+		SOVERSION "${Ecole_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}"
 )
 
 target_include_directories(
@@ -136,7 +136,7 @@ target_compile_features(ecole-lib PUBLIC cxx_std_17)
 include(GNUInstallDirs)
 install(
 	TARGETS ecole-lib
-	EXPORT "${PROJECT_NAME}Targets"
+	EXPORT "EcoleTargets"
 	RUNTIME
 		DESTINATION "${CMAKE_INSTALL_BINDIR}"
 		COMPONENT Ecole_Runtime
@@ -151,14 +151,14 @@ install(
 
 # Install CMake targets definition
 install(
-	EXPORT "${PROJECT_NAME}Targets"
-	FILE "${PROJECT_NAME}Targets.cmake"
+	EXPORT "EcoleTargets"
+	FILE "EcoleTargets.cmake"
 	NAMESPACE Ecole::
 	COMPONENT Ecole_Development
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Ecole"
 )
 
-# Install header and generated headers
+# Install headers and generated headers
 install(
 	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/ecole" "${CMAKE_CURRENT_BINARY_DIR}/include/ecole"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
@@ -169,29 +169,29 @@ install(
 # Generate and install config and version files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-	"${PROJECT_NAME}Config.cmake.in"
-	"${PROJECT_NAME}Config.cmake"
-	INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+	"EcoleConfig.cmake.in"
+	"EcoleConfig.cmake"
+	INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Ecole"
 )
 write_basic_package_version_file(
-	"${PROJECT_NAME}ConfigVersion.cmake"
-	VERSION "${${PROJECT_NAME}_VERSION}"
+	"EcoleConfigVersion.cmake"
+	VERSION "${Ecole_VERSION}"
 	COMPATIBILITY SameMinorVersion
 )
 install(
 	FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-		"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+		"${CMAKE_CURRENT_BINARY_DIR}/EcoleConfig.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/EcoleConfigVersion.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Ecole"
 	COMPONENT Ecole_Development
 )
 
 # Install the files to download dependencies (not mandatory but useful for users)
 install(
 	FILES
-		"${${PROJECT_NAME}_SOURCE_DIR}/cmake/DependenciesResolver.cmake"
+		"${Ecole_SOURCE_DIR}/cmake/DependenciesResolver.cmake"
 		"${CMAKE_CURRENT_SOURCE_DIR}/dependencies/public.cmake"
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Ecole"
 	COMPONENT Ecole_Development
 )
 

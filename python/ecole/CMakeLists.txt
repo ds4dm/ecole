@@ -1,6 +1,3 @@
-# File that download the dependencies of libecole
-include(dependencies/private.cmake)
-
 find_package(Python COMPONENTS Interpreter Development NumPy REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(xtensor REQUIRED)
@@ -9,6 +6,7 @@ find_package(xtensor-python REQUIRED)
 pybind11_add_module(
 	ecole-py-ext
 	src/ecole/core/core.cpp
+	src/ecole/core/version.cpp
 	src/ecole/core/scip.cpp
 	src/ecole/core/instance.cpp
 	src/ecole/core/data.cpp
@@ -18,16 +16,21 @@ pybind11_add_module(
 	src/ecole/core/dynamics.cpp
 )
 
-target_include_directories(ecole-py-ext PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/core)
-
-# Include the headers directly instead of using the CMake target due to it wrongly linking against
-# libpython
-target_include_directories(ecole-py-ext SYSTEM PRIVATE "${Python_NumPy_INCLUDE_DIRS}")
+target_include_directories(
+	ecole-py-ext
+		PRIVATE
+			${CMAKE_CURRENT_SOURCE_DIR}/src/ecole/core
+		SYSTEM PRIVATE
+			# Include the headers directly instead of using the CMake target due to it wrongly
+			# linking against libpython
+			"${Python_NumPy_INCLUDE_DIRS}"
+)
 
 target_link_libraries(
 	ecole-py-ext
 	PRIVATE
 		Ecole::ecole-lib
+		Ecole::ecole-py-ext-helper
 		xtensor-python
 )
 
@@ -38,12 +41,7 @@ set_target_properties(
 	OUTPUT_NAME core
 )
 # If no output directory specified, preserve the ecole layout in the build tree
-if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-	set_target_properties(
-		ecole-py-ext PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-	)
-else()
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 	set_target_properties(
 		ecole-py-ext PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ecole"
