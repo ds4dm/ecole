@@ -359,7 +359,7 @@ function test_example_branching {
 	local -r out_nb="${build_dir}/examples/branching-imitation/example.ipynb"
 	execute mkdir -p "$(dirname "${out_nb}")"
 	execute_pythonpath python -m papermill.cli --no-progress-bar "${in_nb}" "${out_nb}" \
-		-p DATA_MAX_SAMPLES 3 -p OPTIM_NB_EPOCHS 2 "$@"
+		-p DATA_MAX_SAMPLES 3 -p NB_EPOCHS 2 -p NB_EVAL_INSTANCES 2 "$@"
 }
 
 
