@@ -94,7 +94,7 @@ if(SKBUILD)
 	endif()
 	install(
 		TARGETS ecole-py-ext
-		DESTINATION ecole
+		DESTINATION "${ECOLE_PY_EXT_INSTALL_LIBDIR}"
 		COMPONENT Ecole_Python_Extension
 	)
 endif()

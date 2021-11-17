@@ -62,10 +62,10 @@ def get_cmake_in_package_install_args() -> List[str]:
         raise NotImplementedError(f"OS {system} is not supported")
     return [
         "-DBUILD_SHARED_LIBS=ON",
-        "-DCMAKE_INSTALL_LIBDIR=ecole/lib",
-        "-DCMAKE_INSTALL_BINDIR=ecole/bin",
-        "-DCMAKE_INSTALL_INCLUDEDIR=ecole/include",
-        "-DECOLE_PY_EXT_INSTALL_LIBDIR=ecole",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_BINDIR=bin",
+        "-DCMAKE_INSTALL_INCLUDEDIR=include",
+        "-DECOLE_PY_EXT_INSTALL_LIBDIR='.'",
         "-DECOLE_PY_EXT_INSTALL_RPATH={origin}/lib".format(origin=origin),
     ]
 
@@ -93,7 +93,7 @@ skbuild.setup(
     package_dir={"": "python/ecole/src"},
     package_data={"ecole": ["py.typed"]},
     cmake_languages=["CXX"],
-    cmake_install_dir="python/ecole/src",  # Must match pacakge_dir layout
+    cmake_install_dir="python/ecole/src/ecole",  # Must match package_dir layout
     # FIXME No way to pass cmake argument to scikit-build through pip (for now)
     # https://github.com/scikit-build/scikit-build/issues/479
     # So we read them from an environment variable
