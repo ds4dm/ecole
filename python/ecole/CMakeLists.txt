@@ -79,9 +79,6 @@ add_dependencies(ecole-py-ext ecole-py-files)
 # Set through the setup.py script.
 if(SKBUILD)
 	# Rpath for the Ecole Python extension module
-	if(NOT ECOLE_PY_EXT_INSTALL_RPATH)
-		set(ECOLE_PY_EXT_INSTALL_LIBDIR "\\\${ORIGIN}/../${CMAKE_INSTALL_LIBDIR}")
-	endif()
 	set_target_properties(
 		ecole-py-ext
 		PROPERTIES
@@ -90,7 +87,7 @@ if(SKBUILD)
 
 	# Relative (to install prefix) path where to install the Python extension module
 	if(NOT ECOLE_PY_EXT_INSTALL_LIBDIR)
-		set(ECOLE_PY_EXT_INSTALL_LIBDIR "ecole")
+		set(ECOLE_PY_EXT_INSTALL_LIBDIR ".")
 	endif()
 	install(
 		TARGETS ecole-py-ext

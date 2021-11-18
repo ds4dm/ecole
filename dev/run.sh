@@ -412,7 +412,7 @@ function test_sdist {
 	local -r dist_dir="${build_dir}/dist"
 	if_rebuild_then build_sdist "${dist_dir}"
 	local -r venv="${build_dir}/venv"
-	execute python -m venv --system-site-packages "${venv}"
+	execute python -m venv --upgrade-deps --system-site-packages "${venv}"
 	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
 	execute "${venv}/bin/python" -m pip install --ignore-installed "${sdists[@]}"
 	local extra_args=("$@")
