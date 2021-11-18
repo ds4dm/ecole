@@ -20,11 +20,15 @@
 
 namespace ecole::scip {
 
-Model::Model() : scimpl(std::make_unique<Scimpl>()) {}
+Model::Model() : Model{std::make_unique<Scimpl>()} {
+	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
+}
 
 Model::Model(Model&&) noexcept = default;
 
-Model::Model(std::unique_ptr<Scimpl>&& other_scimpl) : scimpl(std::move(other_scimpl)) {}
+Model::Model(std::unique_ptr<Scimpl>&& other_scimpl) : scimpl(std::move(other_scimpl)) {
+	set_messagehdlr_quiet(true);
+}
 
 Model::~Model() = default;
 
@@ -71,6 +75,10 @@ void Model::write_problem(std::filesystem::path const& filename) const {
 
 void Model::read_problem(std::string const& filename) {
 	scip::call(SCIPreadProb, get_scip_ptr(), filename.c_str(), nullptr);
+}
+
+void Model::set_messagehdlr_quiet(bool quiet) noexcept {
+	SCIPsetMessagehdlrQuiet(get_scip_ptr(), static_cast<SCIP_Bool>(quiet));
 }
 
 std::string Model::name() const noexcept {
