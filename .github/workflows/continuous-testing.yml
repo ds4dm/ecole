@@ -99,15 +99,15 @@ jobs:
         shell: bash -l {0}
         run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- test-doc
 
-  test-sdist:
+  test-dist:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
         with: { environment-file: dev/conda.yaml }
-      - name: "Build and test sdist"
+      - name: "Build and test dist"
         shell: bash -l {0}
-        run: ./dev/run.sh test-sdist
+        run: ./dev/run.sh test-dist
 
   test-example-libecole:
     runs-on: ubuntu-20.04
@@ -164,7 +164,7 @@ jobs:
       - test-with-conda-shared
       - test-with-sanitizer
       - test-doc
-      - test-sdist
+      - test-dist
       - test-example-libecole
       - test-example-configuring
       - test-example-branching

@@ -400,33 +400,31 @@ function deploy_doc_locally {
 }
 
 
-# Build Python source distribution.
-function build_sdist {
+# Build Python source distribution and wheel (from the sdist).
+# FIXME wheel is missing MacOS version.
+function build_dist {
 	local -r dist_dir="${1:-"${build_dir}/dist"}"
-	execute python "${source_dir}/setup.py" sdist --dist-dir="${dist_dir}"
+	execute python -m build --outdir="${dist_dir}" "${@:2}"
 }
 
 
-# Install sdist into a virtual environment.
-function test_sdist {
+# Install wheel into a virtual environment.
+function test_dist {
 	local -r dist_dir="${build_dir}/dist"
-	if_rebuild_then build_sdist "${dist_dir}"
+	if_rebuild_then build_dist "${dist_dir}"
 	local -r venv="${build_dir}/venv"
-	execute python -m venv --upgrade-deps --system-site-packages "${venv}"
-	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
-	execute "${venv}/bin/python" -m pip install --ignore-installed "${sdists[@]}"
-	local extra_args=("$@")
-	if [ "${fail_fast}" = "true" ]; then
-		extra_args+=("--exitfirst")
-	fi
-	execute "${venv}/bin/python" -m pytest "${source_dir}/python/ecole/tests" "${extra_args[@]}"
+	execute python -m venv --upgrade-deps "${venv}"
+	# FIXME should install wheel but it is missing MacOS version
+	local -r sdist=("${dist_dir}"/ecole-*.tar.gz)
+	execute "${venv}/bin/python" -m pip install --ignore-installed "${sdist[0]}"
+	execute "${venv}/bin/python" -m ecole.doctor
 }
 
 
 # Deploy sdist to PyPI. Set TWINE_USERNAME and TWINE_PASSWORD environment variables or pass them as arguments.
 function deploy_sdist {
 	local -r dist_dir="${build_dir}/dist"
-	if_rebuild_then build_sdist "${dist_dir}"
+	if_rebuild_then build_dist "${dist_dir}" --sdist
 	local -r strict="$([ "${warnings_as_errors}" = "true" ] && echo -n '--strict')"
 	local -r sdists=("${dist_dir}"/ecole-*.tar.gz)
 	execute python -m twine check "${strict}" "${sdists[@]}"
@@ -459,7 +457,7 @@ function help {
 	echo "  test-lib, test-py, test-doc, test-version,"
 	echo "  test-example-libecole, test-example-configuring, test-all"
 	echo "  check-code"
-	echo "  build-sdist, test-sdist, deploy-sdist"
+	echo "  build-dist, test-dist, deploy-sdist"
 	echo ""
 	echo "Example:"
 	echo "  ${BASH_SOURCE[0]} --warnings-as-errors configure -D ECOLE_DEVELOPER=ON -- test-lib -- test-py --no-slow"
