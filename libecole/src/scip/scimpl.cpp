@@ -82,7 +82,6 @@ namespace {
 std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 	SCIP* scip_raw;
 	scip::call(SCIPcreate, &scip_raw);
-	SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip_raw), 1U);
 	std::unique_ptr<SCIP, ScipDeleter> scip_ptr = nullptr;
 	scip_ptr.reset(scip_raw);
 	return scip_ptr;
@@ -90,9 +89,7 @@ std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 
 }  // namespace
 
-scip::Scimpl::Scimpl() : m_scip(create_scip()) {
-	scip::call(SCIPincludeDefaultPlugins, get_scip_ptr());
-}
+scip::Scimpl::Scimpl() : m_scip{create_scip()} {}
 
 Scimpl::Scimpl(Scimpl&&) noexcept = default;
 

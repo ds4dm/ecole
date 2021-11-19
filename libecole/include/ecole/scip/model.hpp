@@ -86,6 +86,11 @@ public:
 	 */
 	ECOLE_EXPORT void read_problem(std::string const& filename);
 
+	/**
+	 * Change whether or not to write logging messages in the logger.
+	 */
+	ECOLE_EXPORT void set_messagehdlr_quiet(bool quiet) noexcept;
+
 	[[nodiscard]] ECOLE_EXPORT std::string name() const noexcept;
 	ECOLE_EXPORT void set_name(std::string const& name);
 
