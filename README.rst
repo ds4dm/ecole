@@ -21,7 +21,7 @@ in cooperation with a state-of-the-art Mixed Integer Linear Programming solver
 that acts as a controllable algorithm.
 
 The underlying solver used is `SCIP <https://scip.zib.de/>`_, and the user facing API is
-meant to mimic the `OpenAi Gym <https://gym.openai.com/>`_ API (as much as possible).
+meant to mimic the `OpenAI Gym <https://gym.openai.com/>`_ API (as much as possible).
 
 .. code-block:: python
 

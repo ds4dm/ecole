@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📖 Documentation
+    url: https://doc.ecole.ai/
+    about: Find common usage in the documentation.
+  - name: ❓ Github Discussions
+    url: https://github.com/ds4dm/ecole/discussions
+    about: Ask questions and share ideas.
