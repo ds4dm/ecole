@@ -173,7 +173,7 @@ class Environment:
 
         """
         if not self.can_transition:
-            raise ecole.core.environment.Exception("Environment need to be reset.")
+            raise ecole.Exception("Environment need to be reset.")
 
         try:
             # Transition the environment to the next state

@@ -1,6 +1,7 @@
 """Unit tests for Ecole Environment."""
 
 import unittest.mock as mock
+import pytest
 
 import ecole
 
@@ -28,11 +29,18 @@ def test_reset(model):
 
 
 def test_step(model):
-    """Stepmwith some action."""
+    """Step with some action."""
     env = MockEnvironment()
     env.reset(model)
     _, _, _, _, _ = env.step("some action")
     env.dynamics.step_dynamics.assert_called_with(env.model, "some action")
+
+
+def test_step_error(model):
+    """Step without reset."""
+    env = MockEnvironment()
+    with pytest.raises(ecole.Exception):
+        env.step("some action")
 
 
 def test_seed():
