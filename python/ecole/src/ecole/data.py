@@ -23,7 +23,9 @@ def parse(something, default):
 
     """
     if something == "default":
-        return default
+        if default is None:
+            raise ValueError("""Cannot parse "default" without a default value.""")
+        return parse(default, None)
     elif something is None:
         return NoneFunction()
     elif isinstance(something, numbers.Number):

@@ -51,6 +51,21 @@ def test_MapFunction(model, done):
     assert data == {"name1": "something", "name2": "else"}
 
 
+@pytest.mark.parametrize("done", (True, False))
+@pytest.mark.parametrize("wall", (True, False))
+def test_TimedFunction(model, done, wall):
+    """Time a given data function."""
+    data_func = mock.MagicMock()
+    time_data_func = ecole.data.TimedFunction(data_func, wall=wall)
+
+    time_data_func.before_reset(model)
+    data_func.before_reset.assert_called_once_with(model)
+
+    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
+    time = time_data_func.extract(model, done)
+    assert time > 0
+
+
 def test_parse_None():
     """None is parsed as NoneFunction."""
     assert isinstance(ecole.data.parse(None, mock.MagicMock()), ecole.data.NoneFunction)
@@ -60,6 +75,12 @@ def test_parse_default():
     """Default return default."""
     default_func = mock.MagicMock()
     assert ecole.data.parse("default", default_func) == default_func
+
+
+def test_parse_self_reference():
+    """Default can not be used in the default function."""
+    with pytest.raises(ValueError):
+        ecole.data.parse("default", "default")
 
 
 def test_parse_number():
@@ -98,16 +119,16 @@ def test_parse_recursive(model):
     assert data["name3"] == default_func.extract.return_value
 
 
-@pytest.mark.parametrize("done", (True, False))
-@pytest.mark.parametrize("wall", (True, False))
-def test_MapFunction(model, done, wall):
-    """Time a given data function."""
-    data_func = mock.MagicMock()
-    time_data_func = ecole.data.TimedFunction(data_func, wall=wall)
-
-    time_data_func.before_reset(model)
-    data_func.before_reset.assert_called_once_with(model)
-
-    pytest.helpers.advance_to_stage(model, ecole.scip.Stage.Solving)
-    time = time_data_func.extract(model, done)
-    assert time > 0
+def test_parse_recursive_default(model):
+    """Default function is parsed as well."""
+    aggregate = {
+        "name1": mock.MagicMock(),
+        "name2": (mock.MagicMock(), None, 1),
+    }
+    func = ecole.data.parse("default", aggregate)
+    # Using the extract method to inspect the recusive parsing since Vector, Map, Constant functions are private.
+    data = func.extract(model, False)
+    assert isinstance(data, dict)
+    assert isinstance(data["name2"], list)
+    assert data["name2"][1] is None
+    assert data["name2"][2] == 1
