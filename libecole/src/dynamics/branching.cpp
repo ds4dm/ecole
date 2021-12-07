@@ -37,14 +37,23 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 	return {false, action_set(model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(scip::Model& model, std::size_t const& var_idx) -> std::tuple<bool, ActionSet> {
-	auto const vars = model.variables();
-	if (var_idx >= vars.size()) {
-		throw std::invalid_argument{
-			fmt::format("Branching candidate index {} larger than the number of variables ({}).", var_idx, vars.size())};
+auto BranchingDynamics::step_dynamics(scip::Model& model, std::optional<std::size_t> const& maybe_var_idx)
+	-> std::tuple<bool, ActionSet> {
+	if (maybe_var_idx.has_value()) {
+		auto const var_idx = maybe_var_idx.value();
+		auto const vars = model.variables();
+		// Error handling
+		if (var_idx >= vars.size()) {
+			throw std::invalid_argument{
+				fmt::format("Branching candidate index {} larger than the number of variables ({}).", var_idx, vars.size())};
+		}
+		// Branching
+		scip::call(SCIPbranchVar, model.get_scip_ptr(), vars[var_idx], nullptr, nullptr, nullptr);
+		model.solve_iter_branch(SCIP_BRANCHED);
+	} else {
+		// Fallback to SCIP default branching
+		model.solve_iter_branch(SCIP_DIDNOTRUN);
 	}
-	scip::call(SCIPbranchVar, model.get_scip_ptr(), vars[var_idx], nullptr, nullptr, nullptr);
-	model.solve_iter_branch(SCIP_BRANCHED);
 
 	if (model.solve_iter_is_done()) {
 		return {true, {}};

@@ -55,6 +55,14 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 		auto const action = model.lp_columns().size() + 1;
 		REQUIRE_THROWS_AS(dyn.step_dynamics(model, action), std::invalid_argument);
 	}
+
+	SECTION("Provides default branching") {
+		auto [done, _] = dyn.reset_dynamics(model);
+		while (!done) {
+			std::tie(done, _) = dyn.step_dynamics(model, {});
+		}
+		REQUIRE(model.is_solved());
+	}
 }
 
 TEST_CASE("BranchingDynamics handles limits", "[dynamics]") {

@@ -11,7 +11,7 @@
 namespace ecole::dynamics {
 
 class ECOLE_EXPORT BranchingDynamics :
-	public EnvironmentDynamics<std::size_t, std::optional<xt::xtensor<std::size_t, 1>>> {
+	public EnvironmentDynamics<std::optional<std::size_t>, std::optional<xt::xtensor<std::size_t, 1>>> {
 public:
 	using ActionSet = std::optional<xt::xtensor<std::size_t, 1>>;
 
@@ -19,7 +19,7 @@ public:
 
 	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> override;
 
-	ECOLE_EXPORT auto step_dynamics(scip::Model& model, std::size_t const& var_idx)
+	ECOLE_EXPORT auto step_dynamics(scip::Model& model, std::optional<std::size_t> const& maybe_var_idx)
 		-> std::tuple<bool, ActionSet> override;
 
 private:
