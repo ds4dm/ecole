@@ -79,32 +79,6 @@ class TestBranching_Pseudocandidate(TestBranching):
         self.dynamics = ecole.dynamics.BranchingDynamics(True)
 
 
-class TestBranchingSum_List(DynamicsUnitTests):
-    @staticmethod
-    def assert_action_set(action_set):
-        assert isinstance(action_set, np.ndarray)
-        assert action_set.ndim == 1
-        assert action_set.size > 0
-        assert action_set.dtype == np.uint64
-
-    @staticmethod
-    def policy(action_set):
-        return [action_set[0]]
-
-    @staticmethod
-    def bad_policy(action_set):
-        return [1 << 31]
-
-    def setup_method(self, method):
-        self.dynamics = ecole.dynamics.BranchingSumDynamics()
-
-
-class TestBranchingSum_Numpy(TestBranchingSum_List):
-    @staticmethod
-    def policy(action_set):
-        return np.array([action_set[0]])
-
-
 class TestConfiguring(DynamicsUnitTests):
     @staticmethod
     def assert_action_set(action_set):

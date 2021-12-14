@@ -47,7 +47,6 @@ add_executable(
 	src/observation/test-hutter-2011.cpp
 
 	src/dynamics/test-branching.cpp
-	src/dynamics/test-branching-sum.cpp
 	src/dynamics/test-configuring.cpp
 	src/dynamics/test-primal-search.cpp
 

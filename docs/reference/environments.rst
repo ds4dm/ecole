@@ -16,11 +16,6 @@ Branching
 .. autoclass:: ecole.environment.Branching
 .. autoclass:: ecole.dynamics.BranchingDynamics
 
-BranchingSum
-^^^^^^^^^^^^
-.. autoclass:: ecole.environment.BranchingSum
-.. autoclass:: ecole.dynamics.BranchingSumDynamics
-
 Configuring
 ^^^^^^^^^^^
 .. autoclass:: ecole.environment.Configuring
