@@ -4,6 +4,7 @@
 #include <pybind11/stl.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/dynamics/branching-sum.hpp"
 #include "ecole/dynamics/branching.hpp"
 #include "ecole/dynamics/configuring.hpp"
 #include "ecole/dynamics/primal-search.hpp"
@@ -130,6 +131,90 @@ void bind_submodule(pybind11::module_ const& m) {
 					Whether the action set contains pseudo branching variable candidates (``SCIPgetPseudoBranchCands``)
 					or LP branching variable candidates (``SCIPgetPseudoBranchCands``).
 			)");
+	}
+
+	{
+		using idx_t = typename BranchingSumDynamics::Action::value_type;
+		dynamics_class<BranchingSumDynamics>{m, "BranchingSumDynamics", R"(
+			Sum of variables branching Dynamics.
+
+			Based on a SCIP `branching callback <https://www.scipopt.org/doc/html/BRANCH.php>`_
+			with maximal priority and no depth limit.
+			The dynamics give the control back to the user every time the callback would be called.
+			The user receives as an action set the list of branching candidates, and is expected to select
+			a subset of them to branch on their sum.
+
+			.. warning::
+				The function used to perform branching is provided by Ecole and has not been extensively tested on
+				a large variety of problem instances.
+		)"}
+			.def_reset_dynamics(R"(
+				Start solving up to first branching node.
+
+				Start solving with SCIP defaults (``SCIPsolve``) and give back control to the user on the
+				first branching decision.
+				Users can inherit from this dynamics to change the defaults settings such as presolving
+				and cutting planes.
+
+				Parameters
+				----------
+					model:
+						The state of the Markov Decision Process. Passed by the environment.
+
+				Returns
+				-------
+					done:
+						Whether the instance is solved.
+						This can happen without branching, for instance if the instance is solved during presolving.
+					action_set:
+						List of branching candidates (``SCIPgetPseudoBranchCands``).
+			)")
+			.def_set_dynamics_random_state(R"(
+				Set seeds on the :py:class:`~ecole.scip.Model`.
+
+				Set seed parameters, including permutation, LP, and shift.
+
+				Parameters
+				----------
+					model:
+						The state of the Markov Decision Process. Passed by the environment.
+					random_engine:
+						The source of randomness. Passed by the environment.
+			)")
+			.def(
+				"step_dynamics",
+				[](BranchingSumDynamics& self, scip::Model& model, Numpy<idx_t> const& action) {
+					auto const vars = nonstd::span{action.data(), static_cast<std::size_t>(action.size())};
+					auto const release = py::gil_scoped_release{};
+					return self.step_dynamics(model, vars);
+				},
+				py::arg("model"),
+				py::arg("action"),
+				R"(
+				Branch and resume solving until next branching.
+
+				Branching is done on the sum of the given variables using their LP or pseudo solution value.
+				To make a valid branching, the sum of the LP or pseudo solution value of the given variables
+				must be non integer.
+				In the opposite case, an exception will be thrown,
+				The control is given back to the user on the next branching decision or when done.
+
+				Parameters
+				----------
+					model:
+						The state of the Markov Decision Process. Passed by the environment.
+					action:
+						A subset of the variables given in the action set.
+						Not all subsets are valid (see above).
+
+				Returns
+				-------
+					done:
+						Whether the instance is solved.
+					action_set:
+						List of branching candidates (``SCIPgetPseudoBranchCands``).
+			)")
+			.def(py::init<>());
 	}
 
 	{

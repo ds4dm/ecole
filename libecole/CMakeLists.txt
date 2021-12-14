@@ -37,6 +37,7 @@ add_library(
 	src/observation/pseudocosts.cpp
 
 	src/dynamics/branching.cpp
+	src/dynamics/branching-sum.cpp
 	src/dynamics/configuring.cpp
 	src/dynamics/primal-search.cpp
 )
