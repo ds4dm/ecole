@@ -165,7 +165,7 @@ as it is done for running the tests. For instance:
 
 .. code-block:: bash
 
-   PYTHONPATH="${PWD}/build/cmake/python" python -m IPython
+   PYTHONPATH="${PWD}/build/cmake/python/ecole" python -m IPython
 
 This is useful to debug in `IPython <https://ipython.org/>`_ or `Jupyter <https://jupyter.org/>`_, but anything more
 should rely on an :ref:`installation <installation>`.
