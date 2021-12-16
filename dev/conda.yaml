@@ -12,7 +12,7 @@ dependencies:
   - xsimd
   - fmt
   # C++ runtime dependencies
-  - scip
+  - scip=8
   # Build time Python dependencies
   - python>=3.6
   - pybind11>=2.7
