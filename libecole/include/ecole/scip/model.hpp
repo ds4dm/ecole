@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -174,46 +175,30 @@ template <> ECOLE_EXPORT auto Model::get_param<ParamType::Char>(std::string cons
 template <> ECOLE_EXPORT auto Model::get_param<ParamType::String>(std::string const& name) const -> std::string;
 
 namespace internal {
-// SFINAE default class for no available cast
-template <typename To, typename From, typename = void> struct Caster {
-	static To cast(From /*unused*/) { throw Exception("Cannot convert to the desired type"); }
-};
 
-// SFINAE class for narrow cast
-template <typename To, typename From>
-struct Caster<To, From, std::enable_if_t<utility::is_narrow_castable_v<From, To>>> {
-	static To cast(From val) { return utility::narrow_cast<To>(val); }
-};
-
-// SFINAE class for convertible but not narrowablecast
-template <typename To, typename From>
-struct Caster<To, From, std::enable_if_t<!utility::is_narrow_castable_v<From, To> && std::is_convertible_v<From, To>>> {
-	static To cast(From val) { return static_cast<To>(val); }
-};
-
-// Visit From variants.
-// Cannot static_cast a variant into one of its held value. Other way around works though.
-template <typename To, typename... VariantFrom> struct Caster<To, std::variant<VariantFrom...>> {
-	static To cast(std::variant<VariantFrom...> variant_val) {
-		return std::visit([](auto val) { return Caster<To, decltype(val)>::cast(val); }, variant_val);
+/**
+ * Safely cast between various type, throwing an exception when impossible.
+ */
+template <typename To, typename From> auto cast(From val) -> To {
+	if constexpr (std::is_pointer_v<From> && std::is_same_v<To, bool>) {
+		// Fallthrough to error. Don't convert pointers to bool.
+	} else if constexpr (utility::is_narrow_castable_v<From, To>) {
+		return utility::narrow_cast<To>(std::move(val));
+	} else if constexpr (std::is_convertible_v<From, To>) {
+		return static_cast<To>(val);
+	} else if constexpr (utility::is_variant_v<From>) {
+		return std::visit([](auto v) { return cast<To>(v); }, val);
+	} else if constexpr (std::is_same_v<From, char> && std::is_same_v<To, std::string>) {
+		return std::string{val};
+	} else if constexpr (std::is_same_v<To, char>) {
+		if constexpr (std::is_convertible_v<From, std::string_view>) {
+			if (auto const str = std::string_view{val}; str.length() == 1) {
+				return str[0];
+			}
+			// Fallthrough to error. Don't convert long string to char.
+		}
 	}
-};
-
-// Pointers must not convert to bools
-template <typename From> struct Caster<bool, std::remove_cv<From>*> {
-	static bool cast(From /*unused*/) { throw Exception("Cannot convert pointers to bool"); }
-};
-
-// Convert character to string
-template <> ECOLE_EXPORT auto Caster<std::string, char>::cast(char val) -> std::string;
-
-// Convert string to character
-template <> ECOLE_EXPORT auto Caster<char, char const*>::cast(char const* val) -> char;
-template <> ECOLE_EXPORT auto Caster<char, std::string>::cast(std::string val) -> char;
-
-// Helper func to deduce From type automatically
-template <typename To, typename From> To cast(From val) {
-	return Caster<To, From>::cast(val);
+	throw ScipError::from_retcode(SCIP_PARAMETERWRONGTYPE);
 }
 
 }  // namespace internal
@@ -234,9 +219,10 @@ template <typename T> void Model::set_param(std::string const& name, T value) {
 	case ParamType::String:
 		return set_param<ParamType::String>(name, cast<std::string>(value));
 	default:
-		assert(false);  // All enum value should be handled
+		// All enum value should be handled
+		assert(false);
 		// Non void return for optimized build
-		throw Exception("Could not find type for given parameter");
+		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
 	}
 }
 
@@ -256,9 +242,10 @@ template <typename T> T Model::get_param(std::string const& name) const {
 	case ParamType::String:
 		return cast<T>(get_param<ParamType::String>(name));
 	default:
-		assert(false);  // All enum value should be handled
+		// All enum value should be handled
+		assert(false);
 		// Non void return for optimized build
-		throw Exception("Could not find type for given parameter");
+		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
 	}
 }
 

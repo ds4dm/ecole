@@ -31,7 +31,7 @@ TEST_CASE("Create model from file", "[scip]") {
 }
 
 TEST_CASE("Raise if file does not exist", "[scip]") {
-	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::Exception);
+	REQUIRE_THROWS_AS(scip::Model::from_file("/does_not_exist.mps"), scip::ScipError);
 }
 
 TEST_CASE("Model transform", "[scip][slow]") {
@@ -78,27 +78,27 @@ TEST_CASE("Explicit parameter management", "[scip]") {
 	}
 
 	SECTION("Throw on wrong parameters type") {
-		REQUIRE_THROWS_AS(model.get_param<ParamType::Real>(int_param), scip::Exception);
+		REQUIRE_THROWS_AS(model.get_param<ParamType::Real>(int_param), scip::ScipError);
 		REQUIRE_THROWS_WITH(
 			model.get_param<ParamType::Real>(int_param), Contains(int_param) && Contains("int") && Contains("Real"));
 
 		constexpr auto some_real_val = 3.0;
-		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, some_real_val), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Real>(int_param, some_real_val), scip::ScipError);
 		REQUIRE_THROWS_WITH(
 			model.set_param<ParamType::Real>(int_param, some_real_val),
 			Contains(int_param) && Contains("int") && Contains("Real"));
 	}
 
 	SECTION("Throw on wrong parameter value") {
-		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(int_param, -3), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(int_param, -3), scip::ScipError);
 		REQUIRE_THROWS_WITH(model.set_param<ParamType::Int>(int_param, -3), Contains(int_param) && Contains("-3"));
 	}
 
 	SECTION("Throw on unknown parameters") {
 		auto constexpr not_a_param = "not a parameter";
-		REQUIRE_THROWS_AS(model.get_param<ParamType::Int>(not_a_param), scip::Exception);
+		REQUIRE_THROWS_AS(model.get_param<ParamType::Int>(not_a_param), scip::ScipError);
 		REQUIRE_THROWS_WITH(model.get_param<ParamType::Int>(not_a_param), Contains(not_a_param));
-		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(not_a_param, 3), scip::Exception);
+		REQUIRE_THROWS_AS(model.set_param<ParamType::Int>(not_a_param, 3), scip::ScipError);
 		REQUIRE_THROWS_WITH(model.set_param<ParamType::Int>(not_a_param, 3), Contains(not_a_param));
 	}
 }
@@ -117,8 +117,13 @@ TEST_CASE("Automatic parameter management", "[scip]") {
 		REQUIRE(model.get_param<int>(int_param) == 1);
 	}
 
-	SECTION("String parameters can be converted to chars") {
+	SECTION("Const char* parameters can be converted to chars") {
 		model.set_param("branching/scorefunc", "s");
+		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
+	}
+
+	SECTION("String parameters can be converted to chars") {
+		model.set_param("branching/scorefunc", std::string{"s"});
 		REQUIRE(model.get_param<char>("branching/scorefunc") == 's');
 	}
 

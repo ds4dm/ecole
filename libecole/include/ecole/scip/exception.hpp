@@ -9,12 +9,12 @@
 
 namespace ecole::scip {
 
-class ECOLE_EXPORT Exception : public std::exception {
+class ECOLE_EXPORT ScipError : public std::exception {
 public:
-	ECOLE_EXPORT static Exception from_retcode(SCIP_RETCODE retcode);
+	ECOLE_EXPORT static ScipError from_retcode(SCIP_RETCODE retcode);
 	ECOLE_EXPORT static void reset_message_capture();
 
-	ECOLE_EXPORT Exception(std::string message);
+	ECOLE_EXPORT ScipError(std::string message);
 
 	[[nodiscard]] ECOLE_EXPORT char const* what() const noexcept override;
 

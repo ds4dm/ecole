@@ -15,7 +15,6 @@
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
-
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
@@ -96,7 +95,7 @@ SCIP_STAGE Model::stage() const noexcept {
 ParamType Model::get_param_type(std::string const& name) const {
 	auto* scip_param = SCIPgetParam(const_cast<SCIP*>(get_scip_ptr()), name.c_str());
 	if (scip_param == nullptr) {
-		throw scip::Exception(fmt::format("parameter <{}> unknown", name));
+		throw scip::ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
 	}
 	switch (SCIPparamGetType(scip_param)) {
 	case SCIP_PARAMTYPE_BOOL:
@@ -112,9 +111,10 @@ ParamType Model::get_param_type(std::string const& name) const {
 	case SCIP_PARAMTYPE_STRING:
 		return ParamType::String;
 	default:
-		assert(false);  // All enum value should be handled
+		// All enum value should be handled
+		assert(false);
 		// Non void return for optimized build
-		throw Exception(fmt::format("Could not find type for parameter '{}'", name));
+		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
 	}
 }
 
@@ -223,7 +223,7 @@ nonstd::span<SCIP_VAR*> Model::pseudo_branch_cands() const {
 nonstd::span<SCIP_COL*> Model::lp_columns() const {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
-		throw Exception("LP columns are only available during solving");
+		throw ScipError::from_retcode(SCIP_INVALIDCALL);
 	}
 	return {SCIPgetLPCols(scip_ptr), static_cast<std::size_t>(SCIPgetNLPCols(scip_ptr))};
 }
@@ -236,7 +236,7 @@ nonstd::span<SCIP_CONS*> Model::constraints() const noexcept {
 nonstd::span<SCIP_ROW*> Model::lp_rows() const {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
-		throw Exception("LP rows are only available during solving");
+		throw ScipError::from_retcode(SCIP_INVALIDCALL);
 	}
 	return {SCIPgetLPRows(scip_ptr), static_cast<std::size_t>(SCIPgetNLPRows(scip_ptr))};
 }
@@ -318,27 +318,5 @@ void Model::solve_iter_stop() {
 bool Model::solve_iter_is_done() {
 	return scimpl->solve_iter_is_done();
 }
-
-namespace internal {
-
-template <> std::string Caster<std::string, char>::cast(char val) {
-	return std::string{val};
-}
-
-template <> char Caster<char, char const*>::cast(char const* val) {
-	if (strlen(val) == 1) {
-		return val[0];
-	}
-	throw scip::Exception("Can only convert a string with a single character to a char");
-}
-
-template <> char Caster<char, std::string>::cast(std::string val) {
-	if (val.length() == 1) {
-		return val[0];
-	}
-	throw scip::Exception("Can only convert a string with a single character to a char");
-}
-
-}  // namespace internal
 
 }  // namespace ecole::scip

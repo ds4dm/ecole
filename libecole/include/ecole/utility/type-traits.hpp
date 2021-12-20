@@ -1,8 +1,16 @@
 #pragma once
 
 #include <type_traits>
+#include <variant>
 
 namespace ecole::utility {
+
+/**
+ * Check if a type is an std::variant.
+ */
+template <typename V> struct is_variant : std::false_type {};
+template <typename... T> struct is_variant<std::variant<T...>> : std::true_type {};
+template <typename V> inline constexpr bool is_variant_v = is_variant<V>::value;
 
 /**
  * Dispatch between the type and a lvalue reference to a constant.
@@ -19,9 +27,7 @@ template <typename T> using value_or_const_ref_t = std::conditional_t<std::is_tr
  * type.
  */
 template <typename, typename = std::void_t<>> struct has_dereference : std::false_type {};
-
 template <typename T> struct has_dereference<T, std::void_t<decltype(*std::declval<T>())>> : std::true_type {};
-
 template <typename T> inline constexpr bool has_dereference_v = has_dereference<T>::value;
 
 }  // namespace ecole::utility
