@@ -9,26 +9,26 @@ One such aspect is the solver randomness, which is controlled by its random seed
 This means that, by default, Ecole environment will generate different episodes (and in
 particular different initial states) after each new call to
 :py:meth:`~ecole.environment.EnvironmentComposer.reset`.
-To do so, the environment keeps a :py:class:`~ecole.RandomEngine` (random state)
+To do so, the environment keeps a :py:class:`~ecole.RandomGenerator` (random state)
 between episodes, and start a new episode by calling
 :py:meth:`~ecole.typing.Dynamics.set_dynamics_random_state` on the underlying
 :py:class:`~ecole.typing.Dynamics`.
 The latter set random elements of the state including, but not necessary limited to, the
 :py:class:`~ecole.scip.Model` random seed, by consuming random numbers from the
-:py:class:`~ecole.environment.RandomeEngine`.
+:py:class:`~ecole.environment.RandomeGenerator`.
 That way, the :py:class:`~ecole.environment.Environment` can avoid generating identical
 episodes while letting :py:class:`~ecole.typing.Dynamics` decide what random parameters need to
 be set.
 
 The :py:meth:`~ecole.environment.Environment.seed` method is really one of the environment,
-because it seeds the :py:class:`~ecole.RandomEngine`, not direclty the episode for
+because it seeds the :py:class:`~ecole.RandomGenerator`, not direclty the episode for
 the :py:class:`~ecole.typing.Dynamics`.
 
-When not explicitly seeded, :py:class:`~ecole.typing.Environment` use a :py:class:`~ecole.RandomEngine` derived
-from Ecole's global source of randomness by invoking :py:func:`ecole.spawn_random_engine`.
+When not explicitly seeded, :py:class:`~ecole.typing.Environment` use a :py:class:`~ecole.RandomGenerator` derived
+from Ecole's global source of randomness by invoking :py:func:`ecole.spawn_random_generator`.
 By default this source is truly random, but it can be controlled with :py:func:`ecole.seed`.
 
-Similarily, an :py:class:`~ecole.typing.InstanceGenerator` default random engine derived from Ecole global source of
+Similarily, an :py:class:`~ecole.typing.InstanceGenerator` default random generator derived from Ecole global source of
 randomness.
 
 As examples, we provide the following snippets.

@@ -48,7 +48,7 @@ template <typename Class, typename... ClassArgs> struct dynamics_class : public 
 			"set_dynamics_random_state",
 			&Class::set_dynamics_random_state,
 			py::arg("model"),
-			py::arg("random_engine"),
+			py::arg("rng"),
 			py::call_guard<py::gil_scoped_release>(),
 			std::forward<Args>(args)...);
 		return *this;
@@ -118,7 +118,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
@@ -182,7 +182,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def(py::init<>());
@@ -213,7 +213,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def_reset_dynamics(R"(

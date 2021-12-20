@@ -54,11 +54,11 @@ def test_default_init(instance_generator):
     type(instance_generator)()
 
 
-def test_random_engine_init(instance_generator):
-    """Construct a random engine."""
+def test_rng_init(instance_generator):
+    """Construct a random generator."""
     if isinstance(instance_generator, ecole.instance.FileGenerator):
         pytest.skip("No dataset in default directory")
-    type(instance_generator)(random_engine=ecole.RandomEngine())
+    type(instance_generator)(rng=ecole.RandomGenerator())
 
 
 def test_generate_instance(instance_generator):
@@ -66,7 +66,7 @@ def test_generate_instance(instance_generator):
     if isinstance(instance_generator, ecole.instance.FileGenerator):
         pytest.skip("No generate_instance for file loaders")
     InstanceGenerator = type(instance_generator)
-    model = InstanceGenerator.generate_instance(random_engine=ecole.RandomEngine())
+    model = InstanceGenerator.generate_instance(rng=ecole.RandomGenerator())
     assert isinstance(model, ecole.scip.Model)
 
 

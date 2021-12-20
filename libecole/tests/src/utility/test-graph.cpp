@@ -28,16 +28,16 @@ TEST_CASE("Unit test graph class used in IndependentSet", "[instance][unit]") {
 	std::for_each(edges.begin(), edges.end(), [&graph](auto edge) { graph.add_edge(edge); });
 
 	SECTION("Graph builders") {
-		auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+		auto rng = RandomGenerator{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
 
 		SECTION("Erdos Renyi") {
 			auto constexpr edge_prob = 0.9;
-			graph = Graph::erdos_renyi(n_nodes, edge_prob, random_engine);
+			graph = Graph::erdos_renyi(n_nodes, edge_prob, rng);
 		}
 
 		SECTION("Barabasi Albert") {
 			auto constexpr affinity = 1;
-			graph = Graph::barabasi_albert(n_nodes, affinity, random_engine);
+			graph = Graph::barabasi_albert(n_nodes, affinity, rng);
 		}
 
 		REQUIRE(graph.n_nodes() == n_nodes);
@@ -104,12 +104,12 @@ TEST_CASE("Unit test graph class used in IndependentSet", "[instance][unit]") {
 }
 
 TEST_CASE("Erdos Renyi builder", "[instance]") {
-	// These tests are actually not random because the random engine is always the same, but it could be changed that
+	// These tests are actually not random because the random generator is always the same, but it could be changed that
 	// the results should hold with very high probability
-	auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+	auto rng = RandomGenerator{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
 	auto constexpr n_nodes = 100;
 	auto constexpr edge_prob = 0.5;
-	auto graph = Graph::erdos_renyi(n_nodes, edge_prob, random_engine);
+	auto graph = Graph::erdos_renyi(n_nodes, edge_prob, rng);
 
 	// Number of edges follows a binomial(C(n_nodes,2), edge_prob).
 	// With the Chernov Bounds, we compute that this is true with proba ~ 1-1e-40
@@ -127,10 +127,10 @@ TEST_CASE("Erdos Renyi builder", "[instance]") {
 }
 
 TEST_CASE("Barabasi Albert builder", "[instance]") {
-	auto random_engine = RandomEngine{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
+	auto rng = RandomGenerator{};  // NOLINT(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
 	auto constexpr n_nodes = 100;
 	auto constexpr affinity = 11;
-	auto graph = Graph::barabasi_albert(n_nodes, affinity, random_engine);
+	auto graph = Graph::barabasi_albert(n_nodes, affinity, rng);
 	// Deterministic, according to building algorithm
 	REQUIRE(graph.n_edges() == (n_nodes - affinity - 1) * affinity + affinity);
 }

@@ -25,8 +25,8 @@ template <typename FileIter> auto list_files(FileIter&& dir_iter) {
 
 }  // namespace
 
-FileGenerator::FileGenerator(Parameters parameters_, RandomEngine random_engine_) :
-	random_engine{random_engine_}, parameters{std::move(parameters_)} {
+FileGenerator::FileGenerator(Parameters parameters_, RandomGenerator rng_) :
+	rng{rng_}, parameters{std::move(parameters_)} {
 	using opts = fs::directory_options;
 	if (parameters.recursive) {
 		files = list_files(fs::recursive_directory_iterator{parameters.directory, opts::follow_directory_symlink});
@@ -38,7 +38,7 @@ FileGenerator::FileGenerator(Parameters parameters_, RandomEngine random_engine_
 }
 
 FileGenerator::FileGenerator(Parameters parameters_) :
-	FileGenerator{std::move(parameters_), ecole::spawn_random_engine()} {}
+	FileGenerator{std::move(parameters_), ecole::spawn_random_generator()} {}
 
 FileGenerator::FileGenerator() : FileGenerator{Parameters{}} {}
 
@@ -51,7 +51,7 @@ auto FileGenerator::next() -> scip::Model {
 	}
 
 	auto choice = std::uniform_int_distribution<std::size_t>{0, files_remaining - 1};
-	auto const idx = choice(random_engine);
+	auto const idx = choice(rng);
 
 	// files_remaining is not used in this case, it is only an alias for files.size().
 	if (parameters.sampling_mode == Parameters::SamplingMode::replace) {
@@ -67,7 +67,7 @@ auto FileGenerator::next() -> scip::Model {
 
 void FileGenerator::seed(Seed seed) {
 	reset_file_list();
-	random_engine.seed(seed);
+	rng.seed(seed);
 }
 
 auto FileGenerator::done() const -> bool {

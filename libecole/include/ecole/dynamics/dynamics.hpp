@@ -29,14 +29,14 @@ public:
 	/**
 	 * Set random elements of the dynamics for the current episode.
 	 */
-	virtual void set_dynamics_random_state(scip::Model& model, RandomEngine& random_engine) {
+	virtual void set_dynamics_random_state(scip::Model& model, RandomGenerator& rng) {
 		std::uniform_int_distribution<scip::Seed> seed_distrib{scip::min_seed, scip::max_seed};
 
 		model.set_param("randomization/permuteconss", true);
 		model.set_param("randomization/permutevars", true);
-		model.set_param("randomization/permutationseed", seed_distrib(random_engine));
-		model.set_param("randomization/randomseedshift", seed_distrib(random_engine));
-		model.set_param("randomization/lpseed", seed_distrib(random_engine));
+		model.set_param("randomization/permutationseed", seed_distrib(rng));
+		model.set_param("randomization/randomseedshift", seed_distrib(rng));
+		model.set_param("randomization/lpseed", seed_distrib(rng));
 	}
 
 	/**

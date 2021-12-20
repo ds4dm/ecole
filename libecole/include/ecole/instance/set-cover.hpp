@@ -17,9 +17,9 @@ public:
 		int max_coef = 100;         // NOLINT(readability-magic-numbers)
 	};
 
-	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomGenerator& rng);
 
-	ECOLE_EXPORT SetCoverGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT SetCoverGenerator(Parameters parameters, RandomGenerator rng);
 	ECOLE_EXPORT SetCoverGenerator(Parameters parameters);
 	ECOLE_EXPORT SetCoverGenerator();
 
@@ -30,7 +30,7 @@ public:
 	[[nodiscard]] ECOLE_EXPORT Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
-	RandomEngine random_engine;
+	RandomGenerator rng;
 	Parameters parameters;
 };
 

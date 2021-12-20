@@ -29,19 +29,17 @@ public:
 	 *
 	 * @param n_nodes The number of nodes in the graph generated.
 	 * @param edge_probability The probability that a given edge is added to the graph.
-	 * @param random_engine The random number generator used to sample edges.
+	 * @param rng The random number generator used to sample edges.
 	 */
-	ECOLE_EXPORT static auto erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngine& random_engine)
-		-> Graph;
+	ECOLE_EXPORT static auto erdos_renyi(std::size_t n_nodes, double edge_probability, RandomGenerator& rng) -> Graph;
 
 	/** Sample a new graph using Barabasi Albert algorithm.
 	 *
 	 * @param n_nodes The number of nodes in the graph generated.
 	 * @param affinity The number of nodes that each node is connected to.
-	 * @param random_engine The random number generator used to sample edges.
+	 * @param rng The random number generator used to sample edges.
 	 */
-	ECOLE_EXPORT static auto barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEngine& random_engine)
-		-> Graph;
+	ECOLE_EXPORT static auto barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomGenerator& rng) -> Graph;
 
 	/** Empty graph with only nodes */
 	Graph(std::size_t n_nodes) : edges{n_nodes} {}

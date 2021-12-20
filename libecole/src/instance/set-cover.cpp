@@ -18,18 +18,18 @@ namespace ecole::instance {
  *  SetCoverGenerator methods  *
  *************************************/
 
-SetCoverGenerator::SetCoverGenerator(Parameters parameters_, RandomEngine random_engine_) :
-	random_engine{random_engine_}, parameters{parameters_} {}
+SetCoverGenerator::SetCoverGenerator(Parameters parameters_, RandomGenerator rng_) :
+	rng{rng_}, parameters{parameters_} {}
 SetCoverGenerator::SetCoverGenerator(Parameters parameters_) :
-	SetCoverGenerator{parameters_, ecole::spawn_random_engine()} {}
+	SetCoverGenerator{parameters_, ecole::spawn_random_generator()} {}
 SetCoverGenerator::SetCoverGenerator() : SetCoverGenerator(Parameters{}) {}
 
 scip::Model SetCoverGenerator::next() {
-	return generate_instance(parameters, random_engine);
+	return generate_instance(parameters, rng);
 }
 
 void SetCoverGenerator::seed(Seed seed) {
-	random_engine.seed(seed);
+	rng.seed(seed);
 }
 
 namespace {
@@ -74,10 +74,9 @@ auto get_counts(xvector& indices, size_t n_cols) -> xvector {
  * Samples num_samples values in the range from start_index to
  * end_index.
  */
-auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_samples, RandomEngine& random_engine)
-	-> xvector {
+auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_samples, RandomGenerator& rng) -> xvector {
 	xvector choices = xt::arange<size_t>(start_index, end_index, 1);
-	xvector samples = xt::random::choice(choices, num_samples, false, random_engine);
+	xvector samples = xt::random::choice(choices, num_samples, false, rng);
 	return samples;
 }
 
@@ -169,7 +168,7 @@ auto convert_csc_to_csr(xvector& indices, xvector& indptr, size_t n_rows, size_t
  *  SetCoverGenerator::generate_instance  *
  ******************************************/
 
-scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
+scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomGenerator& rng) {
 
 	auto const n_rows = parameters.n_rows;
 	auto const n_cols = parameters.n_cols;
@@ -185,14 +184,14 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEn
 	set_slice(indices, first_indices, 0, 2 * n_cols);
 
 	// assign remaining column indexes at random
-	xvector samples = get_choice_in_range(0, n_cols * (n_rows - 2), nnzrs - (2 * n_cols), random_engine) % n_cols;
+	xvector samples = get_choice_in_range(0, n_cols * (n_rows - 2), nnzrs - (2 * n_cols), rng) % n_cols;
 	set_slice(indices, samples, 2 * n_cols, nnzrs);
 
 	// get counts of unique elements
 	auto col_n_rows = get_counts(indices, n_cols);
 
 	// ensure at least 1 column per row
-	auto perm = xt::random::permutation<size_t>(n_rows, random_engine);
+	auto perm = xt::random::permutation<size_t>(n_rows, rng);
 	set_slice(indices, perm, 0, n_rows);
 
 	size_t i = 0;
@@ -204,12 +203,12 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEn
 
 		if (i + n <= n_rows) {
 		} else if (i >= n_rows) {
-			xvector sampled_rows = get_choice_in_range(0, n_rows, n, random_engine);
+			xvector sampled_rows = get_choice_in_range(0, n_rows, n, rng);
 			set_slice(indices, sampled_rows, i, i + n);
 
 		} else if (i + n > n_rows) {
 			auto remaining_rows = xt::setdiff1d(xt::arange<size_t>(0, n_rows, 1), get_slice(indices, i, n_rows));
-			xvector choices = xt::random::choice(remaining_rows, i + n - n_rows, false, random_engine);
+			xvector choices = xt::random::choice(remaining_rows, i + n - n_rows, false, rng);
 			set_slice(indices, choices, n_rows, i + n);
 		}
 
@@ -222,7 +221,7 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomEn
 	auto [indptr_csr, indices_csr] = convert_csc_to_csr(indices, indptr, n_rows, n_cols);
 
 	// sample coefficients
-	xt::xtensor<SCIP_Real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, random_engine);
+	xt::xtensor<SCIP_Real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, rng);
 
 	// create scip model
 	auto model = scip::Model::prob_basic();

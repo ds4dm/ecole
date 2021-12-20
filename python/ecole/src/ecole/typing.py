@@ -29,20 +29,20 @@ class Dynamics(Protocol[Action, ActionSet]):
     """
 
     def set_dynamics_random_state(
-        self, model: ecole.scip.Model, random_engine: ecole.RandomEngine
+        self, model: ecole.scip.Model, rng: ecole.RandomGenerator
     ) -> None:
         """Set the random state of the episode.
 
         This method is called by :py:meth:`~ecole.environment.Environment.reset` to
         set all the random elements of the dynamics for the upcoming episode.
-        The random engine is kept between episodes in order to sample different episodes.
+        The random generator is kept between episodes in order to sample different episodes.
 
         Parameters
         ----------
         model:
             The SCIP model that will be used through the episode.
-        random_engine:
-            The random engine used by the environment from which random numbers can be extracted.
+        rng:
+            The random generator used by the environment from which random numbers can be extracted.
 
         """
         ...
@@ -277,24 +277,24 @@ class InformationFunction(DataFunction[Dict[str, Information]], Protocol[Informa
 class InstanceGenerator(Protocol):
     """A class to generate generate and iteratate over random problem instance.
 
-    The class combines a :py:class:`~ecole.RandomEngine` with the static function :py:meth:`generate_instance`
+    The class combines a :py:class:`~ecole.RandomGenerator` with the static function :py:meth:`generate_instance`
     to provide iterating capabilities.
     """
 
     @staticmethod
     def generate_instance(
-        *args: Any, random_engine: ecole.RandomEngine, **kwargs: Any
+        *args: Any, rng: ecole.RandomGenerator, **kwargs: Any
     ) -> ecole.scip.Model:
-        """Generate a problem instance using the random engine for any source of randomness."""
+        """Generate a problem instance using the random generator for any source of randomness."""
         ...
 
     @overload
-    def __init__(self, *args: Any, random_engine: ecole.RandomEngine, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, rng: ecole.RandomGenerator, **kwargs: Any) -> None:
         """Create an iterator with the given parameters and a copy of the random state."""
         ...
 
     def __next__(self) -> ecole.scip.Model:
-        """Generate a problem instance using the random engine of the class."""
+        """Generate a problem instance using the random generator of the class."""
         ...
 
     def __iter__(self) -> Iterator[ecole.scip.Model]:
@@ -302,5 +302,5 @@ class InstanceGenerator(Protocol):
         ...
 
     def seed(self, int) -> None:
-        """Seed the random engine of the class."""
+        """Seed the random generator of the class."""
         ...

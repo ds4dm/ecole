@@ -23,7 +23,7 @@ public:
 		SamplingMode sampling_mode = SamplingMode::remove_and_repeat;
 	};
 
-	ECOLE_EXPORT FileGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT FileGenerator(Parameters parameters, RandomGenerator rng);
 	ECOLE_EXPORT FileGenerator(Parameters parameters);
 	ECOLE_EXPORT FileGenerator();
 
@@ -34,7 +34,7 @@ public:
 	[[nodiscard]] ECOLE_EXPORT auto get_parameters() const noexcept -> Parameters const& { return parameters; }
 
 private:
-	RandomEngine random_engine;
+	RandomGenerator rng;
 	Parameters parameters;
 	std::vector<std::filesystem::path> files;
 	std::size_t files_remaining;

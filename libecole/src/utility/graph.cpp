@@ -64,7 +64,7 @@ void Graph::reserve(std::size_t degree) {
 	}
 }
 
-auto Graph::erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngine& random_engine) -> Graph {
+auto Graph::erdos_renyi(std::size_t n_nodes, double edge_probability, RandomGenerator& rng) -> Graph {
 	// Allocate adjacency lists for the expected approximate number of neighbors in an Erdos Renyi graph.
 	// Computed as the expectation of a Binomial.
 	auto graph = Graph{n_nodes};
@@ -75,7 +75,7 @@ auto Graph::erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngi
 	auto rand = std::uniform_real_distribution<double>{0.0, 1.0};
 	for (Node n1 = 0; n1 < n_nodes; ++n1) {
 		for (Node n2 = n1 + 1; n2 < n_nodes; ++n2) {
-			if (rand(random_engine) < edge_probability) {
+			if (rand(rng) < edge_probability) {
 				graph.add_edge({n1, n2});
 			}
 		}
@@ -84,7 +84,7 @@ auto Graph::erdos_renyi(std::size_t n_nodes, double edge_probability, RandomEngi
 	return graph;
 }
 
-auto Graph::barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEngine& random_engine) -> Graph {
+auto Graph::barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomGenerator& rng) -> Graph {
 	if (affinity < 1 || affinity >= n_nodes) {
 		throw std::invalid_argument{"Affinity must be between 1 and the number of nodes."};
 	}
@@ -109,7 +109,7 @@ auto Graph::barabasi_albert(std::size_t n_nodes, std::size_t affinity, RandomEng
 	// Other node grow the graph one by one
 	for (Node n = affinity + 1; n < n_nodes; ++n) {
 		// They are linked to `affinity` existing node with probability proportional to degree
-		for (auto neighbor : utility::arg_choice(affinity, get_degrees(n), random_engine)) {
+		for (auto neighbor : utility::arg_choice(affinity, get_degrees(n), rng)) {
 			graph.add_edge({n, neighbor});
 		}
 	}

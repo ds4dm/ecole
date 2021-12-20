@@ -54,7 +54,7 @@ public:
 	/**
 	 * Default construct everything and seed environment with random value.
 	 */
-	Environment() : the_random_engine(spawn_random_engine()) {}
+	Environment() : the_rng(spawn_random_generator()) {}
 
 	/**
 	 * Fully customize environment and seed environment with random value.
@@ -71,7 +71,7 @@ public:
 		the_observation_function(data::parse(std::move(observation_function))),
 		the_information_function(data::parse(std::move(information_function))),
 		the_scip_params(std::move(scip_params)),
-		the_random_engine(spawn_random_engine()) {}
+		the_rng(spawn_random_generator()) {}
 
 	/**
 	 * Set the random seed for the environment, hence making its internals deterministic.
@@ -84,7 +84,7 @@ public:
 	 * sequence of action taken are also unchanged), one has to seed the environment before
 	 * every call to reset.
 	 */
-	void seed(Seed new_seed) { random_engine().seed(new_seed); }
+	void seed(Seed new_seed) { rng().seed(new_seed); }
 
 	/**
 	 * Reset the environment to the initial state on the given problem instance.
@@ -109,7 +109,7 @@ public:
 			// Create clean new Model
 			model() = std::move(new_model);
 			model().set_params(scip_params());
-			dynamics().set_dynamics_random_state(model(), random_engine());
+			dynamics().set_dynamics_random_state(model(), rng());
 
 			// Reset data extraction function and bring model to initial state.
 			reward_function().before_reset(model());
@@ -197,7 +197,7 @@ public:
 	auto& reward_function() { return the_reward_function; }
 	auto& information_function() { return the_information_function; }
 	auto& scip_params() { return the_scip_params; }
-	auto& random_engine() { return the_random_engine; }
+	auto& rng() { return the_rng; }
 
 private:
 	Dynamics the_dynamics;
@@ -206,7 +206,7 @@ private:
 	ObservationFunction the_observation_function;
 	InformationFunction the_information_function;
 	std::map<std::string, scip::Param> the_scip_params;
-	RandomEngine the_random_engine;
+	RandomGenerator the_rng;
 	bool can_transition = false;
 
 	// extract reward, observation and information (in that order)

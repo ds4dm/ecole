@@ -1,6 +1,6 @@
 import sys
 
-from ecole.core import RandomEngine, seed, spawn_random_engine, Exception
+from ecole.core import RandomGenerator, seed, spawn_random_generator, Exception
 
 import ecole.version
 import ecole.data

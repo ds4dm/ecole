@@ -14,12 +14,12 @@ public:
 	virtual ~InstanceGenerator() = default;
 
 	/**
-	 * Generate new instance by partially consuming the internal random engine.
+	 * Generate new instance by partially consuming the internal random generator.
 	 */
 	ECOLE_EXPORT virtual scip::Model next() = 0;
 
 	/**
-	 * Seed the internal random engine.
+	 * Seed the internal random generator.
 	 */
 	ECOLE_EXPORT virtual void seed(Seed seed) = 0;
 

@@ -25,45 +25,45 @@ PYBIND11_MODULE(core, m) {
 
 	xt::import_numpy();
 
-	py::class_<RandomEngine>(m, "RandomEngine")  //
+	py::class_<RandomGenerator>(m, "RandomGenerator")  //
 		.def_property_readonly_static(
-			"min_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::min(); })
+			"min_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomGenerator::result_type>::min(); })
 		.def_property_readonly_static(
-			"max_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomEngine::result_type>::max(); })
+			"max_seed", [](py::object const& /* cls */) { return std::numeric_limits<RandomGenerator::result_type>::max(); })
 		.def(
-			py::init<RandomEngine::result_type>(),
-			py::arg("value") = RandomEngine::default_seed,
-			"Construct the pseudo-random number engine.")
+			py::init<RandomGenerator::result_type>(),
+			py::arg("value") = RandomGenerator::default_seed,
+			"Construct the pseudo-random number generator.")
 		.def(
 			"seed",
-			[](RandomEngine& self, RandomEngine::result_type value) { self.seed(value); },
-			py::arg("value") = RandomEngine::default_seed,
-			"Reinitialize the internal state of the random-number engine using new seed "
+			[](RandomGenerator& self, RandomGenerator::result_type value) { self.seed(value); },
+			py::arg("value") = RandomGenerator::default_seed,
+			"Reinitialize the internal state of the random-number generator using new seed "
 			"value.")
-		.def("discard", &RandomEngine::discard, py::arg("n"), R"(
+		.def("discard", &RandomGenerator::discard, py::arg("n"), R"(
 			Advance the internal state by n times.
 
 			Equivalent to calling operator() n times and discarding the result.
 		)")
-		.def("__call__", &RandomEngine::operator(), R"(
+		.def("__call__", &RandomGenerator::operator(), R"(
 			Generate a pseudo-random value.
 
-			The state of the engine is advanced by one position.
+			The state of the generator is advanced by one position.
 		)")
 		.def(py::self == py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
 		.def(py::self != py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
-		.def("__copy__", [](const RandomEngine& self) { return std::make_unique<RandomEngine>(self); })
+		.def("__copy__", [](const RandomGenerator& self) { return std::make_unique<RandomGenerator>(self); })
 		.def(
 			"__deepcopy__",
-			[](const RandomEngine& self, py::dict const& /* memo */) { return std::make_unique<RandomEngine>(self); },
+			[](const RandomGenerator& self, py::dict const& /* memo */) { return std::make_unique<RandomGenerator>(self); },
 			py::arg("memo"))
 		.def(py::pickle(
-			[](RandomEngine const& self) { return serialize(self); },
-			[](std::string const& data) { return std::make_unique<RandomEngine>(deserialize(data)); }));
+			[](RandomGenerator const& self) { return serialize(self); },
+			[](std::string const& data) { return std::make_unique<RandomGenerator>(deserialize(data)); }));
 
 	m.def("seed", &ecole::seed, py::arg("val"), "Seed the global source of randomness in Ecole.");
-	m.def("spawn_random_engine", &ecole::spawn_random_engine, R"(
-		Create new random engine deriving from global source of randomness.
+	m.def("spawn_random_generator", &ecole::spawn_random_generator, R"(
+		Create new random generator deriving from global source of randomness.
 
 		The global source of randomness is advance so two random engien created successively have different states.
 	)");

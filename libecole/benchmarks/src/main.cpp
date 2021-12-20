@@ -23,13 +23,13 @@ template <typename... Args, typename Func> void for_each(std::tuple<Args...>& t,
 	std::apply([&func](auto&&... t_elem) { ((func(std::forward<decltype(t_elem)>(t_elem))), ...); }, t);
 }
 
-void seed_model(ecole::scip::Model& model, ecole::RandomEngine& random_engine) {
+void seed_model(ecole::scip::Model& model, ecole::RandomGenerator& rng) {
 	std::uniform_int_distribution<ecole::scip::Seed> seed_distrib{ecole::scip::min_seed, ecole::scip::max_seed};
 	model.set_param("randomization/permuteconss", true);
 	model.set_param("randomization/permutevars", true);
-	model.set_param("randomization/permutationseed", seed_distrib(random_engine));
-	model.set_param("randomization/randomseedshift", seed_distrib(random_engine));
-	model.set_param("randomization/lpseed", seed_distrib(random_engine));
+	model.set_param("randomization/permutationseed", seed_distrib(rng));
+	model.set_param("randomization/randomseedshift", seed_distrib(rng));
+	model.set_param("randomization/lpseed", seed_distrib(rng));
 }
 
 /** The generators used to benchmark branching dynamics. */
@@ -49,7 +49,7 @@ auto benchmark_branching(std::size_t n_instances, std::size_t n_nodes) {
 		IndependentSetGenerator{{1000, GraphType::erdos_renyi}},  // NOLINT(readability-magic-numbers)
 		IndependentSetGenerator{{1500, GraphType::erdos_renyi}},  // NOLINT(readability-magic-numbers)
 	};
-	auto random_engine = ecole::spawn_random_engine();
+	auto rng = ecole::spawn_random_generator();
 
 	std::cout << BranchingResult::csv_title() << '\n';
 	for (std::size_t i = 0; i < n_instances; ++i) {
@@ -59,7 +59,7 @@ auto benchmark_branching(std::size_t n_instances, std::size_t n_nodes) {
 				model.disable_presolve();
 				model.disable_cuts();
 				model.set_param("limits/totalnodes", n_nodes);
-				seed_model(model, random_engine);
+				seed_model(model, rng);
 				std::cout << benchmark_branching(model).csv() << '\n';
 			} catch (std::exception const& e) {
 				std::cerr << "Error when benchmarking an instance: " << e.what() << '\n';

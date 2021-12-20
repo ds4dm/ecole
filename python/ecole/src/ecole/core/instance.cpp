@@ -122,7 +122,7 @@ void bind_submodule(py::module const& m) {
 		max_coef:
 			Maximum objective coefficient.
 			The value must be greater than one.
-		random_engine:
+		rng:
 			The random number generator used to peform all sampling.
 
 		References
@@ -181,7 +181,7 @@ void bind_submodule(py::module const& m) {
 			The number of nodes each new node will be attached to, in the sampling scheme.
 			This parameter must be an integer >= 1.
 			This parameter will only be used if ``graph_type == "barabasi_albert"``.
-		random_engine:
+		rng:
 			The random number generator used to peform all sampling.
 
 		References
@@ -257,7 +257,7 @@ void bind_submodule(py::module const& m) {
 			Determines if the bid prices should be integral.
 		warnings:
 			Determines if warnings should be printed when invalid bundles are skipped in instance generation.
-		random_engine:
+		rng:
 			The random number generator used to peform all sampling.
 
 		References
@@ -323,7 +323,7 @@ void bind_submodule(py::module const& m) {
 			The second terms in the fixed costs for opening facilities are sampled independently as uniform integers
 			in this interval [lower, upper[ multiplied by the square root of their capacity prior to scaling.
 			This second term reflects the economies of scale.
-		random_engine:
+		rng:
 			The random number generator used to peform all sampling.
 
 		References
@@ -358,14 +358,14 @@ void def_generate_instance_impl(PyClass& py_class, char const* docstring, Member
 	py_class.def_static(
 		"generate_instance",
 		// Get the type of each parameter and add it to the Python function parameters
-		[](utility::return_t<decltype(members.value)>... params, RandomEngine& random_engine) {
+		[](utility::return_t<decltype(members.value)>... params, RandomGenerator& rng) {
 			// Call the C++ static function with a Parameter struct
-			return Generator::generate_instance(Parameters{params...}, random_engine);
+			return Generator::generate_instance(Parameters{params...}, rng);
 		},
 		// Set name for all function parameters.
 		// Fetch default value on the default parameters
 		(py::arg(members.name) = std::invoke(members.value, default_params))...,
-		py::arg("random_engine"),
+		py::arg("rng"),
 		py::call_guard<py::gil_scoped_release>(),
 		docstring);
 }
@@ -394,18 +394,18 @@ void def_init_impl(PyClass& py_class, char const* docstring, Members&&... member
 	// Bind a constructor that takes as input all parameters
 	py_class.def(
 		// Get the type of each parameter and add it to the Python constructor
-		py::init([](utility::return_t<decltype(members.value)>... params, RandomEngine const* random_engine) {
+		py::init([](utility::return_t<decltype(members.value)>... params, RandomGenerator const* rng) {
 			// Dispatch to the C++ constructors with a Parameter struct
-			if (random_engine == nullptr) {
+			if (rng == nullptr) {
 				return std::make_unique<Generator>(Parameters{params...});
 			}
-			return std::make_unique<Generator>(Parameters{params...}, *random_engine);
+			return std::make_unique<Generator>(Parameters{params...}, *rng);
 		}),
 		// Set name for all constructor parameters.
 		// Fetch default value on the default parameters
 		(py::arg(members.name) = std::invoke(members.value, default_params))...,
 		// None as nullptr are allowed
-		py::arg("random_engine").none(true) = py::none(),
+		py::arg("rng").none(true) = py::none(),
 		docstring);
 }
 

@@ -99,10 +99,10 @@ a problem type at random, and returns it.
 
    def CombineGenerators(*generators):
        # A random state for choice
-       random_engine = random.Random()
+       rng = random.Random()
        while True:
            # Randomly pick a generator
-           gen = random_engine.choice(generators)
+           gen = rng.choice(generators)
            # And yield the instance it generates
            yield next(gen)
 
@@ -115,16 +115,16 @@ could be written as follows.
    class CombinedGenerator:
        def __init__(self, *generators):
            self.generators = generators
-           self.random_engine = random.Random()
+           self.rng = random.Random()
 
        def __next__(self):
-           return next(self.random_engine.choice(self.generators))
+           return next(self.rng.choice(self.generators))
 
        def __iter__(self):
            return self
 
        def seed(self, val):
-           self.random_engine.seed(val)
+           self.rng.seed(val)
            for gen in self.generators:
                gen.seed(val)
 
@@ -133,7 +133,7 @@ Generator with Random Parameters
 The provided instance generators have fixed hyperparameters, but to increase variability it might be desirable to randomly vary them as well.
 
 This can be without creating various :py:class:`~ecole.typing.InstanceGenerator` objects by using a generator's
-:py:meth:`~ecole.typing.InstanceGenerator.generate_instance` static method, and manually pass a :py:class:`~ecole.RandomEngine`.
+:py:meth:`~ecole.typing.InstanceGenerator.generate_instance` static method, and manually pass a :py:class:`~ecole.RandomGenerator`.
 For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
 :py:class:`~ecole.instance.SetCoverGenerator`, one could use
 
@@ -148,24 +148,24 @@ For instance, to randomly choose the ``n_cols`` and ``n_rows`` parameters from
            self.n_cols_range = n_cols_range
            self.n_rows_range = n_rows_range
            # A Python random state for randint
-           self.py_random_engine = random.Random()
+           self.py_rng = random.Random()
            # An Ecole random state to pass to generating functions
            # This function returns a random state whose seed depends on Ecole global random state
-           self.ecole_random_engine = ecole.spawn_random_engine()
+           self.ecole_rng = ecole.spawn_random_generator()
 
        def __next__(self):
            return ecole.instance.SetCoverGenerator(
-               n_cols=self.py_random_engine.randint(*self.n_cols_range),
-               n_rows=self.py_random_engine.randint(*self.n_rows_range),
-               random_engine=self.ecole_random_engine,
+               n_cols=self.py_rng.randint(*self.n_cols_range),
+               n_rows=self.py_rng.randint(*self.n_rows_range),
+               rng=self.ecole_rng,
            )
 
        def __iter__(self):
            return self
 
        def seed(self, val):
-           self.py_random_engine.seed(val)
-           self.ecole_random_engine.seed(val)
+           self.py_rng.seed(val)
+           self.ecole_rng.seed(val)
 
 
-See :ref:`the discussion on seeding<seeding-discussion>` for an explanation of :py:func:`ecole.spawn_random_engine`.
+See :ref:`the discussion on seeding<seeding-discussion>` for an explanation of :py:func:`ecole.spawn_random_generator`.

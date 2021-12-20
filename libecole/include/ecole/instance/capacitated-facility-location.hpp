@@ -22,9 +22,9 @@ public:
 		std::pair<int, int> fixed_cost_scale_interval = {100, 110 + 1};  // NOLINT(readability-magic-numbers)
 	};
 
-	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomGenerator& rng);
 
-	ECOLE_EXPORT CapacitatedFacilityLocationGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT CapacitatedFacilityLocationGenerator(Parameters parameters, RandomGenerator rng);
 	ECOLE_EXPORT CapacitatedFacilityLocationGenerator(Parameters parameters);
 	ECOLE_EXPORT CapacitatedFacilityLocationGenerator();
 
@@ -35,7 +35,7 @@ public:
 	[[nodiscard]] ECOLE_EXPORT Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
-	RandomEngine random_engine;
+	RandomGenerator rng;
 	Parameters parameters;
 };
 

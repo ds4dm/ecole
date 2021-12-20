@@ -25,18 +25,18 @@ using Graph = ecole::utility::Graph;
  *  IndependentSetGenerator methods  *
  *************************************/
 
-IndependentSetGenerator::IndependentSetGenerator(Parameters parameters_, RandomEngine random_engine_) :
-	random_engine{random_engine_}, parameters{parameters_} {}
+IndependentSetGenerator::IndependentSetGenerator(Parameters parameters_, RandomGenerator rng_) :
+	rng{rng_}, parameters{parameters_} {}
 IndependentSetGenerator::IndependentSetGenerator(Parameters parameters_) :
-	IndependentSetGenerator{parameters_, ecole::spawn_random_engine()} {}
+	IndependentSetGenerator{parameters_, ecole::spawn_random_generator()} {}
 IndependentSetGenerator::IndependentSetGenerator() : IndependentSetGenerator(Parameters{}) {}
 
 scip::Model IndependentSetGenerator::next() {
-	return generate_instance(parameters, random_engine);
+	return generate_instance(parameters, rng);
 }
 
 void IndependentSetGenerator::seed(Seed seed) {
-	random_engine.seed(seed);
+	rng.seed(seed);
 }
 
 /************************************************
@@ -46,12 +46,12 @@ void IndependentSetGenerator::seed(Seed seed) {
 namespace {
 
 /** Make a graph according to the IndependentSetGenerator parameters specifications. */
-auto make_graph(IndependentSetGenerator::Parameters parameters, RandomEngine& random_engine) -> Graph {
+auto make_graph(IndependentSetGenerator::Parameters parameters, RandomGenerator& rng) -> Graph {
 	switch (parameters.graph_type) {
 	case IndependentSetGenerator::Parameters::GraphType::erdos_renyi:
-		return Graph::erdos_renyi(parameters.n_nodes, parameters.edge_probability, random_engine);
+		return Graph::erdos_renyi(parameters.n_nodes, parameters.edge_probability, rng);
 	case IndependentSetGenerator::Parameters::GraphType::barabasi_albert:
-		return Graph::barabasi_albert(parameters.n_nodes, parameters.affinity, random_engine);
+		return Graph::barabasi_albert(parameters.n_nodes, parameters.affinity, rng);
 	default:
 		assert(false);  // All enum value should be handled
 		// Non void return for optimized build
@@ -139,8 +139,8 @@ private:
 
 }  // namespace
 
-scip::Model IndependentSetGenerator::generate_instance(Parameters parameters, RandomEngine& random_engine) {
-	auto const graph = make_graph(parameters, random_engine);
+scip::Model IndependentSetGenerator::generate_instance(Parameters parameters, RandomGenerator& rng) {
+	auto const graph = make_graph(parameters, rng);
 	auto model = scip::Model::prob_basic();
 	model.set_name(fmt::format("IndependentSet-{}", parameters.n_nodes));
 	auto* const scip = model.get_scip_ptr();

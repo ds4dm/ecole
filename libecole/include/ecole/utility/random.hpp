@@ -34,11 +34,11 @@ namespace ecole::utility {
  * @tparam T Type of the weights is used to make computation.
  * @param n_samples Number of items to sample without replacement.
  * @param weights The weights of each items (implicty their index).
- * @param random_engine The source of randomness used to sample.
+ * @param rng The source of randomness used to sample.
  * @return A vector of the n_samples items selected as their index in the weights vector.
  */
-template <typename T, typename RandomEngine>
-auto arg_choice(std::size_t n_samples, std::vector<T> weights, RandomEngine& random_engine) {
+template <typename T, typename RandomGenerator>
+auto arg_choice(std::size_t n_samples, std::vector<T> weights, RandomGenerator& rng) {
 	static_assert(std::is_floating_point_v<T>, "Weights must be real numbers.");
 
 	auto const n_items = weights.size();
@@ -49,7 +49,7 @@ auto arg_choice(std::size_t n_samples, std::vector<T> weights, RandomEngine& ran
 	// Compute (modified) keys as weight/randexp(1) reusing weights vector.
 	auto randexp = std::exponential_distribution<T>{1.};
 	for (auto& w : weights) {
-		w /= randexp(random_engine);
+		w /= randexp(rng);
 	}
 
 	// Sort an array of indices using -keys[i] as comparing value.

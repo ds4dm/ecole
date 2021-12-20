@@ -18,22 +18,22 @@ auto same_problem_permutation(scip::Model const& model1, scip::Model const& mode
 template <typename Generator> void unit_tests(Generator&& generator) {
 	using Parameters = typename Generator::Parameters;
 
-	SECTION("Generate instance consume random engine") {
+	SECTION("Generate instance consume random generator") {
 		// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
-		auto const original_random_engine = RandomEngine{};
-		auto random_engine = original_random_engine;
-		auto model = Generator::generate_instance(Parameters{}, random_engine);
+		auto const original_rng = RandomGenerator{};
+		auto rng = original_rng;
+		auto model = Generator::generate_instance(Parameters{}, rng);
 		STATIC_REQUIRE(std::is_same_v<decltype(model), scip::Model>);
-		REQUIRE(random_engine != original_random_engine);
+		REQUIRE(rng != original_rng);
 	}
 
 	SECTION("Has default constructor") { Generator{}; }
 
 	SECTION("Has parameter constructor") { Generator{Parameters{}}; }
 
-	SECTION("Has parameter and random engine constructor") {
+	SECTION("Has parameter and random generator constructor") {
 		// NOLINTNEXTLINE(cert-msc32-c, cert-msc51-cpp) We want reproducible in tests
-		Generator{Parameters{}, RandomEngine{}};
+		Generator{Parameters{}, RandomGenerator{}};
 	}
 
 	SECTION("Generate instances in loop") {

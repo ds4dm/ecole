@@ -25,20 +25,20 @@ namespace ecole::instance {
 
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
 	CapacitatedFacilityLocationGenerator::Parameters parameters_,
-	RandomEngine random_engine_) :
-	random_engine{random_engine_}, parameters{std::move(parameters_)} {}
+	RandomGenerator rng_) :
+	rng{rng_}, parameters{std::move(parameters_)} {}
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator(
 	CapacitatedFacilityLocationGenerator::Parameters parameters_) :
-	CapacitatedFacilityLocationGenerator{parameters_, ecole::spawn_random_engine()} {}
+	CapacitatedFacilityLocationGenerator{parameters_, ecole::spawn_random_generator()} {}
 CapacitatedFacilityLocationGenerator::CapacitatedFacilityLocationGenerator() :
 	CapacitatedFacilityLocationGenerator(Parameters{}) {}
 
 scip::Model CapacitatedFacilityLocationGenerator::next() {
-	return generate_instance(parameters, random_engine);
+	return generate_instance(parameters, rng);
 }
 
 void CapacitatedFacilityLocationGenerator::seed(Seed seed) {
-	random_engine.seed(seed);
+	rng.seed(seed);
 }
 
 /*************************************************************
@@ -55,12 +55,9 @@ using xmatrix = xt::xtensor<value_type, 2>;
  *
  * The costs are sampled per unit of demand, as described in Cornuejols et al. (1991).
  */
-auto unit_transportation_costs(std::size_t n_customers, std::size_t n_facilities, RandomEngine& random_engine)
-	-> xmatrix {
+auto unit_transportation_costs(std::size_t n_customers, std::size_t n_facilities, RandomGenerator& rng) -> xmatrix {
 	// To sample a random matrix. Explicit casting in return type to avoid xtensor lazy numer generation.
-	auto rand = [&random_engine](auto n, auto m) -> xmatrix {
-		return xt::random::rand<value_type>({n, m}, 0., 1., random_engine);
-	};
+	auto rand = [&rng](auto n, auto m) -> xmatrix { return xt::random::rand<value_type>({n, m}, 0., 1., rng); };
 
 	auto constexpr scaling = value_type{10.};
 	auto costs = scaling * xt::sqrt(
@@ -221,13 +218,13 @@ auto add_tightening_cons(
 
 scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 	CapacitatedFacilityLocationGenerator::Parameters parameters,
-	RandomEngine& random_engine) {
+	RandomGenerator& rng) {
 
 	// Sample 1D integers array in the given interval (xtensor lazy).
 	// We sample as integer as it is generally preferred by integer programming reseachers.
 	// The usual argument is that one can turn everything into integer with appropriate scaling (rational data).
-	auto randint = [&random_engine](std::size_t n, auto interval) {
-		return xt::random::randint({n}, interval.first, interval.second, random_engine);
+	auto randint = [&rng](std::size_t n, auto interval) {
+		return xt::random::randint({n}, interval.first, interval.second, rng);
 	};
 
 	// Customer demand
@@ -240,7 +237,7 @@ scip::Model CapacitatedFacilityLocationGenerator::generate_instance(
 		randint(parameters.n_facilities, parameters.fixed_cost_cste_interval));
 	// transport costs from facility to customers
 	auto const transportation_costs = static_cast<xmatrix>(
-		unit_transportation_costs(parameters.n_customers, parameters.n_facilities, random_engine) *
+		unit_transportation_costs(parameters.n_customers, parameters.n_facilities, rng) *
 		xt::view(demands, xt::all(), xt::newaxis()));
 
 	// Scale capacities according to ratio after sampling as stated in Cornuejols et al. (1991).

@@ -54,7 +54,7 @@ class Environment:
         self.model = None
         self.dynamics = self.__Dynamics__(**dynamics_kwargs)
         self.can_transition = False
-        self.random_engine = ecole.spawn_random_engine()
+        self.rng = ecole.spawn_random_generator()
 
     def reset(self, instance, *dynamics_args, **dynamics_kwargs):
         """Start a new episode.
@@ -107,7 +107,7 @@ class Environment:
                 self.model = ecole.core.scip.Model.from_file(instance)
             self.model.set_params(self.scip_params)
 
-            self.dynamics.set_dynamics_random_state(self.model, self.random_engine)
+            self.dynamics.set_dynamics_random_state(self.model, self.rng)
 
             # Reset data extraction functions
             self.reward_function.before_reset(self.model)
@@ -198,14 +198,14 @@ class Environment:
     def seed(self, value: int) -> None:
         """Set the random seed of the environment.
 
-        The random seed is used to seed the environment :py:class:`~ecole.RandomEngine`.
-        At every call to :py:meth:`reset`, the random engine is used to create new seeds
+        The random seed is used to seed the environment :py:class:`~ecole.RandomGenerator`.
+        At every call to :py:meth:`reset`, the random generator is used to create new seeds
         for the solver.
         Setting the seed once will ensure determinism for the next trajectories.
-        By default, the random engine is initialized by the
+        By default, the random generator is initialized by the
         `random <https://docs.python.org/library/random.html>`_ module.
         """
-        self.random_engine.seed(value)
+        self.rng.seed(value)
 
 
 class Branching(Environment):

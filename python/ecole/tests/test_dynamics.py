@@ -48,10 +48,10 @@ class DynamicsUnitTests:
             self.dynamics.step_dynamics(model, self.bad_policy(action_set))
 
     def test_set_random_state(self, model):
-        """Random engine is consumed."""
-        random_engine = ecole.RandomEngine(33)
-        self.dynamics.set_dynamics_random_state(model, random_engine)
-        assert random_engine != ecole.RandomEngine(33)
+        """Random generator is consumed."""
+        rng = ecole.RandomGenerator(33)
+        self.dynamics.set_dynamics_random_state(model, rng)
+        assert rng != ecole.RandomGenerator(33)
 
 
 class TestBranching(DynamicsUnitTests):

@@ -44,10 +44,10 @@ def test_step_error(model):
 
 
 def test_seed():
-    """Random engine is consumed."""
+    """Random generator is consumed."""
     env = MockEnvironment()
     env.seed(33)
-    assert env.random_engine == ecole.RandomEngine(33)
+    assert env.rng == ecole.RandomGenerator(33)
 
 
 def test_scip_params(model):

@@ -19,9 +19,9 @@ public:
 		std::size_t affinity = 4;        // NOLINT(readability-magic-numbers)
 	};
 
-	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomEngine& random_engine);
+	ECOLE_EXPORT static scip::Model generate_instance(Parameters parameters, RandomGenerator& rng);
 
-	ECOLE_EXPORT IndependentSetGenerator(Parameters parameters, RandomEngine random_engine);
+	ECOLE_EXPORT IndependentSetGenerator(Parameters parameters, RandomGenerator rng);
 	ECOLE_EXPORT IndependentSetGenerator(Parameters parameters);
 	ECOLE_EXPORT IndependentSetGenerator();
 
@@ -32,7 +32,7 @@ public:
 	[[nodiscard]] ECOLE_EXPORT Parameters const& get_parameters() const noexcept { return parameters; }
 
 private:
-	RandomEngine random_engine;
+	RandomGenerator rng;
 	Parameters parameters;
 };
 

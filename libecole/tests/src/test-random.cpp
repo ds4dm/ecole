@@ -4,31 +4,31 @@
 
 using namespace ecole;
 
-TEST_CASE("Same seed give same random engines", "[random]") {
+TEST_CASE("Same seed give same random generators", "[random]") {
 	ecole::seed(0);
-	auto random_engine_1 = ecole::spawn_random_engine();
+	auto rng_1 = ecole::spawn_random_generator();
 	ecole::seed(0);
-	auto random_engine_2 = ecole::spawn_random_engine();
-	REQUIRE(random_engine_1 == random_engine_2);
+	auto rng_2 = ecole::spawn_random_generator();
+	REQUIRE(rng_1 == rng_2);
 }
 
-TEST_CASE("Different seed give different random engines", "[random]") {
+TEST_CASE("Different seed give different random generators", "[random]") {
 	ecole::seed(0);
-	auto random_engine_1 = ecole::spawn_random_engine();
+	auto rng_1 = ecole::spawn_random_generator();
 	ecole::seed(1);
-	auto random_engine_2 = ecole::spawn_random_engine();
-	REQUIRE(random_engine_1 != random_engine_2);
+	auto rng_2 = ecole::spawn_random_generator();
+	REQUIRE(rng_1 != rng_2);
 }
 
-TEST_CASE("Successive random engines are different", "[random]") {
-	auto random_engine_1 = ecole::spawn_random_engine();
-	auto random_engine_2 = ecole::spawn_random_engine();
-	REQUIRE(random_engine_1 != random_engine_2);
+TEST_CASE("Successive random generators are different", "[random]") {
+	auto rng_1 = ecole::spawn_random_generator();
+	auto rng_2 = ecole::spawn_random_generator();
+	REQUIRE(rng_1 != rng_2);
 }
 
-TEST_CASE("Random engine serialization", "[random]") {
-	auto const engine = RandomEngine{42};  // NOLINT This is deterministic for the test
-	auto const data = serialize(engine);
-	auto const engine_copy = deserialize(data);
-	REQUIRE(engine == engine_copy);
+TEST_CASE("Random generator serialization", "[random]") {
+	auto const rng = RandomGenerator{42};  // NOLINT This is deterministic for the test
+	auto const data = serialize(rng);
+	auto const rng_copy = deserialize(data);
+	REQUIRE(rng == rng_copy);
 }

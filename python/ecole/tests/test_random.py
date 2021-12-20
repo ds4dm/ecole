@@ -4,57 +4,57 @@ import pickle
 import ecole
 
 
-def test_RandomEngine():
-    """Test bindings of the RandomEngine."""
-    assert ecole.RandomEngine.min_seed < ecole.RandomEngine.max_seed
-    random_engine = ecole.RandomEngine(42)
-    rand_val_1 = random_engine()
+def test_RandomGenerator():
+    """Test bindings of the RandomGenerator."""
+    assert ecole.RandomGenerator.min_seed < ecole.RandomGenerator.max_seed
+    rng = ecole.RandomGenerator(42)
+    rand_val_1 = rng()
     assert isinstance(rand_val_1, int)
 
-    random_engine.seed(42)
-    rand_val_2 = random_engine()
+    rng.seed(42)
+    rand_val_2 = rng()
     assert rand_val_1 == rand_val_2
 
 
-def test_RandomEngine_copy():
-    """Copy create a new RandomEngine with same state."""
-    random_engine = ecole.RandomEngine(42)
+def test_RandomGenerator_copy():
+    """Copy create a new RandomGenerator with same state."""
+    rng = ecole.RandomGenerator(42)
 
-    random_engine_copy = copy.copy(random_engine)
-    assert random_engine_copy == random_engine
-    assert random_engine_copy is not random_engine
+    rng_copy = copy.copy(rng)
+    assert rng_copy == rng
+    assert rng_copy is not rng
 
-    random_engine_deepcopy = copy.deepcopy(random_engine)
-    assert random_engine_deepcopy == random_engine
-    assert random_engine_deepcopy is not random_engine
+    rng_deepcopy = copy.deepcopy(rng)
+    assert rng_deepcopy == rng
+    assert rng_deepcopy is not rng
 
 
-def test_RandomEngine_pickle():
-    """Pickle preserve the state of the RandomEngine."""
-    random_engine = ecole.RandomEngine(42)
-    assert random_engine == pickle.loads(pickle.dumps(random_engine))
+def test_RandomGenerator_pickle():
+    """Pickle preserve the state of the RandomGenerator."""
+    rng = ecole.RandomGenerator(42)
+    assert rng == pickle.loads(pickle.dumps(rng))
 
 
 def test_same_seed():
-    """Same seed give same random engines."""
+    """Same seed give same random generators."""
     ecole.seed(0)
-    random_engine_1 = ecole.spawn_random_engine()
+    rng_1 = ecole.spawn_random_generator()
     ecole.seed(0)
-    random_engine_2 = ecole.spawn_random_engine()
-    assert random_engine_1 == random_engine_2
+    rng_2 = ecole.spawn_random_generator()
+    assert rng_1 == rng_2
 
 
 def test_differen_seed():
-    """Different seeds give different random engines."""
+    """Different seeds give different random generators."""
     ecole.seed(0)
-    random_engine_1 = ecole.spawn_random_engine()
+    rng_1 = ecole.spawn_random_generator()
     ecole.seed(2)
-    random_engine_2 = ecole.spawn_random_engine()
-    assert random_engine_1 != random_engine_2
+    rng_2 = ecole.spawn_random_generator()
+    assert rng_1 != rng_2
 
 
-def test_spawn_engine():
-    """Successive random engines are different"""
-    random_engine_1 = ecole.spawn_random_engine()
-    random_engine_2 = ecole.spawn_random_engine()
-    assert random_engine_1 != random_engine_2
+def test_spawn_generator():
+    """Successive random generators are different"""
+    rng_1 = ecole.spawn_random_generator()
+    rng_2 = ecole.spawn_random_generator()
+    assert rng_1 != rng_2
