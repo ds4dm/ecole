@@ -179,7 +179,7 @@ namespace internal {
 /**
  * Safely cast between various type, throwing an exception when impossible.
  */
-template <typename To, typename From> auto cast(From val) -> To {
+template <typename To, typename From> auto cast([[maybe_unused]] From val) -> To {
 	if constexpr (std::is_pointer_v<From> && std::is_same_v<To, bool>) {
 		// Fallthrough to error. Don't convert pointers to bool.
 	} else if constexpr (utility::is_narrow_castable_v<From, To>) {
