@@ -86,7 +86,7 @@ Building from source requires:
 
 Other Options
 ^^^^^^^^^^^^^
-Checkout the `installation instructions <https://doc.ecole.ai/master/installation.html>`_ in the
+Checkout the `installation instructions <https://doc.ecole.ai/py/en/stable/>`_ in the
 documentation for more installation options.
 
 Related Projects
