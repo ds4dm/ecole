@@ -94,10 +94,12 @@ void bind_submodule(py::module_ const& m) {
 	)")
 			.def_auto_copy()
 			.def_auto_pickle(std::array{"variable_features", "row_features", "edge_features"})
-			.def_readwrite_xtensor(
-				"variable_features",
-				&NodeBipartiteObs::variable_features,
-				"A matrix where each row is represents a variable, and each column a feature of the variables.")
+			.def_readwrite_xtensor("variable_features", &NodeBipartiteObs::variable_features, R"rst(
+					A matrix where each row is represents a variable, and each column a feature of the variables.
+
+					Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+					hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
+				)rst")
 			.def_readwrite_xtensor(
 				"row_features",
 				&NodeBipartiteObs::row_features,
@@ -169,10 +171,12 @@ void bind_submodule(py::module_ const& m) {
 	)")
 			.def_auto_copy()
 			.def_auto_pickle(std::array{"variable_features", "constraint_features", "edge_features"})
-			.def_readwrite_xtensor(
-				"variable_features",
-				&MilpBipartiteObs::variable_features,
-				"A matrix where each row represents a variable, and each column a feature of the variables.")
+			.def_readwrite_xtensor("variable_features", &MilpBipartiteObs::variable_features, R"rst(
+					A matrix where each row is represents a variable, and each column a feature of the variables.
+
+					Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+					hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
+				)rst")
 			.def_readwrite_xtensor(
 				"constraint_features",
 				&MilpBipartiteObs::constraint_features,
@@ -219,11 +223,13 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation obtains scores for all LP or pseudo candidate variables at a
 		branch-and-bound node.
-		The strong branching score measures the quality of branching for each variable.
+		The strong branching score measures the quality of branching for each variable (higher is better).
 		This observation can be used as an expert for imitation learning algorithms.
 
 		This observation function extracts an array containing the strong branching score for
-		each variable in the problem which can be indexed by the action set.
+		each variable in the problem.
+		Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+		hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 		Variables for which a strong branching score is not applicable are filled with ``NaN``.
 	)");
 	strong_branching_scores.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
@@ -233,25 +239,26 @@ void bind_submodule(py::module_ const& m) {
 		----------
 		pseudo_candidates :
 			The parameter determines if strong branching scores are computed for
-			psuedo-candidate variables if true or LP canidate variables if false.
-			By default psuedo-candidates will be computed.
+			pseudo-candidate variables if true or LP candiate variables if false.
 	)");
 	def_before_reset(strong_branching_scores, R"(Do nothing.)");
 	def_extract(strong_branching_scores, "Extract an array containing strong branching scores.");
 
 	// Pseudocosts observation
 	auto pseudocosts = py::class_<Pseudocosts>(m, "Pseudocosts", R"(
-		Pseudocosts observation function on branch-and bound node.
+		Pseudocosts observation function on branch-and-bound nodes.
 
 		This observation obtains pseudocosts for all LP fractional candidate variables at a
-		branch-and-bound node.  The pseudocost is a cheap approximation to the strong branching
-		score and measures the quality of branching for each variable.  This observation can be used
-		as a practical branching strategy by always branching on the variable with the highest
-		pseudocost, although in practice is it not as efficient as SCIP's default strategy, reliability
-		pseudocost branching (also known as hybrid branching).
+		branch-and-bound node.
+		The pseudocost is a cheap approximation to the strong branching
+		score and measures the quality of branching for each variable.
+		This observation can be used as a practical branching strategy by always branching on the
+		variable with the highest pseudocost, although in practice is it not as efficient as SCIP's
+		default strategy, reliability pseudocost branching (also known as hybrid branching).
 
-		This observation function extracts an array containing the pseudocost for
-		each variable in the problem which can be indexed by the action set.
+		This observation function extracts an array containing the pseudocost for each variable in the problem.
+		Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+		hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 		Variables for which a pseudocost is not applicable are filled with ``NaN``.
 	)");
 	pseudocosts.def(py::init<>());
@@ -259,33 +266,34 @@ void bind_submodule(py::module_ const& m) {
 	def_extract(pseudocosts, "Extract an array containing pseudocosts.");
 
 	// Khalil observation
-	auto khalil2016_obs =
-		ecole::python::auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
+	auto khalil2016_obs = ecole::python::auto_class<Khalil2016Obs>(m, "Khalil2016Obs", R"(
 		Branching candidates features from Khalil et al. (2016).
 
 		The observation is a matrix where rows represent all variables and columns represent features related
 		to these variables.
-		Only rows representing pseudo branching candidate contain meaningful observation, other rows are filled
-		with ``NaN``.
 		See [Khalil2016]_ for a complete reference on this observation function.
-
-		The first :py:attr:`Khalil2016Obs.n_static_features` are static (they do not change through the solving
-		process), and the remaining :py:attr:`Khalil2016Obs.n_dynamic_features` dynamic.
 
 		.. [Khalil2016]
 			Khalil, Elias Boutros, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina.
 			"`Learning to branch in mixed integer programming.
 			<https://dl.acm.org/doi/10.5555/3015812.3015920>`_"
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
-	)")
-			.def_auto_copy()
-			.def_auto_pickle(std::array{"features"})
-			.def_readwrite_xtensor(
-				"features",
-				&Khalil2016Obs::features,
-				"A matrix where each row represents a variable, and each column a feature of the variables.")
-			.def_readonly_static("n_static_features", &Khalil2016Obs::n_static_features)
-			.def_readonly_static("n_dynamic_features", &Khalil2016Obs::n_dynamic_features);
+	)");
+	khalil2016_obs.def_auto_copy()
+		.def_auto_pickle(std::array{"features"})
+		.def_readwrite_xtensor("features", &Khalil2016Obs::features, R"rst(
+			A matrix where each row represents a variable, and each column a feature of the variables.
+
+			Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+			hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
+			Variables for which the features are not applicable are filled with ``NaN``.
+
+			The first :py:attr:`Khalil2016Obs.n_static_features` features columns are static (they do not
+			change through the solving process), and the remaining :py:attr:`Khalil2016Obs.n_dynamic_features`
+			are dynamic.
+		)rst")
+		.def_readonly_static("n_static_features", &Khalil2016Obs::n_static_features)
+		.def_readonly_static("n_dynamic_features", &Khalil2016Obs::n_dynamic_features);
 
 	py::enum_<Khalil2016Obs::Features>(khalil2016_obs, "Features")
 		.value("obj_coef", Khalil2016Obs::Features::obj_coef)
@@ -390,10 +398,10 @@ void bind_submodule(py::module_ const& m) {
 			"`Sequential model-based optimization for general algorithm configuration.
 			<https://doi.org/10.1007/978-3-642-25566-3_40>`_"
 			*International Conference on Learning and Intelligent Optimization*. 2011.
-	)")
-											.def_auto_copy()
-											.def_auto_pickle(std::array{"features"})
-											.def_readwrite_xtensor("features", &Hutter2011Obs::features, "A vector of instance features.");
+	)");
+	hutter_obs.def_auto_copy()
+		.def_auto_pickle(std::array{"features"})
+		.def_readwrite_xtensor("features", &Hutter2011Obs::features, "A vector of instance features.");
 
 	py::enum_<Hutter2011Obs::Features>(hutter_obs, "Features")
 		.value("nb_variables", Hutter2011Obs::Features::nb_variables)

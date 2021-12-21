@@ -87,7 +87,11 @@ void bind_submodule(pybind11::module_ const& m) {
 						Whether the instance is solved.
 						This can happen without branching, for instance if the instance is solved during presolving.
 					action_set:
-						List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
+						List of indices of branching candidates variables.
+						Available candidates depend on parameters in :py:meth:`__init__`.
+						Variables indices (values in the ``action_set``) are their postion in the original problem
+						(``SCIPvarGetProbindex``).
+						Variables ordering in the ``action_set`` is arbitrary.
 			)")
 			.def_step_dynamics(R"(
 				Branch and resume solving until next branching.
@@ -109,7 +113,11 @@ void bind_submodule(pybind11::module_ const& m) {
 					done:
 						Whether the instance is solved.
 					action_set:
-						List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
+						List of indices of branching candidates variables.
+						Available candidates depend on parameters in :py:meth:`__init__`.
+						Variables indices (values in the ``action_set``) are their postion in the original problem
+						(``SCIPvarGetProbindex``).
+						Variables ordering in the ``action_set`` is arbitrary.
 					)")
 			.def_set_dynamics_random_state(R"(
 				Set seeds on the :py:class:`~ecole.scip.Model`.
