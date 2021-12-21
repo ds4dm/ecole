@@ -51,7 +51,7 @@ def test_from_pyscipopt_ownership():
 def test_from_pyscipopt_no_ownership(model):
     """Fail to convert if PyScipOpt does not have ownership."""
     pyscipopt_model = model.as_pyscipopt()
-    with pytest.raises(ecole.scip.Exception):
+    with pytest.raises(ecole.scip.ScipError):
         ecole.scip.Model.from_pyscipopt(pyscipopt_model)
 
 
@@ -88,7 +88,7 @@ def test_stage(model):
 
 
 def test_exception(model):
-    with pytest.raises(ecole.scip.Exception):
+    with pytest.raises(ecole.scip.ScipError):
         model.get_param("not_a_param")
 
 

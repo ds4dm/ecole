@@ -239,7 +239,7 @@ auto get_constraint_coefs(SCIP* const scip, SCIP_CONS* const constraint)
 	if (constraint_data.has_value()) {  // Constraint must be linear
 		return constraint_data.value();
 	}
-	throw Exception(fmt::format(
+	throw ScipError(fmt::format(
 		"Constraint {} cannot be expressed as a single linear constraint (type \"{}\"), MilpBipartite observation "
 		"cannot be extracted.",
 		SCIPconsGetPos(constraint),

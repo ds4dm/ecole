@@ -16,7 +16,7 @@ namespace py = pybind11;
 void bind_submodule(py::module_ const& m) {
 	m.doc() = "Scip wrappers for ecole.";
 
-	py::register_exception<scip::Exception>(m, "Exception");
+	py::register_exception<scip::ScipError>(m, "ScipError");
 
 	py::enum_<SCIP_STAGE>{m, "Stage"}
 		.value("Init", SCIP_STAGE_INIT)
@@ -44,9 +44,9 @@ void bind_submodule(py::module_ const& m) {
 					py::capsule cap = pyscipopt_model.attr("to_ptr")(py::arg("give_ownership") = true);
 					std::unique_ptr<SCIP, ScipDeleter> uptr = nullptr;
 					uptr.reset(reinterpret_cast<SCIP*>(py::cast<void*>(cap)));
-					return Model(std::make_unique<Scimpl>(std::move(uptr)));
+					return Model{std::make_unique<Scimpl>(std::move(uptr))};
 				}
-				throw scip::Exception("Cannot create an Ecole Model from a non-owning PyScipOpt pointer.");
+				throw scip::ScipError{"Cannot create an Ecole Model from a non-owning PyScipOpt pointer."};
 			},
 			// Keep the scip::Model (owner of the pointer) at least until the PyScipOpt model
 			// is alive, as PyScipOpt is now sharing a non-owning pointer.

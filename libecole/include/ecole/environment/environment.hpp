@@ -168,7 +168,7 @@ public:
 	auto step(Action const& action, Args&&... args)
 		-> std::tuple<OptionalObservation, ActionSet, Reward, bool, InformationMap> {
 		if (!can_transition) {
-			throw Exception("Environment need to be reset.");
+			throw MarkovError{"Environment need to be reset."};
 		}
 		try {
 			// Transition the environment to the next state
