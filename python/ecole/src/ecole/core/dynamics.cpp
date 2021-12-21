@@ -101,6 +101,8 @@ void bind_submodule(pybind11::module_ const& m) {
 						The state of the Markov Decision Process. Passed by the environment.
 					action:
 						The index the LP column of the variable to branch on. One element of the action set.
+						If an explicity ``None`` is passed, then default SCIP branching is used, that is, the next
+						branching rule is used fetch by SCIP according to their priorities.
 
 				Returns
 				-------
