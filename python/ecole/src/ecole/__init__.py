@@ -1,6 +1,6 @@
 import sys
 
-from ecole.core import RandomGenerator, seed, spawn_random_generator, Exception
+from ecole.core import RandomGenerator, seed, spawn_random_generator, MarkovError
 
 import ecole.version
 import ecole.data

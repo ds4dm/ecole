@@ -39,7 +39,7 @@ def test_step(model):
 def test_step_error(model):
     """Step without reset."""
     env = MockEnvironment()
-    with pytest.raises(ecole.Exception):
+    with pytest.raises(ecole.MarkovError):
         env.step("some action")
 
 

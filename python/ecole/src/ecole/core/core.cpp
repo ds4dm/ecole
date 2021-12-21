@@ -68,7 +68,7 @@ PYBIND11_MODULE(core, m) {
 		The global source of randomness is advance so two random engien created successively have different states.
 	)");
 
-	py::register_exception<ecole::Exception>(m, "Exception");
+	py::register_exception<ecole::MarkovError>(m, "MarkovError");
 	py::register_exception<ecole::IteratorExhausted>(m, "IteratorExhausted", PyExc_StopIteration);
 
 	version::bind_submodule(m.def_submodule("version"));
