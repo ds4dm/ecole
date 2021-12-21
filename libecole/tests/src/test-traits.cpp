@@ -3,41 +3,127 @@
 #include <catch2/catch.hpp>
 
 #include "ecole/environment/configuring.hpp"
-#include "ecole/information/nothing.hpp"
-#include "ecole/observation/nothing.hpp"
-#include "ecole/reward/constant.hpp"
+#include "ecole/information/abstract.hpp"
+#include "ecole/reward/abstract.hpp"
 #include "ecole/traits.hpp"
 
 using namespace ecole;
 
 #define STATIC_REQUIRE_SAME(A, B) STATIC_REQUIRE(std::is_same_v<A, B>)
 
-TEST_CASE("Detect if reward function", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_reward_function_v<reward::Constant>); }
+TEST_CASE("Test Data functions traits", "[trait]") {
+	SECTION("Succeed with ref to Model") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> double;
+		};
+		STATIC_REQUIRE(trait::is_data_function_v<Func>);
+	}
 
-	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<ecole::NoneType>);
-		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<observation::Nothing>);
-		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<environment::Configuring<>>);
+	SECTION("Succeed with const ref to Model") {
+		struct Func {
+			auto before_reset(scip::Model const&) -> void;
+			auto extract(scip::Model const&, bool) -> double;
+		};
+		STATIC_REQUIRE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when missing before_reset") {
+		struct Func {
+			auto extract(scip::Model&, bool) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when before_reset takes Model by value") {
+		struct Func {
+			auto before_reset(scip::Model) -> void;
+			auto extract(scip::Model&, bool) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when before_reset returns non void") {
+		struct Func {
+			auto before_reset(scip::Model&) -> double;
+			auto extract(scip::Model&, bool) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when missing extract") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when extract takes Model by value") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model, bool) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when missing parameter in extract") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when extra parameter in extract") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool, int) -> double;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
+	}
+
+	SECTION("Fail when extract returns void") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> void;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_data_function_v<Func>);
 	}
 }
 
-TEST_CASE("Detect if observation function", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_observation_function_v<observation::Nothing>); }
+TEST_CASE("Test Reward functions traits", "[trait]") {
+	SECTION("Succeed with double data") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> reward::Reward;
+		};
+		STATIC_REQUIRE(trait::is_reward_function_v<Func>);
+	}
 
-	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<ecole::NoneType>);
-		STATIC_REQUIRE_FALSE(trait::is_observation_function_v<environment::Configuring<>>);
+	SECTION("Fail with non Reward data") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> int;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_reward_function_v<Func>);
 	}
 }
 
-TEST_CASE("Detect if information function", "[trait]") {
-	SECTION("Positive tests") { STATIC_REQUIRE(trait::is_information_function_v<information::Nothing>); }
+TEST_CASE("Test Information functions traits", "[trait]") {
+	SECTION("Succeed with information map") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> information::InformationMap<double>;
+		};
+		STATIC_REQUIRE(trait::is_information_function_v<Func>);
+	}
 
-	SECTION("Negative tests") {
-		STATIC_REQUIRE_FALSE(trait::is_information_function_v<ecole::NoneType>);
-		STATIC_REQUIRE_FALSE(trait::is_information_function_v<observation::Nothing>);
-		STATIC_REQUIRE_FALSE(trait::is_information_function_v<environment::Configuring<>>);
+	SECTION("Fail with non infomation map") {
+		struct Func {
+			auto before_reset(scip::Model&) -> void;
+			auto extract(scip::Model&, bool) -> int;
+		};
+		STATIC_REQUIRE_FALSE(trait::is_information_function_v<Func>);
 	}
 }
 

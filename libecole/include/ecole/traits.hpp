@@ -13,23 +13,50 @@ namespace ecole::trait {
  *  Detection of data functions  *
  *********************************/
 
+/**
+ *  Check that a type is a reward.
+ */
 template <typename T> using is_reward = std::is_same<T, reward::Reward>;
 template <typename T> inline constexpr bool is_reward_v = is_reward<T>::value;
 
+/**
+ *  Check that a type is an information map.
+ */
 template <typename T> struct is_information_map : std::false_type {};
 template <typename I> struct is_information_map<information::InformationMap<I>> : std::true_type {};
 template <typename T> inline constexpr bool is_information_map_v = is_information_map<T>::value;
 
 namespace internal {
 
-template <typename, typename = std::void_t<>> struct has_before_reset : std::false_type {};
-template <typename T> struct has_before_reset<T, std::void_t<decltype(&T::before_reset)>> : std::true_type {};
+/**
+ * Check that a type has a `before_reset` member function.
+ *
+ * The type must have member function with the signature compatible with
+ * `auto before_reset(scip::Model&) -> void;`.
+ */
+template <typename, typename = void> struct has_before_reset : std::false_type {};
+template <typename T>
+struct has_before_reset<
+	T,
+	std::enable_if_t<std::is_void_v<decltype(std::declval<T>().before_reset(std::declval<scip::Model&>()))>>> :
+	std::true_type {};
+template <typename T> inline constexpr bool has_before_reset_v = has_before_reset<T>::value;
 
-template <typename, typename = std::void_t<>> struct has_extract : std::false_type {};
-template <typename T> struct has_extract<T, std::void_t<decltype(&T::extract)>> : std::true_type {};
+/**
+ * Check that a type has an `extract` member function.
+ *
+ * The type must have member function with the signature compatible with
+ * `auto extract(scip::Model&, bool) -> Data;`.
+ * where `Data` is not `void`.
+ */
+template <typename, typename = void> struct has_extract : std::false_type {};
+template <typename T>
+struct has_extract<
+	T,
+	std::enable_if_t<!std::is_void_v<decltype(std::declval<T>().extract(std::declval<scip::Model&>(), true))>>> :
+	std::true_type {};
 
-template <typename, template <typename> typename, typename = std::void_t<>>
-struct extract_return_is : std::false_type {};
+template <typename, template <typename> typename, typename = void> struct extract_return_is : std::false_type {};
 template <typename T, template <typename> typename Pred>
 struct extract_return_is<T, Pred, std::void_t<decltype(&T::extract)>> :
 	Pred<utility::return_t<decltype(&T::extract)>> {};
@@ -58,7 +85,7 @@ template <typename T> inline constexpr bool is_information_function_v = is_infor
 
 namespace internal {
 
-template <typename, typename = std::void_t<>> struct has_template_step : std::false_type {};
+template <typename, typename = void> struct has_template_step : std::false_type {};
 template <typename T> struct has_template_step<T, std::void_t<decltype(&T::template step<>)>> : std::true_type {};
 template <typename T> inline constexpr bool has_template_step_v = has_template_step<T>::value;
 
@@ -72,7 +99,7 @@ template <typename T> inline constexpr bool is_environment_v = internal::has_tem
 
 namespace internal {
 
-template <typename, typename = std::void_t<>> struct has_step_dynamics : std::false_type {};
+template <typename, typename = void> struct has_step_dynamics : std::false_type {};
 template <typename T> struct has_step_dynamics<T, std::void_t<decltype(&T::step_dynamics)>> : std::true_type {};
 template <typename T> inline constexpr bool has_step_dynamics_v = has_step_dynamics<T>::value;
 

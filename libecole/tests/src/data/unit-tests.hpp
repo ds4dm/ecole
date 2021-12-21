@@ -1,13 +1,19 @@
 #pragma once
 
+#include <type_traits>
+
 #include <catch2/catch.hpp>
+
+#include "ecole/traits.hpp"
 
 #include "conftest.hpp"
 
 namespace ecole::data {
 
 template <typename DataFunc> void unit_tests(DataFunc&& data_func) {
-	SECTION("has default constructor") { DataFunc{}; }
+	SECTION("Interface is valid") { STATIC_REQUIRE(trait::is_data_function_v<DataFunc>); };
+
+	SECTION("has default constructor") { STATIC_REQUIRE(std::is_default_constructible_v<DataFunc>); }
 
 	SECTION("before_reset, before_reset, and delete") {
 		auto model = get_model();
