@@ -95,9 +95,9 @@ void bind_submodule(py::module_ const& m) {
 			.def_auto_copy()
 			.def_auto_pickle(std::array{"variable_features", "row_features", "edge_features"})
 			.def_readwrite_xtensor("variable_features", &NodeBipartiteObs::variable_features, R"rst(
-					A matrix where each row is represents a variable, and each column a feature of the variables.
+					A matrix where each row represents a variable, and each column a feature of the variable.
 
-					Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+					Variables are ordered according to their position in the original problem (``SCIPvarGetProbindex``),
 					hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 				)rst")
 			.def_readwrite_xtensor(
@@ -172,9 +172,9 @@ void bind_submodule(py::module_ const& m) {
 			.def_auto_copy()
 			.def_auto_pickle(std::array{"variable_features", "constraint_features", "edge_features"})
 			.def_readwrite_xtensor("variable_features", &MilpBipartiteObs::variable_features, R"rst(
-					A matrix where each row is represents a variable, and each column a feature of the variables.
+					A matrix where each row represents a variable, and each column a feature of the variable.
 
-					Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+					Variables are ordered according to their position in the original problem (``SCIPvarGetProbindex``),
 					hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 				)rst")
 			.def_readwrite_xtensor(
@@ -223,12 +223,12 @@ void bind_submodule(py::module_ const& m) {
 
 		This observation obtains scores for all LP or pseudo candidate variables at a
 		branch-and-bound node.
-		The strong branching score measures the quality of branching for each variable (higher is better).
+		The strong branching score measures the quality of each variable for branching (higher is better).
 		This observation can be used as an expert for imitation learning algorithms.
 
 		This observation function extracts an array containing the strong branching score for
 		each variable in the problem.
-		Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+		Variables are ordered according to their position in the original problem (``SCIPvarGetProbindex``),
 		hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 		Variables for which a strong branching score is not applicable are filled with ``NaN``.
 	)");
@@ -239,7 +239,7 @@ void bind_submodule(py::module_ const& m) {
 		----------
 		pseudo_candidates :
 			The parameter determines if strong branching scores are computed for
-			pseudo-candidate variables if true or LP candiate variables if false.
+			pseudo candidate variables (when true) or LP candidate variables (when false).
 	)");
 	def_before_reset(strong_branching_scores, R"(Do nothing.)");
 	def_extract(strong_branching_scores, "Extract an array containing strong branching scores.");
@@ -257,7 +257,7 @@ void bind_submodule(py::module_ const& m) {
 		default strategy, reliability pseudocost branching (also known as hybrid branching).
 
 		This observation function extracts an array containing the pseudocost for each variable in the problem.
-		Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+		Variables are ordered according to their position in the original problem (``SCIPvarGetProbindex``),
 		hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 		Variables for which a pseudocost is not applicable are filled with ``NaN``.
 	)");
@@ -282,9 +282,9 @@ void bind_submodule(py::module_ const& m) {
 	khalil2016_obs.def_auto_copy()
 		.def_auto_pickle(std::array{"features"})
 		.def_readwrite_xtensor("features", &Khalil2016Obs::features, R"rst(
-			A matrix where each row represents a variable, and each column a feature of the variables.
+			A matrix where each row represents a variable, and each column a feature of the variable.
 
-			Variables are ordered according to their postion in the original problem (``SCIPvarGetProbindex``),
+			Variables are ordered according to their position in the original problem (``SCIPvarGetProbindex``),
 			hence they can be indexed by the :py:class:`~ecole.environment.Branching` environment ``action_set``.
 			Variables for which the features are not applicable are filled with ``NaN``.
 

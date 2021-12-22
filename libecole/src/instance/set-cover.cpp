@@ -80,7 +80,7 @@ auto get_choice_in_range(size_t start_index, size_t end_index, size_t num_sample
 	return samples;
 }
 
-/** Adds a varaible to the SCIP Model.
+/** Adds a variable to the SCIP Model.
  *
  * Adds a single binary variable with a specified cost.
  */
@@ -92,7 +92,7 @@ auto add_var(SCIP* scip, size_t idx, SCIP_Real cost) -> SCIP_VAR* {
 	return var_ptr;
 }
 
-/** Adds all varaibles to the SCIP Model.
+/** Adds all variables to the SCIP Model.
  *
  * A variable is added for each element (or column) in the
  * set cover problem.

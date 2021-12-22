@@ -87,11 +87,11 @@ void bind_submodule(pybind11::module_ const& m) {
 						Whether the instance is solved.
 						This can happen without branching, for instance if the instance is solved during presolving.
 					action_set:
-						List of indices of branching candidates variables.
+						List of indices of branching candidate variables.
 						Available candidates depend on parameters in :py:meth:`__init__`.
-						Variables indices (values in the ``action_set``) are their postion in the original problem
+						Variable indices (values in the ``action_set``) are their position in the original problem
 						(``SCIPvarGetProbindex``).
-						Variables ordering in the ``action_set`` is arbitrary.
+						Variable ordering in the ``action_set`` is arbitrary.
 			)")
 			.def_step_dynamics(R"(
 				Branch and resume solving until next branching.
@@ -113,9 +113,9 @@ void bind_submodule(pybind11::module_ const& m) {
 					done:
 						Whether the instance is solved.
 					action_set:
-						List of indices of branching candidates variables.
+						List of indices of branching candidate variables.
 						Available candidates depend on parameters in :py:meth:`__init__`.
-						Variables indices (values in the ``action_set``) are their postion in the original problem
+						Variable indices (values in the ``action_set``) are their position in the original problem
 						(``SCIPvarGetProbindex``).
 						Variables ordering in the ``action_set`` is arbitrary.
 					)")

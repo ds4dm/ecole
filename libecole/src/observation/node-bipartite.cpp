@@ -100,7 +100,7 @@ template <typename E> constexpr auto idx(E e) {
 template <typename Features>
 void set_static_features_for_var(Features&& out, SCIP_VAR* const var, value_type obj_norm) {
 	out[idx(VariableFeatures::objective)] = SCIPvarGetObj(var) / obj_norm;
-	// On-hot enconding of varaible type
+	// On-hot enconding of variable type
 	out[idx(VariableFeatures::is_type_binary)] = 0.;
 	out[idx(VariableFeatures::is_type_integer)] = 0.;
 	out[idx(VariableFeatures::is_type_implicit_integer)] = 0.;

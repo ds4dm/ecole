@@ -50,7 +50,7 @@ TEST_CASE("Instances generated are independent set instances", "[instance]") {
 	}
 
 	SECTION("Each edge is used in only one constraint") {
-		// Count each edge between two varaible in the constraints. Basically an adjacency list with counts.
+		// Count each edge between two variable in the constraints. Basically an adjacency list with counts.
 		auto edge_counts = std::map<SCIP_VAR const*, std::map<SCIP_VAR const*, std::size_t>>{};
 		for (auto* const cons : model.constraints()) {
 			auto const vars = scip::get_vars_linear(scip_ptr, cons);
