@@ -17,7 +17,7 @@ public:
 
 	auto before_reset(scip::Model& /*model*/) -> void {}
 
-	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<xt::xtensor<double, 1>>;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) const -> std::optional<xt::xtensor<double, 1>>;
 
 private:
 	bool pseudo_candidates;

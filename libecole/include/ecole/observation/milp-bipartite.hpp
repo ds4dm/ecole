@@ -42,7 +42,7 @@ public:
 
 	auto before_reset(scip::Model& /*model*/) -> void {}
 
-	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<MilpBipartiteObs>;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) const -> std::optional<MilpBipartiteObs>;
 
 private:
 	bool normalize = false;

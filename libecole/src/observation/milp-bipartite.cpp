@@ -133,7 +133,7 @@ template <typename T> auto vec_to_col(xt::xtensor<T, 1>&& t) -> xt::xtensor<T, 2
  *  Observation extracting function  *
  *************************************/
 
-auto MilpBipartite::extract(scip::Model& model, bool /* done */) -> std::optional<MilpBipartiteObs> {
+auto MilpBipartite::extract(scip::Model& model, bool /* done */) const -> std::optional<MilpBipartiteObs> {
 	if (model.stage() < SCIP_STAGE_SOLVING) {
 		auto [edge_features, constraint_features] = scip::get_all_constraints(model.get_scip_ptr(), normalize);
 
