@@ -1,16 +1,20 @@
-#include "ecole/data/abstract.hpp"
+
+namespace ecole::scip {
+class Model;
+}
 
 namespace ecole::data {
 
 /** Dummy data function to monitor what is happening. */
-template <typename T> struct MockFunction : DataFunction<T> {
+template <typename T> struct MockFunction {
 	T val;
 
 	MockFunction() = default;
 	MockFunction(T val_) : val{val_} {}
 
-	void before_reset(scip::Model& /* model */) override { ++val; };
-	T extract(scip::Model& /* model */, bool /* done */) override { return val; }
+	auto before_reset(scip::Model const& /* model */) -> void { ++val; };
+
+	[[nodiscard]] auto extract(scip::Model const& /* model */, bool /* done */) const -> T { return val; }
 };
 
 using IntDataFunc = MockFunction<int>;

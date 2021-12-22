@@ -26,7 +26,7 @@ template <typename DataFunc> void unit_tests(DataFunc&& data_func) {
 		data_func.before_reset(model);
 		advance_to_stage(model, SCIP_STAGE_SOLVING);
 		auto const done = GENERATE(true, false);
-		data_func.extract(model, done);
+		[[maybe_unused]] auto const data = data_func.extract(model, done);
 	}
 }
 
