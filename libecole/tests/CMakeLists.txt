@@ -32,6 +32,7 @@ add_executable(
 	src/data/test-multiary.cpp
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
+	src/data/test-dynamic.cpp
 
 	src/reward/test-lp-iterations.cpp
 	src/reward/test-is-done.cpp
