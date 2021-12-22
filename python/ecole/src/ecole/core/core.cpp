@@ -2,11 +2,13 @@
 
 #include <limits>
 #include <memory>
+#include <string_view>
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <xtensor-python/pytensor.hpp>
 
+#include "ecole/default.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/random.hpp"
 
@@ -67,6 +69,17 @@ PYBIND11_MODULE(core, m) {
 
 		The global source of randomness is advance so two random engien created successively have different states.
 	)");
+
+	py::class_<ecole::DefaultType>(m, "DefaultType")
+		.def(py::self == py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(py::self != py::self)  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def(
+			"__eq__",
+			[](DefaultType /*self*/, std::string_view s) { return (s == std::string_view{"Default"}); },
+			py::is_operator())  // NOLINT(misc-redundant-expression)  pybind specific syntax
+		.def("__repr__", [](ecole::DefaultType /*self*/) { return "Default"; });
+
+	m.attr("Default") = ecole::Default;
 
 	py::register_exception<ecole::MarkovError>(m, "MarkovError");
 	py::register_exception<ecole::IteratorExhausted>(m, "IteratorExhausted", PyExc_StopIteration);

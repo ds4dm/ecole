@@ -37,10 +37,10 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 	return {false, action_set(model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(scip::Model& model, std::optional<std::size_t> const& maybe_var_idx)
+auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_t> const& maybe_var_idx)
 	-> std::tuple<bool, ActionSet> {
-	if (maybe_var_idx.has_value()) {
-		auto const var_idx = maybe_var_idx.value();
+	if (std::holds_alternative<std::size_t>(maybe_var_idx)) {
+		auto const var_idx = std::get<std::size_t>(maybe_var_idx);
 		auto const vars = model.variables();
 		// Error handling
 		if (var_idx >= vars.size()) {

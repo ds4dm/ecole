@@ -1,5 +1,6 @@
 import numbers
 
+import ecole
 from ecole.core.data import *
 
 
@@ -22,7 +23,7 @@ def parse(something, default):
         A data extraction function to be used as an information, observation, or sometimes reward function.
 
     """
-    if something == "default":
+    if something == ecole.Default:
         if default is None:
             raise ValueError("""Cannot parse "default" without a default value.""")
         return parse(default, None)
