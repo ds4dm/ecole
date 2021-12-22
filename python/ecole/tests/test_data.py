@@ -74,13 +74,19 @@ def test_parse_None():
 def test_parse_default():
     """Default return default."""
     default_func = mock.MagicMock()
-    assert ecole.data.parse("default", default_func) == default_func
+    assert ecole.data.parse(ecole.Default, default_func) == default_func
+
+
+def test_parse_default_str():
+    """Default return default."""
+    default_func = mock.MagicMock()
+    assert ecole.data.parse("Default", default_func) == default_func
 
 
 def test_parse_self_reference():
     """Default can not be used in the default function."""
     with pytest.raises(ValueError):
-        ecole.data.parse("default", "default")
+        ecole.data.parse(ecole.Default, ecole.Default)
 
 
 def test_parse_number():
@@ -105,7 +111,7 @@ def test_parse_recursive(model):
     aggregate = {
         "name1": mock.MagicMock(),
         "name2": (mock.MagicMock(), None, 1),
-        "name3": "default",
+        "name3": "Default",
     }
     default_func = mock.MagicMock()
     default_func.extract.return_value == mock.MagicMock()
@@ -125,7 +131,7 @@ def test_parse_recursive_default(model):
         "name1": mock.MagicMock(),
         "name2": (mock.MagicMock(), None, 1),
     }
-    func = ecole.data.parse("default", aggregate)
+    func = ecole.data.parse("Default", aggregate)
     # Using the extract method to inspect the recusive parsing since Vector, Map, Constant functions are private.
     data = func.extract(model, False)
     assert isinstance(data, dict)

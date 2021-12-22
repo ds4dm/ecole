@@ -59,7 +59,7 @@ TEST_CASE("BranchingDynamics functional tests", "[dynamics]") {
 	SECTION("Provides default branching") {
 		auto [done, _] = dyn.reset_dynamics(model);
 		while (!done) {
-			std::tie(done, _) = dyn.step_dynamics(model, {});
+			std::tie(done, _) = dyn.step_dynamics(model, ecole::Default);
 		}
 		REQUIRE(model.is_solved());
 	}

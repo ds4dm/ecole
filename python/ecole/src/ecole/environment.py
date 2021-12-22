@@ -17,9 +17,9 @@ class Environment:
 
     def __init__(
         self,
-        observation_function="default",
-        reward_function="default",
-        information_function="default",
+        observation_function=ecole.Default,
+        reward_function=ecole.Default,
+        information_function=ecole.Default,
         scip_params=None,
         **dynamics_kwargs
     ) -> None:

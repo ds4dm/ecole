@@ -12,8 +12,8 @@ namespace ecole {
  * of the observation.
  */
 struct ECOLE_EXPORT NoneType {
-	constexpr bool operator==(NoneType const& /*unused*/) const { return true; }
-	constexpr bool operator!=(NoneType const& /*unused*/) const { return false; }
+	constexpr bool operator==(NoneType /*unused*/) const { return true; }
+	constexpr bool operator!=(NoneType /*unused*/) const { return false; }
 };
 
 /**

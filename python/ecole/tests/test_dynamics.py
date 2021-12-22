@@ -74,6 +74,12 @@ class TestBranching(DynamicsUnitTests):
         self.dynamics = ecole.dynamics.BranchingDynamics(False)
 
 
+class TestBranchingDefault(TestBranching):
+    @staticmethod
+    def policy(action_set):
+        return ecole.Default
+
+
 class TestBranching_Pseudocandidate(TestBranching):
     def setup_method(self, method):
         self.dynamics = ecole.dynamics.BranchingDynamics(True)
