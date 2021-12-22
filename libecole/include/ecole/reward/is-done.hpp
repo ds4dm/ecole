@@ -5,9 +5,10 @@
 
 namespace ecole::reward {
 
-class ECOLE_EXPORT IsDone : public RewardFunction {
+class ECOLE_EXPORT IsDone {
 public:
-	ECOLE_EXPORT Reward extract(scip::Model& model, bool done = false) override;
+	auto before_reset(scip::Model& /*model*/) -> void {}
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done = false) -> Reward;
 };
 
 }  // namespace ecole::reward

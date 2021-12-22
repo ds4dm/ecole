@@ -28,7 +28,7 @@ template <typename RewardFunc> void unit_tests(RewardFunc&& reward_func) {
 		auto model = get_model();
 		reward_func.before_reset(model);
 		advance_to_stage(model, SCIP_STAGE_SOLVING);
-		reward_func.extract(model, done);
+		[[maybe_unused]] auto const reward = reward_func.extract(model, done);
 	}
 }
 
