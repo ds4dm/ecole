@@ -36,11 +36,13 @@ public:
 	utility::coo_matrix<value_type> edge_features;
 };
 
-class ECOLE_EXPORT MilpBipartite : public ObservationFunction<std::optional<MilpBipartiteObs>> {
+class ECOLE_EXPORT MilpBipartite {
 public:
 	MilpBipartite(bool normalize_ = false) : normalize{normalize_} {}
 
-	ECOLE_EXPORT std::optional<MilpBipartiteObs> extract(scip::Model& model, bool done) override;
+	auto before_reset(scip::Model& /*model*/) -> void {}
+
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<MilpBipartiteObs>;
 
 private:
 	bool normalize = false;
