@@ -1,7 +1,4 @@
-
-namespace ecole::scip {
-class Model;
-}
+#include "ecole/data/abstract.hpp"
 
 namespace ecole::data {
 

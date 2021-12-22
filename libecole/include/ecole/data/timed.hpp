@@ -3,11 +3,8 @@
 #include <chrono>
 #include <utility>
 
+#include "ecole/data/abstract.hpp"
 #include "ecole/utility/chrono.hpp"
-
-namespace ecole::scip {
-class Model;
-}
 
 namespace ecole::data {
 

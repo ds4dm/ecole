@@ -2,9 +2,7 @@
 
 #include <utility>
 
-namespace ecole::scip {
-class Model;
-}
+#include "ecole/reward/abstract.hpp"
 
 namespace ecole::data {
 

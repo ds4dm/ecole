@@ -5,11 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "ecole/data/abstract.hpp"
 #include "ecole/traits.hpp"
-
-namespace ecole::scip {
-class Model;
-}
 
 namespace ecole::data {
 

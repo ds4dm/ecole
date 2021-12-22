@@ -1,10 +1,7 @@
 #pragma once
 
+#include "ecole/data/abstract.hpp"
 #include "ecole/none.hpp"
-
-namespace ecole::scip {
-class Model;
-}
 
 namespace ecole::data {
 
