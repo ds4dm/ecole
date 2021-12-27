@@ -86,14 +86,32 @@ auto arg_choice_without_replacement(std::size_t n_samples, xvector<double> weigh
 	return indices;
 }
 
+/** Gets compats indexed by bundle_masked. */
+auto get_compats_masked(xvector<std::size_t> const& bundle_mask, xmatrix<double> const& compats) {
+
+	auto c0 = xt::eval(xt::row(compats, 0));
+	auto c1 = xt::eval(xt::row(compats, 1));
+	auto compats_masked = xt::eval(compats);
+	for (std::size_t i = 0; i < bundle_mask.size(); ++i) {
+		auto c = xt::row(compats_masked, static_cast<long int>(i));
+		if (bundle_mask[i] == 0) {
+			c = c0;
+		} else {
+			c = c1;
+		}
+	}
+	return compats_masked;
+}
+
 /** Choose the next item to be added to the bundle/sub-bundle. */
 auto choose_next_item(
 	xvector<std::size_t> const& bundle_mask,
 	xvector<double> const& interests,
 	xmatrix<double> const& compats,
 	RandomGenerator& rng) {
-	auto const compats_masked = xt::index_view(compats, bundle_mask);
-	auto const compats_masked_mean = xt::sum(compats_masked, 0);
+
+	auto const compats_masked = get_compats_masked(bundle_mask, compats);
+	auto const compats_masked_mean = xt::mean(compats_masked, 0);
 	auto const probs = xt::eval((1 - bundle_mask) * interests * compats_masked_mean);
 	return arg_choice_without_replacement(1, probs, rng)(0);
 }
@@ -448,8 +466,8 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 	std::vector<Bundle> bids_per_item{parameters.n_items + n_dummy_items};
 	std::size_t i = 0;
 	for (auto const& [bundle, _] : bids) {
-		for (auto j : bundle) {
-			bids_per_item[j].push_back(i);
+		for (auto item : bundle) {
+			bids_per_item[item].push_back(i);
 		}
 		++i;
 	}
