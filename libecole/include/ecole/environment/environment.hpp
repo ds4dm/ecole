@@ -6,13 +6,12 @@
 #include <type_traits>
 
 #include "ecole/data/parser.hpp"
-#include "ecole/dynamics/dynamics.hpp"
 #include "ecole/exception.hpp"
 #include "ecole/information/abstract.hpp"
 #include "ecole/random.hpp"
 #include "ecole/reward/abstract.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/type.hpp"
+#include "ecole/scip/seed.hpp"
 #include "ecole/traits.hpp"
 
 #include <optional>

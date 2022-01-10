@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-#include "ecole/dynamics/dynamics.hpp"
+#include "ecole/dynamics/parts.hpp"
 #include "ecole/export.hpp"
 #include "ecole/none.hpp"
 #include "ecole/scip/type.hpp"
@@ -15,11 +15,16 @@ namespace ecole::dynamics {
  */
 using ParamDict = std::map<std::string, scip::Param>;
 
-class ECOLE_EXPORT ConfiguringDynamics : public EnvironmentDynamics<ParamDict, NoneType> {
+class ECOLE_EXPORT ConfiguringDynamics : public DefaultSetDynamicsRandomState {
 public:
-	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, NoneType> override;
-	ECOLE_EXPORT auto step_dynamics(scip::Model& model, ParamDict const& param_dict)
-		-> std::tuple<bool, NoneType> override;
+	using Action = ParamDict;
+	using ActionSet = NoneType;
+
+	using DefaultSetDynamicsRandomState::set_dynamics_random_state;
+
+	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet>;
+
+	ECOLE_EXPORT auto step_dynamics(scip::Model& model, Action const& param_dict) const -> std::tuple<bool, ActionSet>;
 };
 
 }  // namespace ecole::dynamics

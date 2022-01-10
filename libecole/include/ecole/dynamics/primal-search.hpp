@@ -5,34 +5,31 @@
 #include <utility>
 
 #include <nonstd/span.hpp>
+#include <scip/def.h>
+#include <scip/scip_heur.h>
+#include <scip/type_result.h>
 #include <xtensor/xtensor.hpp>
 
-#include "ecole/dynamics/dynamics.hpp"
+#include "ecole/dynamics/parts.hpp"
 #include "ecole/export.hpp"
 
 namespace ecole::dynamics {
 
-/**
- * An array of variable identifiers in the transformed problem.
- */
-using VarIds = xt::xtensor<std::size_t, 1>;
-
-/**
- * A tuple of variable identifiers and variable values.
- */
-using VarIdsVals = std::pair<nonstd::span<std::size_t const>, nonstd::span<SCIP_Real const>>;
-
-class ECOLE_EXPORT PrimalSearchDynamics : public EnvironmentDynamics<VarIdsVals, std::optional<VarIds>> {
+class ECOLE_EXPORT PrimalSearchDynamics : public DefaultSetDynamicsRandomState {
 public:
-	using Action = VarIdsVals;
-	using ActionSet = std::optional<VarIds>;
+	/** An array of variable identifiers in the transformed problem. */
+	using ActionSet = std::optional<xt::xtensor<std::size_t, 1>>;
+	/** A tuple of variable identifiers and variable values. */
+	using Action = std::pair<nonstd::span<std::size_t const>, nonstd::span<SCIP_Real const>>;
 
 	ECOLE_EXPORT
 	PrimalSearchDynamics(int trials_per_node = 1, int depth_freq = 1, int depth_start = 0, int depth_stop = -1);
 
-	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> override;
+	using DefaultSetDynamicsRandomState::set_dynamics_random_state;
 
-	ECOLE_EXPORT auto step_dynamics(scip::Model& model, Action const& action) -> std::tuple<bool, ActionSet> override;
+	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet>;
+
+	ECOLE_EXPORT auto step_dynamics(scip::Model& model, Action action) -> std::tuple<bool, ActionSet>;
 
 private:
 	int trials_per_node;
