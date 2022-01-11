@@ -32,6 +32,7 @@ add_executable(
 	src/data/test-multiary.cpp
 	src/data/test-parser.cpp
 	src/data/test-timed.cpp
+	src/data/test-dynamic.cpp
 
 	src/reward/test-lp-iterations.cpp
 	src/reward/test-is-done.cpp
@@ -46,6 +47,7 @@ add_executable(
 	src/observation/test-khalil-2016.cpp
 	src/observation/test-hutter-2011.cpp
 
+	src/dynamics/test-parts.cpp
 	src/dynamics/test-branching.cpp
 	src/dynamics/test-configuring.cpp
 	src/dynamics/test-primal-search.cpp

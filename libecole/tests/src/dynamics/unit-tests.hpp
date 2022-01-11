@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "ecole/dynamics/dynamics.hpp"
+#include "ecole/random.hpp"
 #include "ecole/traits.hpp"
 
 #include "conftest.hpp"
@@ -14,11 +14,11 @@ namespace ecole::dynamics {
 template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func policy) {
 	auto model = get_model();
 
-	SECTION("Has default constructor") { Dynamics{}; }
+	SECTION("Has default constructor") { [[maybe_unused]] auto const d = Dynamics{}; }
 
 	SECTION("Perfom seeding") {
-		RandomGenerator rng{std::random_device{}()};
-		RandomGenerator rng_copy = rng;
+		auto rng = RandomGenerator{std::random_device{}()};
+		auto rng_copy = rng;
 		dyn.set_dynamics_random_state(model, rng);
 		REQUIRE(rng != rng_copy);
 	}

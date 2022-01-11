@@ -7,10 +7,10 @@
 
 namespace ecole::reward {
 
-class ECOLE_EXPORT LpIterations : public RewardFunction {
+class ECOLE_EXPORT LpIterations {
 public:
-	ECOLE_EXPORT void before_reset(scip::Model& model) override;
-	ECOLE_EXPORT Reward extract(scip::Model& model, bool done = false) override;
+	ECOLE_EXPORT auto before_reset(scip::Model& model) -> void;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done = false) -> Reward;
 
 private:
 	std::uint64_t last_lp_iter = 0;

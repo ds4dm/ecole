@@ -11,11 +11,13 @@
 
 namespace ecole::observation {
 
-class ECOLE_EXPORT StrongBranchingScores : public ObservationFunction<std::optional<xt::xtensor<double, 1>>> {
+class ECOLE_EXPORT StrongBranchingScores {
 public:
 	ECOLE_EXPORT StrongBranchingScores(bool pseudo_candidates = false);
 
-	ECOLE_EXPORT std::optional<xt::xtensor<double, 1>> extract(scip::Model& model, bool done) override;
+	auto before_reset(scip::Model& /*model*/) -> void {}
+
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) const -> std::optional<xt::xtensor<double, 1>>;
 
 private:
 	bool pseudo_candidates;

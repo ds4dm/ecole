@@ -10,7 +10,8 @@ Checks: >-
   performance-*,
   portability-*,
   readability-*,
-  -readability-implicit-bool-conversion
+  -readability-implicit-bool-conversion,
+  -readability-convert-member-functions-to-static
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false

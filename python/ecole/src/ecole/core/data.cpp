@@ -20,14 +20,14 @@ namespace py = pybind11;
  *
  * This is used to bind templated types such as MapFunction and VectorFunction.
  */
-class PyDataFunction final : DataFunction<py::object> {
+class PyDataFunction {
 public:
 	PyDataFunction() noexcept = default;
 	explicit PyDataFunction(py::object data_func) noexcept : data_function(std::move(data_func)) {}
 
-	void before_reset(scip::Model& model) final { data_function.attr("before_reset")(&model); }
+	auto before_reset(scip::Model& model) -> void { data_function.attr("before_reset")(&model); }
 
-	py::object extract(scip::Model& model, bool done) final { return data_function.attr("extract")(&model, done); }
+	auto extract(scip::Model& model, bool done) -> py::object { return data_function.attr("extract")(&model, done); }
 
 private:
 	py::object data_function;

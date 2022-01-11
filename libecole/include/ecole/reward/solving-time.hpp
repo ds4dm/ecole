@@ -7,12 +7,12 @@
 
 namespace ecole::reward {
 
-class ECOLE_EXPORT SolvingTime : public RewardFunction {
+class ECOLE_EXPORT SolvingTime {
 public:
 	SolvingTime(bool wall_ = false) noexcept : wall{wall_} {}
 
-	ECOLE_EXPORT void before_reset(scip::Model& model) override;
-	ECOLE_EXPORT Reward extract(scip::Model& model, bool done = false) override;
+	ECOLE_EXPORT auto before_reset(scip::Model& model) -> void;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done = false) -> Reward;
 
 private:
 	bool wall = false;

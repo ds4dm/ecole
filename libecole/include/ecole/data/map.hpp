@@ -9,8 +9,7 @@
 namespace ecole::data {
 
 /** Combine multiple data into a map of data. */
-template <typename Key, typename Function>
-class MapFunction : public DataFunction<std::map<Key, trait::data_of_t<Function>>> {
+template <typename Key, typename Function> class MapFunction {
 public:
 	using DataMap = std::map<Key, trait::data_of_t<Function>>;
 
@@ -21,14 +20,14 @@ public:
 	MapFunction(std::map<Key, Function> functions) : data_functions{std::move(functions)} {}
 
 	/** Call before_reset on all functions. */
-	void before_reset(scip::Model& model) override {
+	void before_reset(scip::Model& model) {
 		for (auto& [_, func] : data_functions) {
 			func.before_reset(model);
 		}
 	}
 
 	/** Return data extracted from all functions as a map. */
-	DataMap extract(scip::Model& model, bool done) override {
+	DataMap extract(scip::Model& model, bool done) {
 		auto data = DataMap{};
 		for (auto& [key, func] : data_functions) {
 			data.emplace_hint(data.end(), key, func.extract(model, done));

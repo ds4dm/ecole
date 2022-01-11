@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <fmt/format.h>
 #include <xtensor/xtensor.hpp>
 
@@ -17,7 +19,7 @@ PrimalSearchDynamics::PrimalSearchDynamics(int trials_per_node_, int depth_freq_
 
 namespace {
 
-std::optional<VarIds> action_set(scip::Model const& model) {
+auto action_set(scip::Model const& model) -> PrimalSearchDynamics::ActionSet {
 	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
@@ -38,7 +40,7 @@ auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool
 	return {false, action_set(model)};
 }
 
-auto PrimalSearchDynamics::step_dynamics(scip::Model& model, VarIdsVals const& action) -> std::tuple<bool, ActionSet> {
+auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> std::tuple<bool, ActionSet> {
 	auto const [var_indices, vals] = action;
 	auto problem_vars = model.variables();
 

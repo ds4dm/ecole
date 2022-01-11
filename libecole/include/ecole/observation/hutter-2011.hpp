@@ -67,9 +67,10 @@ struct ECOLE_EXPORT Hutter2011Obs {
 	xt::xtensor<double, 1> features;
 };
 
-class ECOLE_EXPORT Hutter2011 : public ObservationFunction<std::optional<Hutter2011Obs>> {
+class ECOLE_EXPORT Hutter2011 {
 public:
-	ECOLE_EXPORT std::optional<Hutter2011Obs> extract(scip::Model& model, bool done) override;
+	auto before_reset(scip::Model& /*model*/) -> void {}
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<Hutter2011Obs>;
 };
 
 }  // namespace ecole::observation

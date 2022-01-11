@@ -15,8 +15,7 @@ namespace ecole::data {
  * If the arity is one, then the operations are unary, such as exp(), sqrt(), and apply(...).
  * If the arity is two, then the operations are binary, such as + and *.
  */
-template <typename DataCombiner, typename... Functions>
-class MultiaryFunction : public DataFunction<std::invoke_result_t<DataCombiner, trait::data_of_t<Functions>...>> {
+template <typename DataCombiner, typename... Functions> class MultiaryFunction {
 public:
 	using CombinedData = std::invoke_result_t<DataCombiner, trait::data_of_t<Functions>...>;
 
@@ -28,12 +27,12 @@ public:
 		data_functions{std::move(functions)...}, data_combiner{std::move(combiner)} {}
 
 	/** Call before_reset on all functions. */
-	void before_reset(scip::Model& model) override {
+	auto before_reset(scip::Model& model) -> void {
 		std::apply([&model](auto&... functions) { ((functions.before_reset(model)), ...); }, data_functions);
 	}
 
 	/** Extract data from all functions and call the multiart operation on it. */
-	CombinedData extract(scip::Model& model, bool done = false) override {
+	auto extract(scip::Model& model, bool done = false) -> CombinedData {
 		return std::apply(
 			[&](auto&... functions) { return data_combiner(functions.extract(model, done)...); }, data_functions);
 	}

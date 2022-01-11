@@ -60,13 +60,13 @@ struct ECOLE_EXPORT NodeBipartiteObs {
 	utility::coo_matrix<value_type> edge_features;
 };
 
-class ECOLE_EXPORT NodeBipartite : public ObservationFunction<std::optional<NodeBipartiteObs>> {
+class ECOLE_EXPORT NodeBipartite {
 public:
 	NodeBipartite(bool cache = false) : use_cache{cache} {}
 
-	ECOLE_EXPORT void before_reset(scip::Model& model) override;
+	ECOLE_EXPORT auto before_reset(scip::Model& model) -> void;
 
-	ECOLE_EXPORT std::optional<NodeBipartiteObs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<NodeBipartiteObs>;
 
 private:
 	NodeBipartiteObs the_cache;

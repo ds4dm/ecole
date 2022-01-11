@@ -14,7 +14,7 @@ BranchingDynamics::BranchingDynamics(bool pseudo_candidates_) noexcept : pseudo_
 
 namespace {
 
-std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, bool pseudo) {
+auto action_set(scip::Model const& model, bool pseudo) -> std::optional<xt::xtensor<std::size_t, 1>> {
 	if (model.stage() != SCIP_STAGE_SOLVING) {
 		return {};
 	}
@@ -29,7 +29,7 @@ std::optional<xt::xtensor<std::size_t, 1>> action_set(scip::Model const& model, 
 
 }  // namespace
 
-auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
+auto BranchingDynamics::reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet> {
 	model.solve_iter_start_branch();
 	if (model.solve_iter_is_done()) {
 		return {true, {}};
@@ -37,7 +37,7 @@ auto BranchingDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, A
 	return {false, action_set(model, pseudo_candidates)};
 }
 
-auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_t> const& maybe_var_idx)
+auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_t> maybe_var_idx) const
 	-> std::tuple<bool, ActionSet> {
 	if (std::holds_alternative<std::size_t>(maybe_var_idx)) {
 		auto const var_idx = std::get<std::size_t>(maybe_var_idx);

@@ -149,6 +149,7 @@ auto best_clique_candidates(set<Graph::Node> const& neighborhood, map<Graph::Nod
 	std::copy_if(neighborhood.begin(), neighborhood.end(), std::back_inserter(candidates), in_leftover_nodes);
 	// Decreasing sort by degree using > comparison.
 	auto cmp_degrees = [&leftover_nodes](auto node1, auto node2) {
+		// NOLINTNEXTLINE(bugprone-lambda-function-name)  __func__ is used in assert macro.
 		assert(leftover_nodes.contains(node1) && leftover_nodes.contains(node2));
 		return leftover_nodes.find(node1)->second > leftover_nodes.find(node2)->second;
 	};

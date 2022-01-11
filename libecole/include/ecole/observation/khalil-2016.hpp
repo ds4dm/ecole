@@ -107,13 +107,13 @@ struct ECOLE_EXPORT Khalil2016Obs {
 	xt::xtensor<double, 2> features;
 };
 
-class ECOLE_EXPORT Khalil2016 : public ObservationFunction<std::optional<Khalil2016Obs>> {
+class ECOLE_EXPORT Khalil2016 {
 public:
 	ECOLE_EXPORT Khalil2016(bool pseudo_candidates = false) noexcept;
 
-	ECOLE_EXPORT void before_reset(scip::Model& model) override;
+	ECOLE_EXPORT auto before_reset(scip::Model& model) -> void;
 
-	ECOLE_EXPORT std::optional<Khalil2016Obs> extract(scip::Model& model, bool done) override;
+	ECOLE_EXPORT auto extract(scip::Model& model, bool done) -> std::optional<Khalil2016Obs>;
 
 private:
 	bool pseudo_candidates;

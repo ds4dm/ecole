@@ -22,9 +22,9 @@ template <typename Return, typename... Args> struct function_traits<Return(Args.
 
 	static constexpr std::size_t n_args = sizeof...(Args);
 
-	template <std::size_t N> struct args {
-		static_assert(N < n_args, "error: invalid parameter index.");
-		using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
+	template <std::size_t N, typename = void> struct args {};
+	template <std::size_t N> struct args<N, std::enable_if_t<(N < n_args)>> {
+		using type = std::tuple_element_t<N, std::tuple<Args...>>;
 	};
 };
 
@@ -64,8 +64,8 @@ public:
 
 	static constexpr std::size_t n_args = call_type::n_args - 1;
 
-	template <std::size_t N> struct args {
-		static_assert(N < n_args, "error: invalid parameter index.");
+	template <std::size_t N, typename = void> struct args {};
+	template <std::size_t N> struct args<N, std::enable_if_t<(N < n_args)>> {
 		using type = typename call_type::template args<N + 1>::type;
 	};
 };
