@@ -14,7 +14,7 @@ namespace ecole::dynamics {
 template <typename Dynamics, typename Func> void unit_tests(Dynamics&& dyn, Func policy) {
 	auto model = get_model();
 
-	SECTION("Has default constructor") { Dynamics{}; }
+	SECTION("Has default constructor") { [[maybe_unused]] auto const d = Dynamics{}; }
 
 	SECTION("Perfom seeding") {
 		auto rng = RandomGenerator{std::random_device{}()};

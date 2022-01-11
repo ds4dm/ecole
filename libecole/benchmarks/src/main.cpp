@@ -10,7 +10,7 @@
 #include "ecole/instance/independent-set.hpp"
 #include "ecole/instance/set-cover.hpp"
 #include "ecole/random.hpp"
-#include "ecole/scip/type.hpp"
+#include "ecole/scip/seed.hpp"
 
 #include "bench-branching.hpp"
 #include "benchmark.hpp"
