@@ -24,6 +24,7 @@ public:
 
 	auto wait_thread() -> void;
 	auto resume_thread(action_func_t&& action_func) -> void;
+	auto resume_thread(SCIP_RESULT result) -> void;
 	[[nodiscard]] auto is_done() const noexcept -> bool;
 
 private:

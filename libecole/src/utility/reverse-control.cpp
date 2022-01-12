@@ -140,6 +140,13 @@ auto Controller::resume_thread(action_func_t&& action_func) -> void {
 	synchronizer->env_resume_thread(std::move(model_lock), std::move(action_func));
 }
 
+auto Controller::resume_thread(SCIP_RESULT result) -> void {
+	resume_thread([result](SCIP* /*scip*/, SCIP_RESULT* out_result) {
+		*out_result = result;
+		return SCIP_OKAY;
+	});
+}
+
 auto Controller::is_done() const noexcept -> bool {
 	return synchronizer->env_thread_is_done(model_lock);
 }

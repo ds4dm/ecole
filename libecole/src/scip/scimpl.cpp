@@ -147,11 +147,7 @@ void Scimpl::solve_iter_start_branch() {
 }
 
 void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
-	m_controller->resume_thread([result](SCIP* /* scip */, SCIP_RESULT* final_result) {
-		*final_result = result;
-		return SCIP_OKAY;
-	});
-
+	m_controller->resume_thread(result);
 	m_controller->wait_thread();
 }
 
@@ -172,11 +168,7 @@ SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_
 }
 
 void scip::Scimpl::solve_iter_primalsearch(SCIP_RESULT result) {
-	m_controller->resume_thread([result](SCIP* /* scip */, SCIP_RESULT* final_result) {
-		*final_result = result;
-		return SCIP_OKAY;
-	});
-
+	m_controller->resume_thread(result);
 	m_controller->wait_thread();
 }
 
