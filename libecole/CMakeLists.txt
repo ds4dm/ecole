@@ -5,7 +5,6 @@ add_library(
 	src/random.cpp
 	src/exception.cpp
 
-	src/utility/reverse-control.cpp
 	src/utility/chrono.cpp
 	src/utility/graph.cpp
 

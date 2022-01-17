@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <cassert>
 #include <mutex>
+#include <scip/type_result.h>
+#include <scip/type_retcode.h>
+#include <type_traits>
 #include <utility>
 
 #include <objscip/objbranchrule.h>
@@ -10,8 +13,7 @@
 
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
-
-#include "utility/reverse-control.hpp"
+#include "ecole/utility/coroutine.hpp"
 
 namespace ecole::scip {
 
@@ -140,12 +142,12 @@ void Scimpl::solve_iter_start_branch() {
 			scip::call(SCIPsolve, scip_ptr);  // NOLINT
 		});
 
-	m_controller->wait_thread();
+	m_controller->wait_executor();
 }
 
 void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
-	m_controller->resume_thread(result);
-	m_controller->wait_thread();
+	m_controller->resume_executor(result);
+	m_controller->wait_executor();
 }
 
 SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) {
@@ -159,13 +161,13 @@ SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start
 		scip::call(SCIPsolve, scip_ptr);  // NOLINT
 	});
 
-	m_controller->wait_thread();
+	m_controller->wait_executor();
 	return SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
 }
 
 void scip::Scimpl::solve_iter_primalsearch(SCIP_RESULT result) {
-	m_controller->resume_thread(result);
-	m_controller->wait_thread();
+	m_controller->resume_executor(result);
+	m_controller->wait_executor();
 }
 
 void scip::Scimpl::solve_iter_stop() {
@@ -176,11 +178,31 @@ bool scip::Scimpl::solve_iter_is_done() {
 	return !(m_controller) || m_controller->is_done();
 }
 
+namespace {
+
 /*************************************
  *  Definition of ReverseBranchrule  *
  *************************************/
 
-namespace {
+auto handle_executor(std::weak_ptr<utility::Controller::Executor>& weak_executor, SCIP* scip, SCIP_RESULT* result)
+	-> SCIP_RETCODE {
+	if (weak_executor.expired()) {
+		*result = SCIP_DIDNOTRUN;
+		return SCIP_OKAY;
+	}
+	return std::visit(
+		[&](auto result_or_stop) -> SCIP_RETCODE {
+			using StopToken = utility::Controller::Executor::StopToken;
+			if constexpr (std::is_same_v<decltype(result_or_stop), StopToken>) {
+				*result = SCIP_DIDNOTRUN;
+				return SCIPinterruptSolve(scip);
+			} else {
+				*result = result_or_stop;
+				return SCIP_OKAY;
+			}
+		},
+		weak_executor.lock()->hold_coroutine());
+}
 
 scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
 	::scip::ObjBranchrule(
@@ -197,21 +219,12 @@ auto ReverseBranchrule::scip_execlp(
 	SCIP_BRANCHRULE* /*branchrule*/,
 	SCIP_Bool /*allowaddcons*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_executor.expired()) {
-		*result = SCIP_DIDNOTRUN;
-		return SCIP_OKAY;
-	}
-	auto action_func = weak_executor.lock()->hold_env();
-	return action_func(scip, result);
+	return handle_executor(weak_executor, scip, result);
 }
-
-}  // namespace
 
 /*******************************
  *  Definition of ReverseHeur  *
  *******************************/
-
-namespace {
 
 scip::ReverseHeur::ReverseHeur(
 	SCIP* scip,
@@ -238,12 +251,7 @@ auto ReverseHeur::scip_exec(
 	SCIP_HEURTIMING /*heurtiming*/,
 	SCIP_Bool /*nodeinfeasible*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_executor.expired()) {
-		*result = SCIP_DIDNOTRUN;
-		return SCIP_OKAY;
-	}
-	auto action_func = weak_executor.lock()->hold_env();  // could we pass heur here ?
-	return action_func(scip, result);
+	return handle_executor(weak_executor, scip, result);
 }
 
 }  // namespace

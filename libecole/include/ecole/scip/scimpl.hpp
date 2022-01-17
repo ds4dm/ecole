@@ -11,8 +11,9 @@
 namespace ecole {
 
 namespace utility {
-class Controller;
-}
+template <typename Yield, typename Message> class Coroutine;
+using Controller = Coroutine<int, SCIP_RESULT>;
+}  // namespace utility
 
 namespace scip {
 
