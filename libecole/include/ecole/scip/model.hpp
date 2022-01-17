@@ -146,8 +146,7 @@ public:
 
 	ECOLE_EXPORT void solve_iter_start_branch();
 	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
-	ECOLE_EXPORT SCIP_HEUR*
-	solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
+	ECOLE_EXPORT SCIP_HEUR* solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop);
 	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);
 	ECOLE_EXPORT void solve_iter_stop();
 	[[nodiscard]] ECOLE_EXPORT bool solve_iter_is_done();

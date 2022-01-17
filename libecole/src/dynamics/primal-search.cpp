@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <stdexcept>
 
 #include <fmt/format.h>
 #include <xtensor/xtensor.hpp>
@@ -33,7 +34,11 @@ auto action_set(scip::Model const& model) -> PrimalSearchDynamics::ActionSet {
 }  // namespace
 
 auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
-	heur = model.solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
+	if (trials_per_node == 0) {
+		model.solve();
+		return {true, {}};
+	}
+	heur = model.solve_iter_start_primalsearch(depth_freq, depth_start, depth_stop);
 	if (model.solve_iter_is_done()) {
 		return {true, {}};
 	}

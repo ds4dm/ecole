@@ -53,7 +53,6 @@ public:
 	ReverseHeur(
 		SCIP* scip,
 		std::weak_ptr<utility::Controller::Executor> /*weak_executor*/,
-		int trials_per_node,
 		int depth_freq,
 		int depth_start,
 		int depth_stop);
@@ -63,8 +62,6 @@ public:
 
 private:
 	std::weak_ptr<utility::Controller::Executor> weak_executor;
-
-	int trials_per_node;
 };
 
 }  // namespace
@@ -151,14 +148,13 @@ void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
 	m_controller->wait_thread();
 }
 
-SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
+SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller = std::make_unique<utility::Controller>([=](std::weak_ptr<utility::Controller::Executor> weak_executor) {
 		scip::call(
 			SCIPincludeObjHeur,
 			scip_ptr,
-			new ReverseHeur(
-				scip_ptr, std::move(weak_executor), trials_per_node, depth_freq, depth_start, depth_stop),  // NOLINT
+			new ReverseHeur(scip_ptr, std::move(weak_executor), depth_freq, depth_start, depth_stop),  // NOLINT
 			true);
 		scip::call(SCIPsolve, scip_ptr);  // NOLINT
 	});
@@ -220,7 +216,6 @@ namespace {
 scip::ReverseHeur::ReverseHeur(
 	SCIP* scip,
 	std::weak_ptr<utility::Controller::Executor> weak_executor_,
-	int trials_per_node_,
 	int depth_freq,
 	int depth_start,
 	int depth_stop) :
@@ -235,8 +230,7 @@ scip::ReverseHeur::ReverseHeur(
 		depth_stop,
 		SCIP_HEURTIMING_AFTERNODE,
 		false),
-	weak_executor(std::move(weak_executor_)),
-	trials_per_node(trials_per_node_) {}
+	weak_executor(std::move(weak_executor_)) {}
 
 auto ReverseHeur::scip_exec(
 	SCIP* scip,
@@ -244,7 +238,7 @@ auto ReverseHeur::scip_exec(
 	SCIP_HEURTIMING /*heurtiming*/,
 	SCIP_Bool /*nodeinfeasible*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	if (weak_executor.expired() || (trials_per_node == 0)) {
+	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
 		return SCIP_OKAY;
 	}

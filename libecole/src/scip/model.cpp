@@ -303,8 +303,8 @@ void Model::solve_iter_branch(SCIP_RESULT result) {
 	scimpl->solve_iter_branch(result);
 }
 
-SCIP_HEUR* Model::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
-	return scimpl->solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
+SCIP_HEUR* Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) {
+	return scimpl->solve_iter_start_primalsearch(depth_freq, depth_start, depth_stop);
 }
 
 void Model::solve_iter_primalsearch(SCIP_RESULT result) {
