@@ -201,7 +201,7 @@ auto handle_executor(std::weak_ptr<utility::Controller::Executor>& weak_executor
 				return SCIP_OKAY;
 			}
 		},
-		weak_executor.lock()->hold_coroutine());
+		weak_executor.lock()->yield(0));
 }
 
 scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
