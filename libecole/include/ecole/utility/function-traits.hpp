@@ -57,7 +57,7 @@ struct function_traits<Return(Class::*)> : function_traits<Return(Class&)> {};
  */
 template <typename F> struct function_traits {
 private:
-	using call_type = function_traits<decltype(&F::type::operator())>;
+	using call_type = function_traits<decltype(&F::operator())>;
 
 public:
 	using return_type = typename call_type::return_type;
