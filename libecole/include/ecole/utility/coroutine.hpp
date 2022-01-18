@@ -11,30 +11,85 @@
 
 namespace ecole::utility {
 
-template <typename Yield, typename Message> class Coroutine {
+/**
+ * Asynchronous cooperative interruptable code execution.
+ *
+ * Asynchronously execute a piece of code in an interative fashion while producing intermediary results.
+ * User-defined messages can be send to communicate with the executor.
+ * The execution flow is as follow:
+ * 1. Upon creation, the instruction provided in the constructor start being executed by the executor.
+ * 2. The ``yield`` function is called by the executor with the first return value.
+ * 3. The coroutine calls ``wait_executor`` to recieve that first return value.
+ * 4. The coroutine calls ``is_done`` to know if the executor is terminated, if so this is the end.
+ * 5. The coroutine calls ``resume_executor`` with a message to pass to the executor.
+ * 6. The executor recieve the message and continue its execution unitl the next ``yield``, the process repeats from 2.
+ *
+ * @tparam Return The type of return values created by the executor.
+ * @tparam Message The type of the messages that can be sent to the executor.
+ */
+template <typename Return, typename Message> class Coroutine {
 public:
+	/**
+	 * Start the execution.
+	 *
+	 * @param func Function used to define the code that needs to be executed by the executor.
+	 *        The first parameter to that function is a ``std::weak_ptr<Executor>`` used to yield values and recieve
+	 *        messages.
+	 *        If the weak pointer is expired, the executor must terminate.
+	 * @param args Additional parameters to be passed as additinal arguments to ``func``.
+	 */
 	template <class Function, class... Args> Coroutine(Function&& func, Args&&... args);
+
+	/**
+	 * Terminate the coroutine
+	 *
+	 * The destructor can safely be called at anytime.
+	 * If the executor is still running, it will recieve a ``StopToken`` and must terminate, otherwise the whole program
+	 * will itself terminate.
+	 * Any return value left to be yielded by the executor will be lost.
+	 *
+	 * @see StopToken
+	 */
 	~Coroutine() noexcept;
 
-	auto wait_executor() -> Yield;
+	/**
+	 * Wait for the executor to yield a value.
+	 *
+	 * It is the responsability of the user to call ``is_done`` before calling this function.
+	 * If the coroutine is done, this function will wait indefinitively.
+	 */
+	auto wait_executor() -> Return;
+
+	/** Send a message and resume the executor. */
 	auto resume_executor(Message instruction) -> void;
+
+	/** Check whether is executor has terminated. */
 	[[nodiscard]] auto is_done() const noexcept -> bool;
 
 private:
+	/** Type indicating that the executor must terminate. */
 	struct StopToken {};
 
+	/** Message recieved by the executor. */
 	using MessageOrStop = std::variant<Message, Coroutine::StopToken>;
+
+	/**
+	 * Lock type to synchronise between the coroutine and executor.
+	 *
+	 * The lock is passed back and forth to guarantee that it is help/release when necessary.
+	 */
 	using Lock = std::unique_lock<std::mutex>;
 
+	/** Class responsible for synchronizing between the coroutine and executor. */
 	class Synchronizer {
 	public:
-		auto coroutine_wait_executor() -> std::tuple<Lock, Yield>;
+		auto coroutine_wait_executor() -> std::tuple<Lock, Return>;
 		auto coroutine_resume_executor(Lock&& lk, MessageOrStop instruction) -> void;
 		auto coroutine_stop_executor(Lock&& lk) -> void;
 		[[nodiscard]] auto coroutine_executor_is_done(Lock const& lk) const noexcept -> bool;
 
 		auto executor_start() -> Lock;
-		auto executor_yield(Lock&& lk, Yield value) -> std::tuple<Lock, MessageOrStop>;
+		auto executor_yield(Lock&& lk, Return value) -> std::tuple<Lock, MessageOrStop>;
 		auto executor_terminate(Lock&& lk) -> void;
 		auto executor_terminate(Lock&& lk, std::exception_ptr const& e) -> void;
 
@@ -44,7 +99,7 @@ private:
 		std::condition_variable m_resume_signal;
 		bool m_executor_running = true;
 		bool m_executor_finished = false;
-		Yield m_value;
+		Return m_value;
 		MessageOrStop m_instruction;
 
 		[[nodiscard]] auto is_valid_lock(Lock const& lk) const noexcept -> bool;
@@ -52,23 +107,37 @@ private:
 	};
 
 public:
+	/** Class to communicate with the coroutine from the executor. */
 	class Executor {
 	public:
+		/** Type indicating that the executor must terminate. */
 		using StopToken = Coroutine::StopToken;
+		/** Message recieved by the executor. */
+		using MessageOrStop = Coroutine::MessageOrStop;
 
 		Executor() = delete;
 		Executor(Executor const&) = delete;
 		Executor(Executor&&) = delete;
 		Executor(std::shared_ptr<Synchronizer> synchronizer) noexcept;
 
-		auto start() -> void;
-		auto yield(Yield value) -> MessageOrStop;
-		auto terminate() -> void;
-		auto terminate(std::exception_ptr&& e) -> void;
+		/**
+		 * Yield a value, and wait to be recieve a message from the coroutine.
+		 *
+		 * If instead of a message, the executor recieves a ``StopToken``, then it must terminate.
+		 */
+		auto yield(Return value) -> MessageOrStop;
 
 	private:
 		std::shared_ptr<Synchronizer> m_synchronizer;
 		Lock m_exclusion_lock;
+
+		friend class Coroutine;
+		/** Indicate to the synchronizer that executor is ready to start. */
+		auto start() -> void;
+		/** Indicate to the synchronizer that executor has terminated without error. */
+		auto terminate() -> void;
+		/** Indicate to the synchronizer that executor has terminated with an error. */
+		auto terminate(std::exception_ptr&& e) -> void;
 	};
 
 private:
