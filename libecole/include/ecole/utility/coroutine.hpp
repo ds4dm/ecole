@@ -4,8 +4,8 @@
 #include <exception>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <thread>
-#include <tuple>
 #include <utility>
 #include <variant>
 
@@ -19,9 +19,9 @@ namespace ecole::utility {
  * The execution flow is as follow:
  * 1. Upon creation, the instruction provided in the constructor start being executed by the executor.
  * 2. The ``yield`` function is called by the executor with the first return value.
- * 3. The coroutine calls ``wait_executor`` to recieve that first return value.
- * 4. The coroutine calls ``is_done`` to know if the executor is terminated, if so this is the end.
- * 5. The coroutine calls ``resume_executor`` with a message to pass to the executor.
+ * 3. The coroutine calls ``wait`` to recieve that first return value.
+ * 4. If no value is returned, then the executor has finished.
+ * 5. Else, the coroutine calls ``resume`` with a message to pass to the executor.
  * 6. The executor recieve the message and continue its execution unitl the next ``yield``, the process repeats from 2.
  *
  * @tparam Return The type of return values created by the executor.
@@ -29,6 +29,9 @@ namespace ecole::utility {
  */
 template <typename Return, typename Message> class Coroutine {
 public:
+	/** Return or nothing if the corutine has finished. */
+	using MaybeReturn = std::optional<Return>;
+
 	/**
 	 * Start the execution.
 	 *
@@ -55,16 +58,17 @@ public:
 	/**
 	 * Wait for the executor to yield a value.
 	 *
-	 * It is the responsability of the user to call ``is_done`` before calling this function.
-	 * If the coroutine is done, this function will wait indefinitively.
+	 * If no return value is given, then the coroutine has finished.
+	 * This function should not be called successively without calling ``resume``.
 	 */
-	auto wait_executor() -> Return;
+	auto wait() -> MaybeReturn;
 
-	/** Send a message and resume the executor. */
-	auto resume_executor(Message instruction) -> void;
-
-	/** Check whether is executor has terminated. */
-	[[nodiscard]] auto is_done() const noexcept -> bool;
+	/**
+	 * Send a message and resume the executor.
+	 *
+	 * This function should not be called without first calling ``wait``, or if ``wait`` has not returned a value.
+	 */
+	auto resume(Message instruction) -> void;
 
 private:
 	/** Type indicating that the executor must terminate. */
@@ -83,13 +87,14 @@ private:
 	/** Class responsible for synchronizing between the coroutine and executor. */
 	class Synchronizer {
 	public:
-		auto coroutine_wait_executor() -> std::tuple<Lock, Return>;
+		auto coroutine_wait_executor() -> Lock;
+		auto coroutine_pop_return() -> Return;
 		auto coroutine_resume_executor(Lock&& lk, MessageOrStop instruction) -> void;
 		auto coroutine_stop_executor(Lock&& lk) -> void;
 		[[nodiscard]] auto coroutine_executor_is_done(Lock const& lk) const noexcept -> bool;
 
 		auto executor_start() -> Lock;
-		auto executor_yield(Lock&& lk, Return value) -> std::tuple<Lock, MessageOrStop>;
+		auto executor_yield(Lock&& lk, Return value) -> std::pair<Lock, MessageOrStop>;
 		auto executor_terminate(Lock&& lk) -> void;
 		auto executor_terminate(Lock&& lk, std::exception_ptr const& e) -> void;
 
@@ -114,6 +119,9 @@ public:
 		using StopToken = Coroutine::StopToken;
 		/** Message recieved by the executor. */
 		using MessageOrStop = Coroutine::MessageOrStop;
+
+		/** Return whether the message is a ``StopToken``/ */
+		static auto is_stop(MessageOrStop const& message) -> bool;
 
 		Executor() = delete;
 		Executor(Executor const&) = delete;
@@ -150,7 +158,10 @@ private:
 }  // namespace ecole::utility
 
 #include <cassert>
+#include <type_traits>
 #include <utility>
+
+#include "ecole/utility/function-traits.hpp"
 
 namespace ecole::utility {
 
@@ -158,16 +169,20 @@ namespace ecole::utility {
  *  Implementation of Coroutine::Synchronizer  *
  ***********************************************/
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::coroutine_wait_executor() -> std::tuple<Lock, Yield> {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::coroutine_wait_executor() -> Lock {
 	Lock lk{m_exclusion_mutex};
 	m_resume_signal.wait(lk, [this] { return !m_executor_running; });
-	lk = maybe_throw(std::move(lk));
-	return {std::move(lk), std::move(m_value)};
+	return maybe_throw(std::move(lk));
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::coroutine_resume_executor(Lock&& lk, MessageOrStop new_instruction)
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::coroutine_pop_return() -> Return {
+	return std::move(m_value);
+}
+
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::coroutine_resume_executor(Lock&& lk, MessageOrStop new_instruction)
 	-> void {
 	assert(is_valid_lock(lk));
 	m_instruction = std::move(new_instruction);
@@ -176,20 +191,20 @@ auto Coroutine<Yield, Message>::Synchronizer::coroutine_resume_executor(Lock&& l
 	m_resume_signal.notify_one();
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::coroutine_executor_is_done([[maybe_unused]] Lock const& lk) const noexcept
-	-> bool {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::coroutine_executor_is_done(
+	[[maybe_unused]] Lock const& lk) const noexcept -> bool {
 	assert(is_valid_lock(lk));
 	return m_executor_finished;
 }
 
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::Synchronizer::executor_start() -> Lock {
+template <typename Return, typename Message> auto Coroutine<Return, Message>::Synchronizer::executor_start() -> Lock {
 	return Lock{m_exclusion_mutex};
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::executor_yield(Lock&& lk, Yield value)
-	-> std::tuple<Lock, MessageOrStop> {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::executor_yield(Lock&& lk, Return value)
+	-> std::pair<Lock, MessageOrStop> {
 	assert(is_valid_lock(lk));
 	m_executor_running = false;
 	m_value = value;
@@ -200,8 +215,8 @@ auto Coroutine<Yield, Message>::Synchronizer::executor_yield(Lock&& lk, Yield va
 	return {std::move(lk), std::move(m_instruction)};
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::executor_terminate(Lock&& lk) -> void {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::executor_terminate(Lock&& lk) -> void {
 	assert(is_valid_lock(lk));
 	m_executor_running = false;
 	m_executor_finished = true;
@@ -209,20 +224,20 @@ auto Coroutine<Yield, Message>::Synchronizer::executor_terminate(Lock&& lk) -> v
 	m_resume_signal.notify_one();
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::executor_terminate(Lock&& lk, std::exception_ptr const& e) -> void {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::executor_terminate(Lock&& lk, std::exception_ptr const& e) -> void {
 	assert(is_valid_lock(lk));
 	m_executor_exception = e;
 	executor_terminate(std::move(lk));
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::is_valid_lock(Lock const& lk) const noexcept -> bool {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::is_valid_lock(Lock const& lk) const noexcept -> bool {
 	return lk && (lk.mutex() == &m_exclusion_mutex);
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::maybe_throw(Lock&& lk) -> Lock {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::maybe_throw(Lock&& lk) -> Lock {
 	assert(is_valid_lock(lk));
 	auto e_ptr = m_executor_exception;
 	m_executor_exception = nullptr;
@@ -237,27 +252,32 @@ auto Coroutine<Yield, Message>::Synchronizer::maybe_throw(Lock&& lk) -> Lock {
  *  Implementation of Coroutine::Executor  *
  *******************************************/
 
-template <typename Yield, typename Message>
-Coroutine<Yield, Message>::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer) noexcept :
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Executor::is_stop(MessageOrStop const& message) -> bool {
+	return std::holds_alternative<StopToken>(message);
+}
+
+template <typename Return, typename Message>
+Coroutine<Return, Message>::Executor::Executor(std::shared_ptr<Synchronizer> synchronizer) noexcept :
 	m_synchronizer(std::move(synchronizer)) {}
 
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::Executor::start() -> void {
+template <typename Return, typename Message> auto Coroutine<Return, Message>::Executor::start() -> void {
 	m_exclusion_lock = m_synchronizer->executor_start();
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Executor::yield(Yield value) -> MessageOrStop {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Executor::yield(Return value) -> MessageOrStop {
 	auto [lock, instruction] = m_synchronizer->executor_yield(std::move(m_exclusion_lock), std::move(value));
 	m_exclusion_lock = std::move(lock);
 	return instruction;
 }
 
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::Executor::terminate() -> void {
+template <typename Return, typename Message> auto Coroutine<Return, Message>::Executor::terminate() -> void {
 	m_synchronizer->executor_terminate(std::move(m_exclusion_lock));
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Executor::terminate(std::exception_ptr&& except) -> void {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Executor::terminate(std::exception_ptr&& except) -> void {
 	m_synchronizer->executor_terminate(std::move(m_exclusion_lock), except);
 }
 
@@ -265,16 +285,23 @@ auto Coroutine<Yield, Message>::Executor::terminate(std::exception_ptr&& except)
  *  Implementation of Coroutine  *
  *********************************/
 
-template <typename Yield, typename Message>
+template <typename Return, typename Message>
 template <typename Function, typename... Args>
-Coroutine<Yield, Message>::Coroutine(Function&& func_, Args&&... args_) :
+Coroutine<Return, Message>::Coroutine(Function&& func_, Args&&... args_) :
 	m_synchronizer(std::make_shared<Synchronizer>()) {
 	auto executor = std::make_shared<Executor>(m_synchronizer);
 
 	auto executor_func = [executor](Function&& func, Args&&... args) {
 		executor->start();
 		try {
-			func(std::weak_ptr<Executor>(executor), std::forward<Args>(args)...);
+			using ExecutorArg = std::remove_const_t<std::remove_reference_t<utility::arg_t<0, Function>>>;
+			if constexpr (std::is_same_v<ExecutorArg, std::shared_ptr<Executor>>) {
+				func(executor, std::forward<Args>(args)...);
+			} else if constexpr (std::is_same_v<ExecutorArg, std::weak_ptr<Executor>>) {
+				func(std::weak_ptr<Executor>(executor), std::forward<Args>(args)...);
+			} else {
+				func(*executor, std::forward<Args>(args)...);
+			}
 			executor->terminate();
 		} catch (...) {
 			executor->terminate(std::current_exception());
@@ -284,46 +311,43 @@ Coroutine<Yield, Message>::Coroutine(Function&& func_, Args&&... args_) :
 	executor_thread = std::thread(executor_func, std::forward<Function>(func_), std::forward<Args>(args_)...);
 }
 
-template <typename Yield, typename Message> Coroutine<Yield, Message>::~Coroutine() noexcept {
+template <typename Return, typename Message> Coroutine<Return, Message>::~Coroutine() noexcept {
 	assert(std::this_thread::get_id() != executor_thread.get_id());
 	if (executor_thread.joinable()) {
 		try {
 			stop_executor();
 		} catch (...) {
-			// if the Coroutine<Yield, Message> is deleted but not waited on, then we ignore potential
+			// if the Coroutine<Return, Message> is deleted but not waited on, then we ignore potential
 			// exceptions
 		}
 		executor_thread.join();
 	}
 }
 
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::wait_executor() -> Yield {
-	auto [lock, value] = m_synchronizer->coroutine_wait_executor();
-	m_exclusion_lock = std::move(lock);
-	return value;
+template <typename Return, typename Message> auto Coroutine<Return, Message>::wait() -> MaybeReturn {
+	m_exclusion_lock = m_synchronizer->coroutine_wait_executor();
+	if (m_synchronizer->coroutine_executor_is_done(m_exclusion_lock)) {
+		return std::nullopt;
+	}
+	return m_synchronizer->coroutine_pop_return();
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::resume_executor(Message instruction) -> void {
+template <typename Return, typename Message> auto Coroutine<Return, Message>::resume(Message instruction) -> void {
 	m_synchronizer->coroutine_resume_executor(std::move(m_exclusion_lock), std::move(instruction));
 }
 
-template <typename Yield, typename Message>
-auto Coroutine<Yield, Message>::Synchronizer::coroutine_stop_executor(Lock&& lk) -> void {
+template <typename Return, typename Message>
+auto Coroutine<Return, Message>::Synchronizer::coroutine_stop_executor(Lock&& lk) -> void {
 	coroutine_resume_executor(std::move(lk), Coroutine::StopToken{});
 }
 
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::is_done() const noexcept -> bool {
-	return m_synchronizer->coroutine_executor_is_done(m_exclusion_lock);
-}
-
-template <typename Yield, typename Message> auto Coroutine<Yield, Message>::stop_executor() -> void {
+template <typename Return, typename Message> auto Coroutine<Return, Message>::stop_executor() -> void {
 	if (!m_exclusion_lock.owns_lock()) {
-		std::tie(m_exclusion_lock, std::ignore) = m_synchronizer->coroutine_wait_executor();
+		m_exclusion_lock = m_synchronizer->coroutine_wait_executor();
 	}
 	if (!m_synchronizer->coroutine_executor_is_done(m_exclusion_lock)) {
 		m_synchronizer->coroutine_stop_executor(std::move(m_exclusion_lock));
-		std::tie(m_exclusion_lock, std::ignore) = m_synchronizer->coroutine_wait_executor();
+		m_exclusion_lock = m_synchronizer->coroutine_wait_executor();
 	}
 }
 
