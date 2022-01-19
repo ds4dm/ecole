@@ -30,15 +30,17 @@ auto action_set(scip::Model const& model, bool pseudo) -> std::optional<xt::xten
 }  // namespace
 
 auto BranchingDynamics::reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet> {
-	model.solve_iter_start_branch();
-	if (model.solve_iter_is_done()) {
-		return {true, {}};
+	if (model.solve_iter_start_branch().has_value()) {
+		return {false, action_set(model, pseudo_candidates)};
 	}
-	return {false, action_set(model, pseudo_candidates)};
+	return {true, {}};
 }
 
 auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_t> maybe_var_idx) const
 	-> std::tuple<bool, ActionSet> {
+	// Default fallback to SCIP default branching
+	auto scip_result = SCIP_DIDNOTRUN;
+
 	if (std::holds_alternative<std::size_t>(maybe_var_idx)) {
 		auto const var_idx = std::get<std::size_t>(maybe_var_idx);
 		auto const vars = model.variables();
@@ -49,16 +51,13 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_
 		}
 		// Branching
 		scip::call(SCIPbranchVar, model.get_scip_ptr(), vars[var_idx], nullptr, nullptr, nullptr);
-		model.solve_iter_branch(SCIP_BRANCHED);
-	} else {
-		// Fallback to SCIP default branching
-		model.solve_iter_branch(SCIP_DIDNOTRUN);
+		scip_result = SCIP_BRANCHED;
 	}
 
-	if (model.solve_iter_is_done()) {
-		return {true, {}};
+	if (model.solve_iter_branch(scip_result).has_value()) {
+		return {false, action_set(model, pseudo_candidates)};
 	}
-	return {false, action_set(model, pseudo_candidates)};
+	return {true, {}};
 }
 
 }  // namespace ecole::dynamics

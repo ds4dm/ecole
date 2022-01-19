@@ -6,7 +6,6 @@
 
 #include <nonstd/span.hpp>
 #include <scip/def.h>
-#include <scip/scip_heur.h>
 #include <scip/type_result.h>
 #include <xtensor/xtensor.hpp>
 
@@ -27,7 +26,7 @@ public:
 
 	using DefaultSetDynamicsRandomState::set_dynamics_random_state;
 
-	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet>;
+	ECOLE_EXPORT auto reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet>;
 
 	ECOLE_EXPORT auto step_dynamics(scip::Model& model, Action action) -> std::tuple<bool, ActionSet>;
 
@@ -38,7 +37,6 @@ private:
 	int depth_stop;
 
 	unsigned int trials_spent = 0;        // to keep track of the number of trials during each search
-	SCIP_HEUR* heur = nullptr;            // to tell SCIP where primal solutions come from
 	SCIP_RESULT result = SCIP_DIDNOTRUN;  // the final result of each search (several trials)
 };
 

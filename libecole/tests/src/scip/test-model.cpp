@@ -175,20 +175,20 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
-	model.solve_iter_start_branch();
+	auto where = model.solve_iter_start_branch();
 
 	SECTION("Branch outside of callback") {
-		while (!model.solve_iter_is_done()) {
+		while (where.has_value()) {
 			auto const cands = model.lp_branch_cands();
 			REQUIRE_FALSE(cands.empty());
 			scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
-			model.solve_iter_branch(SCIP_BRANCHED);
+			where = model.solve_iter_branch(SCIP_BRANCHED);
 		}
 	}
 
 	SECTION("Branch on SCIP default") {
-		while (!model.solve_iter_is_done()) {
-			model.solve_iter_branch(SCIP_DIDNOTRUN);
+		while (where.has_value()) {
+			where = model.solve_iter_branch(SCIP_DIDNOTRUN);
 		}
 	}
 

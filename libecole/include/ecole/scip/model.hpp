@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -17,6 +18,7 @@
 
 #include "ecole/export.hpp"
 #include "ecole/scip/exception.hpp"
+#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
 #include "ecole/utility/type-traits.hpp"
@@ -144,12 +146,11 @@ public:
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real primal_bound() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real dual_bound() const noexcept;
 
-	ECOLE_EXPORT void solve_iter_start_branch();
-	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
-	ECOLE_EXPORT SCIP_HEUR* solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop);
-	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);
-	ECOLE_EXPORT void solve_iter_stop();
-	[[nodiscard]] ECOLE_EXPORT bool solve_iter_is_done();
+	ECOLE_EXPORT auto solve_iter_start_branch() -> std::optional<StopLocation>;
+	ECOLE_EXPORT auto solve_iter_branch(SCIP_RESULT result) -> std::optional<StopLocation>;
+	ECOLE_EXPORT auto solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop)
+		-> std::optional<StopLocation>;
+	ECOLE_EXPORT auto solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<StopLocation>;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;

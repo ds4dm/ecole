@@ -12,49 +12,48 @@
 #include <scip/scipdefplugins.h>
 
 #include "ecole/scip/scimpl.hpp"
+#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/coroutine.hpp"
 
 namespace ecole::scip {
 
+namespace {
+
 /******************************************
  *  Declaration of the ReverseBranchrule  *
  ******************************************/
 
-namespace {
+using Controller = utility::Coroutine<StopLocation, SCIP_RESULT>;
 
 class ReverseBranchrule : public ::scip::ObjBranchrule {
 public:
 	static constexpr int max_priority = 536870911;
 	static constexpr int no_maxdepth = -1;
 	static constexpr double no_maxbounddist = 1.0;
-	static constexpr auto name = "ecole::ReverseBranchrule";
+	static constexpr auto name = callback_name(StopLocation::Branchrule);
 
-	ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor_*/);
+	ReverseBranchrule(SCIP* scip, std::weak_ptr<Controller::Executor> /*weak_executor_*/);
 
 	auto scip_execlp(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
 		-> SCIP_RETCODE override;
 
 private:
-	std::weak_ptr<utility::Controller::Executor> weak_executor;
+	std::weak_ptr<Controller::Executor> weak_executor;
 };
-
-}  // namespace
 
 /************************************
  *  Declaration of the ReverseHeur  *
  ************************************/
 
-namespace {
-
 class ReverseHeur : public ::scip::ObjHeur {
 public:
 	static constexpr int max_priority = 536870911;
-	static constexpr auto name = "ecole::ReverseHeur";
+	static constexpr auto name = callback_name(StopLocation::Heurisitc);
 
 	ReverseHeur(
 		SCIP* scip,
-		std::weak_ptr<utility::Controller::Executor> /*weak_executor*/,
+		std::weak_ptr<Controller::Executor> /*weak_executor*/,
 		int depth_freq,
 		int depth_start,
 		int depth_stop);
@@ -63,7 +62,7 @@ public:
 		-> SCIP_RETCODE override;
 
 private:
-	std::weak_ptr<utility::Controller::Executor> weak_executor;
+	std::weak_ptr<Controller::Executor> weak_executor;
 };
 
 }  // namespace
@@ -88,7 +87,7 @@ std::unique_ptr<SCIP, ScipDeleter> create_scip() {
 
 }  // namespace
 
-scip::Scimpl::Scimpl() : m_scip{create_scip()} {}
+Scimpl::Scimpl() : m_scip{create_scip()} {}
 
 Scimpl::Scimpl(Scimpl&&) noexcept = default;
 
@@ -96,11 +95,11 @@ Scimpl::Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& scip_ptr) noexcept : m_scip(
 
 Scimpl::~Scimpl() = default;
 
-SCIP* scip::Scimpl::get_scip_ptr() noexcept {
+auto Scimpl::get_scip_ptr() noexcept -> SCIP* {
 	return m_scip.get();
 }
 
-scip::Scimpl scip::Scimpl::copy() const {
+auto Scimpl::copy() const -> Scimpl {
 	if (m_scip == nullptr) {
 		return {nullptr};
 	}
@@ -115,7 +114,7 @@ scip::Scimpl scip::Scimpl::copy() const {
 	return {std::move(dest)};
 }
 
-scip::Scimpl scip::Scimpl::copy_orig() const {
+auto Scimpl::copy_orig() const -> Scimpl {
 	if (m_scip == nullptr) {
 		return {nullptr};
 	}
@@ -130,29 +129,29 @@ scip::Scimpl scip::Scimpl::copy_orig() const {
 	return {std::move(dest)};
 }
 
-void Scimpl::solve_iter_start_branch() {
+auto Scimpl::solve_iter_start_branch() -> std::optional<StopLocation> {
 	auto* const scip_ptr = get_scip_ptr();
-	m_controller =
-		std::make_unique<utility::Controller>([scip_ptr](std::weak_ptr<utility::Controller::Executor> weak_executor) {
-			scip::call(
-				SCIPincludeObjBranchrule,
-				scip_ptr,
-				new ReverseBranchrule(scip_ptr, std::move(weak_executor)),  // NOLINT
-				true);
-			scip::call(SCIPsolve, scip_ptr);  // NOLINT
-		});
+	m_controller = std::make_unique<Controller>([scip_ptr](std::weak_ptr<Controller::Executor> weak_executor) {
+		scip::call(
+			SCIPincludeObjBranchrule,
+			scip_ptr,
+			new ReverseBranchrule(scip_ptr, std::move(weak_executor)),  // NOLINT
+			true);
+		scip::call(SCIPsolve, scip_ptr);  // NOLINT
+	});
 
-	m_controller->wait_executor();
+	return m_controller->wait();
 }
 
-void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
-	m_controller->resume_executor(result);
-	m_controller->wait_executor();
+auto scip::Scimpl::solve_iter_branch(SCIP_RESULT result) -> std::optional<StopLocation> {
+	m_controller->resume(result);
+	return m_controller->wait();
 }
 
-SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) {
+auto Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop)
+	-> std::optional<StopLocation> {
 	auto* const scip_ptr = get_scip_ptr();
-	m_controller = std::make_unique<utility::Controller>([=](std::weak_ptr<utility::Controller::Executor> weak_executor) {
+	m_controller = std::make_unique<Controller>([=](std::weak_ptr<Controller::Executor> weak_executor) {
 		scip::call(
 			SCIPincludeObjHeur,
 			scip_ptr,
@@ -161,21 +160,12 @@ SCIP_HEUR* Scimpl::solve_iter_start_primalsearch(int depth_freq, int depth_start
 		scip::call(SCIPsolve, scip_ptr);  // NOLINT
 	});
 
-	m_controller->wait_executor();
-	return SCIPfindHeur(scip_ptr, scip::ReverseHeur::name);
+	return m_controller->wait();
 }
 
-void scip::Scimpl::solve_iter_primalsearch(SCIP_RESULT result) {
-	m_controller->resume_executor(result);
-	m_controller->wait_executor();
-}
-
-void scip::Scimpl::solve_iter_stop() {
-	m_controller = nullptr;
-}
-
-bool scip::Scimpl::solve_iter_is_done() {
-	return !(m_controller) || m_controller->is_done();
+auto scip::Scimpl::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<StopLocation> {
+	m_controller->resume(result);
+	return m_controller->wait();
 }
 
 namespace {
@@ -184,7 +174,8 @@ namespace {
  *  Definition of ReverseBranchrule  *
  *************************************/
 
-auto handle_executor(std::weak_ptr<utility::Controller::Executor>& weak_executor, SCIP* scip, SCIP_RESULT* result)
+template <StopLocation Loc>
+auto handle_executor(std::weak_ptr<Controller::Executor>& weak_executor, SCIP* scip, SCIP_RESULT* result)
 	-> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
@@ -192,7 +183,7 @@ auto handle_executor(std::weak_ptr<utility::Controller::Executor>& weak_executor
 	}
 	return std::visit(
 		[&](auto result_or_stop) -> SCIP_RETCODE {
-			using StopToken = utility::Controller::Executor::StopToken;
+			using StopToken = Controller::Executor::StopToken;
 			if constexpr (std::is_same_v<decltype(result_or_stop), StopToken>) {
 				*result = SCIP_DIDNOTRUN;
 				return SCIPinterruptSolve(scip);
@@ -201,10 +192,10 @@ auto handle_executor(std::weak_ptr<utility::Controller::Executor>& weak_executor
 				return SCIP_OKAY;
 			}
 		},
-		weak_executor.lock()->yield(0));
+		weak_executor.lock()->yield(Loc));
 }
 
-scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
+scip::ReverseBranchrule::ReverseBranchrule(SCIP* scip, std::weak_ptr<Controller::Executor> weak_executor_) :
 	::scip::ObjBranchrule(
 		scip,
 		scip::ReverseBranchrule::name,
@@ -219,7 +210,7 @@ auto ReverseBranchrule::scip_execlp(
 	SCIP_BRANCHRULE* /*branchrule*/,
 	SCIP_Bool /*allowaddcons*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	return handle_executor(weak_executor, scip, result);
+	return handle_executor<StopLocation::Branchrule>(weak_executor, scip, result);
 }
 
 /*******************************
@@ -228,7 +219,7 @@ auto ReverseBranchrule::scip_execlp(
 
 scip::ReverseHeur::ReverseHeur(
 	SCIP* scip,
-	std::weak_ptr<utility::Controller::Executor> weak_executor_,
+	std::weak_ptr<Controller::Executor> weak_executor_,
 	int depth_freq,
 	int depth_start,
 	int depth_stop) :
@@ -251,7 +242,7 @@ auto ReverseHeur::scip_exec(
 	SCIP_HEURTIMING /*heurtiming*/,
 	SCIP_Bool /*nodeinfeasible*/,
 	SCIP_RESULT* result) -> SCIP_RETCODE {
-	return handle_executor(weak_executor, scip, result);
+	return handle_executor<StopLocation::Heurisitc>(weak_executor, scip, result);
 }
 
 }  // namespace

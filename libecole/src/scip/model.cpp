@@ -295,28 +295,21 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-void Model::solve_iter_start_branch() {
-	scimpl->solve_iter_start_branch();
+auto Model::solve_iter_start_branch() -> std::optional<StopLocation> {
+	return scimpl->solve_iter_start_branch();
 }
 
-void Model::solve_iter_branch(SCIP_RESULT result) {
-	scimpl->solve_iter_branch(result);
+auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<StopLocation> {
+	return scimpl->solve_iter_branch(result);
 }
 
-SCIP_HEUR* Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) {
+auto Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop)
+	-> std::optional<StopLocation> {
 	return scimpl->solve_iter_start_primalsearch(depth_freq, depth_start, depth_stop);
 }
 
-void Model::solve_iter_primalsearch(SCIP_RESULT result) {
-	scimpl->solve_iter_primalsearch(result);
-}
-
-void Model::solve_iter_stop() {
-	scimpl->solve_iter_stop();
-}
-
-bool Model::solve_iter_is_done() {
-	return scimpl->solve_iter_is_done();
+auto Model::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<StopLocation> {
+	return scimpl->solve_iter_primalsearch(result);
 }
 
 }  // namespace ecole::scip
