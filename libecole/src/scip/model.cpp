@@ -295,21 +295,24 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-auto Model::solve_iter_start_branch() -> std::optional<StopLocation> {
-	return scimpl->solve_iter_start_branch();
+auto Model::solve_iter_start_branch() -> std::optional<Callback> {
+	return scimpl->solve_iter(CallbackConstructorArgs<Callback::Branchrule>{});
 }
 
-auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<StopLocation> {
-	return scimpl->solve_iter_branch(result);
+auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<Callback> {
+	return scimpl->solve_iter_continue(result);
 }
 
-auto Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop)
-	-> std::optional<StopLocation> {
-	return scimpl->solve_iter_start_primalsearch(depth_freq, depth_start, depth_stop);
+auto Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) -> std::optional<Callback> {
+	// FIXME cannot manage to create it directly
+	auto args = CallbackConstructorArgs<Callback::Heurisitc>{};
+	args.frequency = depth_freq;
+	args.frequency_offset = depth_start, args.maxdepth = depth_stop;
+	return scimpl->solve_iter(args);
 }
 
-auto Model::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<StopLocation> {
-	return scimpl->solve_iter_primalsearch(result);
+auto Model::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<Callback> {
+	return scimpl->solve_iter_continue(result);
 }
 
 }  // namespace ecole::scip

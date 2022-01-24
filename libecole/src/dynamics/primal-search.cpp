@@ -36,7 +36,7 @@ auto action_set(scip::Model const& model) -> PrimalSearchDynamics::ActionSet {
 auto add_solution_from_lp(SCIP* scip) -> bool {
 	SCIP_Bool solution_kept = false;
 	SCIP_SOL* sol = nullptr;
-	auto* const heur = SCIPfindHeur(scip, scip::callback_name(scip::StopLocation::Heurisitc));
+	auto* const heur = SCIPfindHeur(scip, scip::callback_name(scip::Callback::Heurisitc));
 	scip::call(SCIPcreateSol, scip, &sol, heur);
 	try {
 		scip::call(SCIPlinkLPSol, scip, sol);
