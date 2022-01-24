@@ -23,8 +23,7 @@ void advance_to_stage(ecole::scip::Model& model, SCIP_STAGE stage) {
 		model.presolve();
 		break;
 	case SCIP_STAGE_SOLVING: {
-		auto const args = ecole::scip::CallbackConstructorArgs<ecole::scip::Callback::Branchrule>{};
-		model.solve_iter(args);
+		model.solve_iter(ecole::scip::callback::BranchruleConstructor{});
 		break;
 	}
 	case SCIP_STAGE_SOLVED:

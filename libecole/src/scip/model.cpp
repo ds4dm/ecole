@@ -12,10 +12,10 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
-#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
@@ -296,15 +296,15 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-auto Model::solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback> {
+auto Model::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs) -> std::optional<callback::Type> {
 	return scimpl->solve_iter(arg_packs);
 }
 
-auto Model::solve_iter(DynamicCallbackConstructor arg_pack) -> std::optional<Callback> {
+auto Model::solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::Type> {
 	return solve_iter({&arg_pack, 1});
 }
 
-auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback> {
+auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type> {
 	return scimpl->solve_iter_continue(result);
 }
 

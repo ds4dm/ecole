@@ -8,9 +8,9 @@
 #include <scip/scip.h>
 
 #include "ecole/random.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 
 #include "conftest.hpp"
@@ -177,7 +177,7 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
-	auto where = model.solve_iter(scip::CallbackConstructorArgs<scip::Callback::Branchrule>{});
+	auto where = model.solve_iter(scip::callback::BranchruleConstructor{});
 
 	SECTION("Branch outside of callback") {
 		while (where.has_value()) {
@@ -199,9 +199,9 @@ TEST_CASE("Iterative branching", "[scip][slow]") {
 
 TEST_CASE("Iterative solving", "[scip][slow]") {
 	auto model = get_model();
-	auto const constructors = std::array<scip::DynamicCallbackConstructor, 2>{
-		scip::CallbackConstructorArgs<scip::Callback::Branchrule>{},
-		scip::CallbackConstructorArgs<scip::Callback::Heurisitc>{},
+	auto const constructors = std::array<scip::callback::DynamicConstructor, 2>{
+		scip::callback::BranchruleConstructor{},
+		scip::callback::HeuristicConstructor{},
 	};
 	auto where = model.solve_iter(constructors);
 
@@ -210,9 +210,9 @@ TEST_CASE("Iterative solving", "[scip][slow]") {
 		auto used_heuristic = false;
 		while (where.has_value()) {
 			where = model.solve_iter_continue(SCIP_DIDNOTRUN);
-			if (where == scip::Callback::Branchrule) {
+			if (where == scip::callback::Type::Branchrule) {
 				used_branchrule = true;
-			} else if (where == scip::Callback::Heurisitc) {
+			} else if (where == scip::callback::Type::Heurisitc) {
 				used_heuristic = true;
 			}
 		}

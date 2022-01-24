@@ -7,8 +7,8 @@
 
 #include "ecole/dynamics/primal-search.hpp"
 #include "ecole/exception.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/model.hpp"
-#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::dynamics {
@@ -36,7 +36,7 @@ auto action_set(scip::Model const& model) -> PrimalSearchDynamics::ActionSet {
 auto add_solution_from_lp(SCIP* scip) -> bool {
 	SCIP_Bool solution_kept = false;
 	SCIP_SOL* sol = nullptr;
-	auto* const heur = SCIPfindHeur(scip, scip::callback_name(scip::Callback::Heurisitc));
+	auto* const heur = SCIPfindHeur(scip, scip::callback::name(scip::callback::Type::Heurisitc));
 	scip::call(SCIPcreateSol, scip, &sol, heur);
 	try {
 		scip::call(SCIPlinkLPSol, scip, sol);
@@ -56,8 +56,12 @@ auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) const -> std::tupl
 		model.solve();
 		return {true, {}};
 	}
-	auto const args = scip::CallbackConstructorArgs<scip::Callback::Heurisitc>{
-		scip::CallbackConstant::priority_max, depth_freq, depth_start, depth_stop};
+	auto const args = scip::callback::HeuristicConstructor{
+		scip::callback::priority_max,
+		depth_freq,
+		depth_start,
+		depth_stop,
+	};
 	if (model.solve_iter(args).has_value()) {
 		return {false, action_set(model)};
 	}

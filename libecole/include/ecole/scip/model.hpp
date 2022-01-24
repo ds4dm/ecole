@@ -17,8 +17,8 @@
 #include <scip/scip.h>
 
 #include "ecole/export.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/exception.hpp"
-#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
 #include "ecole/utility/type-traits.hpp"
@@ -146,9 +146,10 @@ public:
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real primal_bound() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real dual_bound() const noexcept;
 
-	ECOLE_EXPORT auto solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter(DynamicCallbackConstructor arg_pack) -> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback>;
+	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+		-> std::optional<callback::Type>;
+	ECOLE_EXPORT auto solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::Type>;
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type>;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;

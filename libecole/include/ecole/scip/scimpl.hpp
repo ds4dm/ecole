@@ -8,7 +8,7 @@
 #include <scip/scip.h>
 
 #include "ecole/export.hpp"
-#include "ecole/scip/stop-location.hpp"
+#include "ecole/scip/callback.hpp"
 
 namespace ecole::utility {
 template <typename Return, typename Message> class Coroutine;
@@ -32,11 +32,12 @@ public:
 	[[nodiscard]] ECOLE_EXPORT auto copy() const -> Scimpl;
 	[[nodiscard]] ECOLE_EXPORT auto copy_orig() const -> Scimpl;
 
-	ECOLE_EXPORT auto solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback>;
+	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+		-> std::optional<callback::Type>;
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type>;
 
 private:
-	using Controller = utility::Coroutine<Callback, SCIP_RESULT>;
+	using Controller = utility::Coroutine<callback::Type, SCIP_RESULT>;
 
 	std::unique_ptr<SCIP, ScipDeleter> m_scip;
 	std::unique_ptr<Controller> m_controller;

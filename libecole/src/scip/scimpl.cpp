@@ -12,8 +12,8 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/scimpl.hpp"
-#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/utility/coroutine.hpp"
 
@@ -25,7 +25,7 @@ namespace ecole::scip {
 
 namespace {
 
-using Controller = utility::Coroutine<Callback, SCIP_RESULT>;
+using Controller = utility::Coroutine<callback::Type, SCIP_RESULT>;
 using Executor = typename Controller::Executor;
 
 /**
@@ -33,9 +33,8 @@ using Executor = typename Controller::Executor;
  *
  * Needs to be implemented by all reverse callbacks.
  */
-template <Callback callback>
-auto include_reverse_callback(SCIP* scip, std::weak_ptr<Executor> executor, CallbackConstructorArgs<callback> args)
-	-> void;
+template <callback::Type type>
+auto include_reverse_callback(SCIP* scip, std::weak_ptr<Executor> executor, callback::Constructor<type> args) -> void;
 
 /**
  * In a callback send Callback type and wait for result.
@@ -43,7 +42,7 @@ auto include_reverse_callback(SCIP* scip, std::weak_ptr<Executor> executor, Call
  * This function is commonly used inside reverse callbacks to wait for user action (the result).
  * For user to make the proper action, they need to know on which callback SCIP stoped (the stop location).
  */
-template <Callback callback>
+template <callback::Type type>
 auto handle_executor(std::weak_ptr<Executor>& weak_executor, SCIP* scip, SCIP_RESULT* result) -> SCIP_RETCODE {
 	if (weak_executor.expired()) {
 		*result = SCIP_DIDNOTRUN;
@@ -60,7 +59,7 @@ auto handle_executor(std::weak_ptr<Executor>& weak_executor, SCIP* scip, SCIP_RE
 				return SCIP_OKAY;
 			}
 		},
-		weak_executor.lock()->yield(callback));
+		weak_executor.lock()->yield(type));
 }
 
 class ReverseBranchrule : public ::scip::ObjBranchrule {
@@ -73,7 +72,7 @@ public:
 		std::weak_ptr<Executor> weak_executor) :
 		ObjBranchrule{
 			scip,
-			callback_name(Callback::Branchrule),
+			name(callback::Type::Branchrule),
 			"Branchrule that wait for another thread to make the branching.",
 			priority,
 			maxdepth,
@@ -82,7 +81,7 @@ public:
 
 	auto scip_execlp(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool /*allowaddcons*/, SCIP_RESULT* result)
 		-> SCIP_RETCODE override {
-		return handle_executor<Callback::Branchrule>(m_weak_executor, scip, result);
+		return handle_executor<callback::Type::Branchrule>(m_weak_executor, scip, result);
 	}
 
 private:
@@ -90,10 +89,10 @@ private:
 };
 
 template <>
-auto include_reverse_callback<Callback::Branchrule>(
+auto include_reverse_callback<callback::Type::Branchrule>(
 	SCIP* scip,
 	std::weak_ptr<Executor> executor,
-	CallbackConstructorArgs<Callback::Branchrule> args) -> void {
+	callback::Constructor<callback::Type::Branchrule> args) -> void {
 	scip::call(
 		SCIPincludeObjBranchrule,
 		scip,
@@ -113,7 +112,7 @@ public:
 		std::weak_ptr<Executor> weak_executor) :
 		ObjHeur{
 			scip,
-			callback_name(Callback::Heurisitc),
+			name(callback::Type::Heurisitc),
 			"Primal heuristic that waits for another thread to provide a primal solution.",
 			'e',
 			priority,
@@ -130,7 +129,7 @@ public:
 		SCIP_HEURTIMING /*heurtiming*/,
 		SCIP_Bool /*nodeinfeasible*/,
 		SCIP_RESULT* result) -> SCIP_RETCODE override {
-		return handle_executor<Callback::Heurisitc>(m_weak_executor, scip, result);
+		return handle_executor<callback::Type::Heurisitc>(m_weak_executor, scip, result);
 	}
 
 private:
@@ -138,10 +137,10 @@ private:
 };
 
 template <>
-auto include_reverse_callback<Callback::Heurisitc>(
+auto include_reverse_callback<callback::Type::Heurisitc>(
 	SCIP* scip,
 	std::weak_ptr<Executor> executor,
-	CallbackConstructorArgs<Callback::Heurisitc> args) -> void {
+	callback::Constructor<callback::Type::Heurisitc> args) -> void {
 	scip::call(
 		SCIPincludeObjHeur,
 		scip,
@@ -214,7 +213,7 @@ auto Scimpl::copy_orig() const -> Scimpl {
 	return {std::move(dest)};
 }
 
-auto Scimpl::solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback> {
+auto Scimpl::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs) -> std::optional<callback::Type> {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller = std::make_unique<Controller>([=](std::weak_ptr<Executor> const& executor) {
 		for (auto const pack : arg_packs) {
@@ -225,7 +224,7 @@ auto Scimpl::solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs
 	return m_controller->wait();
 }
 
-auto Scimpl::solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback> {
+auto Scimpl::solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type> {
 	m_controller->resume(result);
 	return m_controller->wait();
 }
