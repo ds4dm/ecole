@@ -30,7 +30,8 @@ auto action_set(scip::Model const& model, bool pseudo) -> std::optional<xt::xten
 }  // namespace
 
 auto BranchingDynamics::reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet> {
-	if (model.solve_iter_start_branch().has_value()) {
+	auto const args = scip::CallbackConstructorArgs<scip::Callback::Branchrule>{};
+	if (model.solve_iter(args).has_value()) {
 		return {false, action_set(model, pseudo_candidates)};
 	}
 	return {true, {}};
@@ -54,7 +55,7 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_
 		scip_result = SCIP_BRANCHED;
 	}
 
-	if (model.solve_iter_branch(scip_result).has_value()) {
+	if (model.solve_iter_continue(scip_result).has_value()) {
 		return {false, action_set(model, pseudo_candidates)};
 	}
 	return {true, {}};

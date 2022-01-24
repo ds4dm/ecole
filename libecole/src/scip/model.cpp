@@ -296,22 +296,15 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-auto Model::solve_iter_start_branch() -> std::optional<Callback> {
-	auto const constructor = DynamicCallbackConstructor{CallbackConstructorArgs<Callback::Branchrule>{}};
-	return scimpl->solve_iter({&constructor, 1});
+auto Model::solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback> {
+	return scimpl->solve_iter(arg_packs);
 }
 
-auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<Callback> {
-	return scimpl->solve_iter_continue(result);
+auto Model::solve_iter(DynamicCallbackConstructor arg_pack) -> std::optional<Callback> {
+	return solve_iter({&arg_pack, 1});
 }
 
-auto Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) -> std::optional<Callback> {
-	auto const constructor = DynamicCallbackConstructor{
-		CallbackConstructorArgs<Callback::Heurisitc>{CallbackConstant::priority_max, depth_freq, depth_start, depth_stop}};
-	return scimpl->solve_iter({&constructor, 1});
-}
-
-auto Model::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<Callback> {
+auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback> {
 	return scimpl->solve_iter_continue(result);
 }
 

@@ -1,3 +1,4 @@
+#include <array>
 #include <future>
 #include <limits>
 #include <random>
@@ -9,6 +10,7 @@
 #include "ecole/random.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 
 #include "conftest.hpp"
@@ -175,22 +177,46 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
-	auto where = model.solve_iter_start_branch();
+	auto where = model.solve_iter(scip::CallbackConstructorArgs<scip::Callback::Branchrule>{});
 
 	SECTION("Branch outside of callback") {
 		while (where.has_value()) {
 			auto const cands = model.lp_branch_cands();
 			REQUIRE_FALSE(cands.empty());
 			scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
-			where = model.solve_iter_branch(SCIP_BRANCHED);
+			where = model.solve_iter_continue(SCIP_BRANCHED);
 		}
 	}
 
 	SECTION("Branch on SCIP default") {
 		while (where.has_value()) {
-			where = model.solve_iter_branch(SCIP_DIDNOTRUN);
+			where = model.solve_iter_continue(SCIP_DIDNOTRUN);
 		}
 	}
 
 	REQUIRE(model.is_solved());
+}
+
+TEST_CASE("Iterative solving", "[scip][slow]") {
+	auto model = get_model();
+	auto const constructors = std::array<scip::DynamicCallbackConstructor, 2>{
+		scip::CallbackConstructorArgs<scip::Callback::Branchrule>{},
+		scip::CallbackConstructorArgs<scip::Callback::Heurisitc>{},
+	};
+	auto where = model.solve_iter(constructors);
+
+	SECTION("Using SCIP default") {
+		auto used_branchrule = false;
+		auto used_heuristic = false;
+		while (where.has_value()) {
+			where = model.solve_iter_continue(SCIP_DIDNOTRUN);
+			if (where == scip::Callback::Branchrule) {
+				used_branchrule = true;
+			} else if (where == scip::Callback::Heurisitc) {
+				used_heuristic = true;
+			}
+		}
+		REQUIRE(used_branchrule);
+		REQUIRE(used_heuristic);
+	}
 }

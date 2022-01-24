@@ -146,11 +146,9 @@ public:
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real primal_bound() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real dual_bound() const noexcept;
 
-	ECOLE_EXPORT auto solve_iter_start_branch() -> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter_branch(SCIP_RESULT result) -> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop)
-		-> std::optional<Callback>;
-	ECOLE_EXPORT auto solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<Callback>;
+	ECOLE_EXPORT auto solve_iter(nonstd::span<DynamicCallbackConstructor const> arg_packs) -> std::optional<Callback>;
+	ECOLE_EXPORT auto solve_iter(DynamicCallbackConstructor arg_pack) -> std::optional<Callback>;
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<Callback>;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;

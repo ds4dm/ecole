@@ -56,7 +56,9 @@ auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) const -> std::tupl
 		model.solve();
 		return {true, {}};
 	}
-	if (model.solve_iter_start_primalsearch(depth_freq, depth_start, depth_stop).has_value()) {
+	auto const args = scip::CallbackConstructorArgs<scip::Callback::Heurisitc>{
+		scip::CallbackConstant::priority_max, depth_freq, depth_start, depth_stop};
+	if (model.solve_iter(args).has_value()) {
 		return {false, action_set(model)};
 	}
 	return {true, {}};
@@ -136,7 +138,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> s
 		trials_spent = 0;
 		result = SCIP_DIDNOTRUN;
 		// Continue SCIP
-		if (!model.solve_iter_primalsearch(result).has_value()) {
+		if (!model.solve_iter_continue(result).has_value()) {
 			return {true, {}};
 		}
 	}
