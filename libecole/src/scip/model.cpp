@@ -15,6 +15,7 @@
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
+#include "ecole/scip/stop-location.hpp"
 #include "ecole/scip/utils.hpp"
 
 namespace ecole::scip {
@@ -296,7 +297,8 @@ SCIP_Real Model::dual_bound() const noexcept {
 }
 
 auto Model::solve_iter_start_branch() -> std::optional<Callback> {
-	return scimpl->solve_iter(CallbackConstructorArgs<Callback::Branchrule>{});
+	auto const constructor = DynamicCallbackConstructor{CallbackConstructorArgs<Callback::Branchrule>{}};
+	return scimpl->solve_iter({&constructor, 1});
 }
 
 auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<Callback> {
@@ -304,11 +306,9 @@ auto Model::solve_iter_branch(SCIP_RESULT result) -> std::optional<Callback> {
 }
 
 auto Model::solve_iter_start_primalsearch(int depth_freq, int depth_start, int depth_stop) -> std::optional<Callback> {
-	// FIXME cannot manage to create it directly
-	auto args = CallbackConstructorArgs<Callback::Heurisitc>{};
-	args.frequency = depth_freq;
-	args.frequency_offset = depth_start, args.maxdepth = depth_stop;
-	return scimpl->solve_iter(args);
+	auto const constructor = DynamicCallbackConstructor{
+		CallbackConstructorArgs<Callback::Heurisitc>{CallbackConstant::priority_max, depth_freq, depth_start, depth_stop}};
+	return scimpl->solve_iter({&constructor, 1});
 }
 
 auto Model::solve_iter_primalsearch(SCIP_RESULT result) -> std::optional<Callback> {

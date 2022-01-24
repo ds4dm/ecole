@@ -2,6 +2,7 @@
 
 #include <scip/type_timing.h>
 #include <tuple>
+#include <variant>
 
 namespace ecole::scip {
 
@@ -26,18 +27,21 @@ struct CallbackConstant {
 
 template <Callback callback> struct CallbackConstructorArgs;
 
-template <> struct CallbackConstructorArgs<Callback::Branchrule> : CallbackConstant {
-	int priority = priority_max;
-	int maxdepth = maxdepth_none;
-	double maxbounddist = maxbounddist_none;
+template <> struct CallbackConstructorArgs<Callback::Branchrule> {
+	int priority = CallbackConstant::priority_max;
+	int maxdepth = CallbackConstant::maxdepth_none;
+	double maxbounddist = CallbackConstant::maxbounddist_none;
 };
 
-template <> struct CallbackConstructorArgs<Callback::Heurisitc> : CallbackConstant {
-	int priority = priority_max;
-	int frequency = frequency_always;
-	int frequency_offset = frequency_offset_none;
-	int maxdepth = maxdepth_none;
+template <> struct CallbackConstructorArgs<Callback::Heurisitc> {
+	int priority = CallbackConstant::priority_max;
+	int frequency = CallbackConstant::frequency_always;
+	int frequency_offset = CallbackConstant::frequency_offset_none;
+	int maxdepth = CallbackConstant::maxdepth_none;
 	SCIP_HEURTIMING timingmask = SCIP_HEURTIMING_AFTERNODE;
 };
+
+using DynamicCallbackConstructor =
+	std::variant<CallbackConstructorArgs<Callback::Branchrule>, CallbackConstructorArgs<Callback::Heurisitc>>;
 
 }  // namespace ecole::scip
