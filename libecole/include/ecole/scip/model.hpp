@@ -135,9 +135,6 @@ public:
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_ROW*> lp_rows() const;
 	[[nodiscard]] ECOLE_EXPORT std::size_t nnz() const noexcept;
 
-	/**
-	 * Transform, presolve, and solve problem.
-	 */
 	ECOLE_EXPORT void transform_prob();
 	ECOLE_EXPORT void presolve();
 	ECOLE_EXPORT void solve();
@@ -146,9 +143,44 @@ public:
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real primal_bound() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real dual_bound() const noexcept;
 
+	/**
+	 * Start iterative solving.
+	 *
+	 * Iterative solving pauses when it encounters a callback and give control back to the user.
+	 * Solving must be explicitly resumed by calling ``solve_iter_continue`` repatedly.
+	 * Iterative solving will only pause on the callbacks that are explicitly passed as paramerters.
+	 *
+	 * @param arg_packs A sequence of construtors parameters defining the reverse callback to pause on.
+	 * @return The callback where iterative solving has stopped, or nothing if solving has terminated.
+	 * @see solve_iter_continue
+	 */
 	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
 		-> std::optional<callback::Type>;
+
+	/**
+	 * Start iterative solving with a single callback.
+	 *
+	 * For example branching iteratively could be achieved with:
+	 * ```
+	 * auto where = model.solve_iter(scip::callback::BranchingConstructor{});
+	 * while (where.has_value()) {
+	 *     auto const cands = model.lp_branch_cands();
+	 *     scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
+	 *     where = model.solve_iter_continue(SCIP_BRANCHED);
+	 * }
+	 * ```
+	 */
 	ECOLE_EXPORT auto solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::Type>;
+
+	/**
+	 * Continue iterative solving.
+	 *
+	 * Continue until the next reverse callback is encountered.
+	 *
+	 * @param result The result given to the SCIP callback for the action taken on the current pause.
+	 * @return The callback where iterative solving has stopped, or nothing if solving has terminated.
+	 * @see solve_iter_continue
+	 */
 	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type>;
 
 private:

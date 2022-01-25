@@ -145,7 +145,7 @@ auto include_reverse_callback<callback::Type::Heurisitc>(
 		SCIPincludeObjHeur,
 		scip,
 		new ReverseHeur(
-			scip, args.priority, args.frequency, args.frequency_offset, args.maxdepth, args.timingmask, std::move(executor)),
+			scip, args.priority, args.frequency, args.frequency_offset, args.maxdepth, args.timing_mask, std::move(executor)),
 		true);
 }  // NOLINT
 
