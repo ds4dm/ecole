@@ -53,4 +53,22 @@ using HeuristicConstructor = Constructor<Type::Heurisitc>;
 
 using DynamicConstructor = std::variant<Constructor<Type::Branchrule>, Constructor<Type::Heurisitc>>;
 
+/** Parameter given by SCIP to the callback function. */
+template <Type type> struct Call;
+
+/** Parameter given by SCIP to the branchrule function. */
+template <> struct Call<Type::Branchrule> {
+	bool allow_add_constraints;
+};
+using BranchruleCall = Call<Type::Branchrule>;
+
+/** Parameter given by SCIP to the heuristic functions. */
+template <> struct Call<Type::Heurisitc> {
+		SCIP_HEURTIMING heuristic_timing;
+		bool node_infeasible;
+};
+using HeuristicCall = Call<Type::Heurisitc>;
+
+using DynamicCall = std::variant<Call<Type::Branchrule>, Call<Type::Heurisitc>>;
+
 }  // namespace ecole::scip::callback

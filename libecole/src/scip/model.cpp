@@ -296,15 +296,16 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-auto Model::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs) -> std::optional<callback::Type> {
+auto Model::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+	-> std::optional<callback::DynamicCall> {
 	return scimpl->solve_iter(arg_packs);
 }
 
-auto Model::solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::Type> {
+auto Model::solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::DynamicCall> {
 	return solve_iter({&arg_pack, 1});
 }
 
-auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type> {
+auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::DynamicCall> {
 	return scimpl->solve_iter_continue(result);
 }
 

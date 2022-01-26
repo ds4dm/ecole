@@ -33,11 +33,11 @@ public:
 	[[nodiscard]] ECOLE_EXPORT auto copy_orig() const -> Scimpl;
 
 	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
-		-> std::optional<callback::Type>;
-	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::Type>;
+		-> std::optional<callback::DynamicCall>;
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::DynamicCall>;
 
 private:
-	using Controller = utility::Coroutine<callback::Type, SCIP_RESULT>;
+	using Controller = utility::Coroutine<callback::DynamicCall, SCIP_RESULT>;
 
 	std::unique_ptr<SCIP, ScipDeleter> m_scip;
 	std::unique_ptr<Controller> m_controller;

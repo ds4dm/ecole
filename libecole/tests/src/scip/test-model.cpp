@@ -177,24 +177,26 @@ TEST_CASE("Map parameter management", "[scip]") {
 
 TEST_CASE("Iterative branching", "[scip][slow]") {
 	auto model = get_model();
-	auto where = model.solve_iter(scip::callback::BranchruleConstructor{});
+	auto fcall = model.solve_iter(scip::callback::BranchruleConstructor{});
+
+	SECTION("Destructed before done") {}
 
 	SECTION("Branch outside of callback") {
-		while (where.has_value()) {
+		while (fcall.has_value()) {
 			auto const cands = model.lp_branch_cands();
 			REQUIRE_FALSE(cands.empty());
 			scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
-			where = model.solve_iter_continue(SCIP_BRANCHED);
+			fcall = model.solve_iter_continue(SCIP_BRANCHED);
 		}
+		REQUIRE(model.is_solved());
 	}
 
 	SECTION("Branch on SCIP default") {
-		while (where.has_value()) {
-			where = model.solve_iter_continue(SCIP_DIDNOTRUN);
+		while (fcall.has_value()) {
+			fcall = model.solve_iter_continue(SCIP_DIDNOTRUN);
 		}
+		REQUIRE(model.is_solved());
 	}
-
-	REQUIRE(model.is_solved());
 }
 
 TEST_CASE("Iterative solving", "[scip][slow]") {
@@ -203,18 +205,24 @@ TEST_CASE("Iterative solving", "[scip][slow]") {
 		scip::callback::BranchruleConstructor{},
 		scip::callback::HeuristicConstructor{},
 	};
-	auto where = model.solve_iter(constructors);
+	auto maybe_fcall = model.solve_iter(constructors);
+
+	SECTION("Destructed before done") {}
 
 	SECTION("Using SCIP default") {
 		auto used_branchrule = false;
 		auto used_heuristic = false;
-		while (where.has_value()) {
-			where = model.solve_iter_continue(SCIP_DIDNOTRUN);
-			if (where == scip::callback::Type::Branchrule) {
-				used_branchrule = true;
-			} else if (where == scip::callback::Type::Heurisitc) {
-				used_heuristic = true;
-			}
+		while (maybe_fcall.has_value()) {
+			std::visit(
+				[&](auto fcall) {
+					if constexpr (std::is_same_v<decltype(fcall), scip::callback::BranchruleCall>) {
+						used_branchrule = true;
+					} else if constexpr (std::is_same_v<decltype(fcall), scip::callback::HeuristicCall>) {
+						used_heuristic = true;
+					}
+				},
+				maybe_fcall.value());
+			maybe_fcall = model.solve_iter_continue(SCIP_DIDNOTRUN);
 		}
 		REQUIRE(used_branchrule);
 		REQUIRE(used_heuristic);
