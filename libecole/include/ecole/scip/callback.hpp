@@ -57,15 +57,13 @@ using DynamicConstructor = std::variant<Constructor<Type::Branchrule>, Construct
 template <Type type> struct Call;
 
 /** Parameter given by SCIP to the branchrule function. */
-template <> struct Call<Type::Branchrule> {
-	bool allow_add_constraints;
-};
+template <> struct Call<Type::Branchrule> { bool allow_add_constraints; };
 using BranchruleCall = Call<Type::Branchrule>;
 
 /** Parameter given by SCIP to the heuristic functions. */
 template <> struct Call<Type::Heurisitc> {
-		SCIP_HEURTIMING heuristic_timing;
-		bool node_infeasible;
+	SCIP_HEURTIMING heuristic_timing;
+	bool node_infeasible;
 };
 using HeuristicCall = Call<Type::Heurisitc>;
 

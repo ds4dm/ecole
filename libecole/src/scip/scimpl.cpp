@@ -2,6 +2,7 @@
 #include <cassert>
 #include <mutex>
 #include <scip/type_result.h>
+#include <scip/type_retcode.h>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -49,16 +50,20 @@ auto handle_executor(SCIP* scip, std::weak_ptr<Executor>& weak_executor, callbac
 	if (weak_executor.expired()) {
 		return {SCIP_OKAY, SCIP_DIDNOTRUN};
 	}
-	return std::visit(
-		[&](auto result_or_stop) -> std::tuple<SCIP_RETCODE, SCIP_RESULT> {
-			using StopToken = Executor::StopToken;
-			if constexpr (std::is_same_v<decltype(result_or_stop), StopToken>) {
-				return {SCIPinterruptSolve(scip), SCIP_DIDNOTRUN};
-			} else {
-				return {SCIP_OKAY, result_or_stop};
-			}
-		},
-		weak_executor.lock()->yield(call));
+	try {
+		return std::visit(
+			[&](auto result_or_stop) -> std::tuple<SCIP_RETCODE, SCIP_RESULT> {
+				using StopToken = Executor::StopToken;
+				if constexpr (std::is_same_v<decltype(result_or_stop), StopToken>) {
+					return {SCIPinterruptSolve(scip), SCIP_DIDNOTRUN};
+				} else {
+					return {SCIP_OKAY, result_or_stop};
+				}
+			},
+			weak_executor.lock()->yield(call));
+	} catch (...) {
+		return {SCIP_ERROR, SCIP_DIDNOTRUN};
+	}
 }
 
 class ReverseBranchrule : public ::scip::ObjBranchrule {
@@ -218,7 +223,8 @@ auto Scimpl::copy_orig() const -> Scimpl {
 	return {std::move(dest)};
 }
 
-auto Scimpl::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs) -> std::optional<callback::DynamicCall> {
+auto Scimpl::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+	-> std::optional<callback::DynamicCall> {
 	auto* const scip_ptr = get_scip_ptr();
 	m_controller = std::make_unique<Controller>([=](std::weak_ptr<Executor> const& executor) {
 		for (auto const pack : arg_packs) {

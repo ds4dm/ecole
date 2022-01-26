@@ -345,7 +345,10 @@ template <typename Return, typename Message> auto Coroutine<Return, Message>::st
 	if (!m_exclusion_lock.owns_lock()) {
 		m_exclusion_lock = m_synchronizer->coroutine_wait_executor();
 	}
-	if (!m_synchronizer->coroutine_executor_is_done(m_exclusion_lock)) {
+	// Could be an `if` statement because executors are supposed to terminate directly when being sent a StopToken.
+	// However, using coroutine with multiple SCIP callbacks, some callbacks might still be called even after
+	// `SCIPinterrupt` is called on `StopToken`.
+	while (!m_synchronizer->coroutine_executor_is_done(m_exclusion_lock)) {
 		m_synchronizer->coroutine_stop_executor(std::move(m_exclusion_lock));
 		m_exclusion_lock = m_synchronizer->coroutine_wait_executor();
 	}
