@@ -57,7 +57,13 @@ using DynamicConstructor = std::variant<Constructor<Type::Branchrule>, Construct
 template <Type type> struct Call;
 
 /** Parameter given by SCIP to the branchrule function. */
-template <> struct Call<Type::Branchrule> { bool allow_add_constraints; };
+template <> struct Call<Type::Branchrule> {
+	/** The method of the Branchrule callback being called. */
+	enum struct Where { LP, External, Pseudo };
+
+	bool allow_add_constraints;
+	Where where;
+};
 using BranchruleCall = Call<Type::Branchrule>;
 
 /** Parameter given by SCIP to the heuristic functions. */

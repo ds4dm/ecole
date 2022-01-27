@@ -54,9 +54,20 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_
 		scip_result = SCIP_BRANCHED;
 	}
 
-	if (model.solve_iter_continue(scip_result).has_value()) {
-		return {false, action_set(model, pseudo_candidates)};
+	using Call = scip::callback::BranchruleCall;
+	// Looping until the next LP branchrule rule callback, if it exists.
+	auto fcall = model.solve_iter_continue(scip_result);
+	while (fcall.has_value()) {
+		// LP branchrule found, we give control back to the agent.
+		// Assuming Branchrul are the only reverse callbacks.
+		if (std::get<Call>(fcall.value()).where == Call::Where::LP) {
+			return {false, action_set(model, pseudo_candidates)};
+		}
+		// Otherwise keep looping, ignoring the callback.
+		fcall = model.solve_iter_continue(SCIP_DIDNOTRUN);
 	}
+
+	// Solving has terminated.
 	return {true, {}};
 }
 

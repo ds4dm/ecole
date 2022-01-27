@@ -85,14 +85,30 @@ public:
 
 	auto scip_execlp(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool allow_add_constraints, SCIP_RESULT* result)
 		-> SCIP_RETCODE override {
-		auto retcode = SCIP_OKAY;
-		std::tie(retcode, *result) =
-			handle_executor(scip, m_weak_executor, callback::BranchruleCall{static_cast<bool>(allow_add_constraints)});
-		return retcode;
+		using Where = callback::BranchruleCall::Where;
+		return scip_exec_any(scip, result, {static_cast<bool>(allow_add_constraints), Where::LP});
+	}
+
+	auto scip_execext(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool allow_add_constraints, SCIP_RESULT* result)
+		-> SCIP_RETCODE override {
+		using Where = callback::BranchruleCall::Where;
+		return scip_exec_any(scip, result, {static_cast<bool>(allow_add_constraints), Where::External});
+	}
+
+	auto scip_execps(SCIP* scip, SCIP_BRANCHRULE* /*branchrule*/, SCIP_Bool allow_add_constraints, SCIP_RESULT* result)
+		-> SCIP_RETCODE override {
+		using Where = callback::BranchruleCall::Where;
+		return scip_exec_any(scip, result, {static_cast<bool>(allow_add_constraints), Where::Pseudo});
 	}
 
 private:
 	std::weak_ptr<Executor> m_weak_executor;
+
+	auto scip_exec_any(SCIP* scip, SCIP_RESULT* result, callback::BranchruleCall call) -> SCIP_RETCODE {
+		auto retcode = SCIP_OKAY;
+		std::tie(retcode, *result) = handle_executor(scip, m_weak_executor, call);
+		return retcode;
+	}
 };
 
 template <>
