@@ -167,7 +167,7 @@ public:
 	 *             // `fcall` holds a `BranchruleCall`.
 	 *             // Perform branching.
 	 *             maybe_fcall = model.solve_iter_continue(SCIP_BRANCHED);
-	 *         // If solving has paused on a Heurisitc.
+	 *         // If solving has paused on a Heuristic.
 	 *         } else if constexpr (std::is_same_v<decltype(fcall), scip::callback::HeuristicCall>) {
 	 *             // `fcall` holds a `HeuristicCall`.
 	 *             // Add solution.

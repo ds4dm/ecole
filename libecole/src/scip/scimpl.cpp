@@ -119,7 +119,7 @@ auto include_reverse_callback<callback::Type::Branchrule>(
 	scip::call(
 		SCIPincludeObjBranchrule,
 		scip,
-		new ReverseBranchrule(scip, args.priority, args.maxdepth, args.maxbounddist, std::move(executor)),
+		new ReverseBranchrule(scip, args.priority, args.max_depth, args.max_bound_distance, std::move(executor)),
 		true);
 }  // NOLINT
 
@@ -135,7 +135,7 @@ public:
 		std::weak_ptr<Executor> weak_executor) :
 		ObjHeur{
 			scip,
-			name(callback::Type::Heurisitc),
+			name(callback::Type::Heuristic),
 			"Primal heuristic that waits for another thread to provide a primal solution.",
 			'e',
 			priority,
@@ -163,15 +163,21 @@ private:
 };
 
 template <>
-auto include_reverse_callback<callback::Type::Heurisitc>(
+auto include_reverse_callback<callback::Type::Heuristic>(
 	SCIP* scip,
 	std::weak_ptr<Executor> executor,
-	callback::Constructor<callback::Type::Heurisitc> args) -> void {
+	callback::Constructor<callback::Type::Heuristic> args) -> void {
 	scip::call(
 		SCIPincludeObjHeur,
 		scip,
 		new ReverseHeur(
-			scip, args.priority, args.frequency, args.frequency_offset, args.maxdepth, args.timing_mask, std::move(executor)),
+			scip,
+			args.priority,
+			args.frequency,
+			args.frequency_offset,
+			args.max_depth,
+			args.timing_mask,
+			std::move(executor)),
 		true);
 }  // NOLINT
 
