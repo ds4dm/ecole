@@ -11,7 +11,7 @@ void bind_submodule(pybind11::module_ m);
 }
 
 namespace scip {
-void bind_submodule(pybind11::module_ const& m);
+void bind_submodule(pybind11::module_ m);
 }
 
 namespace data {
