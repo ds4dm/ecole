@@ -1,13 +1,13 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <type_traits>
 #include <utility>
 
-#include <xtensor-python/pytensor.hpp>
-
 #include <pybind11/pybind11.h>
+#include <xtensor-python/pytensor.hpp>
 
 namespace ecole::python {
 
@@ -43,16 +43,16 @@ template <typename Class, typename... ClassArgs> struct auto_class : public pybi
 	 * The given attributes name must be sufficient to define the object.
 	 * They must be bound to Python with read-write capabilities.
 	 */
-	template <typename StrArr> auto def_auto_pickle(StrArr const& names) -> auto& {
+	template <typename... Str> auto def_auto_pickle(Str... names) -> auto& {
 		this->def(pybind11::pickle(
-			[names](pybind11::handle self) {
+			[names = std::array{names...}](pybind11::handle self) {
 				auto dict = pybind11::dict{};
 				for (auto const& name : names) {
 					dict[name] = self.attr(name);
 				}
 				return dict;
 			},
-			[names](pybind11::dict const& dict) {
+			[names = std::array{names...}](pybind11::dict const& dict) {
 				// Constructor may not be bound so we create the object from C++ and cast it
 				auto obj = std::make_unique<Class>();
 				auto py_obj = pybind11::cast(obj.get());
