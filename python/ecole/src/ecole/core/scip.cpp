@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -19,6 +21,26 @@ namespace callback {
 
 void bind_submodule(py::module_ m) {
 	m.doc() = "Callback utilities for iterative solving.";
+
+	py::enum_<SCIP_RESULT>{m, "Result"}
+		.value("DidNotRun", SCIP_DIDNOTRUN)
+		.value("Delayed", SCIP_DELAYED)
+		.value("DidNotFind", SCIP_DIDNOTFIND)
+		.value("Feasible", SCIP_FEASIBLE)
+		.value("Infeasible", SCIP_INFEASIBLE)
+		.value("Unbounded", SCIP_UNBOUNDED)
+		.value("CutOff", SCIP_CUTOFF)
+		.value("Separated", SCIP_SEPARATED)
+		.value("NewRound", SCIP_NEWROUND)
+		.value("ReducedDOM", SCIP_REDUCEDDOM)
+		.value("ConsAdded", SCIP_CONSADDED)
+		.value("ConsChanged", SCIP_CONSCHANGED)
+		.value("Branched", SCIP_BRANCHED)
+		.value("SolveLP", SCIP_SOLVELP)
+		.value("FoundSol", SCIP_FOUNDSOL)
+		.value("Suspended", SCIP_SUSPENDED)
+		.value("Success", SCIP_SUCCESS)
+		.value("DelayNode", SCIP_DELAYNODE);
 
 	py::enum_<Type>{m, "Type"}
 		.value("Branchrule", Type::Branchrule)  //
@@ -46,7 +68,7 @@ void bind_submodule(py::module_ m) {
 			python::Member{"max_depth", &HeuristicConstructor::max_depth},
 			python::Member{"timing_mask", &HeuristicConstructor::timing_mask});
 
-	auto branchrule_call = python::auto_data_class<BranchruleCall>(m, "Branchrulecall");
+	auto branchrule_call = python::auto_data_class<BranchruleCall>(m, "BranchruleCall");
 	py::enum_<BranchruleCall::Where>(branchrule_call, "Where")
 		.value("LP", BranchruleCall::Where::LP)
 		.value("External", BranchruleCall::Where::External)
@@ -158,7 +180,22 @@ void bind_submodule(py::module_ m) {
 
 		.def_property_readonly("is_solved", &Model::is_solved)
 		.def_property_readonly("primal_bound", &Model::primal_bound)
-		.def_property_readonly("dual_bound", &Model::dual_bound);
+		.def_property_readonly("dual_bound", &Model::dual_bound)
+
+		.def(
+			"solve_iter",
+			[](Model& self, py::args const& py_args) {
+				// Create C++ vector needed to call the function
+				auto args = std::vector<callback::DynamicConstructor>{};
+				args.reserve(py::len(py_args));
+				// Copy the function arguments into the vector
+				std::transform(py_args.begin(), py_args.end(), std::back_inserter(args), [](py::handle py_arg) {
+					return py_arg.cast<callback::DynamicConstructor>();
+				});
+				// Call the function
+				return self.solve_iter(args);
+			})
+		.def("solve_iter_continue", &Model::solve_iter_continue);
 }
 
 }  // namespace ecole::scip
