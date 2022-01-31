@@ -221,7 +221,7 @@ scip::Model SetCoverGenerator::generate_instance(Parameters parameters, RandomGe
 	auto [indptr_csr, indices_csr] = convert_csc_to_csr(indices, indptr, n_rows, n_cols);
 
 	// sample coefficients
-	xt::xtensor<SCIP_Real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, rng);
+	xt::xtensor<SCIP_Real, 1> c = xt::random::randint<size_t>({n_cols}, 0, max_coef, rng) + 1;
 
 	// create scip model
 	auto model = scip::Model::prob_basic();

@@ -16,7 +16,7 @@ public:
 		unsigned int min_value = 1;      // NOLINT(readability-magic-numbers)
 		unsigned int max_value = 100;    // NOLINT(readability-magic-numbers)
 		double value_deviation = 0.5;    // NOLINT(readability-magic-numbers)
-		double add_item_prob = 0.7;      // NOLINT(readability-magic-numbers)
+		double add_item_prob = 0.65;     // NOLINT(readability-magic-numbers)
 		std::size_t max_n_sub_bids = 5;  // NOLINT(readability-magic-numbers)
 		double additivity = 0.2;         // NOLINT(readability-magic-numbers)
 		double budget_factor = 1.5;      // NOLINT(readability-magic-numbers)

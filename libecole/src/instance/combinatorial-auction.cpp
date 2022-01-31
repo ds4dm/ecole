@@ -92,8 +92,9 @@ auto choose_next_item(
 	xvector<double> const& interests,
 	xmatrix<double> const& compats,
 	RandomGenerator& rng) {
-	auto const compats_masked = xt::index_view(compats, bundle_mask);
-	auto const compats_masked_mean = xt::sum(compats_masked, 0);
+
+	auto const compats_masked = compats * bundle_mask;
+	auto const compats_masked_mean = xt::mean(compats_masked, 1);
 	auto const probs = xt::eval((1 - bundle_mask) * interests * compats_masked_mean);
 	return arg_choice_without_replacement(1, probs, rng)(0);
 }
@@ -448,8 +449,8 @@ scip::Model CombinatorialAuctionGenerator::generate_instance(Parameters paramete
 	std::vector<Bundle> bids_per_item{parameters.n_items + n_dummy_items};
 	std::size_t i = 0;
 	for (auto const& [bundle, _] : bids) {
-		for (auto j : bundle) {
-			bids_per_item[j].push_back(i);
+		for (auto item : bundle) {
+			bids_per_item[item].push_back(i);
 		}
 		++i;
 	}
