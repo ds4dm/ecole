@@ -2,8 +2,8 @@ find_package(Python COMPONENTS Interpreter Development NumPy REQUIRED)
 
 find_or_download_package(
 	NAME pybind11
-	URL https://github.com/pybind/pybind11/archive/v2.8.1.tar.gz
-	URL_HASH SHA256=f1bcc07caa568eb312411dde5308b1e250bd0e1bc020fae855bf9f43209940cc
+	URL https://github.com/pybind/pybind11/archive/v2.9.1.tar.gz
+	URL_HASH SHA256=c6160321dc98e6e1184cc791fbeadd2907bb4a0ce0e447f2ea4ff8ab56550913
 	CONFIGURE_ARGS
 		-D PYBIND11_TEST=OFF
 		-D "Python_EXECUTABLE=${Python_EXECUTABLE}"
