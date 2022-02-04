@@ -147,7 +147,7 @@ jobs:
       - name: "Add external example dependencies (except ecole)"
         shell: bash -l {0}
         run: |
-          sed -E '/[[:blank:]]ecole([^a-zA-Z0-9-]|$)/d' examples/branching-imitation/conda-requirements-linux64-cpu.lock.yaml > env.yaml
+          sed -E '/[[:blank:]]ecole([^a-zA-Z0-9-]|$)/d' examples/branching-imitation/conda-requirements.yaml > env.yaml
           micromamba install --file env.yaml
       - name: "Build Ecole and test notebook"
         shell: bash -l {0}
