@@ -17,8 +17,8 @@ jobs:
     strategy:
       matrix:
         image:
-          - "ecoleai/ci-linux-src-clang10-py3.6"
-          - "ecoleai/ci-linux-src-gcc9-py3.6"
+          - "ecoleai/ci-linux-src-clang10-py3.7"
+          - "ecoleai/ci-linux-src-gcc9-py3.7"
     container:
       image: ${{ matrix.image }}
       credentials:
