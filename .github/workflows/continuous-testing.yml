@@ -35,7 +35,7 @@ jobs:
         os:
           - "ubuntu-20.04"
           - "macos-10.15"
-        python: ["3.6", "3.7", "3.8", "3.9"]
+        python: ["3.7", "3.8", "3.9", "3.10"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2

@@ -75,11 +75,6 @@ def get_cmake_out_package_install_args() -> List[str]:
     return ["-DECOLE_BUILD_LIB=OFF", "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"]
 
 
-install_requires = ["numpy>=1.4"]
-if (sys.version_info.major == 3) and (sys.version_info.minor <= 6):
-    install_requires += ["typing_extensions"]
-
-
 skbuild.setup(
     name="ecole",
     author="Antoine Prouvost et al.",
@@ -101,5 +96,5 @@ skbuild.setup(
     cmake_args=get_cmake_install_args() + get_env_cmake_args(),
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires=install_requires,
+    install_requires=["numpy>=1.4"],
 )
