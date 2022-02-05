@@ -12,7 +12,7 @@ DOCKERFILE_DIR="${__DIR__}/.."
 # Set on DockerHub but set default value to use script locally
 DOCKER_REPO="${DOCKER_REPO:-ecoleai/ci}"
 
-for python_version in "3.6" "3.7" "3.8" "3.9" ; do
+for python_version in "3.7" "3.8" "3.9" "3.10"; do
 
 	# Source images with given compiler
 	for compiler in "gcc9" "clang10" ; do

@@ -5,12 +5,7 @@ Ecole flexibility relies on
 and therefore requires to explicit the structures at hand.
 """
 
-from typing import TypeVar, Tuple, Dict, Iterator, Any, overload
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol
+from typing import TypeVar, Tuple, Dict, Iterator, Any, overload, Protocol
 
 import ecole
 

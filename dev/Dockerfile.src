@@ -16,7 +16,7 @@ RUN apt-get update && \
 
 # Install SCIP from source.
 # We do not need a very "complete" scip, just the bare minimum.
-ARG scip_version=7.0.2
+ARG scip_version=8.0.0
 RUN wget --no-verbose https://scip.zib.de/download/release/scipoptsuite-${scip_version}.tgz && \
     tar -xzf scipoptsuite-${scip_version}.tgz && \
     cmake -B build/ -S scipoptsuite-${scip_version} \
@@ -25,6 +25,8 @@ RUN wget --no-verbose https://scip.zib.de/download/release/scipoptsuite-${scip_v
         -D PAPILO=OFF \
         -D GCG=OFF \
         -D ZIMPL=OFF \
+        -D GMP=OFF \
+        -D IPOPT=OFF \
         -D BOOST=OFF && \
     cmake --build build && \
     cmake --install build && \
@@ -33,7 +35,11 @@ RUN wget --no-verbose https://scip.zib.de/download/release/scipoptsuite-${scip_v
 
 # Install Python and NumPy
 # Pyenv needs a full version (e.g 3.7.10) so we search for the latest bug fix release
-ARG python_version=3.6
+ARG python_version=3.7
+# This system script uses /usr/bin/python3 which get hijacked by pyenv so we hard code it to system python3.7.
+# https://askubuntu.com/q/965043
+# Does not happen on all images.
+RUN sed --in-place '1s:^#!/usr/bin/python3:#!/usr/bin/python3.7:' "$(which lsb_release)" || true
 RUN version_regex='^[[:blank:]]*'"$(echo ${python_version} | sed 's/\./\\./')"'\.[[:digit:]]+[[:blank:]]*$' && \
     python_version_fix=$(pyenv install --list | grep -E "${version_regex}" | cut -d'.' -f 3 | sort -n | tail -1) && \
     python_full_version=${python_version}.${python_version_fix} && \
