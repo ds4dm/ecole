@@ -5,6 +5,6 @@ VERSION_MINOR 8
 VERSION_PATCH 0
 # The following should include their whole string and can be combined.
 # They must be numbered, starting from 0.
-VERSION_PRE          # Pre release without leading dot, e.g. `a0` (alpha), `b0` (beta), or `rc0` (release candidate)
+VERSION_PRE  rc0     # Pre release without leading dot, e.g. `a0` (alpha), `b0` (beta), or `rc0` (release candidate)
 VERSION_POST         # Post release with leading dot, e.g. `.post0`
-VERSION_DEV  .dev6   # Dev release with leading dot, e.g. `.dev0`
+VERSION_DEV          # Dev release with leading dot, e.g. `.dev0`
