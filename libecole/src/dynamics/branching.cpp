@@ -27,13 +27,30 @@ auto action_set(scip::Model const& model, bool pseudo) -> std::optional<xt::xten
 	return branch_cols;
 }
 
+/** Iterative solving until next LP branchrule call and return the action_set. */
+template <typename FCall>
+auto keep_solving_until_next_LP_callback(scip::Model& model, FCall& fcall, bool pseudo_candidates)
+	-> std::tuple<bool, BranchingDynamics::ActionSet> {
+	using Call = scip::callback::BranchruleCall;
+	// While solving is not finished.
+	while (fcall.has_value()) {
+		// LP branchrule found, we give control back to the agent.
+		// Assuming Branchrules are the only reverse callbacks.
+		if (std::get<Call>(fcall.value()).where == Call::Where::LP) {
+			return {false, action_set(model, pseudo_candidates)};
+		}
+		// Otherwise keep looping, ignoring the callback.
+		fcall = model.solve_iter_continue(SCIP_DIDNOTRUN);
+	}
+	// Solving is finished.
+	return {true, {}};
+}
+
 }  // namespace
 
 auto BranchingDynamics::reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet> {
-	if (model.solve_iter(scip::callback::BranchruleConstructor{}).has_value()) {
-		return {false, action_set(model, pseudo_candidates)};
-	}
-	return {true, {}};
+	auto fcall = model.solve_iter(scip::callback::BranchruleConstructor{});
+	return keep_solving_until_next_LP_callback(model, fcall, pseudo_candidates);
 }
 
 auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_t> maybe_var_idx) const
@@ -54,21 +71,9 @@ auto BranchingDynamics::step_dynamics(scip::Model& model, Defaultable<std::size_
 		scip_result = SCIP_BRANCHED;
 	}
 
-	using Call = scip::callback::BranchruleCall;
 	// Looping until the next LP branchrule rule callback, if it exists.
 	auto fcall = model.solve_iter_continue(scip_result);
-	while (fcall.has_value()) {
-		// LP branchrule found, we give control back to the agent.
-		// Assuming Branchrul are the only reverse callbacks.
-		if (std::get<Call>(fcall.value()).where == Call::Where::LP) {
-			return {false, action_set(model, pseudo_candidates)};
-		}
-		// Otherwise keep looping, ignoring the callback.
-		fcall = model.solve_iter_continue(SCIP_DIDNOTRUN);
-	}
-
-	// Solving has terminated.
-	return {true, {}};
+	return keep_solving_until_next_LP_callback(model, fcall, pseudo_candidates);
 }
 
 }  // namespace ecole::dynamics
