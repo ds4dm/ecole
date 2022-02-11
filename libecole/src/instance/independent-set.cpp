@@ -12,6 +12,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 #include "ecole/scip/var.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 #include "utility/graph.hpp"
 
@@ -53,9 +54,7 @@ auto make_graph(IndependentSetGenerator::Parameters parameters, RandomGenerator&
 	case IndependentSetGenerator::Parameters::GraphType::barabasi_albert:
 		return Graph::barabasi_albert(parameters.n_nodes, parameters.affinity, rng);
 	default:
-		assert(false);  // All enum value should be handled
-		// Non void return for optimized build
-		throw std::invalid_argument{"Could not find graph type"};
+		utility::unreachable();
 	}
 }
 

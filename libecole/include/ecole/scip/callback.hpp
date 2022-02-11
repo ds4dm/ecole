@@ -1,8 +1,11 @@
 #pragma once
 
-#include <scip/type_timing.h>
 #include <tuple>
 #include <variant>
+
+#include <scip/type_timing.h>
+
+#include "ecole/utility/unreachable.hpp"
 
 /**
  * Reverse callback tools.
@@ -21,6 +24,8 @@ constexpr auto name(Type type) {
 		return "ecole::scip::StopLocation::Branchrule";
 	case Type::Heuristic:
 		return "ecole::scip::StopLocation::Heuristic";
+	default:
+		utility::unreachable();
 	}
 }
 

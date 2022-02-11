@@ -22,6 +22,7 @@
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
 #include "ecole/utility/type-traits.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::scip {
 
@@ -277,10 +278,7 @@ template <typename T> void Model::set_param(std::string const& name, T value) {
 	case ParamType::String:
 		return set_param<ParamType::String>(name, cast<std::string>(value));
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 
@@ -300,10 +298,7 @@ template <typename T> T Model::get_param(std::string const& name) const {
 	case ParamType::String:
 		return cast<T>(get_param<ParamType::String>(name));
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 

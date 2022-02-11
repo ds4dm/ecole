@@ -17,6 +17,7 @@
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::scip {
 
@@ -112,10 +113,7 @@ ParamType Model::get_param_type(std::string const& name) const {
 	case SCIP_PARAMTYPE_STRING:
 		return ParamType::String;
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 
