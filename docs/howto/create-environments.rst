@@ -117,13 +117,13 @@ To do so, we will take parameters in the constructor.
        __Dynamics__ = SimpleBranchingDynamics
 
 
-The constructor arguments are forwarded from the :py:meth:`~ecole.environment.EnvironmentComposer.__init__` constructor:
+The constructor arguments are forwarded from the :py:meth:`~ecole.environment.Environment.__init__` constructor:
 
 .. testcode::
    :skipif: pyscipopt is None
 
    env = SimpleBranching(observation_function=None, disable_cuts=False)
 
-Similarily, extra arguments given to the environemnt :py:meth:`~ecole.environment.EnvironmentComposer.reset` and
-:py:meth:`~ecole.environment.EnvironmentComposer.step` are forwarded to the associated
+Similarily, extra arguments given to the environemnt :py:meth:`~ecole.environment.Environment.reset` and
+:py:meth:`~ecole.environment.Environment.step` are forwarded to the associated
 :py:class:`~ecole.typing.Dynamics` methods.
