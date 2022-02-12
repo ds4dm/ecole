@@ -49,8 +49,8 @@ void bind_submodule(py::module_ m) {
 	m.def("name", name, "Return the name used by the reverse callback.");
 
 	m.attr("priority_max") = priority_max;
-	m.attr("maxdepth_none") = max_depth_none;
-	m.attr("maxbounddist_none") = max_bound_distance_none;
+	m.attr("max_depth_none") = max_depth_none;
+	m.attr("max_bound_distance_none") = max_bound_distance_none;
 	m.attr("frequency_always") = frequency_always;
 	m.attr("frequency_offset_none") = frequency_offset_none;
 
