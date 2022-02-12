@@ -23,7 +23,7 @@ dependencies:
 
   # Documentation
   - doxygen
-  - sphinx = 4.0
+  - sphinx = 4.4
   - breathe>=4.15
   - sphinx_rtd_theme
 
