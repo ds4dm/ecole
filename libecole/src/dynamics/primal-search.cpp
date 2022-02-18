@@ -1,10 +1,13 @@
 #include <algorithm>
+#include <exception>
+#include <stdexcept>
 
 #include <fmt/format.h>
 #include <xtensor/xtensor.hpp>
 
 #include "ecole/dynamics/primal-search.hpp"
 #include "ecole/exception.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/utils.hpp"
 
@@ -30,14 +33,39 @@ auto action_set(scip::Model const& model) -> PrimalSearchDynamics::ActionSet {
 	return var_ids;
 }
 
+auto add_solution_from_lp(SCIP* scip) -> bool {
+	SCIP_Bool solution_kept = false;
+	SCIP_SOL* sol = nullptr;
+	auto* const heur = SCIPfindHeur(scip, scip::callback::name(scip::callback::Type::Heuristic));
+	scip::call(SCIPcreateSol, scip, &sol, heur);
+	try {
+		scip::call(SCIPlinkLPSol, scip, sol);
+	} catch (std::exception const& e) {
+		// In case of failure, the solution must be free anyway.
+		scip::call(SCIPtrySolFree, scip, &sol, false, true, true, true, true, &solution_kept);
+		throw;
+	}
+	scip::call(SCIPtrySolFree, scip, &sol, false, true, true, true, true, &solution_kept);
+	return solution_kept;
+}
+
 }  // namespace
 
-auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) -> std::tuple<bool, ActionSet> {
-	heur = model.solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
-	if (model.solve_iter_is_done()) {
+auto PrimalSearchDynamics::reset_dynamics(scip::Model& model) const -> std::tuple<bool, ActionSet> {
+	if (trials_per_node == 0) {
+		model.solve();
 		return {true, {}};
 	}
-	return {false, action_set(model)};
+	auto const args = scip::callback::HeuristicConstructor{
+		scip::callback::priority_max,
+		depth_freq,
+		depth_start,
+		depth_stop,
+	};
+	if (model.solve_iter(args).has_value()) {
+		return {false, action_set(model)};
+	}
+	return {true, {}};
 }
 
 auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> std::tuple<bool, ActionSet> {
@@ -58,7 +86,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> s
 	}
 
 	auto* scip_ptr = model.get_scip_ptr();
-	SCIP_Bool success = false;  // result of the current action (solution found or not)
+	auto solution_kept = false;  // result of the current action (solution found or not)
 
 	// if the action is not empty, run a search iteration
 	// try to improve the (partial) solution by fixing variables and then re-solving the LP
@@ -89,10 +117,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> s
 				scip::call(SCIPsolveProbingLP, scip_ptr, -1, &lperror, &cutoff);
 				if (!lperror && !cutoff) {
 					// try the LP solution in the original problem
-					SCIP_SOL* sol = nullptr;
-					scip::call(SCIPcreateSol, scip_ptr, &sol, heur);
-					scip::call(SCIPlinkLPSol, scip_ptr, sol);
-					scip::call(SCIPtrySolFree, scip_ptr, &sol, false, true, true, true, true, &success);
+					solution_kept = add_solution_from_lp(scip_ptr);
 				}
 			}
 		}
@@ -102,7 +127,7 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> s
 	}
 
 	// update the final search result depending on the action result
-	if (success) {
+	if (solution_kept) {
 		result = SCIP_FOUNDSOL;
 	} else if (result == SCIP_DIDNOTRUN) {
 		result = SCIP_DIDNOTFIND;
@@ -113,16 +138,15 @@ auto PrimalSearchDynamics::step_dynamics(scip::Model& model, Action action) -> s
 
 	// if all trials are exhausted, or if SCIP should be stopped, stop the search and let SCIP proceed
 	if ((trials_spent == static_cast<unsigned int>(trials_per_node)) || SCIPisStopped(scip_ptr)) {
-		model.solve_iter_primalsearch(result);
-
 		// reset data for the next time the search is triggered
 		trials_spent = 0;
 		result = SCIP_DIDNOTRUN;
+		// Continue SCIP
+		if (!model.solve_iter_continue(result).has_value()) {
+			return {true, {}};
+		}
 	}
 
-	if (model.solve_iter_is_done()) {
-		return {true, {}};
-	}
 	return {false, action_set(model)};
 }
 

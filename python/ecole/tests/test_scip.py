@@ -154,3 +154,22 @@ def test_is_solved(model):
 
 def test_bounds(model):
     assert model.dual_bound < model.primal_bound
+
+
+@pytest.mark.slow
+def test_solve_iter(model):
+    used_branchrule = False
+    used_heuristic = False
+
+    fcall = model.solve_iter(
+        ecole.scip.callback.BranchruleConstructor(), ecole.scip.callback.HeuristicConstructor()
+    )
+    while fcall is not None:
+        fcall = model.solve_iter_continue(ecole.scip.callback.Result.DidNotRun)
+        if isinstance(fcall, ecole.scip.callback.BranchruleCall):
+            used_branchrule = True
+        elif isinstance(fcall, ecole.scip.callback.HeuristicCall):
+            used_heuristic = True
+
+    assert used_branchrule
+    assert used_heuristic

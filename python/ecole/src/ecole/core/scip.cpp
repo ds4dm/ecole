@@ -1,9 +1,13 @@
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl/filesystem.h>
 
+#include "ecole/python/auto-class.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
 
@@ -13,7 +17,75 @@ namespace ecole::scip {
 
 namespace py = pybind11;
 
-void bind_submodule(py::module_ const& m) {
+namespace callback {
+
+void bind_submodule(py::module_ m) {
+	m.doc() = "Callback utilities for iterative solving.";
+
+	py::enum_<SCIP_RESULT>{m, "Result"}
+		.value("DidNotRun", SCIP_DIDNOTRUN)
+		.value("Delayed", SCIP_DELAYED)
+		.value("DidNotFind", SCIP_DIDNOTFIND)
+		.value("Feasible", SCIP_FEASIBLE)
+		.value("Infeasible", SCIP_INFEASIBLE)
+		.value("Unbounded", SCIP_UNBOUNDED)
+		.value("CutOff", SCIP_CUTOFF)
+		.value("Separated", SCIP_SEPARATED)
+		.value("NewRound", SCIP_NEWROUND)
+		.value("ReducedDOM", SCIP_REDUCEDDOM)
+		.value("ConsAdded", SCIP_CONSADDED)
+		.value("ConsChanged", SCIP_CONSCHANGED)
+		.value("Branched", SCIP_BRANCHED)
+		.value("SolveLP", SCIP_SOLVELP)
+		.value("FoundSol", SCIP_FOUNDSOL)
+		.value("Suspended", SCIP_SUSPENDED)
+		.value("Success", SCIP_SUCCESS)
+		.value("DelayNode", SCIP_DELAYNODE);
+
+	py::enum_<Type>{m, "Type"}
+		.value("Branchrule", Type::Branchrule)  //
+		.value("Heuristic", Type::Heuristic);
+
+	m.def("name", name, "Return the name used by the reverse callback.");
+
+	m.attr("priority_max") = priority_max;
+	m.attr("max_depth_none") = max_depth_none;
+	m.attr("max_bound_distance_none") = max_bound_distance_none;
+	m.attr("frequency_always") = frequency_always;
+	m.attr("frequency_offset_none") = frequency_offset_none;
+
+	python::auto_data_class<BranchruleConstructor>(m, "BranchruleConstructor")
+		.def_auto_members(
+			python::Member{"priority", &BranchruleConstructor::priority},
+			python::Member{"max_depth", &BranchruleConstructor::max_depth},
+			python::Member{"max_bound_distance", &BranchruleConstructor::max_bound_distance});
+
+	python::auto_data_class<HeuristicConstructor>(m, "HeuristicConstructor")
+		.def_auto_members(
+			python::Member{"priority", &HeuristicConstructor::priority},
+			python::Member{"frequency", &HeuristicConstructor::frequency},
+			python::Member{"frequency_offset", &HeuristicConstructor::frequency_offset},
+			python::Member{"max_depth", &HeuristicConstructor::max_depth},
+			python::Member{"timing_mask", &HeuristicConstructor::timing_mask});
+
+	auto branchrule_call = python::auto_data_class<BranchruleCall>(m, "BranchruleCall");
+	py::enum_<BranchruleCall::Where>(branchrule_call, "Where")
+		.value("LP", BranchruleCall::Where::LP)
+		.value("External", BranchruleCall::Where::External)
+		.value("Pseudo", BranchruleCall::Where::Pseudo);
+	branchrule_call.def_auto_members(
+		python::Member{"allow_add_constraints", &BranchruleCall::allow_add_constraints},
+		python::Member{"where", &BranchruleCall::where});
+
+	python::auto_data_class<HeuristicCall>(m, "HeuristicCall")
+		.def_auto_members(
+			python::Member{"heuristic_timing", &HeuristicCall::heuristic_timing},
+			python::Member{"node_infeasible", &HeuristicCall::node_infeasible});
+}
+
+}  // namespace callback
+
+void bind_submodule(py::module_ m) {
 	m.doc() = "Scip wrappers for ecole.";
 
 	py::register_exception<scip::ScipError>(m, "ScipError");
@@ -33,6 +105,27 @@ void bind_submodule(py::module_ const& m) {
 		.value("ExitSolve", SCIP_STAGE_EXITSOLVE)
 		.value("FreeTrans", SCIP_STAGE_FREETRANS)
 		.value("Free", SCIP_STAGE_FREE);
+
+	// SCIP_HEURTIMING is simply a collection of Macros! We create a scope for holding the values.
+	struct HeurTiming {};
+	py::class_<HeurTiming>{m, "HeurTiming"}
+		.def_property_readonly_static("DuringLpLoop", [](py::handle /*cls*/) { return SCIP_HEURTIMING_DURINGLPLOOP; })
+		.def_property_readonly_static("AfterLpLoop", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERLPLOOP; })
+		.def_property_readonly_static("AfterLpNode", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERLPNODE; })
+		.def_property_readonly_static("AfterPseudoNode", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERPSEUDONODE; })
+		.def_property_readonly_static("AfterLpPlunge", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERLPPLUNGE; })
+		.def_property_readonly_static(
+			"AfterPseudoPlunge", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERPSEUDOPLUNGE; })
+		.def_property_readonly_static(
+			"DuringPricingLoop", [](py::handle /*cls*/) { return SCIP_HEURTIMING_DURINGPRICINGLOOP; })
+		.def_property_readonly_static("BeforePresol", [](py::handle /*cls*/) { return SCIP_HEURTIMING_BEFOREPRESOL; })
+		.def_property_readonly_static(
+			"DuringPresolLoop", [](py::handle /*cls*/) { return SCIP_HEURTIMING_DURINGPRESOLLOOP; })
+		.def_property_readonly_static("AfterPropLoop", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERPROPLOOP; })
+		.def_property_readonly_static("AfterNode", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERNODE; })
+		.def_property_readonly_static("AfterPlunge", [](py::handle /*cls*/) { return SCIP_HEURTIMING_AFTERPLUNGE; });
+
+	callback::bind_submodule(m.def_submodule("callback"));
 
 	py::class_<Model>(m, "Model")  //
 		.def_static("from_file", &Model::from_file, py::arg("filepath"), py::call_guard<py::gil_scoped_release>())
@@ -87,7 +180,22 @@ void bind_submodule(py::module_ const& m) {
 
 		.def_property_readonly("is_solved", &Model::is_solved)
 		.def_property_readonly("primal_bound", &Model::primal_bound)
-		.def_property_readonly("dual_bound", &Model::dual_bound);
+		.def_property_readonly("dual_bound", &Model::dual_bound)
+
+		.def(
+			"solve_iter",
+			[](Model& self, py::args const& py_args) {
+				// Create C++ vector needed to call the function
+				auto args = std::vector<callback::DynamicConstructor>{};
+				args.reserve(py::len(py_args));
+				// Copy the function arguments into the vector
+				std::transform(py_args.begin(), py_args.end(), std::back_inserter(args), [](py::handle py_arg) {
+					return py_arg.cast<callback::DynamicConstructor>();
+				});
+				// Call the function
+				return self.solve_iter(args);
+			})
+		.def("solve_iter_continue", &Model::solve_iter_continue);
 }
 
 }  // namespace ecole::scip

@@ -8,7 +8,7 @@ One such aspect is the solver randomness, which is controlled by its random seed
 
 This means that, by default, Ecole environment will generate different episodes (and in
 particular different initial states) after each new call to
-:py:meth:`~ecole.environment.EnvironmentComposer.reset`.
+:py:meth:`~ecole.environment.Environment.reset`.
 To do so, the environment keeps a :py:class:`~ecole.RandomGenerator` (random state)
 between episodes, and start a new episode by calling
 :py:meth:`~ecole.typing.Dynamics.set_dynamics_random_state` on the underlying

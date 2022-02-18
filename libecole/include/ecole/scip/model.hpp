@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -16,10 +17,12 @@
 #include <scip/scip.h>
 
 #include "ecole/export.hpp"
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/type.hpp"
 #include "ecole/utility/numeric.hpp"
 #include "ecole/utility/type-traits.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::scip {
 
@@ -133,9 +136,6 @@ public:
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_ROW*> lp_rows() const;
 	[[nodiscard]] ECOLE_EXPORT std::size_t nnz() const noexcept;
 
-	/**
-	 * Transform, presolve, and solve problem.
-	 */
 	ECOLE_EXPORT void transform_prob();
 	ECOLE_EXPORT void presolve();
 	ECOLE_EXPORT void solve();
@@ -144,13 +144,72 @@ public:
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real primal_bound() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT SCIP_Real dual_bound() const noexcept;
 
-	ECOLE_EXPORT void solve_iter_start_branch();
-	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
-	ECOLE_EXPORT SCIP_HEUR*
-	solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
-	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);
-	ECOLE_EXPORT void solve_iter_stop();
-	[[nodiscard]] ECOLE_EXPORT bool solve_iter_is_done();
+	/**
+	 * Start iterative solving.
+	 *
+	 * Iterative solving pauses when it encounters a callback and give control back to the user.
+	 * Solving must be explicitly resumed by calling ``solve_iter_continue`` repatedly.
+	 * Iterative solving will only pause on the callbacks that are explicitly passed as paramerters.
+	 *
+	 * Stoping on multiple callbacks can be achieved with:
+	 * ```
+	 * // Callback on which we want to pause..
+	 * auto const constructors = std::array<callback::DynamicConstructor, 2>{
+	 *     callback::BranchruleConstructor{},
+	 *     callback::HeuristicConstructor{},
+	 * };
+	 * auto maybe_fcall = model.solve_iter(constructors);
+	 *
+	 * // While solving has not terminated.
+	 * while (maybe_fcall.has_value()) {
+	 *     std::visit([&](auto fcall) {
+	 *         // If solving has paused on a Branchrule.
+	 *         if constexpr (std::is_same_v<decltype(fcall), scip::callback::BranchruleCall>) {
+	 *             // `fcall` holds a `BranchruleCall`.
+	 *             // Perform branching.
+	 *             maybe_fcall = model.solve_iter_continue(SCIP_BRANCHED);
+	 *         // If solving has paused on a Heuristic.
+	 *         } else if constexpr (std::is_same_v<decltype(fcall), scip::callback::HeuristicCall>) {
+	 *             // `fcall` holds a `HeuristicCall`.
+	 *             // Add solution.
+	 *             maybe_fcall = model.solve_iter_continue(SCIP_FOUNDSOL);
+	 *         }
+	 *     }, maybe_fcall.value());
+	 * }
+	 * ```
+	 *
+	 * @param arg_packs A sequence of construtors parameters defining the reverse callback to pause on.
+	 * @return The callback arguments where iterative solving has stopped, or nothing if solving has terminated.
+	 * @see solve_iter_continue
+	 */
+	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+		-> std::optional<callback::DynamicCall>;
+
+	/**
+	 * Start iterative solving with a single callback.
+	 *
+	 * For example branching iteratively could be achieved with:
+	 * ```
+	 * auto fcall = model.solve_iter(scip::callback::BranchingConstructor{});
+	 * while (fcall.has_value()) {
+	 *     auto const cands = model.lp_branch_cands();
+	 *     scip::call(SCIPbranchVar, model.get_scip_ptr(), cands[0], nullptr, nullptr, nullptr);
+	 *     fcall = model.solve_iter_continue(SCIP_BRANCHED);
+	 * }
+	 * ```
+	 */
+	ECOLE_EXPORT auto solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::DynamicCall>;
+
+	/**
+	 * Continue iterative solving.
+	 *
+	 * Continue until the next reverse callback is encountered.
+	 *
+	 * @param result The result given to the SCIP callback for the action taken on the current pause.
+	 * @return The callback arguments where iterative solving has stopped, or nothing if solving has terminated.
+	 * @see solve_iter_continue
+	 */
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::DynamicCall>;
 
 private:
 	std::unique_ptr<Scimpl> scimpl;
@@ -219,10 +278,7 @@ template <typename T> void Model::set_param(std::string const& name, T value) {
 	case ParamType::String:
 		return set_param<ParamType::String>(name, cast<std::string>(value));
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 
@@ -242,10 +298,7 @@ template <typename T> T Model::get_param(std::string const& name) const {
 	case ParamType::String:
 		return cast<T>(get_param<ParamType::String>(name));
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 

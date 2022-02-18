@@ -1,20 +1,20 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include <nonstd/span.hpp>
 #include <scip/scip.h>
 
 #include "ecole/export.hpp"
+#include "ecole/scip/callback.hpp"
 
-namespace ecole {
-
-namespace utility {
-class Controller;
+namespace ecole::utility {
+template <typename Return, typename Message> class Coroutine;
 }
 
-namespace scip {
+namespace ecole::scip {
 
 struct ECOLE_EXPORT ScipDeleter {
 	ECOLE_EXPORT void operator()(SCIP* ptr);
@@ -27,23 +27,20 @@ public:
 	ECOLE_EXPORT Scimpl(std::unique_ptr<SCIP, ScipDeleter>&& /*scip_ptr*/) noexcept;
 	ECOLE_EXPORT ~Scimpl();
 
-	ECOLE_EXPORT SCIP* get_scip_ptr() noexcept;
+	ECOLE_EXPORT auto get_scip_ptr() noexcept -> SCIP*;
 
-	[[nodiscard]] ECOLE_EXPORT Scimpl copy() const;
-	[[nodiscard]] ECOLE_EXPORT Scimpl copy_orig() const;
+	[[nodiscard]] ECOLE_EXPORT auto copy() const -> Scimpl;
+	[[nodiscard]] ECOLE_EXPORT auto copy_orig() const -> Scimpl;
 
-	ECOLE_EXPORT void solve_iter_start_branch();
-	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
-	ECOLE_EXPORT SCIP_HEUR*
-	solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
-	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);
-	ECOLE_EXPORT void solve_iter_stop();
-	ECOLE_EXPORT bool solve_iter_is_done();
+	ECOLE_EXPORT auto solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+		-> std::optional<callback::DynamicCall>;
+	ECOLE_EXPORT auto solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::DynamicCall>;
 
 private:
+	using Controller = utility::Coroutine<callback::DynamicCall, SCIP_RESULT>;
+
 	std::unique_ptr<SCIP, ScipDeleter> m_scip;
-	std::unique_ptr<utility::Controller> m_controller;
+	std::unique_ptr<Controller> m_controller;
 };
 
-}  // namespace scip
-}  // namespace ecole
+}  // namespace ecole::scip

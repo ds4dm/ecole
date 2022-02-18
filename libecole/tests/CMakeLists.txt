@@ -10,9 +10,11 @@ add_executable(
 	src/test-random.cpp
 
 	src/utility/test-chrono.cpp
+	src/utility/test-coroutine.cpp
 	src/utility/test-vector.cpp
 	src/utility/test-random.cpp
 	src/utility/test-graph.cpp
+	src/utility/test-sparse-matrix.cpp
 
 	src/scip/test-scimpl.cpp
 	src/scip/test-model.cpp
@@ -53,8 +55,6 @@ add_executable(
 	src/dynamics/test-primal-search.cpp
 
 	src/environment/test-environment.cpp
-
-	src/utility/test-sparse-matrix.cpp
 )
 
 target_compile_definitions(

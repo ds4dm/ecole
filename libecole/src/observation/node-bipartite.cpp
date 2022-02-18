@@ -11,6 +11,7 @@
 #include "ecole/observation/node-bipartite.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/row.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::observation {
 
@@ -119,7 +120,7 @@ void set_static_features_for_var(Features&& out, SCIP_VAR* const var, value_type
 		out[idx(VariableFeatures::is_type_continuous)] = 1.;
 		break;
 	default:
-		assert(false);  // All enum cases must be handled
+		utility::unreachable();
 	}
 }
 
@@ -160,7 +161,7 @@ void set_dynamic_features_for_var(
 		out[idx(VariableFeatures::is_basis_zero)] = 1.;
 		break;
 	default:
-		assert(false);  // All enum cases must be handled
+		utility::unreachable();
 	}
 }
 

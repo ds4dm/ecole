@@ -12,10 +12,12 @@
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
+#include "ecole/scip/callback.hpp"
 #include "ecole/scip/exception.hpp"
 #include "ecole/scip/model.hpp"
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::scip {
 
@@ -111,10 +113,7 @@ ParamType Model::get_param_type(std::string const& name) const {
 	case SCIP_PARAMTYPE_STRING:
 		return ParamType::String;
 	default:
-		// All enum value should be handled
-		assert(false);
-		// Non void return for optimized build
-		throw ScipError::from_retcode(SCIP_PARAMETERUNKNOWN);
+		utility::unreachable();
 	}
 }
 
@@ -295,28 +294,17 @@ SCIP_Real Model::dual_bound() const noexcept {
 	}
 }
 
-void Model::solve_iter_start_branch() {
-	scimpl->solve_iter_start_branch();
+auto Model::solve_iter(nonstd::span<callback::DynamicConstructor const> arg_packs)
+	-> std::optional<callback::DynamicCall> {
+	return scimpl->solve_iter(arg_packs);
 }
 
-void Model::solve_iter_branch(SCIP_RESULT result) {
-	scimpl->solve_iter_branch(result);
+auto Model::solve_iter(callback::DynamicConstructor arg_pack) -> std::optional<callback::DynamicCall> {
+	return solve_iter({&arg_pack, 1});
 }
 
-SCIP_HEUR* Model::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {
-	return scimpl->solve_iter_start_primalsearch(trials_per_node, depth_freq, depth_start, depth_stop);
-}
-
-void Model::solve_iter_primalsearch(SCIP_RESULT result) {
-	scimpl->solve_iter_primalsearch(result);
-}
-
-void Model::solve_iter_stop() {
-	scimpl->solve_iter_stop();
-}
-
-bool Model::solve_iter_is_done() {
-	return scimpl->solve_iter_is_done();
+auto Model::solve_iter_continue(SCIP_RESULT result) -> std::optional<callback::DynamicCall> {
+	return scimpl->solve_iter_continue(result);
 }
 
 }  // namespace ecole::scip

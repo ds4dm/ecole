@@ -1,13 +1,13 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <type_traits>
 #include <utility>
 
-#include <xtensor-python/pytensor.hpp>
-
 #include <pybind11/pybind11.h>
+#include <xtensor-python/pytensor.hpp>
 
 namespace ecole::python {
 
@@ -43,16 +43,16 @@ template <typename Class, typename... ClassArgs> struct auto_class : public pybi
 	 * The given attributes name must be sufficient to define the object.
 	 * They must be bound to Python with read-write capabilities.
 	 */
-	template <typename StrArr> auto def_auto_pickle(StrArr const& names) -> auto& {
+	template <typename... Str> auto def_auto_pickle(Str... names) -> auto& {
 		this->def(pybind11::pickle(
-			[names](pybind11::handle self) {
+			[names = std::array{names...}](pybind11::handle self) {
 				auto dict = pybind11::dict{};
 				for (auto const& name : names) {
 					dict[name] = self.attr(name);
 				}
 				return dict;
 			},
-			[names](pybind11::dict const& dict) {
+			[names = std::array{names...}](pybind11::dict const& dict) {
 				// Constructor may not be bound so we create the object from C++ and cast it
 				auto obj = std::make_unique<Class>();
 				auto py_obj = pybind11::cast(obj.get());
@@ -61,6 +61,46 @@ template <typename Class, typename... ClassArgs> struct auto_class : public pybi
 				}
 				return obj;
 			}));
+		return *this;
+	}
+};
+
+/** Hold a class member variable function pointer and its name together. */
+template <typename FuncPtr> struct Member {
+	char const* name;
+	FuncPtr value;
+
+	constexpr Member(char const* the_name, FuncPtr the_value) : name{the_name}, value{the_value} {}
+};
+
+/** Utility to bind a data class, that is C-struct, named-tuple... like class. */
+template <typename Class, typename... ClassArgs> struct auto_data_class : public auto_class<Class, ClassArgs...> {
+	using auto_class<Class, ClassArgs...>::auto_class;
+	using typename pybind11::class_<Class, ClassArgs...>::type;
+
+	template <typename... FuncPtr> auto def_auto_members(Member<FuncPtr>... members) -> auto& {
+		def_auto_init(members...);
+		def_auto_attributes(members...);
+		this->def_auto_copy();
+		this->def_auto_pickle(members.name...);
+		return *this;
+	}
+
+	template <typename... FuncPtr> auto def_auto_init(Member<FuncPtr>... members) -> auto& {
+		// Instantiate the C++ type at compile time to get default parameters.
+		auto constexpr default_params = type{};
+		// Bind a constructor that takes as input all parameters
+		this->def(
+			// Get the type of each parameter and add it to the Python constructor
+			pybind11::init<std::remove_reference_t<std::invoke_result_t<decltype(members.value), type>>...>(),
+			// Set name for all constructor parameters and fetch default value on the default parameters
+			(pybind11::arg(members.name) = std::invoke(members.value, default_params))...);
+		return *this;
+	}
+
+	/** Bind attribute access for all class attributes. */
+	template <typename... FuncPtr> auto def_auto_attributes(Member<FuncPtr>... members) -> auto& {
+		((this->def_readwrite(members.name, members.value)), ...);
 		return *this;
 	}
 };

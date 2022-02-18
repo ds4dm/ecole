@@ -9,6 +9,7 @@
 #include <objscip/objmessagehdlr.h>
 
 #include "ecole/scip/exception.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::scip {
 
@@ -106,7 +107,7 @@ ScipError ScipError::from_retcode(SCIP_RETCODE retcode) {
 	case SCIP_MAXDEPTHLEVEL:
 		return ScipError{"Maximal branching depth level exceeded"};
 	default:
-		return ScipError{"Invalid return code"};
+		utility::unreachable();
 	}
 }
 

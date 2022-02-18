@@ -12,6 +12,7 @@
 #include "ecole/observation/milp-bipartite.hpp"
 #include "ecole/scip/cons.hpp"
 #include "ecole/scip/model.hpp"
+#include "ecole/utility/unreachable.hpp"
 
 namespace ecole::observation {
 
@@ -86,7 +87,7 @@ void set_static_features_for_var(
 		out[idx(VariableFeatures::is_type_continuous)] = 1.;
 		break;
 	default:
-		assert(false);  // All enum cases must be handled
+		utility::unreachable();
 	}
 
 	auto const lower_bound = SCIPvarGetLbLocal(var);

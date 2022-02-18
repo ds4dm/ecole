@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <array>
 #include <memory>
 #include <string>
 #include <utility>
@@ -67,7 +66,7 @@ void bind_submodule(py::module_ const& m) {
 		Similar to Scipy's ``scipy.sparse.coo_matrix`` or PyTorch ``torch.sparse``.
 	)")
 		.def_auto_copy()
-		.def_auto_pickle(std::array{"values", "indices", "shape"})
+		.def_auto_pickle("values", "indices", "shape")
 		.def_readwrite_xtensor("values", &coo_matrix::values, "A vector of non zero values in the matrix")
 		.def_readwrite_xtensor("indices", &coo_matrix::indices, R"(
 			A matrix holding the indices of non zero coefficient in the sparse matrix.
@@ -93,7 +92,7 @@ void bind_submodule(py::module_ const& m) {
 		Each edge is associated with the coefficient of the variable in the constraint.
 	)")
 			.def_auto_copy()
-			.def_auto_pickle(std::array{"variable_features", "row_features", "edge_features"})
+			.def_auto_pickle("variable_features", "row_features", "edge_features")
 			.def_readwrite_xtensor("variable_features", &NodeBipartiteObs::variable_features, R"rst(
 					A matrix where each row represents a variable, and each column a feature of the variable.
 
@@ -170,7 +169,7 @@ void bind_submodule(py::module_ const& m) {
 		Each edge is associated with the coefficient of the variable in the constraint.
 	)")
 			.def_auto_copy()
-			.def_auto_pickle(std::array{"variable_features", "constraint_features", "edge_features"})
+			.def_auto_pickle("variable_features", "constraint_features", "edge_features")
 			.def_readwrite_xtensor("variable_features", &MilpBipartiteObs::variable_features, R"rst(
 					A matrix where each row represents a variable, and each column a feature of the variable.
 
@@ -280,7 +279,7 @@ void bind_submodule(py::module_ const& m) {
 			*Thirtieth AAAI Conference on Artificial Intelligence*. 2016.
 	)");
 	khalil2016_obs.def_auto_copy()
-		.def_auto_pickle(std::array{"features"})
+		.def_auto_pickle("features")
 		.def_readwrite_xtensor("features", &Khalil2016Obs::features, R"rst(
 			A matrix where each row represents a variable, and each column a feature of the variable.
 
@@ -400,7 +399,7 @@ void bind_submodule(py::module_ const& m) {
 			*International Conference on Learning and Intelligent Optimization*. 2011.
 	)");
 	hutter_obs.def_auto_copy()
-		.def_auto_pickle(std::array{"features"})
+		.def_auto_pickle("features")
 		.def_readwrite_xtensor("features", &Hutter2011Obs::features, "A vector of instance features.");
 
 	py::enum_<Hutter2011Obs::Features>(hutter_obs, "Features")
