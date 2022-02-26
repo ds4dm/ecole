@@ -38,6 +38,7 @@ add_library(
 
 	src/dynamics/parts.cpp
 	src/dynamics/branching.cpp
+	src/dynamics/branching-sum.cpp
 	src/dynamics/configuring.cpp
 	src/dynamics/primal-search.cpp
 )
