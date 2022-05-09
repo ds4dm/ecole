@@ -11,6 +11,11 @@ Ecole
    :target: https://github.com/ds4dm/ecole/actions/workflows/continuous-testing.yml
    :alt: Test and deploy on Github Actions
 
+.. warning::
+
+   Ecole is looking for a new home.
+   It is not being actively developed, only critical issues will be investigated.
+
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
 optimization solvers as Markov
