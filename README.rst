@@ -1,3 +1,8 @@
+⚠️ Warning ⚠️
+-----------
+*Ecole is looking for a new home.
+It is not being actively developed, only critical issues will be investigated.*
+
 .. image:: https://raw.githubusercontent.com/ds4dm/ecole/master/docs/_static/images/ecole-logo.svg
    :target: https://www.ecole.ai
    :alt: Ecole logo
@@ -10,11 +15,6 @@ Ecole
 .. image:: https://github.com/ds4dm/ecole/actions/workflows/continuous-testing.yml/badge.svg
    :target: https://github.com/ds4dm/ecole/actions/workflows/continuous-testing.yml
    :alt: Test and deploy on Github Actions
-
-⚠️ Warning ⚠️
------------
-Ecole is looking for a new home.
-It is not being actively developed, only critical issues will be investigated.
 
 Ecole (pronounced [ekɔl]) stands for *Extensible Combinatorial Optimization Learning
 Environments* and aims to expose a number of control problems arising in combinatorial
