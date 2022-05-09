@@ -1,6 +1,7 @@
-⚠️ **Warning**:
+⚠️ **Warning** ⚠️
+
 *Ecole is looking for a new home.*
-*It is not being actively developed, only critical issues will be investigated.* ⚠️
+*It is not being actively developed, only critical issues will be investigated.*
 
 
 .. image:: https://raw.githubusercontent.com/ds4dm/ecole/master/docs/_static/images/ecole-logo.svg
