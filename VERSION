@@ -2,7 +2,7 @@
 # The following should include only numbers
 VERSION_MAJOR 0
 VERSION_MINOR 8
-VERSION_PATCH 0
+VERSION_PATCH 1
 # The following should include their whole string and can be combined.
 # They must be numbered, starting from 0.
 VERSION_PRE          # Pre release without leading dot, e.g. `a0` (alpha), `b0` (beta), or `rc0` (release candidate)
