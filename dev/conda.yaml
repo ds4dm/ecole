@@ -32,7 +32,7 @@ dependencies:
   # C++ dev tools
   - clang-tools=11
   - ccache
-  - catch2
+  - catch2 < 3.0
   - cli11
   # Python dev tools
   - pip
