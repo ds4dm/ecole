@@ -3,7 +3,7 @@ Differences with OpenAI Gym
 
 Changing reward and observations
 --------------------------------
-Contrarily to `OpenAI Gym <https://gym.openai.com/>`_ where learning tasks are predefined,
+Contrarily to `OpenAI Gym <https://www.gymlibrary.dev/>`_ where learning tasks are predefined,
 Ecole gives the user the tools to easily extend and customize environments.
 This is because the objective with Ecole is not only to provide a collection of challenges
 for machine learning, but really to solve combinatorial optimization problems more
