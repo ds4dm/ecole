@@ -38,7 +38,7 @@ picking the next variable to branch on. Ecole aims at exposing these algorithmic
 standard reinforcement learning API (agent / environment loop), in order to ease the exploration
 of new machine learning models and algorithms for learning data-driven policies.
 
-Ecole's interface is inspired from `OpenAI Gym <https://gym.openai.com/>`_ and will look
+Ecole's interface is inspired from `OpenAI Gym <https://www.gymlibrary.dev/>`_ and will look
 familiar to reinforcement learning praticionners.
 The state-of-the-art Mixed Integer Linear Programming solver that acts as a controllable
 algorithm inside Ecole is `SCIP <https://scip.zib.de/>`_.
