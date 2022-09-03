@@ -1,9 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
-
-# RPATH escaping (only in old CMake versions)
-if (CMAKE_VERSION VERSION_LESS "3.24.0")
-	cmake_policy(SET CMP0095 OLD)
-endif()
+cmake_minimum_required(VERSION 3.16)
 
 # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
