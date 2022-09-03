@@ -28,7 +28,7 @@ namespace ecole::environment {
  * Environments are the main abstraction exposed by Ecole.
  * They characterise the Markov Decision Process task to solve.
  * The interface to environments is meant to be close to that of
- * [OpenAi Gym](https://gym.openai.com/), with some differences nontheless due to the
+ * [OpenAi Gym](https://www.gymlibrary.dev/), with some differences nontheless due to the
  * requirements of Ecole.
  *
  * @tparam Dynamics The ecole::environment::EnvironmentDynamics driving the initial state and transition of the

@@ -55,7 +55,7 @@ def get_cmake_in_package_install_args() -> List[str]:
     """Return default installation settings for installing libecole in the package."""
     system = platform.system()
     if system == "Linux":
-        origin = r"\${ORIGIN}"
+        origin = r"${ORIGIN}"
     elif system == "Darwin":
         origin = "@loader_path"
     else:
