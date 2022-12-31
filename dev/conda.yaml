@@ -9,7 +9,9 @@ dependencies:
   # C++ build time dependencies
   - xtensor
   - cxx-compiler
-  - xsimd
+  # Waiting for an xsimd=10 compatible release of xtensor
+  # https://github.com/xtensor-stack/xsimd/issues/810
+  - xsimd=8.*
   - fmt
   # C++ runtime dependencies
   - scip=8
