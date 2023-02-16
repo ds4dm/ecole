@@ -22,6 +22,7 @@ add_library(
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
 	src/instance/capacitated-vehicle-routing.cpp
+	src/instance/bin-packing.cpp
 
 	src/reward/is-done.cpp
 	src/reward/lp-iterations.cpp

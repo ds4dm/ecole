@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "ecole/instance/bin-packing.hpp"
 #include "ecole/instance/capacitated-facility-location.hpp"
 #include "ecole/instance/capacitated-vehicle-routing.hpp"
 #include "ecole/instance/combinatorial-auction.hpp"
@@ -365,6 +366,31 @@ void bind_submodule(py::module const& m) {
 	def_iterator(capacitated_vehicle_routing_load);
 	capacitated_vehicle_routing_load.def("seed", &CapacitatedVehicleRoutingLoader::seed, py::arg(" seed"));
 
+	// The Binpacking parameters used in constructor, generate_instance, and attributes
+	auto constexpr binpacking_params = std::tuple{
+		Member{"filename", &Binpacking::Parameters::filename},
+		Member{"n_bins", &Binpacking::Parameters::n_bins},
+	};
+	// Bind Binpacking and remove intermediate Parameter class
+	auto binpacking_load = py::class_<Binpacking>{m, "Binpacking"};
+	def_generate_instance(binpacking_load, binpacking_params, R"(
+		Load a Binpacking MILP problem instance.
+
+    The Bin-packing Problem (BPP) can be described, using the terminology of knapsack problems, as follows. Given $n$ items and $m$ knapsacks (or bins), with $w_j$ = weight of each item j, $c$ = capacity of each bin. Assign each item to one bin so that the total weight doesn't exceed its capacity and the number of bins used is minimum.
+
+    The same problem can be used to determine the number of minimum vehicles in Vehicle Routing Problem where bins represent vehicles and items represent customers demands.
+
+		Parameters
+		----------
+    filename:
+      The Binpacking problem file.
+    n_bins:
+      The number of bins available.
+	)");
+	def_init(binpacking_load, binpacking_params);
+	def_attributes(binpacking_load, binpacking_params);
+	def_iterator(binpacking_load);
+	binpacking_load.def("seed", &Binpacking::seed, py::arg(" seed"));
 }
 
 /******************************************
