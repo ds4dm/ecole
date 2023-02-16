@@ -28,6 +28,7 @@ add_library(
 	src/reward/lp-iterations.cpp
 	src/reward/solving-time.cpp
 	src/reward/n-nodes.cpp
+	src/reward/tree-size-estimate.cpp
 	src/reward/bound-integral.cpp
 
 	src/observation/node-bipartite.cpp
