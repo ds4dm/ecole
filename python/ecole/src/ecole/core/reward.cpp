@@ -11,6 +11,7 @@
 #include "ecole/reward/lp-iterations.hpp"
 #include "ecole/reward/n-nodes.hpp"
 #include "ecole/reward/solving-time.hpp"
+#include "ecole/reward/tree-size-estimate.hpp"
 #include "ecole/scip/model.hpp"
 
 #include "core.hpp"
@@ -142,6 +143,20 @@ void bind_submodule(py::module_ const& m) {
 	def_operators(nnodes);
 	def_before_reset(nnodes, "Reset the internal node count.");
 	def_extract(nnodes, R"(
+		Update the internal node count and return the difference.
+
+		The difference in number of nodes is computed in between calls.
+		)");
+
+	auto treesizeestimate = py::class_<TreeSizeEstimate>(m, "TreeSizeEstimate", R"(
+		Estimate the size of a tree.
+
+		The reward is defined as the total number of nodes processed since the previous state.
+	)");
+	treesizeestimate.def(py::init<>());
+	def_operators(treesizeestimate);
+	def_before_reset(treesizeestimate, "Reset the internal node count.");
+	def_extract(treesizeestimate, R"(
 		Update the internal node count and return the difference.
 
 		The difference in number of nodes is computed in between calls.
