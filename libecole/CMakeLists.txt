@@ -21,6 +21,7 @@ add_library(
 	src/instance/independent-set.cpp
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
+	src/instance/capacitated-vehicle-routing.cpp
 
 	src/reward/is-done.cpp
 	src/reward/lp-iterations.cpp
