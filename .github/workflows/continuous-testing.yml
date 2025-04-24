@@ -13,7 +13,7 @@ jobs:
 #  ------------------
 
   test-from-src:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         image:
@@ -33,9 +33,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - "ubuntu-20.04"
-          - "macos-10.15"
-        python: ["3.7", "3.8", "3.9", "3.10"]
+          - "ubuntu-24.04"
+          - "macos-15"
+        python: ["3.10", "3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -51,8 +51,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - "ubuntu-20.04"
-          - "macos-10.15"
+          - "ubuntu-25.04"
+          - "macos-15"
         shared-lib: ["ON", "OFF"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -67,7 +67,7 @@ jobs:
 
   # Currenlty only sanitize address without Python
   test-with-sanitizer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -78,7 +78,7 @@ jobs:
         run: ./dev/run.sh --fix-pythonpath configure -D SANITIZE_ADDRESS=ON -D CMAKE_BUILD_TYPE=CondaRelease -- ctest-lib
 
   check-code:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -88,19 +88,19 @@ jobs:
         run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- check-code
 
   test-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
         with:
           environment-file: dev/conda.yaml
-          extra-specs: python="3.9"
+          extra-specs: python="3.10"
       - name: "Configure and build ecole-py-ext. Build and test documentation."
         shell: bash -l {0}
         run: ./dev/run.sh --fix-pythonpath configure -D CMAKE_BUILD_TYPE=CondaRelease -- test-doc
 
   test-dist:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -110,7 +110,7 @@ jobs:
         run: ./dev/run.sh test-dist
 
   test-example-libecole:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -120,7 +120,7 @@ jobs:
         run: ./dev/run.sh configure -D ECOLE_BUILD_PY_EXT=OFF -D BUILD_SHARED_LIBS=ON -- test-example-libecole
 
   test-example-configuring:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -137,7 +137,7 @@ jobs:
         run: ./dev/run.sh --fix-pythonpath configure -- test-example-configuring
 
   test-example-branching:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -182,7 +182,7 @@ jobs:
   deploy-latest-doc:
     if: ${{ github.ref == 'refs/heads/master' }}
     needs: all-tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
         with: {fetch-depth: 0}
@@ -218,7 +218,7 @@ jobs:
   test-version:
     if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     needs: all-tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - name: "Check version file matches the version."
@@ -226,7 +226,7 @@ jobs:
 
   deploy-version-doc:
     needs: test-version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: mamba-org/provision-with-micromamba@v11
@@ -250,7 +250,7 @@ jobs:
           delete_existing: false
 
   deploy-pypi:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: test-version
     steps:
       - uses: actions/checkout@v2
