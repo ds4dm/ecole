@@ -39,7 +39,7 @@ using range_value_type_t = std::remove_cv_t<std::remove_reference_t<decltype(*st
  * @param filter A callable to filter in elements (after transformation).
  */
 template <typename Range, typename U = internal::range_value_type_t<Range>>
-auto count_sum(Range range) noexcept -> std::pair<U, std::size_t> {
+auto count_sum(Range range) noexcept -> std::pair<std::size_t, U> {
 	auto sum = U{0};
 	auto count = std::size_t{0};
 
