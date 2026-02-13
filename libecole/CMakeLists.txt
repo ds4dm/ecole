@@ -21,11 +21,14 @@ add_library(
 	src/instance/independent-set.cpp
 	src/instance/combinatorial-auction.cpp
 	src/instance/capacitated-facility-location.cpp
+	src/instance/capacitated-vehicle-routing.cpp
+	src/instance/bin-packing.cpp
 
 	src/reward/is-done.cpp
 	src/reward/lp-iterations.cpp
 	src/reward/solving-time.cpp
 	src/reward/n-nodes.cpp
+	src/reward/tree-size-estimate.cpp
 	src/reward/bound-integral.cpp
 
 	src/observation/node-bipartite.cpp
